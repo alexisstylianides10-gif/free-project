@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  --background: 240 20% 99%;
+  --foreground: 240 10% 12%;
+  --surface: 0 0% 100%;
+  --surface-raised: 240 25% 98%;
+  --border: 240 12% 90%;
+  --border-strong: 240 10% 80%;
+  --muted: 240 16% 95.5%;
+  --muted-foreground: 240 6% 45%;
+
+  --accent: 243 75% 59%;
+  --accent-foreground: 0 0% 100%;
+  --accent-soft: 243 90% 96%;
+
+  --success: 152 55% 34%;
+  --success-soft: 152 55% 94%;
+  --warning: 32 92% 46%;
+  --warning-soft: 38 92% 94%;
+  --danger: 4 72% 51%;
+  --danger-soft: 4 72% 95%;
+
+  --shadow-color: 240 30% 25%;
+
+  color-scheme: light;
+}
+
+:root.dark {
+  --background: 240 16% 7%;
+  --foreground: 240 10% 94%;
+  --surface: 240 15% 9.5%;
+  --surface-raised: 240 14% 12.5%;
+  --border: 240 10% 19%;
+  --border-strong: 240 10% 28%;
+  --muted: 240 12% 14%;
+  --muted-foreground: 240 8% 63%;
+
+  --accent: 243 85% 70%;
+  --accent-foreground: 240 20% 9%;
+  --accent-soft: 243 45% 20%;
+
+  --success: 152 50% 48%;
+  --success-soft: 152 35% 16%;
+  --warning: 38 88% 58%;
+  --warning-soft: 38 55% 17%;
+  --danger: 4 78% 64%;
+  --danger-soft: 4 50% 18%;
+
+  --shadow-color: 240 70% 1%;
+
+  color-scheme: dark;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: hsl(var(--accent-soft));
+  color: hsl(var(--accent));
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border-strong));
+  border-radius: 999px;
+  border: 2.5px solid hsl(var(--background));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
