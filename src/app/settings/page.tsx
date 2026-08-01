@@ -16,8 +16,9 @@ import {
   Check,
   Download,
   RotateCcw,
+  LogOut,
 } from "lucide-react";
-import { useLifeOS } from "@/lib/store";
+import { backendConfigured, useLifeOS } from "@/lib/store";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -61,6 +62,8 @@ export default function SettingsPage() {
   const profile = useLifeOS((s) => s.profile);
   const updateProfile = useLifeOS((s) => s.updateProfile);
   const chat = useLifeOS((s) => s.chat);
+  const authEmail = useLifeOS((s) => s.authEmail);
+  const signOut = useLifeOS((s) => s.signOut);
   const [section, setSection] = useState("account");
   const exportRef = useRef<HTMLAnchorElement>(null);
 
@@ -94,12 +97,17 @@ export default function SettingsPage() {
 
         <TabsContent value="account" className="mt-4 space-y-3">
           <Card className="p-5">
-            <div className="flex items-center gap-4">
-              <Avatar initials={profile.avatarInitials} size="lg" />
-              <div>
-                <p className="text-[15px] font-semibold text-foreground">{profile.name}</p>
-                <p className="text-[13px] text-muted-foreground">{profile.email}</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <Avatar initials={profile.avatarInitials} size="lg" />
+                <div>
+                  <p className="text-[15px] font-semibold text-foreground">{profile.name}</p>
+                  <p className="text-[13px] text-muted-foreground">{profile.email}</p>
+                </div>
               </div>
+              {backendConfigured && authEmail && (
+                <Badge tone="success">Synced account</Badge>
+              )}
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <Field label="Name" value={profile.name} onChange={(v) => updateProfile({ name: v })} />
@@ -108,6 +116,24 @@ export default function SettingsPage() {
               <Field label="Location" value={profile.location} onChange={(v) => updateProfile({ location: v })} />
             </div>
           </Card>
+
+          {backendConfigured && authEmail ? (
+            <Card className="flex items-center justify-between gap-4 p-4">
+              <div>
+                <p className="text-[13.5px] font-medium text-foreground">Signed in as {authEmail}</p>
+                <p className="text-[12.5px] text-muted-foreground">Your data is saved to your account and synced automatically.</p>
+              </div>
+              <Button size="sm" variant="outline" className="gap-1.5 shrink-0" onClick={() => signOut()}>
+                <LogOut className="h-3.5 w-3.5" /> Sign out
+              </Button>
+            </Card>
+          ) : (
+            <Card className="p-4">
+              <p className="text-[13px] text-muted-foreground">
+                This app isn&apos;t connected to a backend yet — you&apos;re using local demo data that resets on refresh.
+              </p>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="appearance" className="mt-4">
@@ -164,8 +190,9 @@ export default function SettingsPage() {
           <Card className="space-y-3 p-5">
             <p className="text-[13.5px] font-semibold text-foreground">Your data, visible to you</p>
             <p className="text-[13px] text-muted-foreground">
-              This is a demo environment — all data shown lives only in this browser session and is not sent to any external server. In a production
-              deployment, this section would control exactly what LifeOS can read, how long data is kept, and who it&apos;s shared with.
+              {backendConfigured && authEmail
+                ? "Your data is stored in your own account, protected by row-level security so only you can read or write it. Nothing here is shared with anyone else, and no third party (including the app's developer) can query other users' data through the app."
+                : "This app isn't connected to a backend yet — everything shown lives only in this browser session and is not sent anywhere. Once connected, this section will control exactly what LifeOS can read, how long data is kept, and who it's shared with."}
             </p>
             <Link href="/memory" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-accent hover:opacity-80">
               Review what LifeOS remembers <Sparkles className="h-3.5 w-3.5" />
@@ -175,11 +202,21 @@ export default function SettingsPage() {
 
         <TabsContent value="security" className="mt-4">
           <Card className="divide-y divide-border">
-            {["Password", "Two-factor authentication", "Active sessions"].map((label) => (
-              <div key={label} className="flex items-center justify-between p-4">
+            {[
+              {
+                label: "Password",
+                body:
+                  backendConfigured && authEmail
+                    ? "Managed by your account's authentication provider."
+                    : "Not available — connect a backend first.",
+              },
+              { label: "Two-factor authentication", body: "Not built yet — on the roadmap." },
+              { label: "Active sessions", body: "Not built yet — on the roadmap." },
+            ].map((row) => (
+              <div key={row.label} className="flex items-center justify-between p-4">
                 <div>
-                  <p className="text-[13.5px] font-medium text-foreground">{label}</p>
-                  <p className="text-[12px] text-muted-foreground">Not available in this demo environment.</p>
+                  <p className="text-[13.5px] font-medium text-foreground">{row.label}</p>
+                  <p className="text-[12px] text-muted-foreground">{row.body}</p>
                 </div>
                 <Button size="sm" variant="outline" disabled>
                   Manage
@@ -306,11 +343,17 @@ export default function SettingsPage() {
           </Card>
           <Card className="flex items-center justify-between gap-4 p-4">
             <div>
-              <p className="text-[13.5px] font-medium text-foreground">Reset to demo data</p>
-              <p className="text-[12.5px] text-muted-foreground">Clears session changes and reloads the original demo state.</p>
+              <p className="text-[13.5px] font-medium text-foreground">
+                {backendConfigured && authEmail ? "Reload my data" : "Reset to demo data"}
+              </p>
+              <p className="text-[12.5px] text-muted-foreground">
+                {backendConfigured && authEmail
+                  ? "Refetches your latest saved data from your account."
+                  : "Clears session changes and reloads the original demo state."}
+              </p>
             </div>
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => window.location.reload()}>
-              <RotateCcw className="h-3.5 w-3.5" /> Reset
+              <RotateCcw className="h-3.5 w-3.5" /> {backendConfigured && authEmail ? "Reload" : "Reset"}
             </Button>
           </Card>
           <a ref={exportRef} className="hidden" />

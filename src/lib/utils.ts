@@ -9,6 +9,19 @@ export function uid(prefix = "id"): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-4)}`;
 }
 
+/** A real UUID, for rows that get persisted to Postgres (which needs valid uuid columns). */
+export function newId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  // Fallback (very old browsers only): RFC4122-ish v4 from Math.random.
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function formatMoney(n: number): string {
   const sign = n < 0 ? "-" : "";
   return `${sign}€${Math.abs(n).toFixed(2)}`;

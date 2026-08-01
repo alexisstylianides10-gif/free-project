@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "./Sidebar";
@@ -9,9 +9,32 @@ import { MobileNav } from "./MobileNav";
 import { CommandBar } from "./CommandBar";
 import { QuickAddModal } from "./QuickAddModal";
 import { TooltipProvider } from "@/components/ui/Tooltip";
+import { AuthScreen } from "@/components/auth/AuthScreen";
+import { Logo } from "./Logo";
+import { backendConfigured, useLifeOS } from "@/lib/store";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const authStatus = useLifeOS((s) => s.authStatus);
+  const dataLoading = useLifeOS((s) => s.dataLoading);
+  const initAuth = useLifeOS((s) => s.initAuth);
+
+  useEffect(() => {
+    if (backendConfigured) initAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (backendConfigured && authStatus === "checking") {
+    return <LoadingScreen />;
+  }
+
+  if (backendConfigured && authStatus === "signed_out") {
+    return <AuthScreen />;
+  }
+
+  if (backendConfigured && authStatus === "signed_in" && dataLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <TooltipProvider>
@@ -37,5 +60,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       <CommandBar />
       <QuickAddModal />
     </TooltipProvider>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background">
+      <Logo className="animate-pulse" />
+    </div>
   );
 }
