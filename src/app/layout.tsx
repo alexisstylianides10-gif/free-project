@@ -4,8 +4,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "LifeOS",
-  description: "The AI operating system for your life.",
+  title: "Triply",
+  description: "Your group's entire trip, organized in one place.",
 };
 
 export const viewport: Viewport = {

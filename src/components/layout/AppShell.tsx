@@ -6,18 +6,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { MobileNav } from "./MobileNav";
-import { CommandBar } from "./CommandBar";
-import { QuickAddModal } from "./QuickAddModal";
 import { TooltipProvider } from "@/components/ui/Tooltip";
 import { AuthScreen } from "@/components/auth/AuthScreen";
 import { Logo } from "./Logo";
-import { backendConfigured, useLifeOS } from "@/lib/store";
+import { backendConfigured, useTriply } from "@/lib/store";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const authStatus = useLifeOS((s) => s.authStatus);
-  const dataLoading = useLifeOS((s) => s.dataLoading);
-  const initAuth = useLifeOS((s) => s.initAuth);
+  const authStatus = useTriply((s) => s.authStatus);
+  const dataLoading = useTriply((s) => s.dataLoading);
+  const initAuth = useTriply((s) => s.initAuth);
 
   useEffect(() => {
     if (backendConfigured) initAuth();
@@ -57,8 +55,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <MobileNav />
-      <CommandBar />
-      <QuickAddModal />
     </TooltipProvider>
   );
 }

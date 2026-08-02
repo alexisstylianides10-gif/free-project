@@ -22,9 +22,40 @@ export function newId(): string {
   });
 }
 
-export function formatMoney(n: number): string {
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  EUR: "€",
+  USD: "$",
+  GBP: "£",
+  JPY: "¥",
+};
+
+export function formatMoney(n: number, currency = "EUR"): string {
   const sign = n < 0 ? "-" : "";
-  return `${sign}€${Math.abs(n).toFixed(2)}`;
+  const symbol = CURRENCY_SYMBOLS[currency] ?? currency + " ";
+  const decimals = currency === "JPY" ? 0 : 2;
+  return `${sign}${symbol}${Math.abs(n).toFixed(decimals)}`;
+}
+
+export function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+export function formatDateRange(startISO: string, endISO: string): string {
+  const start = new Date(startISO + "T00:00:00");
+  const end = new Date(endISO + "T00:00:00");
+  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+  const startLabel = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const endLabel = sameMonth
+    ? end.toLocaleDateString("en-US", { day: "numeric" })
+    : end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return `${startLabel}–${endLabel}`;
+}
+
+export function daysUntil(iso: string): number {
+  return daysBetween(todayISO(), iso);
 }
 
 export function todayISO(): string {
@@ -80,6 +111,15 @@ export function mulberry32(seed: number): () => number {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+/** Next occurrence of a given month/day — this year if it hasn't passed yet, otherwise next year. */
+export function nextCalendarDate(month: number, day: number): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const candidate = new Date(year, month - 1, day);
+  const target = candidate.getTime() >= new Date(year, now.getMonth(), now.getDate()).getTime() ? year : year + 1;
+  return `${target}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 export function nextWeekday(fromISO: string, targetDay: number, includeToday = false): string {

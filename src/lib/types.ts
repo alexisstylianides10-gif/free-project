@@ -1,247 +1,203 @@
-export type Priority = "critical" | "high" | "medium" | "low";
+export type TravelStyle = "Relaxed" | "Balanced" | "Packed";
 
-export type LifeArea =
-  | "school"
-  | "home"
-  | "work"
-  | "health"
-  | "finance"
-  | "social"
-  | "travel"
-  | "personal";
+export type TripRole = "Organizer" | "Traveler";
 
-export interface Subtask {
+export interface Profile {
   id: string;
-  title: string;
-  done: boolean;
+  name: string;
+  email: string;
+  avatarInitials: string;
+  plan: "Free" | "Travel Pro";
+  interests: string[];
+  foodPreferences: string[];
+  travelStyle: TravelStyle;
+  homeCity: string;
+  theme: "light" | "dark" | "system";
+  notificationPrefs: {
+    flights: boolean;
+    polls: boolean;
+    conflicts: boolean;
+    tripUpdates: boolean;
+    chat: boolean;
+  };
 }
 
-export interface Task {
+export interface Trip {
   id: string;
-  title: string;
-  description?: string;
-  done: boolean;
-  dueDate?: string; // ISO date
-  priority: Priority;
-  estimatedMinutes?: number;
-  category: LifeArea;
-  project?: string;
-  goalId?: string;
-  recurring?: "daily" | "weekly" | "none";
-  subtasks: Subtask[];
-  aiContext?: string;
+  name: string; // e.g. "Japan"
+  countryFlag: string; // emoji flag
+  cities: string[]; // ["Tokyo", "Kyoto", "Osaka"]
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  coverGradient: string; // tailwind gradient classes
+  coverEmoji: string;
+  budget?: number;
+  currency: string;
+  interests: string[];
+  foodPreferences: string[];
+  travelStyle: TravelStyle;
+  ownerId: string;
+  archived?: boolean;
   createdAt: string;
-  completedAt?: string;
 }
 
-export interface CalendarEvent {
+export interface TripMember {
   id: string;
-  title: string;
-  date: string; // ISO date (yyyy-MM-dd)
+  tripId: string;
+  userId: string;
+  name: string;
+  avatarInitials: string;
+  role: TripRole;
+  responsibility?: string;
+  status?: "invited" | "joined";
+  joinedAt: string;
+}
+
+export type ItineraryType =
+  | "activity"
+  | "restaurant"
+  | "hotel"
+  | "flight"
+  | "transport"
+  | "free_time"
+  | "other";
+
+export interface ItineraryItem {
+  id: string;
+  tripId: string;
+  date: string; // ISO date
   startTime: string; // HH:mm
   endTime: string; // HH:mm
-  type: "school" | "health" | "social" | "study" | "work" | "personal" | "travel";
-  location?: string;
-  linkedTaskId?: string;
-  linkedGoalId?: string;
-  aiGenerated?: boolean;
-  movable?: boolean;
-}
-
-export interface Milestone {
-  id: string;
-  title: string;
-  done: boolean;
-}
-
-export interface Goal {
-  id: string;
-  name: string;
-  why: string;
-  progress: number; // 0-100
-  deadline?: string;
-  category: LifeArea;
-  milestones: Milestone[];
-  linkedTaskIds: string[];
-  linkedHabitIds: string[];
-  aiPlan: string;
-  archived?: boolean;
-}
-
-export interface Habit {
-  id: string;
+  type: ItineraryType;
   name: string;
   emoji: string;
-  targetPerWeek: number;
-  history: Record<string, boolean>; // ISO date -> completed
-  bestStreak: number;
-  aiNote?: string;
+  location?: string;
+  description?: string;
+  cost?: number;
+  participantIds: string[]; // TripMember ids
+  notes?: string;
+  bookingRef?: string;
+  mapX?: number; // 0-100, percentage position on the mock map
+  mapY?: number;
+  aiGenerated?: boolean;
+  order: number; // manual ordering within the same start time
 }
 
-export type TxCategory =
-  | "Food"
-  | "Transport"
-  | "Shopping"
-  | "Entertainment"
-  | "Subscriptions"
-  | "School"
-  | "Other";
+export type TxCategory = "Hotel" | "Flights" | "Food" | "Activities" | "Transport" | "Shopping" | "Other";
 
-export interface Transaction {
+export interface Expense {
   id: string;
-  merchant: string;
-  amount: number; // negative = expense, positive = income
-  date: string;
-  category: TxCategory;
-}
-
-export interface Subscription {
-  id: string;
+  tripId: string;
   name: string;
   amount: number;
-  renewsOn: string;
+  currency: string;
+  paidBy: string; // TripMember id
+  participantIds: string[]; // TripMember ids splitting the cost
+  customSplit?: Record<string, number>; // memberId -> amount, overrides equal split
   category: TxCategory;
+  date: string;
+  notes?: string;
+  createdAt: string;
 }
 
-export interface Budget {
-  category: TxCategory;
-  limit: number;
-}
-
-export interface DocumentTag {
+export interface PollOption {
   id: string;
-  label: string;
+  text: string;
+  emoji?: string;
 }
 
-export interface LifeDocument {
+export interface Poll {
   id: string;
-  name: string;
-  kind: "pdf" | "docx" | "image" | "text";
-  folder: string;
-  tags: string[];
-  sizeKb: number;
+  tripId: string;
+  question: string;
+  status: "open" | "closed";
+  options: PollOption[];
+  votes: { pollId: string; optionId: string; memberId: string }[];
+  createdBy: string;
+  createdAt: string;
+  addedToItinerary?: boolean;
+}
+
+export interface Message {
+  id: string;
+  tripId: string;
+  senderId: string; // TripMember id, or "ai"
+  content: string;
+  kind: "text" | "ai" | "system";
+  createdAt: string;
+}
+
+export type DocumentKind = "flight" | "hotel" | "restaurant" | "car" | "activity" | "train" | "other";
+
+export interface TripDocument {
+  id: string;
+  tripId: string;
+  fileName: string;
+  kind: DocumentKind;
+  extractedData: Record<string, string>;
+  addedToItinerary: boolean;
   uploadedAt: string;
-  aiSummary?: string;
-  extractedDates?: { label: string; date: string }[];
 }
 
-export interface ListItem {
+export interface SavedPlace {
   id: string;
-  label: string;
-  done: boolean;
+  userId: string;
+  name: string;
+  category: string;
+  city: string;
+  emoji: string;
 }
 
-export interface LifeList {
+export type NotificationKind = "flight" | "poll" | "conflict" | "checkin" | "member" | "chat" | "system";
+
+export interface AppNotification {
   id: string;
+  tripId?: string;
+  title: string;
+  body: string;
+  kind: NotificationKind;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface TripAlert {
+  id: string;
+  tripId: string;
+  severity: "warning" | "critical";
+  message: string;
+  relatedItemIds?: string[];
+}
+
+export interface ExplorePlace {
+  id: string;
+  city: string;
+  category: "Food" | "Gaming" | "Attractions" | "Shopping" | "Nightlife" | "Activities";
   name: string;
   emoji: string;
-  items: ListItem[];
-  kind: "shopping" | "packing" | "wishlist" | "custom";
-}
-
-export type MemoryCategory =
-  | "Personal"
-  | "Preferences"
-  | "Goals"
-  | "People"
-  | "Projects"
-  | "Important dates"
-  | "Routines"
-  | "Past decisions";
-
-export interface MemoryItem {
-  id: string;
-  category: MemoryCategory;
-  content: string;
-  reason: string;
-  source: string;
-  createdAt: string;
-  active: boolean;
-}
-
-export type AgentCategory =
-  | "Productivity"
-  | "Finance"
-  | "School"
-  | "Travel"
-  | "Communication"
-  | "Shopping"
-  | "Business"
-  | "Personal";
-
-export interface AgentRun {
-  id: string;
-  ranAt: string;
-  summary: string;
-  status: "success" | "needs_approval" | "failed";
-}
-
-export interface Agent {
-  id: string;
-  name: string;
+  gradient: string;
+  rating: number;
+  price: "€" | "€€" | "€€€";
+  distanceKm: number;
   description: string;
-  category: AgentCategory;
-  capabilities: string[];
-  permissions: string[];
-  connectedServices: string[];
-  installed: boolean;
-  active: boolean;
-  runHistory: AgentRun[];
-  icon: string;
+  location: string;
 }
 
-export type ActionKind =
-  | "create_event"
-  | "create_task"
-  | "add_list_item"
-  | "create_reminder"
-  | "create_goal"
-  | "add_expense";
+export interface ItineraryPreviewChange {
+  kind: "add" | "remove" | "edit";
+  item: ItineraryItem;
+  previousItem?: ItineraryItem;
+}
 
-export interface PendingAction {
+export interface AIPreview {
   id: string;
-  kind: ActionKind;
-  title: string;
-  detail: string;
-  payload: Record<string, unknown>;
-  createdAt: string;
+  summary: string;
+  changes: ItineraryPreviewChange[];
 }
 
-export interface ChatMessage {
+export interface AIChatEntry {
   id: string;
   role: "user" | "ai";
   content: string;
   createdAt: string;
-  actions?: PendingAction[];
-}
-
-export interface AppNotification {
-  id: string;
-  title: string;
-  body: string;
-  createdAt: string;
-  read: boolean;
-  kind: "deadline" | "finance" | "schedule" | "goal" | "system";
-}
-
-export type ProactivityLevel = "low" | "balanced" | "high";
-
-export interface NotificationPrefs {
-  deadlines: boolean;
-  financeAlerts: boolean;
-  scheduleGaps: boolean;
-  goalNudges: boolean;
-}
-
-export interface Profile {
-  name: string;
-  email: string;
-  timezone: string;
-  location: string;
-  avatarInitials: string;
-  plan: "Free" | "Pro" | "Ultra";
-  proactivity: ProactivityLevel;
-  theme: "light" | "dark" | "system";
-  memoryEnabled: boolean;
-  notificationPrefs: NotificationPrefs;
+  preview?: AIPreview;
 }

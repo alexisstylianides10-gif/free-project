@@ -1,21 +1,16 @@
 import { supabase } from "./supabase/client";
 import {
-  Agent,
   AppNotification,
-  Budget,
-  CalendarEvent,
-  ChatMessage,
-  Goal,
-  Habit,
-  LifeDocument,
-  LifeList,
-  MemoryItem,
+  Expense,
+  ItineraryItem,
+  Message,
+  Poll,
   Profile,
-  Subscription,
-  Task,
-  Transaction,
+  SavedPlace,
+  Trip,
+  TripDocument,
+  TripMember,
 } from "./types";
-import { demoAgents } from "./demoData";
 import { newId } from "./utils";
 
 function client() {
@@ -31,27 +26,28 @@ interface ProfileRow {
   id: string;
   name: string;
   email: string;
-  timezone: string;
-  location: string;
   avatar_initials: string;
   plan: Profile["plan"];
-  proactivity: Profile["proactivity"];
+  interests: string[];
+  food_preferences: string[];
+  travel_style: Profile["travelStyle"];
+  home_city: string;
   theme: Profile["theme"];
-  memory_enabled: boolean;
   notification_prefs: Profile["notificationPrefs"];
 }
 
 function profileFromRow(r: ProfileRow): Profile {
   return {
+    id: r.id,
     name: r.name,
     email: r.email,
-    timezone: r.timezone,
-    location: r.location,
     avatarInitials: r.avatar_initials,
     plan: r.plan,
-    proactivity: r.proactivity,
+    interests: r.interests ?? [],
+    foodPreferences: r.food_preferences ?? [],
+    travelStyle: r.travel_style,
+    homeCity: r.home_city,
     theme: r.theme,
-    memoryEnabled: r.memory_enabled,
     notificationPrefs: r.notification_prefs,
   };
 }
@@ -77,572 +73,466 @@ export async function updateProfileRow(userId: string, patch: Partial<Profile>):
   const row: Record<string, unknown> = {};
   if (patch.name !== undefined) row.name = patch.name;
   if (patch.email !== undefined) row.email = patch.email;
-  if (patch.timezone !== undefined) row.timezone = patch.timezone;
-  if (patch.location !== undefined) row.location = patch.location;
   if (patch.avatarInitials !== undefined) row.avatar_initials = patch.avatarInitials;
   if (patch.plan !== undefined) row.plan = patch.plan;
-  if (patch.proactivity !== undefined) row.proactivity = patch.proactivity;
+  if (patch.interests !== undefined) row.interests = patch.interests;
+  if (patch.foodPreferences !== undefined) row.food_preferences = patch.foodPreferences;
+  if (patch.travelStyle !== undefined) row.travel_style = patch.travelStyle;
+  if (patch.homeCity !== undefined) row.home_city = patch.homeCity;
   if (patch.theme !== undefined) row.theme = patch.theme;
-  if (patch.memoryEnabled !== undefined) row.memory_enabled = patch.memoryEnabled;
   if (patch.notificationPrefs !== undefined) row.notification_prefs = patch.notificationPrefs;
   const { error } = await client().from("profiles").update(row).eq("id", userId);
   if (error) throw error;
 }
 
 // ---------------------------------------------------------------------------
-// tasks
+// trips
 // ---------------------------------------------------------------------------
 
-interface TaskRow {
+interface TripRow {
   id: string;
-  title: string;
-  description: string | null;
-  done: boolean;
-  due_date: string | null;
-  priority: Task["priority"];
-  estimated_minutes: number | null;
-  category: Task["category"];
-  project: string | null;
-  goal_id: string | null;
-  recurring: Task["recurring"];
-  subtasks: Task["subtasks"];
-  ai_context: string | null;
+  name: string;
+  country_flag: string;
+  cities: string[];
+  start_date: string;
+  end_date: string;
+  cover_gradient: string;
+  cover_emoji: string;
+  budget: number | null;
+  currency: string;
+  interests: string[];
+  food_preferences: string[];
+  travel_style: Trip["travelStyle"];
+  owner_id: string;
+  archived: boolean;
   created_at: string;
-  completed_at: string | null;
 }
 
-function taskFromRow(r: TaskRow): Task {
+function tripFromRow(r: TripRow): Trip {
   return {
     id: r.id,
-    title: r.title,
-    description: r.description ?? undefined,
-    done: r.done,
-    dueDate: r.due_date ?? undefined,
-    priority: r.priority,
-    estimatedMinutes: r.estimated_minutes ?? undefined,
-    category: r.category,
-    project: r.project ?? undefined,
-    goalId: r.goal_id ?? undefined,
-    recurring: r.recurring,
-    subtasks: r.subtasks ?? [],
-    aiContext: r.ai_context ?? undefined,
+    name: r.name,
+    countryFlag: r.country_flag,
+    cities: r.cities ?? [],
+    startDate: r.start_date,
+    endDate: r.end_date,
+    coverGradient: r.cover_gradient,
+    coverEmoji: r.cover_emoji,
+    budget: r.budget ?? undefined,
+    currency: r.currency,
+    interests: r.interests ?? [],
+    foodPreferences: r.food_preferences ?? [],
+    travelStyle: r.travel_style,
+    ownerId: r.owner_id,
+    archived: r.archived,
     createdAt: r.created_at,
-    completedAt: r.completed_at ?? undefined,
   };
 }
 
-function taskToRow(userId: string, t: Task): Record<string, unknown> {
+function tripToRow(t: Trip): Record<string, unknown> {
   return {
     id: t.id,
-    user_id: userId,
-    title: t.title,
-    description: t.description ?? null,
-    done: t.done,
-    due_date: t.dueDate ?? null,
-    priority: t.priority,
-    estimated_minutes: t.estimatedMinutes ?? null,
-    category: t.category,
-    project: t.project ?? null,
-    goal_id: t.goalId ?? null,
-    recurring: t.recurring ?? "none",
-    subtasks: t.subtasks ?? [],
-    ai_context: t.aiContext ?? null,
+    name: t.name,
+    country_flag: t.countryFlag,
+    cities: t.cities,
+    start_date: t.startDate,
+    end_date: t.endDate,
+    cover_gradient: t.coverGradient,
+    cover_emoji: t.coverEmoji,
+    budget: t.budget ?? null,
+    currency: t.currency,
+    interests: t.interests,
+    food_preferences: t.foodPreferences,
+    travel_style: t.travelStyle,
+    owner_id: t.ownerId,
+    archived: t.archived ?? false,
     created_at: t.createdAt,
-    completed_at: t.completedAt ?? null,
   };
 }
 
-export async function fetchTasks(userId: string): Promise<Task[]> {
-  const { data, error } = await client().from("tasks").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+export async function fetchTrips(userId: string): Promise<Trip[]> {
+  const { data, error } = await client().from("trips").select("*").order("created_at", { ascending: false });
   if (error) throw error;
-  return (data as TaskRow[]).map(taskFromRow);
+  void userId;
+  return (data as TripRow[]).map(tripFromRow);
 }
 
-export async function insertTask(userId: string, task: Task): Promise<void> {
-  const { error } = await client().from("tasks").insert(taskToRow(userId, task));
+export async function insertTrip(trip: Trip): Promise<void> {
+  const { error } = await client().from("trips").insert(tripToRow(trip));
   if (error) throw error;
 }
 
-export async function updateTaskRow(taskId: string, patch: Partial<Task>): Promise<void> {
+export async function updateTripRow(tripId: string, patch: Partial<Trip>): Promise<void> {
   const row: Record<string, unknown> = {};
-  if (patch.title !== undefined) row.title = patch.title;
-  if (patch.description !== undefined) row.description = patch.description;
-  if (patch.done !== undefined) row.done = patch.done;
-  if (patch.dueDate !== undefined) row.due_date = patch.dueDate;
-  if (patch.priority !== undefined) row.priority = patch.priority;
-  if (patch.estimatedMinutes !== undefined) row.estimated_minutes = patch.estimatedMinutes;
-  if (patch.category !== undefined) row.category = patch.category;
-  if (patch.project !== undefined) row.project = patch.project;
-  if (patch.goalId !== undefined) row.goal_id = patch.goalId;
-  if (patch.recurring !== undefined) row.recurring = patch.recurring;
-  if (patch.subtasks !== undefined) row.subtasks = patch.subtasks;
-  if (patch.aiContext !== undefined) row.ai_context = patch.aiContext;
-  if (patch.completedAt !== undefined) row.completed_at = patch.completedAt;
-  const { error } = await client().from("tasks").update(row).eq("id", taskId);
-  if (error) throw error;
-}
-
-export async function deleteTaskRow(taskId: string): Promise<void> {
-  const { error } = await client().from("tasks").delete().eq("id", taskId);
+  if (patch.name !== undefined) row.name = patch.name;
+  if (patch.cities !== undefined) row.cities = patch.cities;
+  if (patch.startDate !== undefined) row.start_date = patch.startDate;
+  if (patch.endDate !== undefined) row.end_date = patch.endDate;
+  if (patch.budget !== undefined) row.budget = patch.budget;
+  if (patch.interests !== undefined) row.interests = patch.interests;
+  if (patch.foodPreferences !== undefined) row.food_preferences = patch.foodPreferences;
+  if (patch.travelStyle !== undefined) row.travel_style = patch.travelStyle;
+  if (patch.archived !== undefined) row.archived = patch.archived;
+  const { error } = await client().from("trips").update(row).eq("id", tripId);
   if (error) throw error;
 }
 
 // ---------------------------------------------------------------------------
-// events
+// trip_members
 // ---------------------------------------------------------------------------
 
-interface EventRow {
+interface MemberRow {
   id: string;
-  title: string;
+  trip_id: string;
+  user_id: string | null;
+  name: string;
+  avatar_initials: string;
+  role: TripMember["role"];
+  responsibility: string | null;
+  status: TripMember["status"];
+  joined_at: string;
+}
+
+function memberFromRow(r: MemberRow): TripMember {
+  return {
+    id: r.id,
+    tripId: r.trip_id,
+    userId: r.user_id ?? "",
+    name: r.name,
+    avatarInitials: r.avatar_initials,
+    role: r.role,
+    responsibility: r.responsibility ?? undefined,
+    status: r.status,
+    joinedAt: r.joined_at,
+  };
+}
+
+export async function fetchMembersForTrips(tripIds: string[]): Promise<TripMember[]> {
+  if (tripIds.length === 0) return [];
+  const { data, error } = await client().from("trip_members").select("*").in("trip_id", tripIds);
+  if (error) throw error;
+  return (data as MemberRow[]).map(memberFromRow);
+}
+
+export async function insertMember(member: TripMember): Promise<void> {
+  const { error } = await client()
+    .from("trip_members")
+    .insert({
+      id: member.id,
+      trip_id: member.tripId,
+      user_id: member.userId || null,
+      name: member.name,
+      avatar_initials: member.avatarInitials,
+      role: member.role,
+      responsibility: member.responsibility ?? null,
+      status: member.status ?? "joined",
+      joined_at: member.joinedAt,
+    });
+  if (error) throw error;
+}
+
+export async function updateMemberRow(memberId: string, patch: Partial<TripMember>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.role !== undefined) row.role = patch.role;
+  if (patch.responsibility !== undefined) row.responsibility = patch.responsibility;
+  if (patch.status !== undefined) row.status = patch.status;
+  const { error } = await client().from("trip_members").update(row).eq("id", memberId);
+  if (error) throw error;
+}
+
+export async function deleteMemberRow(memberId: string): Promise<void> {
+  const { error } = await client().from("trip_members").delete().eq("id", memberId);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// itinerary_items
+// ---------------------------------------------------------------------------
+
+interface ItineraryRow {
+  id: string;
+  trip_id: string;
   date: string;
   start_time: string;
   end_time: string;
-  type: CalendarEvent["type"];
+  type: ItineraryItem["type"];
+  name: string;
+  emoji: string;
   location: string | null;
-  linked_task_id: string | null;
-  linked_goal_id: string | null;
+  description: string | null;
+  cost: number | null;
+  participant_ids: string[];
+  notes: string | null;
+  booking_ref: string | null;
+  map_x: number | null;
+  map_y: number | null;
   ai_generated: boolean;
-  movable: boolean;
+  item_order: number;
 }
 
-function eventFromRow(r: EventRow): CalendarEvent {
+function itineraryFromRow(r: ItineraryRow): ItineraryItem {
   return {
     id: r.id,
-    title: r.title,
+    tripId: r.trip_id,
     date: r.date,
     startTime: r.start_time,
     endTime: r.end_time,
     type: r.type,
+    name: r.name,
+    emoji: r.emoji,
     location: r.location ?? undefined,
-    linkedTaskId: r.linked_task_id ?? undefined,
-    linkedGoalId: r.linked_goal_id ?? undefined,
+    description: r.description ?? undefined,
+    cost: r.cost ?? undefined,
+    participantIds: r.participant_ids ?? [],
+    notes: r.notes ?? undefined,
+    bookingRef: r.booking_ref ?? undefined,
+    mapX: r.map_x ?? undefined,
+    mapY: r.map_y ?? undefined,
     aiGenerated: r.ai_generated,
-    movable: r.movable,
+    order: r.item_order,
   };
 }
 
-function eventToRow(userId: string, e: CalendarEvent): Record<string, unknown> {
+function itineraryToRow(item: ItineraryItem): Record<string, unknown> {
   return {
-    id: e.id,
-    user_id: userId,
-    title: e.title,
-    date: e.date,
-    start_time: e.startTime,
-    end_time: e.endTime,
-    type: e.type,
-    location: e.location ?? null,
-    linked_task_id: e.linkedTaskId ?? null,
-    linked_goal_id: e.linkedGoalId ?? null,
-    ai_generated: e.aiGenerated ?? false,
-    movable: e.movable ?? true,
+    id: item.id,
+    trip_id: item.tripId,
+    date: item.date,
+    start_time: item.startTime,
+    end_time: item.endTime,
+    type: item.type,
+    name: item.name,
+    emoji: item.emoji,
+    location: item.location ?? null,
+    description: item.description ?? null,
+    cost: item.cost ?? null,
+    participant_ids: item.participantIds,
+    notes: item.notes ?? null,
+    booking_ref: item.bookingRef ?? null,
+    map_x: item.mapX ?? null,
+    map_y: item.mapY ?? null,
+    ai_generated: item.aiGenerated ?? false,
+    item_order: item.order,
   };
 }
 
-export async function fetchEvents(userId: string): Promise<CalendarEvent[]> {
-  const { data, error } = await client().from("events").select("*").eq("user_id", userId);
+export async function fetchItineraryForTrips(tripIds: string[]): Promise<ItineraryItem[]> {
+  if (tripIds.length === 0) return [];
+  const { data, error } = await client().from("itinerary_items").select("*").in("trip_id", tripIds);
   if (error) throw error;
-  return (data as EventRow[]).map(eventFromRow);
+  return (data as ItineraryRow[]).map(itineraryFromRow);
 }
 
-export async function insertEvent(userId: string, event: CalendarEvent): Promise<void> {
-  const { error } = await client().from("events").insert(eventToRow(userId, event));
+export async function insertItineraryItem(item: ItineraryItem): Promise<void> {
+  const { error } = await client().from("itinerary_items").insert(itineraryToRow(item));
   if (error) throw error;
 }
 
-export async function updateEventRow(eventId: string, patch: Partial<CalendarEvent>): Promise<void> {
+export async function updateItineraryRow(id: string, patch: Partial<ItineraryItem>): Promise<void> {
   const row: Record<string, unknown> = {};
-  if (patch.title !== undefined) row.title = patch.title;
   if (patch.date !== undefined) row.date = patch.date;
   if (patch.startTime !== undefined) row.start_time = patch.startTime;
   if (patch.endTime !== undefined) row.end_time = patch.endTime;
   if (patch.type !== undefined) row.type = patch.type;
-  if (patch.location !== undefined) row.location = patch.location;
-  if (patch.linkedTaskId !== undefined) row.linked_task_id = patch.linkedTaskId;
-  if (patch.linkedGoalId !== undefined) row.linked_goal_id = patch.linkedGoalId;
-  if (patch.aiGenerated !== undefined) row.ai_generated = patch.aiGenerated;
-  if (patch.movable !== undefined) row.movable = patch.movable;
-  const { error } = await client().from("events").update(row).eq("id", eventId);
-  if (error) throw error;
-}
-
-export async function deleteEventRow(eventId: string): Promise<void> {
-  const { error } = await client().from("events").delete().eq("id", eventId);
-  if (error) throw error;
-}
-
-// ---------------------------------------------------------------------------
-// goals
-// ---------------------------------------------------------------------------
-
-interface GoalRow {
-  id: string;
-  name: string;
-  why: string;
-  progress: number;
-  deadline: string | null;
-  category: Goal["category"];
-  milestones: Goal["milestones"];
-  linked_task_ids: string[];
-  linked_habit_ids: string[];
-  ai_plan: string;
-  archived: boolean;
-}
-
-function goalFromRow(r: GoalRow): Goal {
-  return {
-    id: r.id,
-    name: r.name,
-    why: r.why,
-    progress: r.progress,
-    deadline: r.deadline ?? undefined,
-    category: r.category,
-    milestones: r.milestones ?? [],
-    linkedTaskIds: r.linked_task_ids ?? [],
-    linkedHabitIds: r.linked_habit_ids ?? [],
-    aiPlan: r.ai_plan,
-    archived: r.archived,
-  };
-}
-
-function goalToRow(userId: string, g: Goal): Record<string, unknown> {
-  return {
-    id: g.id,
-    user_id: userId,
-    name: g.name,
-    why: g.why,
-    progress: g.progress,
-    deadline: g.deadline ?? null,
-    category: g.category,
-    milestones: g.milestones ?? [],
-    linked_task_ids: g.linkedTaskIds ?? [],
-    linked_habit_ids: g.linkedHabitIds ?? [],
-    ai_plan: g.aiPlan,
-    archived: g.archived ?? false,
-  };
-}
-
-export async function fetchGoals(userId: string): Promise<Goal[]> {
-  const { data, error } = await client().from("goals").select("*").eq("user_id", userId);
-  if (error) throw error;
-  return (data as GoalRow[]).map(goalFromRow);
-}
-
-export async function insertGoal(userId: string, goal: Goal): Promise<void> {
-  const { error } = await client().from("goals").insert(goalToRow(userId, goal));
-  if (error) throw error;
-}
-
-export async function updateGoalRow(goalId: string, patch: Partial<Goal>): Promise<void> {
-  const row: Record<string, unknown> = {};
   if (patch.name !== undefined) row.name = patch.name;
-  if (patch.why !== undefined) row.why = patch.why;
-  if (patch.progress !== undefined) row.progress = patch.progress;
-  if (patch.deadline !== undefined) row.deadline = patch.deadline;
-  if (patch.category !== undefined) row.category = patch.category;
-  if (patch.milestones !== undefined) row.milestones = patch.milestones;
-  if (patch.linkedTaskIds !== undefined) row.linked_task_ids = patch.linkedTaskIds;
-  if (patch.linkedHabitIds !== undefined) row.linked_habit_ids = patch.linkedHabitIds;
-  if (patch.aiPlan !== undefined) row.ai_plan = patch.aiPlan;
-  if (patch.archived !== undefined) row.archived = patch.archived;
-  const { error } = await client().from("goals").update(row).eq("id", goalId);
+  if (patch.emoji !== undefined) row.emoji = patch.emoji;
+  if (patch.location !== undefined) row.location = patch.location;
+  if (patch.description !== undefined) row.description = patch.description;
+  if (patch.cost !== undefined) row.cost = patch.cost;
+  if (patch.participantIds !== undefined) row.participant_ids = patch.participantIds;
+  if (patch.notes !== undefined) row.notes = patch.notes;
+  if (patch.bookingRef !== undefined) row.booking_ref = patch.bookingRef;
+  if (patch.order !== undefined) row.item_order = patch.order;
+  const { error } = await client().from("itinerary_items").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteItineraryRow(id: string): Promise<void> {
+  const { error } = await client().from("itinerary_items").delete().eq("id", id);
   if (error) throw error;
 }
 
 // ---------------------------------------------------------------------------
-// habits
+// expenses
 // ---------------------------------------------------------------------------
 
-interface HabitRow {
+interface ExpenseRow {
   id: string;
+  trip_id: string;
   name: string;
-  emoji: string;
-  target_per_week: number;
-  history: Habit["history"];
-  best_streak: number;
-  ai_note: string | null;
+  amount: number;
+  currency: string;
+  paid_by: string;
+  participant_ids: string[];
+  custom_split: Record<string, number> | null;
+  category: Expense["category"];
+  date: string;
+  notes: string | null;
 }
 
-function habitFromRow(r: HabitRow): Habit {
+function expenseFromRow(r: ExpenseRow, createdAt: string): Expense {
   return {
     id: r.id,
+    tripId: r.trip_id,
     name: r.name,
-    emoji: r.emoji,
-    targetPerWeek: r.target_per_week,
-    history: r.history ?? {},
-    bestStreak: r.best_streak,
-    aiNote: r.ai_note ?? undefined,
+    amount: r.amount,
+    currency: r.currency,
+    paidBy: r.paid_by,
+    participantIds: r.participant_ids ?? [],
+    customSplit: r.custom_split ?? undefined,
+    category: r.category,
+    date: r.date,
+    notes: r.notes ?? undefined,
+    createdAt,
   };
 }
 
-function habitToRow(userId: string, h: Habit): Record<string, unknown> {
-  return {
-    id: h.id,
-    user_id: userId,
-    name: h.name,
-    emoji: h.emoji,
-    target_per_week: h.targetPerWeek,
-    history: h.history ?? {},
-    best_streak: h.bestStreak ?? 0,
-    ai_note: h.aiNote ?? null,
-  };
-}
-
-export async function fetchHabits(userId: string): Promise<Habit[]> {
-  const { data, error } = await client().from("habits").select("*").eq("user_id", userId);
+export async function fetchExpensesForTrips(tripIds: string[]): Promise<Expense[]> {
+  if (tripIds.length === 0) return [];
+  const { data, error } = await client().from("expenses").select("*").in("trip_id", tripIds);
   if (error) throw error;
-  return (data as HabitRow[]).map(habitFromRow);
+  return (data as (ExpenseRow & { created_at: string })[]).map((r) => expenseFromRow(r, r.created_at));
 }
 
-export async function insertHabit(userId: string, habit: Habit): Promise<void> {
-  const { error } = await client().from("habits").insert(habitToRow(userId, habit));
-  if (error) throw error;
-}
-
-export async function updateHabitRow(habitId: string, patch: Partial<Habit>): Promise<void> {
-  const row: Record<string, unknown> = {};
-  if (patch.history !== undefined) row.history = patch.history;
-  if (patch.bestStreak !== undefined) row.best_streak = patch.bestStreak;
-  if (patch.aiNote !== undefined) row.ai_note = patch.aiNote;
-  const { error } = await client().from("habits").update(row).eq("id", habitId);
-  if (error) throw error;
-}
-
-// ---------------------------------------------------------------------------
-// transactions / subscriptions / budgets
-// ---------------------------------------------------------------------------
-
-interface TransactionRow {
-  id: string;
-  merchant: string;
-  amount: number;
-  date: string;
-  category: Transaction["category"];
-}
-
-function txFromRow(r: TransactionRow): Transaction {
-  return { id: r.id, merchant: r.merchant, amount: r.amount, date: r.date, category: r.category };
-}
-
-export async function fetchTransactions(userId: string): Promise<Transaction[]> {
-  const { data, error } = await client().from("transactions").select("*").eq("user_id", userId).order("date", { ascending: false });
-  if (error) throw error;
-  return (data as TransactionRow[]).map(txFromRow);
-}
-
-export async function insertTransaction(userId: string, tx: Transaction): Promise<void> {
+export async function insertExpenseRow(expense: Expense): Promise<void> {
   const { error } = await client()
-    .from("transactions")
-    .insert({ id: tx.id, user_id: userId, merchant: tx.merchant, amount: tx.amount, date: tx.date, category: tx.category });
+    .from("expenses")
+    .insert({
+      id: expense.id,
+      trip_id: expense.tripId,
+      name: expense.name,
+      amount: expense.amount,
+      currency: expense.currency,
+      paid_by: expense.paidBy,
+      participant_ids: expense.participantIds,
+      custom_split: expense.customSplit ?? null,
+      category: expense.category,
+      date: expense.date,
+      notes: expense.notes ?? null,
+      created_at: expense.createdAt,
+    });
   if (error) throw error;
 }
 
-interface SubscriptionRow {
-  id: string;
-  name: string;
-  amount: number;
-  renews_on: string;
-  category: Subscription["category"];
-}
-
-function subFromRow(r: SubscriptionRow): Subscription {
-  return { id: r.id, name: r.name, amount: r.amount, renewsOn: r.renews_on, category: r.category };
-}
-
-export async function fetchSubscriptions(userId: string): Promise<Subscription[]> {
-  const { data, error } = await client().from("subscriptions").select("*").eq("user_id", userId);
+export async function deleteExpenseRow(id: string): Promise<void> {
+  const { error } = await client().from("expenses").delete().eq("id", id);
   if (error) throw error;
-  return (data as SubscriptionRow[]).map(subFromRow);
 }
 
-interface BudgetRow {
-  category: Budget["category"];
-  limit_amount: number;
-}
+// ---------------------------------------------------------------------------
+// polls / poll_options / poll_votes
+// ---------------------------------------------------------------------------
 
-export async function fetchBudgets(userId: string): Promise<Budget[]> {
-  const { data, error } = await client().from("budgets").select("category, limit_amount").eq("user_id", userId);
+export async function fetchPollsForTrips(tripIds: string[]): Promise<Poll[]> {
+  if (tripIds.length === 0) return [];
+  const { data: pollRows, error } = await client().from("polls").select("*").in("trip_id", tripIds);
   if (error) throw error;
-  return (data as BudgetRow[]).map((r) => ({ category: r.category, limit: r.limit_amount }));
+  const pollIds = (pollRows as { id: string }[]).map((p) => p.id);
+  if (pollIds.length === 0) return [];
+
+  const [{ data: optionRows, error: optErr }, { data: voteRows, error: voteErr }] = await Promise.all([
+    client().from("poll_options").select("*").in("poll_id", pollIds),
+    client().from("poll_votes").select("*").in("poll_id", pollIds),
+  ]);
+  if (optErr) throw optErr;
+  if (voteErr) throw voteErr;
+
+  return (pollRows as { id: string; trip_id: string; question: string; status: Poll["status"]; created_by: string; created_at: string; added_to_itinerary: boolean }[]).map((p) => ({
+    id: p.id,
+    tripId: p.trip_id,
+    question: p.question,
+    status: p.status,
+    createdBy: p.created_by,
+    createdAt: p.created_at,
+    addedToItinerary: p.added_to_itinerary,
+    options: (optionRows as { id: string; poll_id: string; text: string; emoji: string | null }[])
+      .filter((o) => o.poll_id === p.id)
+      .map((o) => ({ id: o.id, text: o.text, emoji: o.emoji ?? undefined })),
+    votes: (voteRows as { poll_id: string; option_id: string; member_id: string }[])
+      .filter((v) => v.poll_id === p.id)
+      .map((v) => ({ pollId: v.poll_id, optionId: v.option_id, memberId: v.member_id })),
+  }));
+}
+
+export async function insertPoll(poll: Poll): Promise<void> {
+  const { error } = await client()
+    .from("polls")
+    .insert({ id: poll.id, trip_id: poll.tripId, question: poll.question, status: poll.status, created_by: poll.createdBy, created_at: poll.createdAt, added_to_itinerary: poll.addedToItinerary ?? false });
+  if (error) throw error;
+  if (poll.options.length) {
+    const { error: optErr } = await client()
+      .from("poll_options")
+      .insert(poll.options.map((o) => ({ id: o.id, poll_id: poll.id, text: o.text, emoji: o.emoji ?? null })));
+    if (optErr) throw optErr;
+  }
+}
+
+export async function upsertVoteRow(pollId: string, optionId: string, memberId: string): Promise<void> {
+  const { error } = await client().from("poll_votes").upsert({ poll_id: pollId, option_id: optionId, member_id: memberId }, { onConflict: "poll_id,member_id" });
+  if (error) throw error;
+}
+
+export async function updatePollRow(pollId: string, patch: Partial<Poll>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.addedToItinerary !== undefined) row.added_to_itinerary = patch.addedToItinerary;
+  const { error } = await client().from("polls").update(row).eq("id", pollId);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// messages
+// ---------------------------------------------------------------------------
+
+export async function fetchMessagesForTrips(tripIds: string[]): Promise<Message[]> {
+  if (tripIds.length === 0) return [];
+  const { data, error } = await client().from("messages").select("*").in("trip_id", tripIds).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as { id: string; trip_id: string; sender_id: string; content: string; kind: Message["kind"]; created_at: string }[]).map((r) => ({
+    id: r.id,
+    tripId: r.trip_id,
+    senderId: r.sender_id,
+    content: r.content,
+    kind: r.kind,
+    createdAt: r.created_at,
+  }));
+}
+
+export async function insertMessageRow(message: Message): Promise<void> {
+  const { error } = await client()
+    .from("messages")
+    .insert({ id: message.id, trip_id: message.tripId, sender_id: message.senderId, content: message.content, kind: message.kind, created_at: message.createdAt });
+  if (error) throw error;
 }
 
 // ---------------------------------------------------------------------------
 // documents
 // ---------------------------------------------------------------------------
 
-interface DocumentRow {
-  id: string;
-  name: string;
-  kind: LifeDocument["kind"];
-  folder: string;
-  tags: string[];
-  size_kb: number;
-  uploaded_at: string;
-  ai_summary: string | null;
-  extracted_dates: LifeDocument["extractedDates"];
-}
-
-function documentFromRow(r: DocumentRow): LifeDocument {
-  return {
-    id: r.id,
-    name: r.name,
-    kind: r.kind,
-    folder: r.folder,
-    tags: r.tags ?? [],
-    sizeKb: r.size_kb,
-    uploadedAt: r.uploaded_at,
-    aiSummary: r.ai_summary ?? undefined,
-    extractedDates: r.extracted_dates ?? undefined,
-  };
-}
-
-export async function fetchDocuments(userId: string): Promise<LifeDocument[]> {
-  const { data, error } = await client().from("documents").select("*").eq("user_id", userId);
+export async function fetchDocumentsForTrips(tripIds: string[]): Promise<TripDocument[]> {
+  if (tripIds.length === 0) return [];
+  const { data, error } = await client().from("documents").select("*").in("trip_id", tripIds);
   if (error) throw error;
-  return (data as DocumentRow[]).map(documentFromRow);
+  return (data as { id: string; trip_id: string; file_name: string; kind: TripDocument["kind"]; extracted_data: Record<string, string>; added_to_itinerary: boolean; uploaded_at: string }[]).map((r) => ({
+    id: r.id,
+    tripId: r.trip_id,
+    fileName: r.file_name,
+    kind: r.kind,
+    extractedData: r.extracted_data ?? {},
+    addedToItinerary: r.added_to_itinerary,
+    uploadedAt: r.uploaded_at,
+  }));
 }
 
-export async function insertDocument(userId: string, doc: LifeDocument): Promise<void> {
+export async function insertDocumentRow(doc: TripDocument): Promise<void> {
   const { error } = await client()
     .from("documents")
-    .insert({
-      id: doc.id,
-      user_id: userId,
-      name: doc.name,
-      kind: doc.kind,
-      folder: doc.folder,
-      tags: doc.tags,
-      size_kb: doc.sizeKb,
-      uploaded_at: doc.uploadedAt,
-      ai_summary: doc.aiSummary ?? null,
-      extracted_dates: doc.extractedDates ?? [],
-    });
+    .insert({ id: doc.id, trip_id: doc.tripId, file_name: doc.fileName, kind: doc.kind, extracted_data: doc.extractedData, added_to_itinerary: doc.addedToItinerary, uploaded_at: doc.uploadedAt });
   if (error) throw error;
 }
 
-// ---------------------------------------------------------------------------
-// lists
-// ---------------------------------------------------------------------------
-
-interface ListRow {
-  id: string;
-  name: string;
-  emoji: string;
-  kind: LifeList["kind"];
-  items: LifeList["items"];
-}
-
-function listFromRow(r: ListRow): LifeList {
-  return { id: r.id, name: r.name, emoji: r.emoji, kind: r.kind, items: r.items ?? [] };
-}
-
-export async function fetchLists(userId: string): Promise<LifeList[]> {
-  const { data, error } = await client().from("lists").select("*").eq("user_id", userId);
-  if (error) throw error;
-  return (data as ListRow[]).map(listFromRow);
-}
-
-export async function insertList(userId: string, list: LifeList): Promise<void> {
-  const { error } = await client()
-    .from("lists")
-    .insert({ id: list.id, user_id: userId, name: list.name, emoji: list.emoji, kind: list.kind, items: list.items });
-  if (error) throw error;
-}
-
-export async function updateListRow(listId: string, patch: Partial<LifeList>): Promise<void> {
-  const row: Record<string, unknown> = {};
-  if (patch.items !== undefined) row.items = patch.items;
-  if (patch.name !== undefined) row.name = patch.name;
-  const { error } = await client().from("lists").update(row).eq("id", listId);
-  if (error) throw error;
-}
-
-// ---------------------------------------------------------------------------
-// memory
-// ---------------------------------------------------------------------------
-
-interface MemoryRow {
-  id: string;
-  category: MemoryItem["category"];
-  content: string;
-  reason: string;
-  source: string;
-  created_at: string;
-  active: boolean;
-}
-
-function memoryFromRow(r: MemoryRow): MemoryItem {
-  return {
-    id: r.id,
-    category: r.category,
-    content: r.content,
-    reason: r.reason,
-    source: r.source,
-    createdAt: r.created_at,
-    active: r.active,
-  };
-}
-
-export async function fetchMemory(userId: string): Promise<MemoryItem[]> {
-  const { data, error } = await client().from("memory").select("*").eq("user_id", userId);
-  if (error) throw error;
-  return (data as MemoryRow[]).map(memoryFromRow);
-}
-
-export async function insertMemoryRow(userId: string, item: MemoryItem): Promise<void> {
-  const { error } = await client()
-    .from("memory")
-    .insert({
-      id: item.id,
-      user_id: userId,
-      category: item.category,
-      content: item.content,
-      reason: item.reason,
-      source: item.source,
-      created_at: item.createdAt,
-      active: item.active,
-    });
-  if (error) throw error;
-}
-
-export async function updateMemoryRow(id: string, patch: Partial<MemoryItem>): Promise<void> {
-  const row: Record<string, unknown> = {};
-  if (patch.active !== undefined) row.active = patch.active;
-  const { error } = await client().from("memory").update(row).eq("id", id);
-  if (error) throw error;
-}
-
-export async function deleteMemoryRow(id: string): Promise<void> {
-  const { error } = await client().from("memory").delete().eq("id", id);
-  if (error) throw error;
-}
-
-// ---------------------------------------------------------------------------
-// user_agents (merged with the static catalog at load time)
-// ---------------------------------------------------------------------------
-
-interface UserAgentRow {
-  agent_id: string;
-  installed: boolean;
-  active: boolean;
-  run_history: Agent["runHistory"];
-}
-
-export async function fetchAgents(userId: string): Promise<Agent[]> {
-  const { data, error } = await client().from("user_agents").select("*").eq("user_id", userId);
-  if (error) throw error;
-  const rows = data as UserAgentRow[];
-  const byId = new Map(rows.map((r) => [r.agent_id, r]));
-  return demoAgents.map((catalogEntry) => {
-    const row = byId.get(catalogEntry.id);
-    return row
-      ? { ...catalogEntry, installed: row.installed, active: row.active, runHistory: row.run_history ?? [] }
-      : { ...catalogEntry, installed: false, active: false, runHistory: [] };
-  });
-}
-
-export async function upsertUserAgent(userId: string, agentId: string, patch: { installed?: boolean; active?: boolean }): Promise<void> {
-  const row: Record<string, unknown> = { user_id: userId, agent_id: agentId, ...(patch.installed !== undefined && { installed: patch.installed }), ...(patch.active !== undefined && { active: patch.active }) };
-  const { error } = await client().from("user_agents").upsert(row, { onConflict: "user_id,agent_id" });
+export async function markDocumentAdded(id: string): Promise<void> {
+  const { error } = await client().from("documents").update({ added_to_itinerary: true }).eq("id", id);
   if (error) throw error;
 }
 
@@ -650,29 +540,24 @@ export async function upsertUserAgent(userId: string, agentId: string, patch: { 
 // notifications
 // ---------------------------------------------------------------------------
 
-interface NotificationRow {
-  id: string;
-  title: string;
-  body: string;
-  kind: AppNotification["kind"];
-  read: boolean;
-  created_at: string;
-}
-
-function notificationFromRow(r: NotificationRow): AppNotification {
-  return { id: r.id, title: r.title, body: r.body, kind: r.kind, read: r.read, createdAt: r.created_at };
-}
-
 export async function fetchNotifications(userId: string): Promise<AppNotification[]> {
   const { data, error } = await client().from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false });
   if (error) throw error;
-  return (data as NotificationRow[]).map(notificationFromRow);
+  return (data as { id: string; trip_id: string | null; title: string; body: string; kind: AppNotification["kind"]; read: boolean; created_at: string }[]).map((r) => ({
+    id: r.id,
+    tripId: r.trip_id ?? undefined,
+    title: r.title,
+    body: r.body,
+    kind: r.kind,
+    read: r.read,
+    createdAt: r.created_at,
+  }));
 }
 
-export async function insertNotification(userId: string, n: AppNotification): Promise<void> {
+export async function insertNotificationRow(userId: string, n: AppNotification): Promise<void> {
   const { error } = await client()
     .from("notifications")
-    .insert({ id: n.id, user_id: userId, title: n.title, body: n.body, kind: n.kind, read: n.read, created_at: n.createdAt });
+    .insert({ id: n.id, user_id: userId, trip_id: n.tripId ?? null, title: n.title, body: n.body, kind: n.kind, read: n.read, created_at: n.createdAt });
   if (error) throw error;
 }
 
@@ -682,150 +567,107 @@ export async function markNotificationReadRow(id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// chat_messages
+// saved_places
 // ---------------------------------------------------------------------------
 
-interface ChatRow {
-  id: string;
-  role: ChatMessage["role"];
-  content: string;
-  actions: ChatMessage["actions"];
-  created_at: string;
-}
-
-function chatFromRow(r: ChatRow): ChatMessage {
-  return { id: r.id, role: r.role, content: r.content, actions: r.actions ?? [], createdAt: r.created_at };
-}
-
-export async function fetchChat(userId: string): Promise<ChatMessage[]> {
-  const { data, error } = await client().from("chat_messages").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+export async function fetchSavedPlaces(userId: string): Promise<SavedPlace[]> {
+  const { data, error } = await client().from("saved_places").select("*").eq("user_id", userId);
   if (error) throw error;
-  return (data as ChatRow[]).map(chatFromRow);
+  return (data as { id: string; user_id: string; name: string; category: string; city: string; emoji: string }[]).map((r) => ({
+    id: r.id,
+    userId: r.user_id,
+    name: r.name,
+    category: r.category,
+    city: r.city,
+    emoji: r.emoji,
+  }));
 }
 
-export async function insertChatMessage(userId: string, m: ChatMessage): Promise<void> {
+export async function insertSavedPlaceRow(place: SavedPlace): Promise<void> {
   const { error } = await client()
-    .from("chat_messages")
-    .insert({ id: m.id, user_id: userId, role: m.role, content: m.content, actions: m.actions ?? [], created_at: m.createdAt });
+    .from("saved_places")
+    .insert({ id: place.id, user_id: place.userId, name: place.name, category: place.category, city: place.city, emoji: place.emoji });
   if (error) throw error;
 }
 
-export async function updateChatMessageActions(id: string, actions: ChatMessage["actions"]): Promise<void> {
-  const { error } = await client().from("chat_messages").update({ actions }).eq("id", id);
+export async function deleteSavedPlaceRow(id: string): Promise<void> {
+  const { error } = await client().from("saved_places").delete().eq("id", id);
   if (error) throw error;
 }
 
 // ---------------------------------------------------------------------------
 // Seed a brand-new account with the realistic demo dataset so first-run
-// still feels like a populated, "wow" LifeOS instead of an empty shell.
+// still feels like a populated, "wow" trip instead of an empty shell.
 // ---------------------------------------------------------------------------
 
 export async function seedAccountWithDemoData(userId: string): Promise<void> {
-  const {
-    demoTasks,
-    demoEvents,
-    demoGoals,
-    demoHabits,
-    demoTransactions,
-    demoSubscriptions,
-    demoBudgets,
-    demoDocuments,
-    demoLists,
-    demoMemory,
-    demoAgents: catalog,
-  } = await import("./demoData");
+  const { demoTrips, demoTripMembers, demoItinerary, demoExpenses, demoPolls, demoMessages, demoDocuments, demoNotifications, demoSavedPlaces, CURRENT_USER_ID } =
+    await import("./demoData");
 
-  const goalIdMap = new Map<string, string>();
-  const goalRows = demoGoals.map((g) => {
+  const tripIdMap = new Map<string, string>();
+  const trips = demoTrips.map((t) => {
     const id = newId();
-    goalIdMap.set(g.id, id);
-    return goalToRow(userId, { ...g, id });
+    tripIdMap.set(t.id, id);
+    return { ...t, id, ownerId: userId };
   });
-  if (goalRows.length) {
-    const { error } = await client().from("goals").insert(goalRows);
-    if (error) throw error;
+  for (const t of trips) await insertTrip(t);
+
+  const memberIdMap = new Map<string, string>();
+  for (const m of demoTripMembers) {
+    const newTripId = tripIdMap.get(m.tripId);
+    if (!newTripId) continue;
+    const id = newId();
+    memberIdMap.set(m.id, id);
+    await insertMember({ ...m, id, tripId: newTripId, userId: m.userId === CURRENT_USER_ID ? userId : "" });
   }
 
-  const taskRows = demoTasks.map((t) =>
-    taskToRow(userId, { ...t, id: newId(), goalId: t.goalId ? goalIdMap.get(t.goalId) : undefined })
-  );
-  if (taskRows.length) {
-    const { error } = await client().from("tasks").insert(taskRows);
-    if (error) throw error;
+  for (const item of demoItinerary) {
+    const newTripId = tripIdMap.get(item.tripId);
+    if (!newTripId) continue;
+    await insertItineraryItem({
+      ...item,
+      id: newId(),
+      tripId: newTripId,
+      participantIds: item.participantIds.map((id) => memberIdMap.get(id) ?? id),
+    });
   }
 
-  const eventRows = demoEvents.map((e) => eventToRow(userId, { ...e, id: newId() }));
-  if (eventRows.length) {
-    const { error } = await client().from("events").insert(eventRows);
-    if (error) throw error;
+  for (const e of demoExpenses) {
+    const newTripId = tripIdMap.get(e.tripId);
+    if (!newTripId) continue;
+    await insertExpenseRow({
+      ...e,
+      id: newId(),
+      tripId: newTripId,
+      paidBy: memberIdMap.get(e.paidBy) ?? e.paidBy,
+      participantIds: e.participantIds.map((id) => memberIdMap.get(id) ?? id),
+    });
   }
 
-  const habitRows = demoHabits.map((h) => habitToRow(userId, { ...h, id: newId() }));
-  if (habitRows.length) {
-    const { error } = await client().from("habits").insert(habitRows);
-    if (error) throw error;
+  for (const p of demoPolls) {
+    const newTripId = tripIdMap.get(p.tripId);
+    if (!newTripId) continue;
+    await insertPoll({ ...p, id: newId(), tripId: newTripId, createdBy: memberIdMap.get(p.createdBy) ?? p.createdBy });
   }
 
-  const txRows = demoTransactions.map((t) => ({ id: newId(), user_id: userId, merchant: t.merchant, amount: t.amount, date: t.date, category: t.category }));
-  if (txRows.length) {
-    const { error } = await client().from("transactions").insert(txRows);
-    if (error) throw error;
+  for (const m of demoMessages) {
+    const newTripId = tripIdMap.get(m.tripId);
+    if (!newTripId) continue;
+    await insertMessageRow({ ...m, id: newId(), tripId: newTripId, senderId: memberIdMap.get(m.senderId) ?? m.senderId });
   }
 
-  const subRows = demoSubscriptions.map((s) => ({ id: newId(), user_id: userId, name: s.name, amount: s.amount, renews_on: s.renewsOn, category: s.category }));
-  if (subRows.length) {
-    const { error } = await client().from("subscriptions").insert(subRows);
-    if (error) throw error;
+  for (const d of demoDocuments) {
+    const newTripId = tripIdMap.get(d.tripId);
+    if (!newTripId) continue;
+    await insertDocumentRow({ ...d, id: newId(), tripId: newTripId });
   }
 
-  const budgetRows = demoBudgets.map((b) => ({ user_id: userId, category: b.category, limit_amount: b.limit }));
-  if (budgetRows.length) {
-    const { error } = await client().from("budgets").insert(budgetRows);
-    if (error) throw error;
+  for (const n of demoNotifications) {
+    await insertNotificationRow(userId, { ...n, id: newId(), tripId: n.tripId ? tripIdMap.get(n.tripId) : undefined });
   }
 
-  const docRows = demoDocuments.map((d) => ({
-    id: newId(),
-    user_id: userId,
-    name: d.name,
-    kind: d.kind,
-    folder: d.folder,
-    tags: d.tags,
-    size_kb: d.sizeKb,
-    uploaded_at: d.uploadedAt,
-    ai_summary: d.aiSummary ?? null,
-    extracted_dates: d.extractedDates ?? [],
-  }));
-  if (docRows.length) {
-    const { error } = await client().from("documents").insert(docRows);
-    if (error) throw error;
-  }
-
-  const listRows = demoLists.map((l) => ({ id: newId(), user_id: userId, name: l.name, emoji: l.emoji, kind: l.kind, items: l.items }));
-  if (listRows.length) {
-    const { error } = await client().from("lists").insert(listRows);
-    if (error) throw error;
-  }
-
-  const memoryRows = demoMemory.map((m) => ({
-    id: newId(),
-    user_id: userId,
-    category: m.category,
-    content: m.content,
-    reason: m.reason,
-    source: m.source,
-    created_at: m.createdAt,
-    active: m.active,
-  }));
-  if (memoryRows.length) {
-    const { error } = await client().from("memory").insert(memoryRows);
-    if (error) throw error;
-  }
-
-  const agentRows = catalog.map((a) => ({ user_id: userId, agent_id: a.id, installed: a.installed, active: a.active, run_history: a.runHistory }));
-  if (agentRows.length) {
-    const { error } = await client().from("user_agents").insert(agentRows);
-    if (error) throw error;
+  for (const s of demoSavedPlaces) {
+    await insertSavedPlaceRow({ ...s, id: newId(), userId });
   }
 }
 
@@ -834,22 +676,20 @@ export async function seedAccountWithDemoData(userId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export async function loadAllUserData(userId: string) {
-  const [profile, tasks, events, goals, habits, transactions, subscriptions, budgets, documents, lists, memory, agents, notifications, chat] =
-    await Promise.all([
-      fetchProfile(userId),
-      fetchTasks(userId),
-      fetchEvents(userId),
-      fetchGoals(userId),
-      fetchHabits(userId),
-      fetchTransactions(userId),
-      fetchSubscriptions(userId),
-      fetchBudgets(userId),
-      fetchDocuments(userId),
-      fetchLists(userId),
-      fetchMemory(userId),
-      fetchAgents(userId),
-      fetchNotifications(userId),
-      fetchChat(userId),
-    ]);
-  return { profile, tasks, events, goals, habits, transactions, subscriptions, budgets, documents, lists, memory, agents, notifications, chat };
+  const profile = await fetchProfile(userId);
+  const trips = await fetchTrips(userId);
+  const tripIds = trips.map((t) => t.id);
+
+  const [members, itinerary, expenses, polls, messages, documents, notifications, savedPlaces] = await Promise.all([
+    fetchMembersForTrips(tripIds),
+    fetchItineraryForTrips(tripIds),
+    fetchExpensesForTrips(tripIds),
+    fetchPollsForTrips(tripIds),
+    fetchMessagesForTrips(tripIds),
+    fetchDocumentsForTrips(tripIds),
+    fetchNotifications(userId),
+    fetchSavedPlaces(userId),
+  ]);
+
+  return { profile, trips, members, itinerary, expenses, polls, messages, documents, notifications, savedPlaces };
 }

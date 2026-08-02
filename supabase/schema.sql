@@ -1,7 +1,9 @@
--- LifeOS database schema for Supabase (Postgres).
+-- Triply database schema for Supabase (Postgres).
 -- Run this once in your Supabase project's SQL Editor (Dashboard -> SQL Editor -> New query -> paste -> Run).
--- Every table is scoped to auth.uid() via Row Level Security, so each signed-in
--- user can only ever see or modify their own rows.
+--
+-- Every table is scoped by Row Level Security so a signed-in user can only
+-- ever see trips they own or have been added to as a member, and only ever
+-- write to trip data for trips they belong to.
 
 create extension if not exists "pgcrypto";
 
@@ -12,189 +14,184 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   name text not null default 'You',
   email text not null default '',
-  timezone text not null default 'UTC',
-  location text not null default '',
   avatar_initials text not null default 'U',
-  plan text not null default 'Free' check (plan in ('Free', 'Pro', 'Ultra')),
-  proactivity text not null default 'balanced' check (proactivity in ('low', 'balanced', 'high')),
+  plan text not null default 'Free' check (plan in ('Free', 'Travel Pro')),
+  interests jsonb not null default '[]',
+  food_preferences jsonb not null default '[]',
+  travel_style text not null default 'Balanced' check (travel_style in ('Relaxed', 'Balanced', 'Packed')),
+  home_city text not null default '',
   theme text not null default 'system' check (theme in ('light', 'dark', 'system')),
-  memory_enabled boolean not null default true,
-  notification_prefs jsonb not null default '{"deadlines":true,"financeAlerts":true,"scheduleGaps":true,"goalNudges":true}',
+  notification_prefs jsonb not null default '{"flights":true,"polls":true,"conflicts":true,"tripUpdates":true,"chat":true}',
   seeded boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 -- ---------------------------------------------------------------------------
--- tasks
+-- trips
 -- ---------------------------------------------------------------------------
-create table if not exists public.tasks (
+create table if not exists public.trips (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  title text not null,
-  description text,
-  done boolean not null default false,
-  due_date date,
-  priority text not null default 'medium' check (priority in ('critical', 'high', 'medium', 'low')),
-  estimated_minutes int,
-  category text not null default 'personal',
-  project text,
-  goal_id uuid,
-  recurring text not null default 'none' check (recurring in ('daily', 'weekly', 'none')),
-  subtasks jsonb not null default '[]',
-  ai_context text,
-  created_at timestamptz not null default now(),
-  completed_at timestamptz
-);
-
--- ---------------------------------------------------------------------------
--- events (calendar)
--- ---------------------------------------------------------------------------
-create table if not exists public.events (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  title text not null,
-  date date not null,
-  start_time text not null,
-  end_time text not null,
-  type text not null default 'personal',
-  location text,
-  linked_task_id uuid,
-  linked_goal_id uuid,
-  ai_generated boolean not null default false,
-  movable boolean not null default true,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- goals
--- ---------------------------------------------------------------------------
-create table if not exists public.goals (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
   name text not null,
-  why text not null default '',
-  progress int not null default 0 check (progress between 0 and 100),
-  deadline date,
-  category text not null default 'personal',
-  milestones jsonb not null default '[]',
-  linked_task_ids jsonb not null default '[]',
-  linked_habit_ids jsonb not null default '[]',
-  ai_plan text not null default '',
+  country_flag text not null default '🌍',
+  cities jsonb not null default '[]',
+  start_date date not null,
+  end_date date not null,
+  cover_gradient text not null default 'from-indigo-400 via-sky-400 to-emerald-400',
+  cover_emoji text not null default '🧳',
+  budget numeric,
+  currency text not null default 'EUR',
+  interests jsonb not null default '[]',
+  food_preferences jsonb not null default '[]',
+  travel_style text not null default 'Balanced' check (travel_style in ('Relaxed', 'Balanced', 'Packed')),
+  owner_id uuid not null references auth.users (id) on delete cascade,
   archived boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 -- ---------------------------------------------------------------------------
--- habits
+-- helper functions used by RLS policies below
 -- ---------------------------------------------------------------------------
-create table if not exists public.habits (
+create or replace function public.is_trip_owner(trip uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (select 1 from public.trips where id = trip and owner_id = auth.uid());
+$$;
+
+create or replace function public.is_trip_member(trip uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select
+    public.is_trip_owner(trip)
+    or exists (
+      select 1 from public.trip_members
+      where trip_id = trip and user_id = auth.uid()
+    );
+$$;
+
+-- ---------------------------------------------------------------------------
+-- trip_members
+-- ---------------------------------------------------------------------------
+create table if not exists public.trip_members (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
+  trip_id uuid not null references public.trips (id) on delete cascade,
+  user_id uuid references auth.users (id) on delete set null,
   name text not null,
-  emoji text not null default '✅',
-  target_per_week int not null default 7,
-  history jsonb not null default '{}',
-  best_streak int not null default 0,
-  ai_note text,
-  created_at timestamptz not null default now()
+  avatar_initials text not null default 'U',
+  role text not null default 'Traveler' check (role in ('Organizer', 'Traveler')),
+  responsibility text,
+  status text not null default 'joined' check (status in ('invited', 'joined')),
+  joined_at timestamptz not null default now()
 );
 
 -- ---------------------------------------------------------------------------
--- transactions
+-- itinerary_items
 -- ---------------------------------------------------------------------------
-create table if not exists public.transactions (
+create table if not exists public.itinerary_items (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  merchant text not null,
-  amount numeric not null,
+  trip_id uuid not null references public.trips (id) on delete cascade,
   date date not null,
+  start_time text not null,
+  end_time text not null,
+  type text not null default 'activity',
+  name text not null,
+  emoji text not null default '📍',
+  location text,
+  description text,
+  cost numeric,
+  participant_ids jsonb not null default '[]',
+  notes text,
+  booking_ref text,
+  map_x numeric,
+  map_y numeric,
+  ai_generated boolean not null default false,
+  item_order numeric not null default 0
+);
+
+-- ---------------------------------------------------------------------------
+-- expenses
+-- ---------------------------------------------------------------------------
+create table if not exists public.expenses (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references public.trips (id) on delete cascade,
+  name text not null,
+  amount numeric not null,
+  currency text not null default 'EUR',
+  paid_by text not null,
+  participant_ids jsonb not null default '[]',
+  custom_split jsonb,
   category text not null default 'Other',
+  date date not null,
+  notes text,
   created_at timestamptz not null default now()
 );
 
 -- ---------------------------------------------------------------------------
--- subscriptions
+-- polls / poll_options / poll_votes
 -- ---------------------------------------------------------------------------
-create table if not exists public.subscriptions (
+create table if not exists public.polls (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  amount numeric not null,
-  renews_on date not null,
-  category text not null default 'Subscriptions'
+  trip_id uuid not null references public.trips (id) on delete cascade,
+  question text not null,
+  status text not null default 'open' check (status in ('open', 'closed')),
+  created_by text not null,
+  added_to_itinerary boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.poll_options (
+  id uuid primary key default gen_random_uuid(),
+  poll_id uuid not null references public.polls (id) on delete cascade,
+  text text not null,
+  emoji text
+);
+
+create table if not exists public.poll_votes (
+  poll_id uuid not null references public.polls (id) on delete cascade,
+  option_id uuid not null references public.poll_options (id) on delete cascade,
+  member_id text not null,
+  primary key (poll_id, member_id)
 );
 
 -- ---------------------------------------------------------------------------
--- budgets (one row per category per user)
+-- messages (trip chat)
 -- ---------------------------------------------------------------------------
-create table if not exists public.budgets (
-  user_id uuid not null references auth.users (id) on delete cascade,
-  category text not null,
-  limit_amount numeric not null,
-  primary key (user_id, category)
+create table if not exists public.messages (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references public.trips (id) on delete cascade,
+  sender_id text not null,
+  content text not null,
+  kind text not null default 'text' check (kind in ('text', 'ai', 'system')),
+  created_at timestamptz not null default now()
 );
 
 -- ---------------------------------------------------------------------------
--- documents
+-- documents (booking imports)
 -- ---------------------------------------------------------------------------
 create table if not exists public.documents (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  kind text not null default 'text',
-  folder text not null default 'Uploads',
-  tags jsonb not null default '[]',
-  size_kb int not null default 0,
-  uploaded_at date not null default current_date,
-  ai_summary text,
-  extracted_dates jsonb not null default '[]'
+  trip_id uuid not null references public.trips (id) on delete cascade,
+  file_name text not null,
+  kind text not null default 'other',
+  extracted_data jsonb not null default '{}',
+  added_to_itinerary boolean not null default false,
+  uploaded_at timestamptz not null default now()
 );
 
 -- ---------------------------------------------------------------------------
--- lists
--- ---------------------------------------------------------------------------
-create table if not exists public.lists (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  emoji text not null default '📋',
-  kind text not null default 'custom',
-  items jsonb not null default '[]'
-);
-
--- ---------------------------------------------------------------------------
--- memory
--- ---------------------------------------------------------------------------
-create table if not exists public.memory (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  category text not null,
-  content text not null,
-  reason text not null default '',
-  source text not null default '',
-  active boolean not null default true,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- user_agents (per-user install/active state + run history for the fixed
--- agent catalog that ships in the app itself)
--- ---------------------------------------------------------------------------
-create table if not exists public.user_agents (
-  user_id uuid not null references auth.users (id) on delete cascade,
-  agent_id text not null,
-  installed boolean not null default false,
-  active boolean not null default false,
-  run_history jsonb not null default '[]',
-  primary key (user_id, agent_id)
-);
-
--- ---------------------------------------------------------------------------
--- notifications
+-- notifications (per-user inbox)
 -- ---------------------------------------------------------------------------
 create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
+  trip_id uuid references public.trips (id) on delete cascade,
   title text not null,
   body text not null default '',
   kind text not null default 'system',
@@ -203,19 +200,19 @@ create table if not exists public.notifications (
 );
 
 -- ---------------------------------------------------------------------------
--- chat_messages
+-- saved_places
 -- ---------------------------------------------------------------------------
-create table if not exists public.chat_messages (
+create table if not exists public.saved_places (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
-  role text not null check (role in ('user', 'ai')),
-  content text not null,
-  actions jsonb not null default '[]',
-  created_at timestamptz not null default now()
+  name text not null,
+  category text not null default 'Other',
+  city text not null default '',
+  emoji text not null default '📍'
 );
 
 -- ---------------------------------------------------------------------------
--- Row Level Security: every table only visible/writable by its owner.
+-- Row Level Security
 -- ---------------------------------------------------------------------------
 do $$
 declare
@@ -223,9 +220,9 @@ declare
 begin
   for t in
     select unnest(array[
-      'profiles', 'tasks', 'events', 'goals', 'habits', 'transactions',
-      'subscriptions', 'budgets', 'documents', 'lists', 'memory',
-      'user_agents', 'notifications', 'chat_messages'
+      'profiles', 'trips', 'trip_members', 'itinerary_items', 'expenses',
+      'polls', 'poll_options', 'poll_votes', 'messages', 'documents',
+      'notifications', 'saved_places'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -237,34 +234,63 @@ drop policy if exists "profiles_owner" on public.profiles;
 create policy "profiles_owner" on public.profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
 
--- budgets / user_agents: composite key includes user_id directly
-drop policy if exists "budgets_owner" on public.budgets;
-create policy "budgets_owner" on public.budgets
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+-- trips: visible/editable by the owner; visible (read-only via app logic) to members
+drop policy if exists "trips_select" on public.trips;
+create policy "trips_select" on public.trips
+  for select using (public.is_trip_member(id));
 
-drop policy if exists "user_agents_owner" on public.user_agents;
-create policy "user_agents_owner" on public.user_agents
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "trips_owner_write" on public.trips;
+create policy "trips_owner_write" on public.trips
+  for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 
--- everything else: standard user_id ownership
+-- trip_members: any member can see the roster; only the trip owner manages it
+drop policy if exists "trip_members_select" on public.trip_members;
+create policy "trip_members_select" on public.trip_members
+  for select using (public.is_trip_member(trip_id));
+
+drop policy if exists "trip_members_owner_write" on public.trip_members;
+create policy "trip_members_owner_write" on public.trip_members
+  for insert with check (public.is_trip_owner(trip_id));
+drop policy if exists "trip_members_owner_update" on public.trip_members;
+create policy "trip_members_owner_update" on public.trip_members
+  for update using (public.is_trip_owner(trip_id));
+drop policy if exists "trip_members_owner_delete" on public.trip_members;
+create policy "trip_members_owner_delete" on public.trip_members
+  for delete using (public.is_trip_owner(trip_id));
+
+-- shared trip content: any trip member can read and write
 do $$
 declare
   t text;
 begin
-  for t in
-    select unnest(array[
-      'tasks', 'events', 'goals', 'habits', 'transactions',
-      'subscriptions', 'documents', 'lists', 'memory',
-      'notifications', 'chat_messages'
-    ])
+  for t in select unnest(array['itinerary_items', 'expenses', 'polls', 'messages', 'documents'])
   loop
-    execute format('drop policy if exists "%s_owner" on public.%I;', t, t);
+    execute format('drop policy if exists "%s_members" on public.%I;', t, t);
     execute format(
-      'create policy "%s_owner" on public.%I for all using (auth.uid() = user_id) with check (auth.uid() = user_id);',
+      'create policy "%s_members" on public.%I for all using (public.is_trip_member(trip_id)) with check (public.is_trip_member(trip_id));',
       t, t
     );
   end loop;
 end $$;
+
+drop policy if exists "poll_options_members" on public.poll_options;
+create policy "poll_options_members" on public.poll_options
+  for all using (public.is_trip_member((select trip_id from public.polls where id = poll_id)))
+  with check (public.is_trip_member((select trip_id from public.polls where id = poll_id)));
+
+drop policy if exists "poll_votes_members" on public.poll_votes;
+create policy "poll_votes_members" on public.poll_votes
+  for all using (public.is_trip_member((select trip_id from public.polls where id = poll_id)))
+  with check (public.is_trip_member((select trip_id from public.polls where id = poll_id)));
+
+-- notifications / saved_places: owner only
+drop policy if exists "notifications_owner" on public.notifications;
+create policy "notifications_owner" on public.notifications
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "saved_places_owner" on public.saved_places;
+create policy "saved_places_owner" on public.saved_places
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
 -- Auto-create a profile row whenever a new auth user signs up.
