@@ -58,6 +58,13 @@ export function daysUntil(iso: string): number {
   return daysBetween(todayISO(), iso);
 }
 
+/** Absolute URL back to this app's root, honoring the GitHub Pages basePath — used for Supabase auth redirects. */
+export function appBaseUrl(): string {
+  if (typeof window === "undefined") return "";
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  return `${window.location.origin}${basePath}/`;
+}
+
 export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }

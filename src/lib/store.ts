@@ -30,7 +30,7 @@ import {
   TripMember,
 } from "./types";
 import { answerTripAI, TripAIContext } from "./tripAI";
-import { newId, todayISO, uid } from "./utils";
+import { appBaseUrl, newId, todayISO, uid } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
 
@@ -264,7 +264,7 @@ export const useTriply = create<TriplyState>((set, get) => {
         return;
       }
       set({ authBusy: true, authError: null });
-      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: typeof window !== "undefined" ? window.location.origin : undefined } });
+      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: appBaseUrl() } });
       if (error) set({ authError: error.message });
       set({ authBusy: false });
     },
@@ -275,7 +275,7 @@ export const useTriply = create<TriplyState>((set, get) => {
         return;
       }
       set({ authBusy: true, authError: null, authInfo: null });
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: appBaseUrl() });
       if (error) set({ authError: error.message });
       else set({ authInfo: "Password reset email sent — check your inbox." });
       set({ authBusy: false });
