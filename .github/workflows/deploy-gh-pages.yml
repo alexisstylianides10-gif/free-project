@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - claude/lifeos-redesign-ui-tqxvd4
+      - claude/triply-travel-app-f9f617
       - main
   workflow_dispatch:
 
