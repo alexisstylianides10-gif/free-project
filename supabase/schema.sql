@@ -49,7 +49,23 @@ create table if not exists public.trips (
 );
 
 -- ---------------------------------------------------------------------------
--- helper functions used by RLS policies below
+-- trip_members
+-- ---------------------------------------------------------------------------
+create table if not exists public.trip_members (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references public.trips (id) on delete cascade,
+  user_id uuid references auth.users (id) on delete set null,
+  name text not null,
+  avatar_initials text not null default 'U',
+  role text not null default 'Traveler' check (role in ('Organizer', 'Traveler')),
+  responsibility text,
+  status text not null default 'joined' check (status in ('invited', 'joined')),
+  joined_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
+-- helper functions used by RLS policies below (defined after trip_members
+-- so is_trip_member's query can resolve against it)
 -- ---------------------------------------------------------------------------
 create or replace function public.is_trip_owner(trip uuid)
 returns boolean
@@ -75,21 +91,6 @@ as $$
       where trip_id = trip and user_id = auth.uid()
     );
 $$;
-
--- ---------------------------------------------------------------------------
--- trip_members
--- ---------------------------------------------------------------------------
-create table if not exists public.trip_members (
-  id uuid primary key default gen_random_uuid(),
-  trip_id uuid not null references public.trips (id) on delete cascade,
-  user_id uuid references auth.users (id) on delete set null,
-  name text not null,
-  avatar_initials text not null default 'U',
-  role text not null default 'Traveler' check (role in ('Organizer', 'Traveler')),
-  responsibility text,
-  status text not null default 'joined' check (status in ('invited', 'joined')),
-  joined_at timestamptz not null default now()
-);
 
 -- ---------------------------------------------------------------------------
 -- itinerary_items
@@ -317,3 +318,20 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ---------------------------------------------------------------------------
+-- Lock down direct RPC access to internal helper/trigger functions. Supabase
+-- auto-grants EXECUTE on new public-schema functions to anon/authenticated;
+-- these three should only run as part of RLS policy evaluation or the auth
+-- trigger above, never called directly as a public REST endpoint.
+-- `authenticated` still needs EXECUTE on the two is_trip_* functions since
+-- that's the role RLS policies run as -- revoking it would break every trip
+-- query for signed-in users.
+-- ---------------------------------------------------------------------------
+revoke execute on function public.handle_new_user() from anon, authenticated, public;
+
+revoke execute on function public.is_trip_owner(uuid) from anon, authenticated, public;
+grant execute on function public.is_trip_owner(uuid) to authenticated;
+
+revoke execute on function public.is_trip_member(uuid) from anon, authenticated, public;
+grant execute on function public.is_trip_member(uuid) to authenticated;
