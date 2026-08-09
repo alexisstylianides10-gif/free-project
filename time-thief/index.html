@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Time Thief ⏰</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div class="hud-row">
+        <div class="hud-block">
+          <div class="hud-label">Vault</div>
+          <div class="bar"><div id="hpFill" class="bar-fill hp"></div></div>
+        </div>
+        <div class="hud-block">
+          <div class="hud-label">Stolen Time <span id="bankText">0.0s</span></div>
+          <div class="bar"><div id="bankFill" class="bar-fill bank"></div></div>
+        </div>
+      </div>
+      <div class="hud-row hud-stats">
+        <div>Score: <span id="score">0</span></div>
+        <div>Wave: <span id="wave">1</span></div>
+      </div>
+    </div>
+
+    <button id="burstBtn" title="Chrono Burst (Space)">⏰ Burst</button>
+
+    <div id="startScreen" class="overlay">
+      <h1>Time Thief ⏰</h1>
+      <p>Falling rocks and shadow enemies are closing in on your Vault.</p>
+      <ul>
+        <li><strong>Hold click / touch</strong> near a target to steal seconds from it.</li>
+        <li>Steal <strong>5s</strong> from a rock to <strong>freeze &amp; shatter it</strong> safely.</li>
+        <li>Steal from enemies to <strong>slow</strong> them &mdash; drain them fully to capture.</li>
+        <li>Stolen time fills a <strong>limited bank</strong>. Spend it with <strong>Chrono Burst</strong> (Space) to freeze everything on screen.</li>
+        <li>Let a rock hit the ground or an enemy reach the Vault, and it takes damage.</li>
+      </ul>
+      <button id="startBtn">Start Stealing</button>
+    </div>
+
+    <div id="gameOverScreen" class="overlay hidden">
+      <h1>Vault Breached</h1>
+      <p>Final Score: <span id="finalScore">0</span></p>
+      <button id="restartBtn">Try Again</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
