@@ -215,6 +215,23 @@ create table if not exists public.chat_messages (
 );
 
 -- ---------------------------------------------------------------------------
+-- waitlist (public landing page email signups, no auth required)
+-- ---------------------------------------------------------------------------
+create table if not exists public.waitlist (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table public.waitlist enable row level security;
+
+-- Anyone (including anonymous visitors) can join the waitlist, but only the
+-- service role can read the list back -- no select policy is granted here.
+drop policy if exists "waitlist_public_insert" on public.waitlist;
+create policy "waitlist_public_insert" on public.waitlist
+  for insert to anon, authenticated with check (true);
+
+-- ---------------------------------------------------------------------------
 -- Row Level Security: every table only visible/writable by its owner.
 -- ---------------------------------------------------------------------------
 do $$

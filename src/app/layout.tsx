@@ -1,29 +1,27 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { AppShell } from "@/components/layout/AppShell";
-import { ThemeProvider } from "@/components/layout/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "LifeOS",
-  description: "The AI operating system for your life.",
+  title: "Alxioum — Your life. One AI.",
+  description:
+    "Alxioum is the AI that turns what you say into what gets done. Forget jumping between calendars, task apps, reminders, and endless menus — just tell Alxioum what you need.",
+  openGraph: {
+    title: "Alxioum — Your life. One AI.",
+    description: "The AI that turns what you say into what gets done.",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafe" },
-    { media: "(prefers-color-scheme: dark)", color: "#0d0d12" },
-  ],
+  themeColor: "#05050a",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
-        <ThemeProvider />
-        <AppShell>{children}</AppShell>
-      </body>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className="bg-[#05050a] text-white antialiased">{children}</body>
     </html>
   );
 }
