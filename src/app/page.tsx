@@ -10,7 +10,7 @@ import { Footer } from "@/components/marketing/Footer";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-dvh bg-[#07070b] text-white">
+    <div className="min-h-dvh bg-ink-950 text-paper">
       <MarketingNav />
       <main>
         <Hero />

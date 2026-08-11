@@ -44,6 +44,25 @@ const config: Config = {
           DEFAULT: "hsl(var(--danger))",
           soft: "hsl(var(--danger-soft))",
         },
+        // Marketing/landing-page palette ("Warm Ink") — deliberately separate
+        // from the app's own accent/success/danger tokens above.
+        ink: {
+          800: "#18181C",
+          900: "#131316",
+          950: "#0A0A0B",
+        },
+        paper: {
+          DEFAULT: "#F2F1ED",
+        },
+        brand: {
+          100: "#F0DEC0",
+          300: "#DDB57C",
+          400: "#D4A568",
+          500: "#C98F4E",
+          600: "#B87D3E",
+        },
+        sage: "#6FBF8B",
+        terracotta: "#D9736A",
       },
       borderRadius: {
         sm: "8px",

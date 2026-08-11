@@ -36,18 +36,18 @@ export function Architecture() {
                   className={
                     "flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-center " +
                     (agent.live
-                      ? "border-indigo-400/30 bg-indigo-500/[0.08]"
+                      ? "border-brand-400/30 bg-brand-500/[0.08]"
                       : "border-dashed border-white/12 bg-white/[0.015]")
                   }
                 >
-                  <agent.icon className={"h-5 w-5 " + (agent.live ? "text-indigo-300" : "text-white/30")} />
-                  <span className={"text-[12.5px] font-medium " + (agent.live ? "text-white" : "text-white/45")}>
+                  <agent.icon className={"h-5 w-5 " + (agent.live ? "text-brand-400" : "text-paper/30")} />
+                  <span className={"text-[12.5px] font-medium " + (agent.live ? "text-paper" : "text-paper/45")}>
                     {agent.label}
                   </span>
                   <span
                     className={
                       "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide " +
-                      (agent.live ? "bg-indigo-500/25 text-indigo-200" : "bg-white/[0.05] text-white/35")
+                      (agent.live ? "bg-brand-500/25 text-brand-100" : "bg-white/[0.05] text-paper/35")
                     }
                   >
                     {agent.live ? "Live in MVP" : "Coming soon"}
@@ -59,7 +59,7 @@ export function Architecture() {
         </Reveal>
 
         <Reveal delay={0.2}>
-          <p className="mx-auto mt-10 max-w-xl text-center text-[13.5px] leading-relaxed text-white/40">
+          <p className="mx-auto mt-10 max-w-xl text-center text-[13.5px] leading-relaxed text-paper/40">
             Today, only the Calendar Agent is live. Every other agent shown here is part of the roadmap —
             not the current product.
           </p>
@@ -75,8 +75,8 @@ function Node({ label, primary }: { label: string; primary?: boolean }) {
       className={
         "rounded-xl border px-6 py-3 text-[13.5px] font-semibold tracking-tight " +
         (primary
-          ? "border-indigo-400/40 bg-gradient-to-br from-indigo-500/25 to-violet-500/25 text-white shadow-[0_0_50px_-15px_rgba(99,102,241,0.6)]"
-          : "border-white/15 bg-white/[0.04] text-white/80")
+          ? "border-brand-400/40 bg-gradient-to-br from-brand-500/25 to-brand-600/25 text-paper shadow-[0_0_50px_-15px_rgba(201,143,78,0.6)]"
+          : "border-white/15 bg-white/[0.04] text-paper/80")
       }
     >
       {label}

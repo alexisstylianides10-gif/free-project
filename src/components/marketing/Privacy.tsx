@@ -36,12 +36,12 @@ export function Privacy() {
           {points.map((p, i) => (
             <Reveal key={p.title} delay={i * 0.08}>
               <div className="flex h-full gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-[#0a0a10]">
-                  <p.icon className="h-4 w-4 text-indigo-300" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-ink-900">
+                  <p.icon className="h-4 w-4 text-brand-400" />
                 </div>
                 <div>
-                  <h3 className="text-[14.5px] font-semibold text-white">{p.title}</h3>
-                  <p className="mt-1 text-[13.5px] leading-relaxed text-white/50">{p.body}</p>
+                  <h3 className="text-[14.5px] font-semibold text-paper">{p.title}</h3>
+                  <p className="mt-1 text-[13.5px] leading-relaxed text-paper/50">{p.body}</p>
                 </div>
               </div>
             </Reveal>

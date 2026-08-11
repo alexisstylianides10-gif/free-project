@@ -31,7 +31,7 @@ export function Problem() {
               work to you.
               <br />
               <br />
-              <span className="text-white/80">Alxioum is designed around taking the action, not just describing it.</span>
+              <span className="text-paper/80">Alxioum is designed around taking the action, not just describing it.</span>
             </>
           }
         />
@@ -45,7 +45,7 @@ export function Problem() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.05 * i }}
-                className={`absolute flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-white/50 ${item.style}`}
+                className={`absolute flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-paper/50 ${item.style}`}
               >
                 <item.icon className="h-3.5 w-3.5" />
                 {item.label}
@@ -57,9 +57,9 @@ export function Problem() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl border border-indigo-400/30 bg-gradient-to-br from-indigo-500/20 to-violet-500/20 shadow-[0_0_60px_-10px_rgba(99,102,241,0.5)] backdrop-blur"
+              className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl border border-brand-400/30 bg-gradient-to-br from-brand-500/20 to-brand-600/20 shadow-[0_0_60px_-10px_rgba(201,143,78,0.5)] backdrop-blur"
             >
-              <span className="text-[13px] font-semibold tracking-tight text-white">ALXIOUM</span>
+              <span className="text-[13px] font-semibold tracking-tight text-paper">ALXIOUM</span>
             </motion.div>
           </div>
         </Reveal>

@@ -31,7 +31,7 @@ export function Differentiation() {
         </div>
 
         <Reveal delay={0.2}>
-          <p className="mx-auto mt-10 max-w-xl text-center text-[14px] leading-relaxed text-white/40">
+          <p className="mx-auto mt-10 max-w-xl text-center text-[14px] leading-relaxed text-paper/40">
             To be clear: this isn&apos;t a claim that ChatGPT or Claude can&apos;t reason about your
             request. It&apos;s that Alxioum&apos;s product is built end-to-end around executing the
             action — with your confirmation — instead of stopping at a conversation.
@@ -59,13 +59,13 @@ function FlowCard({
         "rounded-2xl border p-6 sm:p-8 " +
         (muted
           ? "border-white/10 bg-white/[0.02]"
-          : "border-indigo-400/25 bg-gradient-to-b from-indigo-500/[0.08] to-transparent")
+          : "border-brand-400/25 bg-gradient-to-b from-brand-500/[0.08] to-transparent")
       }
     >
       <div
         className={
           "mb-6 flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-[12.5px] font-semibold " +
-          (muted ? "bg-white/[0.06] text-white/50" : "bg-indigo-500/20 text-indigo-200")
+          (muted ? "bg-white/[0.06] text-paper/50" : "bg-brand-500/20 text-brand-100")
         }
       >
         {icon}
@@ -78,16 +78,16 @@ function FlowCard({
             <div
               className={
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[12.5px] font-semibold " +
-                (muted ? "bg-white/[0.06] text-white/40" : "bg-indigo-500/25 text-indigo-200")
+                (muted ? "bg-white/[0.06] text-paper/40" : "bg-brand-500/25 text-brand-100")
               }
             >
               {i + 1}
             </div>
-            <p className={"text-[14.5px] font-medium " + (muted ? "text-white/55" : "text-white/90")}>
+            <p className={"text-[14.5px] font-medium " + (muted ? "text-paper/55" : "text-paper/90")}>
               {step}
             </p>
             {i < steps.length - 1 && (
-              <ArrowRight className={"ml-auto h-3.5 w-3.5 shrink-0 " + (muted ? "text-white/15" : "text-white/20")} />
+              <ArrowRight className={"ml-auto h-3.5 w-3.5 shrink-0 " + (muted ? "text-paper/15" : "text-paper/20")} />
             )}
           </div>
         ))}
