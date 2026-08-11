@@ -292,6 +292,12 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- Trigger execution doesn't check EXECUTE privileges, so this is safe to
+-- revoke — it just stops the function from being directly callable as a
+-- PostgREST RPC endpoint (`SECURITY DEFINER` functions are auto-exposed
+-- otherwise).
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- waitlist
 -- Public landing-page signups. Anyone (including anonymous visitors) may
