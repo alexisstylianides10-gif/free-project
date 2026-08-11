@@ -175,7 +175,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-8rem)] max-w-2xl flex-col md:h-[calc(100dvh-6rem)]">
+    <div className="mx-auto flex h-[calc(100dvh-9.5rem-env(safe-area-inset-bottom))] max-w-2xl flex-col md:h-[calc(100dvh-6rem)]">
       <div className="mb-1">
         <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
           Hi {profile.name?.split(" ")[0] || "there"}.
