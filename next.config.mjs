@@ -1,18 +1,12 @@
-const isGithubPages = process.env.GITHUB_PAGES === "true";
-// Railway (and any other real Node host) runs `next start` against a server
-// build, which is incompatible with `output: "export"`. Only static hosts
-// (GitHub Pages, Netlify) need the exported "out" directory.
-const isRailway = Boolean(process.env.RAILWAY_ENVIRONMENT_NAME || process.env.RAILWAY_PROJECT_ID);
-const repoName = "free-project";
-
+// Alxioum ships real server-side API routes (/api/chat, /api/tools/resolve)
+// that call Claude and Supabase with a per-request user token — these can
+// only run on a Node server, so this always builds in standard server mode
+// (`next start`). Railway is the deployment target; static export
+// (GitHub Pages/Netlify) is not supported once API routes exist.
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  ...(isRailway ? {} : { output: "export" }),
-  trailingSlash: true,
   images: { unoptimized: true },
-  basePath: isGithubPages ? `/${repoName}` : "",
-  assetPrefix: isGithubPages ? `/${repoName}/` : "",
 };
 
 export default nextConfig;

@@ -1,103 +1,132 @@
 "use client";
 
-import { useMemo } from "react";
-import { BrainCircuit, Info, Trash2 } from "lucide-react";
-import { useAlxioum } from "@/lib/store";
+import { useEffect, useState } from "react";
+import { format } from "date-fns";
+import { BrainCircuit, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { Switch } from "@/components/ui/Switch";
-import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Tooltip } from "@/components/ui/Tooltip";
-import { MemoryCategory } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
+import { CalendarEventRow, deleteAllEvents, deleteEvent, listAllEvents } from "@/lib/calendarEvents";
 
-const CATEGORIES: MemoryCategory[] = [
-  "Personal",
-  "Preferences",
-  "Goals",
-  "People",
-  "Projects",
-  "Important dates",
-  "Routines",
-  "Past decisions",
-];
+export default function WhatAlxioumKnowsPage() {
+  const [events, setEvents] = useState<CalendarEventRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-export default function MemoryPage() {
-  const memory = useAlxioum((s) => s.memory);
-  const memoryEnabled = useAlxioum((s) => s.profile.memoryEnabled);
-  const setMemoryEnabled = useAlxioum((s) => s.setMemoryEnabled);
-  const toggleMemory = useAlxioum((s) => s.toggleMemory);
-  const deleteMemory = useAlxioum((s) => s.deleteMemory);
+  async function load() {
+    setLoading(true);
+    try {
+      setEvents(await listAllEvents());
+    } catch {
+      setError("Couldn't load what Alxioum knows. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  const grouped = useMemo(() => {
-    const map = new Map<MemoryCategory, typeof memory>();
-    for (const cat of CATEGORIES) map.set(cat, []);
-    for (const m of memory) map.get(m.category)?.push(m);
-    return map;
-  }, [memory]);
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function remove(id: string) {
+    setBusy(true);
+    try {
+      await deleteEvent(id);
+      setEvents((e) => e.filter((ev) => ev.id !== id));
+    } catch {
+      setError("Couldn't delete that. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeAll() {
+    setBusy(true);
+    try {
+      await deleteAllEvents();
+      setEvents([]);
+      setConfirmDeleteAll(false);
+    } catch {
+      setError("Couldn't delete your data. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-[24px] font-semibold tracking-tight text-foreground">Memory</h1>
-        <p className="text-[13.5px] text-muted-foreground">What Alxioum remembers about you — fully visible, fully editable.</p>
-      </div>
-
-      <Card className="flex items-center justify-between gap-4 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[13.5px] font-semibold text-foreground">Alxioum Memory</p>
-          <p className="text-[12.5px] text-muted-foreground">
-            When on, Alxioum can remember details you share to give better recommendations. Turn it off any time — nothing is remembered without this being on.
+          <h1 className="text-[22px] font-semibold tracking-tight text-foreground">What Alxioum knows</h1>
+          <p className="text-[13.5px] text-muted-foreground">
+            Everything stored in your account, in plain language. Nothing here is hidden from you.
           </p>
         </div>
-        <Switch checked={memoryEnabled} onCheckedChange={setMemoryEnabled} />
-      </Card>
+        {events.length > 0 && (
+          <Button variant="outline" size="sm" className="gap-1.5 text-danger" onClick={() => setConfirmDeleteAll(true)}>
+            <Trash2 className="h-3.5 w-3.5" /> Delete all data
+          </Button>
+        )}
+      </div>
 
-      {memory.length === 0 ? (
+      {error && <p className="text-[13px] text-danger">{error}</p>}
+
+      {loading ? (
+        <Card className="flex h-40 items-center justify-center text-sm text-muted-foreground">Loading...</Card>
+      ) : events.length === 0 ? (
         <EmptyState
           icon={BrainCircuit}
-          title="Nothing remembered yet"
-          body="As you use Alxioum, things worth remembering — preferences, routines, important dates — will show up here for you to review."
+          title="Nothing stored yet"
+          body="Once you add calendar events — through chat or manually — they'll show up here so you always know exactly what Alxioum has on file."
         />
       ) : (
-        <div className="space-y-6">
-          {CATEGORIES.map((cat) => {
-            const items = grouped.get(cat) ?? [];
-            if (items.length === 0) return null;
-            return (
-              <div key={cat}>
-                <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground">{cat}</h2>
-                <div className="space-y-2">
-                  {items.map((m) => (
-                    <Card key={m.id} className={cn("flex items-start justify-between gap-3 p-3.5", !m.active && "opacity-50")}>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[13.5px] text-foreground">{m.content}</p>
-                        <div className="mt-1 flex items-center gap-1.5">
-                          <Badge tone="neutral">{m.source}</Badge>
-                          <Tooltip label={m.reason}>
-                            <span className="flex items-center gap-1 text-[11.5px] text-muted-foreground">
-                              <Info className="h-3 w-3" /> Why?
-                            </span>
-                          </Tooltip>
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <Switch checked={m.active} onCheckedChange={() => toggleMemory(m.id)} />
-                        <button
-                          onClick={() => deleteMemory(m.id)}
-                          className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger"
-                          aria-label="Delete memory"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </Card>
-                  ))}
+        <div>
+          <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Calendar ({events.length})
+          </h2>
+          <div className="space-y-2">
+            {events.map((e) => (
+              <Card key={e.id} className="flex items-start justify-between gap-3 p-3.5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13.5px] text-foreground">
+                    <span className="font-medium">{e.title}</span> — {format(new Date(e.start_time), "EEEE, MMM d, h:mm a")} to{" "}
+                    {format(new Date(e.end_time), "h:mm a")}
+                  </p>
+                  {e.notes && <p className="mt-0.5 text-[12.5px] text-muted-foreground">Notes: {e.notes}</p>}
                 </div>
-              </div>
-            );
-          })}
+                <button
+                  onClick={() => remove(e.id)}
+                  disabled={busy}
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger disabled:opacity-40"
+                  aria-label="Delete"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </Card>
+            ))}
+          </div>
         </div>
+      )}
+
+      {confirmDeleteAll && (
+        <Modal
+          open
+          onOpenChange={(o) => !o && setConfirmDeleteAll(false)}
+          title="Delete all data?"
+          description="This permanently deletes every calendar event stored in your account. This can't be undone."
+        >
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setConfirmDeleteAll(false)} disabled={busy}>
+              Cancel
+            </Button>
+            <Button variant="danger" size="sm" onClick={removeAll} disabled={busy}>
+              Delete everything
+            </Button>
+          </div>
+        </Modal>
       )}
     </div>
   );

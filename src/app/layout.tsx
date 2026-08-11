@@ -7,6 +7,16 @@ export const metadata: Metadata = {
   description:
     "Alxioum is an AI-powered personal assistant that turns natural-language requests into real actions across your digital life.",
   metadataBase: new URL("https://alxioum.com"),
+  manifest: "/manifest.json",
+  icons: {
+    icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Alxioum",
+  },
   openGraph: {
     title: "Alxioum — AI that doesn't just answer. It acts.",
     description:

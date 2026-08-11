@@ -5,7 +5,7 @@ import { WaitlistForm } from "./WaitlistForm";
 
 export function WaitlistSection() {
   return (
-    <section id="waitlist" className="relative py-28 sm:py-36">
+    <section id="waitlist" className="relative overflow-hidden py-28 sm:py-36">
       <Glow className="left-1/2 top-1/2 h-[420px] w-[600px] -translate-x-1/2 -translate-y-1/2 bg-brand-500/20" />
 
       <Container className="relative max-w-2xl text-center">

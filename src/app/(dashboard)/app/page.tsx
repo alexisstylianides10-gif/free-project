@@ -1,196 +1,306 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { ArrowRight, Check, Calendar as CalendarIcon, X } from "lucide-react";
-import { useAlxioum } from "@/lib/store";
-import { generateDailyBriefing, generateRecommendation } from "@/lib/aiEngine";
-import { useGreeting } from "@/lib/useGreeting";
-import { Card } from "@/components/ui/Card";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, X, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { formatMoney, formatTime12, todayISO } from "@/lib/utils";
-import Link from "next/link";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { authedPost, ApiError } from "@/lib/apiClient";
+import { useAlxioum } from "@/lib/store";
 
-export default function HomePage() {
-  const greeting = useGreeting();
-  const router = useRouter();
+interface PendingAction {
+  tool: string;
+  params: unknown;
+  preview: string;
+}
+
+interface ResolvedAction extends PendingAction {
+  decision: "confirmed" | "cancelled" | "failed";
+}
+
+interface Msg {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  pending_action: PendingAction | null;
+  resolved_action: ResolvedAction | null;
+  created_at: string;
+}
+
+const SUGGESTIONS = [
+  "Add tennis Friday at 6.",
+  "What do I have this week?",
+  "Move my dentist appointment to 4pm.",
+];
+
+export default function ChatPage() {
   const profile = useAlxioum((s) => s.profile);
-  const tasks = useAlxioum((s) => s.tasks);
-  const events = useAlxioum((s) => s.events);
-  const goals = useAlxioum((s) => s.goals);
-  const habits = useAlxioum((s) => s.habits);
-  const transactions = useAlxioum((s) => s.transactions);
-  const lists = useAlxioum((s) => s.lists);
-  const memory = useAlxioum((s) => s.memory);
-  const toggleTask = useAlxioum((s) => s.toggleTask);
-  const applyAction = useAlxioum((s) => s.applyAction);
-  const sendChatMessage = useAlxioum((s) => s.sendChatMessage);
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const [dismissedRec, setDismissedRec] = useState(false);
-  const [ask, setAsk] = useState("");
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) {
+      setInput(q);
+      window.history.replaceState(null, "", "/app");
+    }
+  }, []);
 
-  const engineState = useMemo(
-    () => ({ tasks, events, goals, habits, transactions, lists, memory }),
-    [tasks, events, goals, habits, transactions, lists, memory]
-  );
+  useEffect(() => {
+    async function load() {
+      if (!isSupabaseConfigured || !supabase) {
+        setLoading(false);
+        return;
+      }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      const { data: convo } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-  const briefing = useMemo(() => generateDailyBriefing(engineState), [engineState]);
-  const recommendation = useMemo(() => generateRecommendation(engineState), [engineState]);
+      if (convo) {
+        const { data: rows } = await supabase
+          .from("messages")
+          .select("id, role, content, pending_action, resolved_action, created_at")
+          .eq("conversation_id", convo.id)
+          .order("created_at", { ascending: true });
+        setMessages((rows as Msg[]) ?? []);
+      }
+      setLoading(false);
+    }
+    load();
+  }, []);
 
-  const today = todayISO();
-  const todaysSchedule = events
-    .filter((e) => e.date === today)
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  useEffect(() => {
+    if (messages.length === 0) return;
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [messages, sending]);
 
-  const remainingTasks = tasks.filter((t) => !t.done).length;
-  const activeGoals = goals.filter((g) => !g.archived).length;
-  const habitsToday = habits.filter((h) => h.history[today]).length;
-  const spentToday = transactions
-    .filter((t) => t.date === today && t.amount < 0)
-    .reduce((s, t) => s + Math.abs(t.amount), 0);
+  async function send(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || sending) return;
+    setError(null);
+    setInput("");
 
-  function submitAsk(e: React.FormEvent) {
+    const optimistic: Msg = {
+      id: `local-${Date.now()}`,
+      role: "user",
+      content: trimmed,
+      pending_action: null,
+      resolved_action: null,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((m) => [...m, optimistic]);
+    setSending(true);
+
+    try {
+      const res = await authedPost<{
+        messageId: string;
+        reply: string;
+        pendingAction: PendingAction | null;
+        createdAt: string;
+      }>("/api/chat", { message: trimmed });
+
+      setMessages((m) => [
+        ...m,
+        {
+          id: res.messageId,
+          role: "assistant",
+          content: res.reply,
+          pending_action: res.pendingAction,
+          resolved_action: null,
+          created_at: res.createdAt,
+        },
+      ]);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function resolve(messageId: string, decision: "confirm" | "cancel") {
+    setResolvingId(messageId);
+    setError(null);
+    try {
+      const res = await authedPost<{ messageId: string; reply: string; createdAt: string }>(
+        "/api/tools/resolve",
+        { messageId, decision }
+      );
+      setMessages((m) => [
+        ...m.map((msg) =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                pending_action: null,
+                resolved_action: msg.pending_action
+                  ? { ...msg.pending_action, decision: decision === "confirm" ? "confirmed" : "cancelled" }
+                  : null,
+              }
+            : msg
+        ),
+        {
+          id: res.messageId,
+          role: "assistant",
+          content: res.reply,
+          pending_action: null,
+          resolved_action: null,
+          created_at: res.createdAt,
+        },
+      ] as Msg[]);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setResolvingId(null);
+    }
+  }
+
+  function submitForm(e: React.FormEvent) {
     e.preventDefault();
-    if (!ask.trim()) return;
-    sendChatMessage(ask);
-    router.push("/ai");
+    send(input);
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-[26px] font-semibold tracking-tight text-foreground">
-          {greeting}, {profile.name}.
+    <div className="mx-auto flex h-[calc(100dvh-8rem)] max-w-2xl flex-col md:h-[calc(100dvh-6rem)]">
+      <div className="mb-1">
+        <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
+          Hi {profile.name?.split(" ")[0] || "there"}.
         </h1>
-        <p className="mt-1 text-[15px] text-muted-foreground">Here&apos;s what matters today.</p>
+        <p className="text-[13.5px] text-muted-foreground">Tell Alxioum what you need — it'll act on it.</p>
       </div>
 
-      {briefing.length > 0 && (
-        <section>
-          <SectionLabel>Today</SectionLabel>
-          <div className="mt-3 space-y-2">
-            {briefing.map((item, i) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: i * 0.04 }}
-              >
-                <Card className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-[15px] leading-none">{item.emoji}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-medium text-foreground">{item.title}</p>
-                    <p className="text-[12.5px] text-muted-foreground">{item.subtitle}</p>
-                  </div>
-                  {item.taskId && (
-                    <button
-                      onClick={() => toggleTask(item.taskId!)}
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-success hover:bg-success-soft hover:text-success"
-                      aria-label="Mark done"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section>
-        <div className="flex items-center justify-between">
-          <SectionLabel>Your day</SectionLabel>
-          <Link href="/today" className="flex items-center gap-1 text-[12.5px] font-medium text-accent hover:opacity-80">
-            Full timeline <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-        <Card className="mt-3 p-4">
-          {todaysSchedule.length === 0 ? (
-            <p className="py-2 text-sm text-muted-foreground">Nothing scheduled today.</p>
-          ) : (
-            <div className="scrollbar-none flex gap-2 overflow-x-auto">
-              {todaysSchedule.map((e) => (
-                <div key={e.id} className="flex min-w-[104px] flex-col gap-1 rounded-lg border border-border px-3 py-2.5">
-                  <span className="text-[11.5px] font-medium text-muted-foreground">{formatTime12(e.startTime)}</span>
-                  <span className="truncate text-[13px] font-semibold text-foreground">{e.title}</span>
-                </div>
+      <div className="flex-1 overflow-y-auto py-4">
+        {loading ? (
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading...</div>
+        ) : messages.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft">
+              <Sparkles className="h-5 w-5 text-accent" />
+            </div>
+            <p className="max-w-xs text-[13.5px] text-muted-foreground">
+              Try one of these, or type your own request.
+            </p>
+            <div className="flex flex-col gap-2">
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => send(s)}
+                  className="rounded-lg border border-border px-3.5 py-2 text-[13px] text-foreground transition-colors hover:bg-muted"
+                >
+                  {s}
+                </button>
               ))}
             </div>
-          )}
-        </Card>
-      </section>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {messages.map((m) => (
+              <ChatBubble key={m.id} msg={m} onResolve={resolve} resolving={resolvingId === m.id} />
+            ))}
+            {sending && (
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-border bg-surface px-3.5 py-3 w-fit">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
 
-      {recommendation && !dismissedRec && (
-        <section>
-          <SectionLabel>AI recommendation</SectionLabel>
-          <Card className="mt-3 border-accent/25 bg-accent-soft/30 p-5">
-            <p className="text-[14px] leading-relaxed text-foreground">{recommendation.text}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              {recommendation.action && (
-                <>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      applyAction(recommendation.action!);
-                      setDismissedRec(true);
-                    }}
-                  >
-                    Do it
-                  </Button>
-                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => router.push("/today")}>
-                    <CalendarIcon className="h-3.5 w-3.5" /> Schedule
-                  </Button>
-                </>
-              )}
-              <Button size="sm" variant="ghost" className="gap-1.5 text-muted-foreground" onClick={() => setDismissedRec(true)}>
-                <X className="h-3.5 w-3.5" /> Dismiss
-              </Button>
-            </div>
-          </Card>
-        </section>
-      )}
+      {error && <p className="mb-2 text-[12.5px] text-danger">{error}</p>}
 
-      <section>
-        <SectionLabel>Quick progress</SectionLabel>
-        <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <StatCard label="Tasks" value={`${remainingTasks}`} sub="remaining" href="/tasks" />
-          <StatCard label="Goals" value={`${activeGoals}`} sub="active" href="/goals" />
-          <StatCard label="Habits" value={`${habitsToday}/${habits.length}`} sub="today" href="/habits" />
-          <StatCard label="Spending" value={formatMoney(spentToday)} sub="today" href="/finance" />
-        </div>
-      </section>
-
-      <form onSubmit={submitAsk}>
-        <Card className="flex items-center gap-2 p-2 shadow-raised">
-          <input
-            value={ask}
-            onChange={(e) => setAsk(e.target.value)}
-            placeholder="Ask Alxioum anything..."
-            className="h-10 flex-1 bg-transparent px-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
-          />
-          <Button type="submit" size="sm" disabled={!ask.trim()}>
-            Ask
-          </Button>
-        </Card>
+      <form onSubmit={submitForm} className="flex items-center gap-2 border-t border-border pt-3">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Tell Alxioum what you need..."
+          className="h-11 flex-1 rounded-lg border border-border bg-surface px-3.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+        />
+        <Button type="submit" size="icon" disabled={!input.trim() || sending} aria-label="Send">
+          <Send className="h-4 w-4" />
+        </Button>
       </form>
     </div>
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</h2>;
-}
-
-function StatCard({ label, value, sub, href }: { label: string; value: string; sub: string; href: string }) {
+function ChatBubble({
+  msg,
+  onResolve,
+  resolving,
+}: {
+  msg: Msg;
+  onResolve: (id: string, decision: "confirm" | "cancel") => void;
+  resolving: boolean;
+}) {
+  const isUser = msg.role === "user";
   return (
-    <Link href={href}>
-      <Card className="p-4 transition-colors hover:border-border-strong">
-        <p className="text-[12px] font-medium text-muted-foreground">{label}</p>
-        <p className="mt-1 text-[20px] font-semibold tracking-tight text-foreground">{value}</p>
-        <p className="text-[12px] text-muted-foreground">{sub}</p>
-      </Card>
-    </Link>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={isUser ? "ml-auto max-w-[85%]" : "mr-auto max-w-[90%]"}
+    >
+      <div
+        className={
+          isUser
+            ? "rounded-2xl rounded-tr-sm bg-accent px-3.5 py-2.5 text-[14px] text-accent-foreground"
+            : "rounded-2xl rounded-tl-sm border border-border bg-surface px-3.5 py-2.5 text-[14px] text-foreground"
+        }
+      >
+        {msg.content}
+      </div>
+
+      <AnimatePresence>
+        {msg.pending_action && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-2 rounded-xl border border-accent/25 bg-accent-soft/40 px-3.5 py-3"
+          >
+            <p className="text-[13px] font-medium text-foreground">{msg.pending_action.preview}</p>
+            <div className="mt-2.5 flex gap-2">
+              <Button size="sm" disabled={resolving} onClick={() => onResolve(msg.id, "confirm")} className="gap-1.5">
+                <Check className="h-3.5 w-3.5" /> Confirm
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={resolving}
+                onClick={() => onResolve(msg.id, "cancel")}
+                className="gap-1.5"
+              >
+                <X className="h-3.5 w-3.5" /> Cancel
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {msg.resolved_action?.decision === "cancelled" && (
+        <p className="mt-1 text-[11.5px] text-muted-foreground">Cancelled</p>
+      )}
+    </motion.div>
   );
 }

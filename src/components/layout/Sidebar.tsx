@@ -5,13 +5,8 @@ import { usePathname } from "next/navigation";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   Plus,
-  CheckSquare,
   CalendarPlus,
-  StickyNote,
-  Upload,
-  Wallet,
-  Target,
-  Sparkles,
+  MessageCircle,
   Search,
   Settings,
   ChevronsUpDown,
@@ -25,7 +20,6 @@ import { useAlxioum } from "@/lib/store";
 export function Sidebar() {
   const pathname = usePathname();
   const profile = useAlxioum((s) => s.profile);
-  const openQuickAdd = useAlxioum((s) => s.openQuickAdd);
   const setCommandOpen = useAlxioum((s) => s.setCommandOpen);
 
   return (
@@ -79,14 +73,8 @@ export function Sidebar() {
               sideOffset={8}
               className="z-50 w-56 rounded-xl border border-border bg-surface p-1.5 shadow-pop animate-scale-in"
             >
-              <QuickAddMenuItem icon={CheckSquare} label="New task" onSelect={() => openQuickAdd("task")} />
-              <QuickAddMenuItem icon={CalendarPlus} label="New event" onSelect={() => openQuickAdd("event")} />
-              <QuickAddMenuItem icon={StickyNote} label="New note" onSelect={() => openQuickAdd("note")} />
-              <QuickAddMenuItem icon={Upload} label="Upload document" onSelect={() => openQuickAdd("document")} />
-              <QuickAddMenuItem icon={Wallet} label="Add expense" onSelect={() => openQuickAdd("expense")} />
-              <QuickAddMenuItem icon={Target} label="Create goal" onSelect={() => openQuickAdd("goal")} />
-              <DropdownMenu.Separator className="my-1.5 h-px bg-border" />
-              <QuickAddMenuItem icon={Sparkles} label="Ask AI" href="/ai" />
+              <QuickAddMenuItem icon={CalendarPlus} label="New calendar event" href="/calendar" />
+              <QuickAddMenuItem icon={MessageCircle} label="Ask Alxioum" href="/app" />
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>

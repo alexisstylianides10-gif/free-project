@@ -317,3 +317,101 @@ create policy "waitlist_public_insert" on public.waitlist
   for insert
   to anon, authenticated
   with check (true);
+
+-- ---------------------------------------------------------------------------
+-- calendar_events: the V1 Calendar Agent's data store.
+-- ---------------------------------------------------------------------------
+create table if not exists public.calendar_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  title text not null,
+  start_time timestamptz not null,
+  end_time timestamptz not null,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint calendar_events_time_order check (end_time > start_time)
+);
+
+create index if not exists calendar_events_user_start_idx on public.calendar_events (user_id, start_time);
+
+alter table public.calendar_events enable row level security;
+
+drop policy if exists "calendar_events_owner" on public.calendar_events;
+create policy "calendar_events_owner" on public.calendar_events
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- conversations: one (for now) persistent chat thread per user with Alxioum.
+-- ---------------------------------------------------------------------------
+create table if not exists public.conversations (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  title text not null default 'Alxioum',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists conversations_user_idx on public.conversations (user_id, updated_at desc);
+
+alter table public.conversations enable row level security;
+
+drop policy if exists "conversations_owner" on public.conversations;
+create policy "conversations_owner" on public.conversations
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- messages: chat history. user_id is denormalized onto the row (rather than
+-- requiring a join through conversations) so RLS can scope it directly.
+-- pending_action holds a tool call awaiting user confirmation via UI buttons;
+-- it is cleared (set to null) once the user confirms or cancels.
+-- ---------------------------------------------------------------------------
+create table if not exists public.messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.conversations (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  role text not null check (role in ('user', 'assistant', 'system')),
+  content text not null,
+  pending_action jsonb,
+  resolved_action jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists messages_conversation_idx on public.messages (conversation_id, created_at);
+create index if not exists messages_user_month_idx on public.messages (user_id, role, created_at);
+
+alter table public.messages enable row level security;
+
+drop policy if exists "messages_owner" on public.messages;
+create policy "messages_owner" on public.messages
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- agent_actions: audit log of every tool execution Alxioum performs.
+-- ---------------------------------------------------------------------------
+create table if not exists public.agent_actions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  tool text not null,
+  action text not null,
+  status text not null check (status in ('success', 'failed')),
+  metadata jsonb not null default '{}',
+  event_id uuid,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists agent_actions_user_idx on public.agent_actions (user_id, created_at desc);
+
+alter table public.agent_actions enable row level security;
+
+drop policy if exists "agent_actions_owner" on public.agent_actions;
+create policy "agent_actions_owner" on public.agent_actions
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- profiles.plan already exists ('Free' | 'Pro' | 'Ultra'); normalize to the
+-- two real V1 tiers so plan-limit checks have a stable set of values.
+-- ---------------------------------------------------------------------------
+alter table public.profiles drop constraint if exists profiles_plan_check;
+update public.profiles set plan = 'Pro' where plan = 'Ultra';
+alter table public.profiles add constraint profiles_plan_check check (plan in ('Free', 'Pro'));

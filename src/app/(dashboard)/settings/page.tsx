@@ -17,6 +17,7 @@ import {
   Download,
   RotateCcw,
   LogOut,
+  Trash2,
 } from "lucide-react";
 import { backendConfigured, useAlxioum } from "@/lib/store";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
@@ -25,8 +26,10 @@ import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
+import { Modal } from "@/components/ui/Modal";
 import { ProactivityLevel } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { deleteAllUserData } from "@/lib/accountData";
 
 const SECTIONS = [
   { key: "account", label: "Account", icon: User },
@@ -53,9 +56,18 @@ const INTEGRATIONS = [
 ];
 
 const PLANS = [
-  { name: "Free" as const, price: "€0", features: ["Core Alxioum features", "Up to 3 agents", "7-day AI history"] },
-  { name: "Pro" as const, price: "€9/mo", features: ["Unlimited agents", "Full AI history", "Document AI analysis", "Priority insights"] },
-  { name: "Ultra" as const, price: "€19/mo", features: ["Everything in Pro", "Advanced automations", "Early access features", "Priority support"] },
+  {
+    name: "Free" as const,
+    price: "$0",
+    tagline: "Try Alxioum for real",
+    features: ["30 AI actions per month", "Calendar Agent", "7-day activity history"],
+  },
+  {
+    name: "Pro" as const,
+    price: "$12/mo",
+    tagline: "For everyday use",
+    features: ["Unlimited AI actions", "Calendar Agent", "Full activity history", "Priority queue", "First access to new agents"],
+  },
 ];
 
 export default function SettingsPage() {
@@ -66,6 +78,23 @@ export default function SettingsPage() {
   const signOut = useAlxioum((s) => s.signOut);
   const [section, setSection] = useState("account");
   const exportRef = useRef<HTMLAnchorElement>(null);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function handleDeleteAll() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteAllUserData();
+      setConfirmDeleteAll(false);
+      window.location.reload();
+    } catch {
+      setDeleteError("Couldn't delete your data. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   function exportData() {
     const state = useAlxioum.getState();
@@ -295,17 +324,19 @@ export default function SettingsPage() {
         <TabsContent value="billing" className="mt-4 space-y-4">
           <Card className="p-4">
             <p className="text-[12.5px] text-muted-foreground">
-              All plans are unlocked in this testing environment — no payment method required.
+              Alxioum is in development — plans aren&apos;t charged yet. Switching here changes your account&apos;s real
+              monthly AI-action limit immediately, so you can try both tiers.
             </p>
           </Card>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2">
             {PLANS.map((plan) => (
               <Card key={plan.name} className={cn("p-5", profile.plan === plan.name && "border-accent/50 ring-1 ring-accent/30")}>
                 <div className="flex items-center justify-between">
                   <p className="text-[15px] font-semibold text-foreground">{plan.name}</p>
                   {profile.plan === plan.name && <Badge tone="accent">Current</Badge>}
                 </div>
-                <p className="mt-1 text-[20px] font-semibold text-foreground">{plan.price}</p>
+                <p className="text-[12.5px] text-muted-foreground">{plan.tagline}</p>
+                <p className="mt-2 text-[20px] font-semibold text-foreground">{plan.price}</p>
                 <ul className="mt-3 space-y-1.5">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
@@ -320,7 +351,7 @@ export default function SettingsPage() {
                   disabled={profile.plan === plan.name}
                   onClick={() => updateProfile({ plan: plan.name })}
                 >
-                  {profile.plan === plan.name ? "Current plan" : "Switch plan"}
+                  {profile.plan === plan.name ? "Current plan" : `Switch to ${plan.name}`}
                 </Button>
               </Card>
             ))}
@@ -356,9 +387,46 @@ export default function SettingsPage() {
               <RotateCcw className="h-3.5 w-3.5" /> {backendConfigured && authEmail ? "Reload" : "Reset"}
             </Button>
           </Card>
+          {backendConfigured && authEmail && (
+            <Card className="flex items-center justify-between gap-4 p-4">
+              <div>
+                <p className="text-[13.5px] font-medium text-foreground">Delete all my data</p>
+                <p className="text-[12.5px] text-muted-foreground">
+                  Permanently deletes every calendar event, conversation, and activity record in your account.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 shrink-0 text-danger"
+                onClick={() => setConfirmDeleteAll(true)}
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Delete all
+              </Button>
+            </Card>
+          )}
+          {deleteError && <p className="text-[13px] text-danger">{deleteError}</p>}
           <a ref={exportRef} className="hidden" />
         </TabsContent>
       </Tabs>
+
+      {confirmDeleteAll && (
+        <Modal
+          open
+          onOpenChange={(o) => !o && setConfirmDeleteAll(false)}
+          title="Delete all data?"
+          description="This permanently deletes every calendar event, conversation, and activity record in your account. This can't be undone."
+        >
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setConfirmDeleteAll(false)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button variant="danger" size="sm" onClick={handleDeleteAll} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete everything"}
+            </Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
