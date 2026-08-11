@@ -5,7 +5,6 @@ import { Differentiation } from "@/components/marketing/Differentiation";
 import { HowItWorks } from "@/components/marketing/HowItWorks";
 import { Architecture } from "@/components/marketing/Architecture";
 import { Privacy } from "@/components/marketing/Privacy";
-import { WaitlistSection } from "@/components/marketing/WaitlistSection";
 import { Footer } from "@/components/marketing/Footer";
 
 export default function LandingPage() {
@@ -19,7 +18,6 @@ export default function LandingPage() {
         <HowItWorks />
         <Architecture />
         <Privacy />
-        <WaitlistSection />
       </main>
       <Footer />
     </div>

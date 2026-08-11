@@ -63,12 +63,12 @@ export function MarketingNav() {
           >
             Sign in
           </Link>
-          <a
-            href="#waitlist"
+          <Link
+            href="/app"
             className="rounded-lg bg-white px-4 py-2 text-[13.5px] font-semibold text-ink-950 transition-opacity hover:opacity-85"
           >
-            Join the Waitlist
-          </a>
+            Get Started
+          </Link>
         </div>
       </Container>
     </motion.header>
