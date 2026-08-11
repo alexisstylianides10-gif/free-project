@@ -35,12 +35,12 @@
 :root.dark {
   --background: 20 10% 7%;
   --foreground: 30 12% 94%;
-  --surface: 20 10% 10%;
-  --surface-raised: 22 10% 13%;
-  --border: 20 8% 20%;
-  --border-strong: 20 8% 29%;
-  --muted: 20 8% 15%;
-  --muted-foreground: 25 7% 63%;
+  --surface: 20 9% 13%;
+  --surface-raised: 22 9% 17%;
+  --border: 20 8% 23%;
+  --border-strong: 20 8% 32%;
+  --muted: 20 8% 17%;
+  --muted-foreground: 25 7% 65%;
 
   --accent: 22 92% 58%;
   --accent-foreground: 20 20% 8%;
