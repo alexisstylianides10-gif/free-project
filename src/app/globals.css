@@ -6,53 +6,54 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto,
     Helvetica, Arial, sans-serif;
 
-  --background: 240 20% 99%;
-  --foreground: 240 10% 12%;
+  /* Graphite & Ember */
+  --background: 30 8% 98%;
+  --foreground: 20 10% 12%;
   --surface: 0 0% 100%;
-  --surface-raised: 240 25% 98%;
-  --border: 240 12% 90%;
-  --border-strong: 240 10% 80%;
-  --muted: 240 16% 95.5%;
-  --muted-foreground: 240 6% 45%;
+  --surface-raised: 30 12% 96%;
+  --border: 25 10% 88%;
+  --border-strong: 25 9% 76%;
+  --muted: 28 10% 93%;
+  --muted-foreground: 25 7% 42%;
 
-  --accent: 243 75% 59%;
+  --accent: 21 88% 50%;
   --accent-foreground: 0 0% 100%;
-  --accent-soft: 243 90% 96%;
+  --accent-soft: 21 88% 94%;
 
   --success: 152 55% 34%;
-  --success-soft: 152 55% 94%;
-  --warning: 32 92% 46%;
-  --warning-soft: 38 92% 94%;
-  --danger: 4 72% 51%;
-  --danger-soft: 4 72% 95%;
+  --success-soft: 152 45% 93%;
+  --warning: 40 90% 46%;
+  --warning-soft: 40 85% 93%;
+  --danger: 4 72% 50%;
+  --danger-soft: 4 70% 94%;
 
-  --shadow-color: 240 30% 25%;
+  --shadow-color: 20 30% 16%;
 
   color-scheme: light;
 }
 
 :root.dark {
-  --background: 240 16% 7%;
-  --foreground: 240 10% 94%;
-  --surface: 240 15% 9.5%;
-  --surface-raised: 240 14% 12.5%;
-  --border: 240 10% 19%;
-  --border-strong: 240 10% 28%;
-  --muted: 240 12% 14%;
-  --muted-foreground: 240 8% 63%;
+  --background: 20 10% 7%;
+  --foreground: 30 12% 94%;
+  --surface: 20 10% 10%;
+  --surface-raised: 22 10% 13%;
+  --border: 20 8% 20%;
+  --border-strong: 20 8% 29%;
+  --muted: 20 8% 15%;
+  --muted-foreground: 25 7% 63%;
 
-  --accent: 243 85% 70%;
-  --accent-foreground: 240 20% 9%;
-  --accent-soft: 243 45% 20%;
+  --accent: 22 92% 58%;
+  --accent-foreground: 20 20% 8%;
+  --accent-soft: 21 55% 20%;
 
   --success: 152 50% 48%;
-  --success-soft: 152 35% 16%;
-  --warning: 38 88% 58%;
-  --warning-soft: 38 55% 17%;
-  --danger: 4 78% 64%;
-  --danger-soft: 4 50% 18%;
+  --success-soft: 152 32% 16%;
+  --warning: 40 85% 58%;
+  --warning-soft: 40 55% 18%;
+  --danger: 4 78% 62%;
+  --danger-soft: 4 48% 19%;
 
-  --shadow-color: 240 70% 1%;
+  --shadow-color: 20 50% 2%;
 
   color-scheme: dark;
 }
