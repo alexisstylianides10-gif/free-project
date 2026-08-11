@@ -74,8 +74,7 @@ interface AlxioumState {
   closeQuickAdd: () => void;
 
   initAuth: () => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  enterWithName: (name: string) => Promise<void>;
   signOut: () => Promise<void>;
 
   toggleTask: (id: string) => void;
@@ -249,35 +248,21 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       handleSignedInRef.current = handleSignedIn;
     },
 
-    signUp: async (email, password, name) => {
+    // No email/password for now — just a name, so there's nothing to confirm
+    // and nothing that can bounce to an unreachable redirect. Still a real
+    // Supabase user (signInAnonymously issues a real auth.uid() + session),
+    // so RLS and persistence work exactly as they do for a full account —
+    // the only difference is there's no email tying it back to a person, so
+    // signing out or clearing the browser loses access to that account.
+    enterWithName: async (name) => {
       if (!supabase) return;
       set({ authBusy: true, authError: null });
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { name }, emailRedirectTo: `${window.location.origin}/app` },
-      });
-      if (error) {
-        set({ authBusy: false, authError: error.message });
+      const { data, error } = await supabase.auth.signInAnonymously({ options: { data: { name } } });
+      if (error || !data.user) {
+        set({ authBusy: false, authError: error?.message ?? "Something went wrong. Please try again." });
         return;
       }
-      if (data.session) {
-        await handleSignedInRef.current?.(data.session.user.id, data.session.user.email ?? email);
-      } else {
-        set({ authError: "Check your email to confirm your account, then sign in." });
-      }
-      set({ authBusy: false });
-    },
-
-    signIn: async (email, password) => {
-      if (!supabase) return;
-      set({ authBusy: true, authError: null });
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        set({ authBusy: false, authError: error.message });
-        return;
-      }
-      await handleSignedInRef.current?.(data.user.id, data.user.email ?? email);
+      await handleSignedInRef.current?.(data.user.id, data.user.email ?? "");
       set({ authBusy: false });
     },
 

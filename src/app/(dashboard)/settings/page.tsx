@@ -74,7 +74,8 @@ export default function SettingsPage() {
   const profile = useAlxioum((s) => s.profile);
   const updateProfile = useAlxioum((s) => s.updateProfile);
   const chat = useAlxioum((s) => s.chat);
-  const authEmail = useAlxioum((s) => s.authEmail);
+  const authStatus = useAlxioum((s) => s.authStatus);
+  const signedIn = backendConfigured && authStatus === "signed_in";
   const signOut = useAlxioum((s) => s.signOut);
   const [section, setSection] = useState("account");
   const exportRef = useRef<HTMLAnchorElement>(null);
@@ -134,9 +135,7 @@ export default function SettingsPage() {
                   <p className="text-[13px] text-muted-foreground">{profile.email}</p>
                 </div>
               </div>
-              {backendConfigured && authEmail && (
-                <Badge tone="success">Synced account</Badge>
-              )}
+              {signedIn && <Badge tone="success">Synced account</Badge>}
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <Field label="Name" value={profile.name} onChange={(v) => updateProfile({ name: v })} />
@@ -146,11 +145,11 @@ export default function SettingsPage() {
             </div>
           </Card>
 
-          {backendConfigured && authEmail ? (
+          {signedIn ? (
             <Card className="flex items-center justify-between gap-4 p-4">
               <div>
-                <p className="text-[13.5px] font-medium text-foreground">Signed in as {authEmail}</p>
-                <p className="text-[12.5px] text-muted-foreground">Your data is saved to your account and synced automatically.</p>
+                <p className="text-[13.5px] font-medium text-foreground">Signed in as {profile.name}</p>
+                <p className="text-[12.5px] text-muted-foreground">Your data is saved to this device and synced automatically.</p>
               </div>
               <Button size="sm" variant="outline" className="gap-1.5 shrink-0" onClick={() => signOut()}>
                 <LogOut className="h-3.5 w-3.5" /> Sign out
@@ -219,7 +218,7 @@ export default function SettingsPage() {
           <Card className="space-y-3 p-5">
             <p className="text-[13.5px] font-semibold text-foreground">Your data, visible to you</p>
             <p className="text-[13px] text-muted-foreground">
-              {backendConfigured && authEmail
+              {signedIn
                 ? "Your data is stored in your own account, protected by row-level security so only you can read or write it. Nothing here is shared with anyone else, and no third party (including the app's developer) can query other users' data through the app."
                 : "This app isn't connected to a backend yet — everything shown lives only in this browser session and is not sent anywhere. Once connected, this section will control exactly what Alxioum can read, how long data is kept, and who it's shared with."}
             </p>
@@ -234,10 +233,7 @@ export default function SettingsPage() {
             {[
               {
                 label: "Password",
-                body:
-                  backendConfigured && authEmail
-                    ? "Managed by your account's authentication provider."
-                    : "Not available — connect a backend first.",
+                body: "There's no password right now — your account is tied to this device and browser only.",
               },
               { label: "Two-factor authentication", body: "Not built yet — on the roadmap." },
               { label: "Active sessions", body: "Not built yet — on the roadmap." },
@@ -375,19 +371,19 @@ export default function SettingsPage() {
           <Card className="flex items-center justify-between gap-4 p-4">
             <div>
               <p className="text-[13.5px] font-medium text-foreground">
-                {backendConfigured && authEmail ? "Reload my data" : "Reset to demo data"}
+                {signedIn ? "Reload my data" : "Reset to demo data"}
               </p>
               <p className="text-[12.5px] text-muted-foreground">
-                {backendConfigured && authEmail
+                {signedIn
                   ? "Refetches your latest saved data from your account."
                   : "Clears session changes and reloads the original demo state."}
               </p>
             </div>
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => window.location.reload()}>
-              <RotateCcw className="h-3.5 w-3.5" /> {backendConfigured && authEmail ? "Reload" : "Reset"}
+              <RotateCcw className="h-3.5 w-3.5" /> {signedIn ? "Reload" : "Reset"}
             </Button>
           </Card>
-          {backendConfigured && authEmail && (
+          {signedIn && (
             <Card className="flex items-center justify-between gap-4 p-4">
               <div>
                 <p className="text-[13.5px] font-medium text-foreground">Delete all my data</p>
