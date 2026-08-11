@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { CalendarPlus, CalendarClock, CalendarX, History } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -59,6 +61,13 @@ export default function ActivityPage() {
           icon={History}
           title="No activity yet"
           body="When Alxioum creates, updates, or deletes something for you, it'll show up here."
+          action={
+            <Link href="/app">
+              <Button size="sm" variant="outline">
+                Ask Alxioum something
+              </Button>
+            </Link>
+          }
         />
       ) : (
         <div className="space-y-2">

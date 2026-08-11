@@ -14,12 +14,11 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { EmptyState } from "@/components/ui/EmptyState";
 import {
   CalendarEventRow,
   createEvent,
@@ -112,12 +111,6 @@ export default function CalendarPage() {
 
       {loading ? (
         <Card className="flex h-40 items-center justify-center text-sm text-muted-foreground">Loading...</Card>
-      ) : events.length === 0 ? (
-        <EmptyState
-          icon={CalendarDays}
-          title="Nothing scheduled"
-          body="Create an event here, or ask Alxioum in chat to add one."
-        />
       ) : view === "month" ? (
         <MonthGrid
           anchor={anchor}
@@ -158,6 +151,10 @@ function EventList({
   onEdit: (e: CalendarEventRow) => void;
 }) {
   const dayList = view === "day" ? [anchor] : eachDayOfInterval({ start: startOfWeek(anchor), end: endOfWeek(anchor) });
+
+  if (view === "week" && events.length === 0) {
+    return <p className="text-[13px] text-muted-foreground">Nothing scheduled this week.</p>;
+  }
 
   return (
     <div className="space-y-4">

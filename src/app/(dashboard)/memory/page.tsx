@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { BrainCircuit, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
@@ -81,6 +82,13 @@ export default function WhatAlxioumKnowsPage() {
           icon={BrainCircuit}
           title="Nothing stored yet"
           body="Once you add calendar events — through chat or manually — they'll show up here so you always know exactly what Alxioum has on file."
+          action={
+            <Link href="/calendar">
+              <Button size="sm" variant="outline">
+                Open Calendar
+              </Button>
+            </Link>
+          }
         />
       ) : (
         <div>
