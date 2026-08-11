@@ -252,7 +252,11 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     signUp: async (email, password, name) => {
       if (!supabase) return;
       set({ authBusy: true, authError: null });
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name }, emailRedirectTo: `${window.location.origin}/app` },
+      });
       if (error) {
         set({ authBusy: false, authError: error.message });
         return;
