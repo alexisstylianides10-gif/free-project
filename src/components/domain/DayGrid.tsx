@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CalendarEvent } from "@/lib/types";
 import { eventTypeMeta } from "@/lib/eventStyle";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn, formatTime12 } from "@/lib/utils";
 
 const START_HOUR = 7;
@@ -16,7 +16,7 @@ function toMinutes(hhmm: string): number {
 }
 
 export function DayGrid({ date, events, onEventClick }: { date: string; events: CalendarEvent[]; onEventClick: (e: CalendarEvent) => void }) {
-  const moveEvent = useLifeOS((s) => s.moveEvent);
+  const moveEvent = useAlxioum((s) => s.moveEvent);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverHour, setDragOverHour] = useState<number | null>(null);
 

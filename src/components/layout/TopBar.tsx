@@ -4,21 +4,21 @@ import Link from "next/link";
 import * as Popover from "@radix-ui/react-popover";
 import { Bell, Search } from "lucide-react";
 import { Logo } from "./Logo";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { formatDayLabel } from "@/lib/utils";
 
 export function TopBar() {
-  const setCommandOpen = useLifeOS((s) => s.setCommandOpen);
-  const notifications = useLifeOS((s) => s.notifications);
-  const markRead = useLifeOS((s) => s.markNotificationRead);
+  const setCommandOpen = useAlxioum((s) => s.setCommandOpen);
+  const notifications = useAlxioum((s) => s.notifications);
+  const markRead = useAlxioum((s) => s.markNotificationRead);
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-surface/85 px-4 backdrop-blur md:justify-end md:border-none md:bg-transparent md:px-6">
-      <Link href="/" className="flex items-center gap-2 md:hidden">
+      <Link href="/app" className="flex items-center gap-2 md:hidden">
         <Logo />
-        <span className="text-[15px] font-semibold tracking-tight">LifeOS</span>
+        <span className="text-[15px] font-semibold tracking-tight">Alxioum</span>
       </Link>
 
       <div className="flex items-center gap-1.5">

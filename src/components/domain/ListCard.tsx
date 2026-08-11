@@ -5,14 +5,14 @@ import { Check, Plus, Trash2 } from "lucide-react";
 import { LifeList } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function ListCard({ list }: { list: LifeList }) {
   const [draft, setDraft] = useState("");
-  const addListItem = useLifeOS((s) => s.addListItem);
-  const toggleListItem = useLifeOS((s) => s.toggleListItem);
-  const removeCheckedItems = useLifeOS((s) => s.removeCheckedItems);
+  const addListItem = useAlxioum((s) => s.addListItem);
+  const toggleListItem = useAlxioum((s) => s.toggleListItem);
+  const removeCheckedItems = useAlxioum((s) => s.removeCheckedItems);
 
   const checkedCount = list.items.filter((i) => i.done).length;
 

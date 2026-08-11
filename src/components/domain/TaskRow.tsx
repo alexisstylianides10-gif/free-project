@@ -6,7 +6,7 @@ import { Check, ChevronDown, Clock, Sparkles } from "lucide-react";
 import { Task } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 import { PriorityDot } from "@/components/ui/PriorityDot";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn, formatDayLabel } from "@/lib/utils";
 
 const categoryLabel: Record<Task["category"], string> = {
@@ -22,8 +22,8 @@ const categoryLabel: Record<Task["category"], string> = {
 
 export function TaskRow({ task }: { task: Task }) {
   const [open, setOpen] = useState(false);
-  const toggleTask = useLifeOS((s) => s.toggleTask);
-  const goals = useLifeOS((s) => s.goals);
+  const toggleTask = useAlxioum((s) => s.toggleTask);
+  const goals = useAlxioum((s) => s.goals);
   const linkedGoal = task.goalId ? goals.find((g) => g.id === task.goalId) : undefined;
 
   return (

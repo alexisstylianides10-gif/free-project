@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { Button } from "@/components/ui/Button";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
@@ -15,10 +15,10 @@ export function AuthScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const authBusy = useLifeOS((s) => s.authBusy);
-  const authError = useLifeOS((s) => s.authError);
-  const signUp = useLifeOS((s) => s.signUp);
-  const signIn = useLifeOS((s) => s.signIn);
+  const authBusy = useAlxioum((s) => s.authBusy);
+  const authError = useAlxioum((s) => s.authError);
+  const signUp = useAlxioum((s) => s.signUp);
+  const signIn = useAlxioum((s) => s.signIn);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,7 +32,7 @@ export function AuthScreen() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo className="mb-3" />
-          <h1 className="text-[18px] font-semibold tracking-tight text-foreground">LifeOS</h1>
+          <h1 className="text-[18px] font-semibold tracking-tight text-foreground">Alxioum</h1>
           <p className="mt-1 text-[13.5px] text-muted-foreground">
             {mode === "signup" ? "Create your account to get started." : "Welcome back."}
           </p>
@@ -86,7 +86,7 @@ export function AuthScreen() {
           {mode === "signup" && (
             <p className="mt-4 flex items-start gap-1.5 text-[12px] text-muted-foreground">
               <Sparkles className="mt-0.5 h-3 w-3 shrink-0 text-accent" />
-              We&apos;ll populate your account with a realistic demo day so you can see LifeOS in action immediately — everything is yours to edit or clear.
+              We&apos;ll populate your account with a realistic demo day so you can see Alxioum in action immediately — everything is yours to edit or clear.
             </p>
           )}
         </div>

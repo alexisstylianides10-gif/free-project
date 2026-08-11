@@ -5,11 +5,11 @@ import { Sparkles } from "lucide-react";
 import { ChatMessage, PendingAction } from "@/lib/types";
 import { AIActionCard } from "./AIActionCard";
 import { Avatar } from "@/components/ui/Avatar";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 
 export function ChatBubble({ message, userInitials }: { message: ChatMessage; userInitials: string }) {
-  const applyAction = useLifeOS((s) => s.applyAction);
-  const dismissAction = useLifeOS((s) => s.dismissAction);
+  const applyAction = useAlxioum((s) => s.applyAction);
+  const dismissAction = useAlxioum((s) => s.dismissAction);
   const isUser = message.role === "user";
 
   return (

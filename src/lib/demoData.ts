@@ -95,7 +95,7 @@ export const demoTasks: Task[] = [
     estimatedMinutes: 10,
     category: "home",
     subtasks: [],
-    aiContext: "Auto-categorized by LifeOS from your message.",
+    aiContext: "Auto-categorized by Alxioum from your message.",
     createdAt: addDaysISO(TODAY, -1),
   },
   {

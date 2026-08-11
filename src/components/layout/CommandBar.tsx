@@ -5,29 +5,29 @@ import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import * as Dialog from "@radix-ui/react-dialog";
 import { CornerDownLeft, Search, Sparkles } from "lucide-react";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { primaryNav } from "@/lib/nav";
 import { searchAll } from "@/lib/search";
 import { interpretCommand } from "@/lib/commands";
 import { cn } from "@/lib/utils";
 
 export function CommandBar() {
-  const open = useLifeOS((s) => s.commandOpen);
-  const setOpen = useLifeOS((s) => s.setCommandOpen);
+  const open = useAlxioum((s) => s.commandOpen);
+  const setOpen = useAlxioum((s) => s.setCommandOpen);
   const [query, setQuery] = useState("");
   const router = useRouter();
 
-  const tasks = useLifeOS((s) => s.tasks);
-  const events = useLifeOS((s) => s.events);
-  const documents = useLifeOS((s) => s.documents);
-  const goals = useLifeOS((s) => s.goals);
-  const memory = useLifeOS((s) => s.memory);
-  const lists = useLifeOS((s) => s.lists);
-  const addEvent = useLifeOS((s) => s.addEvent);
-  const addTask = useLifeOS((s) => s.addTask);
-  const addListItem = useLifeOS((s) => s.addListItem);
-  const createList = useLifeOS((s) => s.createList);
-  const openQuickAdd = useLifeOS((s) => s.openQuickAdd);
+  const tasks = useAlxioum((s) => s.tasks);
+  const events = useAlxioum((s) => s.events);
+  const documents = useAlxioum((s) => s.documents);
+  const goals = useAlxioum((s) => s.goals);
+  const memory = useAlxioum((s) => s.memory);
+  const lists = useAlxioum((s) => s.lists);
+  const addEvent = useAlxioum((s) => s.addEvent);
+  const addTask = useAlxioum((s) => s.addTask);
+  const addListItem = useAlxioum((s) => s.addListItem);
+  const createList = useAlxioum((s) => s.createList);
+  const openQuickAdd = useAlxioum((s) => s.openQuickAdd);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -69,7 +69,7 @@ export function CommandBar() {
                 autoFocus
                 value={query}
                 onValueChange={setQuery}
-                placeholder="Search or tell LifeOS what you need..."
+                placeholder="Search or tell Alxioum what you need..."
                 className="h-12 flex-1 bg-transparent text-[14.5px] text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
               <kbd className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">esc</kbd>
@@ -129,7 +129,7 @@ export function CommandBar() {
 
               {query && results.length === 0 && !command && (
                 <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  Try “Add milk to shopping list”, “Show my expenses”, or search for anything in LifeOS.
+                  Try “Add milk to shopping list”, “Show my expenses”, or search for anything in Alxioum.
                 </div>
               )}
             </Command.List>

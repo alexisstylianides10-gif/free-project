@@ -717,7 +717,7 @@ export async function updateChatMessageActions(id: string, actions: ChatMessage[
 
 // ---------------------------------------------------------------------------
 // Seed a brand-new account with the realistic demo dataset so first-run
-// still feels like a populated, "wow" LifeOS instead of an empty shell.
+// still feels like a populated, "wow" Alxioum instead of an empty shell.
 // ---------------------------------------------------------------------------
 
 export async function seedAccountWithDemoData(userId: string): Promise<void> {

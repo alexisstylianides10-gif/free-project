@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { CalendarEvent } from "@/lib/types";
 import { todayISO } from "@/lib/utils";
 
@@ -23,9 +23,9 @@ export function EventEditModal({
   onOpenChange: (open: boolean) => void;
   defaultDate?: string;
 }) {
-  const addEvent = useLifeOS((s) => s.addEvent);
-  const updateEvent = useLifeOS((s) => s.updateEvent);
-  const removeEvent = useLifeOS((s) => s.removeEvent);
+  const addEvent = useAlxioum((s) => s.addEvent);
+  const updateEvent = useAlxioum((s) => s.updateEvent);
+  const removeEvent = useAlxioum((s) => s.removeEvent);
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(defaultDate ?? todayISO());

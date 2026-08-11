@@ -7,14 +7,14 @@ import { Goal } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Badge } from "@/components/ui/Badge";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn, formatDayLabel } from "@/lib/utils";
 
 export function GoalCard({ goal }: { goal: Goal }) {
   const [open, setOpen] = useState(false);
-  const tasks = useLifeOS((s) => s.tasks);
-  const habits = useLifeOS((s) => s.habits);
-  const toggleMilestone = useLifeOS((s) => s.toggleMilestone);
+  const tasks = useAlxioum((s) => s.tasks);
+  const habits = useAlxioum((s) => s.habits);
+  const toggleMilestone = useAlxioum((s) => s.toggleMilestone);
 
   const linkedTasks = tasks.filter((t) => t.goalId === goal.id);
   const linkedHabits = habits.filter((h) => goal.linkedHabitIds.includes(h.id));

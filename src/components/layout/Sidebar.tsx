@@ -20,27 +20,27 @@ import { Logo } from "./Logo";
 import { primaryNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const profile = useLifeOS((s) => s.profile);
-  const openQuickAdd = useLifeOS((s) => s.openQuickAdd);
-  const setCommandOpen = useLifeOS((s) => s.setCommandOpen);
+  const profile = useAlxioum((s) => s.profile);
+  const openQuickAdd = useAlxioum((s) => s.openQuickAdd);
+  const setCommandOpen = useAlxioum((s) => s.setCommandOpen);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-surface md:flex">
-      <div className="flex items-center gap-2.5 px-4 pb-3 pt-5">
+      <Link href="/app" className="flex items-center gap-2.5 px-4 pb-3 pt-5">
         <Logo />
-        <span className="text-[15px] font-semibold tracking-tight">LifeOS</span>
-      </div>
+        <span className="text-[15px] font-semibold tracking-tight">Alxioum</span>
+      </Link>
 
       <button
         onClick={() => setCommandOpen(true)}
         className="mx-3 mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted/60 px-3 py-2 text-left text-[13px] text-muted-foreground transition-colors hover:bg-muted"
       >
         <Search className="h-3.5 w-3.5" />
-        <span className="flex-1">Search LifeOS...</span>
+        <span className="flex-1">Search Alxioum...</span>
         <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd>
       </button>
 

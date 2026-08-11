@@ -8,12 +8,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { getAgentIcon } from "@/lib/agentIcons";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn, formatDayLabel } from "@/lib/utils";
 
 export function AgentCard({ agent }: { agent: Agent }) {
   const [open, setOpen] = useState(false);
-  const toggleAgent = useLifeOS((s) => s.toggleAgent);
+  const toggleAgent = useAlxioum((s) => s.toggleAgent);
   const Icon = getAgentIcon(agent.icon);
 
   return (

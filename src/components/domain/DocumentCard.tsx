@@ -6,7 +6,7 @@ import { LifeDocument } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn, formatDayLabel } from "@/lib/utils";
 
 const kindIcon: Record<LifeDocument["kind"], typeof FileText> = {
@@ -18,8 +18,8 @@ const kindIcon: Record<LifeDocument["kind"], typeof FileText> = {
 
 export function DocumentCard({ doc }: { doc: LifeDocument }) {
   const [open, setOpen] = useState(false);
-  const addEvent = useLifeOS((s) => s.addEvent);
-  const addNotification = useLifeOS((s) => s.addNotification);
+  const addEvent = useAlxioum((s) => s.addEvent);
+  const addNotification = useAlxioum((s) => s.addNotification);
   const [addedDates, setAddedDates] = useState<Set<string>>(new Set());
   const [reminderSet, setReminderSet] = useState(false);
   const Icon = kindIcon[doc.kind];
@@ -66,7 +66,7 @@ export function DocumentCard({ doc }: { doc: LifeDocument }) {
               <p className="text-[13px] text-foreground">{doc.aiSummary}</p>
             </div>
           ) : (
-            <p className="text-[13px] text-muted-foreground">LifeOS hasn&apos;t analyzed this document yet.</p>
+            <p className="text-[13px] text-muted-foreground">Alxioum hasn&apos;t analyzed this document yet.</p>
           )}
 
           {doc.extractedDates && doc.extractedDates.length > 0 && (

@@ -11,13 +11,13 @@ import { QuickAddModal } from "./QuickAddModal";
 import { TooltipProvider } from "@/components/ui/Tooltip";
 import { AuthScreen } from "@/components/auth/AuthScreen";
 import { Logo } from "./Logo";
-import { backendConfigured, useLifeOS } from "@/lib/store";
+import { backendConfigured, useAlxioum } from "@/lib/store";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const authStatus = useLifeOS((s) => s.authStatus);
-  const dataLoading = useLifeOS((s) => s.dataLoading);
-  const initAuth = useLifeOS((s) => s.initAuth);
+  const authStatus = useAlxioum((s) => s.authStatus);
+  const dataLoading = useAlxioum((s) => s.dataLoading);
+  const initAuth = useAlxioum((s) => s.initAuth);
 
   useEffect(() => {
     if (backendConfigured) initAuth();

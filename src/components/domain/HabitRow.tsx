@@ -3,7 +3,7 @@
 import { Check, Flame, Sparkles } from "lucide-react";
 import { Habit } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { addDaysISO, cn, todayISO } from "@/lib/utils";
 
 function currentStreak(habit: Habit, today: string): number {
@@ -17,7 +17,7 @@ function currentStreak(habit: Habit, today: string): number {
 }
 
 export function HabitRow({ habit }: { habit: Habit }) {
-  const toggleHabit = useLifeOS((s) => s.toggleHabit);
+  const toggleHabit = useAlxioum((s) => s.toggleHabit);
   const today = todayISO();
   const doneToday = !!habit.history[today];
   const streak = currentStreak(habit, today);

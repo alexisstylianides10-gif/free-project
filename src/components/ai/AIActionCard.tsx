@@ -36,7 +36,7 @@ export function AIActionCard({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] text-muted-foreground">
-            LifeOS <span className="text-foreground">{kindLabel[action.kind]}</span>
+            Alxioum <span className="text-foreground">{kindLabel[action.kind]}</span>
           </p>
           <p className="mt-1 truncate text-[14px] font-semibold text-foreground">{action.title}</p>
           <p className="text-[13px] text-muted-foreground">{action.detail}</p>

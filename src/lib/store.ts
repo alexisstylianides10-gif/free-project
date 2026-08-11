@@ -42,7 +42,7 @@ export type AuthStatus = "checking" | "signed_out" | "signed_in";
 
 export const backendConfigured = isSupabaseConfigured;
 
-interface LifeOSState {
+interface AlxioumState {
   hydrated: boolean;
   profile: Profile;
   tasks: Task[];
@@ -119,7 +119,7 @@ interface LifeOSState {
   addDocument: (doc: Omit<LifeDocument, "id" | "uploadedAt">) => void;
 }
 
-function engineSnapshot(s: LifeOSState): EngineState {
+function engineSnapshot(s: AlxioumState): EngineState {
   return {
     tasks: s.tasks,
     events: s.events,
@@ -134,10 +134,10 @@ function engineSnapshot(s: LifeOSState): EngineState {
 function reportSyncError(context: string, err: unknown) {
   // Local UI already reflects the change (optimistic); a sync failure means
   // it hasn't actually saved to the account yet. Surface it, don't hide it.
-  console.error(`[LifeOS sync] ${context} failed:`, err);
+  console.error(`[Alxioum sync] ${context} failed:`, err);
 }
 
-export const useLifeOS = create<LifeOSState>((set, get) => {
+export const useAlxioum = create<AlxioumState>((set, get) => {
   function synced(): string | null {
     const s = get();
     return backendConfigured && s.authStatus === "signed_in" ? s.authUserId : null;
@@ -169,7 +169,7 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
       {
         id: uid("notif"),
         title: "You have 45 minutes free before tennis",
-        body: "Want LifeOS to schedule a quick study block?",
+        body: "Want Alxioum to schedule a quick study block?",
         createdAt: new Date().toISOString(),
         read: false,
         kind: "schedule",
@@ -418,7 +418,7 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
         milestones: [],
         linkedTaskIds: [],
         linkedHabitIds: [],
-        aiPlan: "LifeOS will suggest a plan once this goal has milestones and a deadline.",
+        aiPlan: "Alxioum will suggest a plan once this goal has milestones and a deadline.",
       };
       set((s) => ({ goals: [...s.goals, goal] }));
       const uidVal = synced();

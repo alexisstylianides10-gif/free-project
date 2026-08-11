@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 
 const STORAGE_KEY = "lifeos-theme";
 
 export function ThemeProvider() {
-  const theme = useLifeOS((s) => s.profile.theme);
-  const updateProfile = useLifeOS((s) => s.updateProfile);
+  const theme = useAlxioum((s) => s.profile.theme);
+  const updateProfile = useAlxioum((s) => s.updateProfile);
   const restoredRef = useRef(false);
 
   // Restore a saved theme preference once on mount. Applied imperatively

@@ -1,4 +1,4 @@
--- LifeOS database schema for Supabase (Postgres).
+-- Alxioum database schema for Supabase (Postgres).
 -- Run this once in your Supabase project's SQL Editor (Dashboard -> SQL Editor -> New query -> paste -> Run).
 -- Every table is scoped to auth.uid() via Row Level Security, so each signed-in
 -- user can only ever see or modify their own rows.
@@ -291,3 +291,23 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ---------------------------------------------------------------------------
+-- waitlist
+-- Public landing-page signups. Anyone (including anonymous visitors) may
+-- insert their email; nobody can read, update, or delete rows from the
+-- client — that's restricted to the Supabase dashboard / service role.
+-- ---------------------------------------------------------------------------
+create table if not exists public.waitlist (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table public.waitlist enable row level security;
+
+drop policy if exists "waitlist_public_insert" on public.waitlist;
+create policy "waitlist_public_insert" on public.waitlist
+  for insert
+  to anon, authenticated
+  with check (true);

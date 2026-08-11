@@ -22,7 +22,7 @@ export interface NavItem {
 }
 
 export const primaryNav: NavItem[] = [
-  { label: "Home", href: "/", icon: Home },
+  { label: "Home", href: "/app", icon: Home },
   { label: "AI", href: "/ai", icon: Sparkles },
   { label: "Today", href: "/today", icon: Sun },
   { label: "Tasks", href: "/tasks", icon: CheckSquare },
@@ -38,7 +38,7 @@ export const primaryNav: NavItem[] = [
 ];
 
 export const mobilePrimaryNav: NavItem[] = [
-  { label: "Home", href: "/", icon: Home },
+  { label: "Home", href: "/app", icon: Home },
   { label: "Today", href: "/today", icon: Sun },
   { label: "AI", href: "/ai", icon: Sparkles },
   { label: "Tasks", href: "/tasks", icon: CheckSquare },

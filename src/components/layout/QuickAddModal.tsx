@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { LifeArea, Priority, TxCategory } from "@/lib/types";
 import { todayISO } from "@/lib/utils";
 
@@ -12,15 +12,15 @@ const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
 
 export function QuickAddModal() {
-  const quickAdd = useLifeOS((s) => s.quickAdd);
-  const close = useLifeOS((s) => s.closeQuickAdd);
+  const quickAdd = useAlxioum((s) => s.quickAdd);
+  const close = useAlxioum((s) => s.closeQuickAdd);
   const router = useRouter();
 
-  const addTask = useLifeOS((s) => s.addTask);
-  const addEvent = useLifeOS((s) => s.addEvent);
-  const addDocument = useLifeOS((s) => s.addDocument);
-  const addTransaction = useLifeOS((s) => s.addTransaction);
-  const addGoal = useLifeOS((s) => s.addGoal);
+  const addTask = useAlxioum((s) => s.addTask);
+  const addEvent = useAlxioum((s) => s.addEvent);
+  const addDocument = useAlxioum((s) => s.addDocument);
+  const addTransaction = useAlxioum((s) => s.addTransaction);
+  const addGoal = useAlxioum((s) => s.addGoal);
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(todayISO());
