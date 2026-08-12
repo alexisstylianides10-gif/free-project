@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   addDays,
   addMonths,
@@ -11,14 +11,18 @@ import {
   format,
   isSameDay,
   isSameMonth,
+  setHours,
+  setMinutes,
+  startOfDay,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { cn } from "@/lib/utils";
 import {
   CalendarEventRow,
   createEvent,
@@ -42,6 +46,12 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalEvent, setModalEvent] = useState<CalendarEventRow | "new" | null>(null);
+  const [newEventAt, setNewEventAt] = useState<Date>(new Date());
+
+  function openNewEvent(at: Date) {
+    setNewEventAt(at);
+    setModalEvent("new");
+  }
 
   const { from, to } = useMemo(() => rangeFor(view, anchor), [view, anchor]);
 
@@ -101,7 +111,7 @@ export default function CalendarPage() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <Button size="sm" className="gap-1.5" onClick={() => setModalEvent("new")}>
+          <Button size="sm" className="gap-1.5" onClick={() => openNewEvent(anchor)}>
             <Plus className="h-3.5 w-3.5" /> New event
           </Button>
         </div>
@@ -121,13 +131,18 @@ export default function CalendarPage() {
           }}
         />
       ) : (
-        <EventList view={view} anchor={anchor} events={events} onEdit={setModalEvent} />
+        <TimeGrid
+          days={view === "day" ? [startOfDay(anchor)] : eachDayOfInterval({ start: startOfWeek(anchor), end: endOfWeek(anchor) })}
+          events={events}
+          onEdit={setModalEvent}
+          onCreateAt={openNewEvent}
+        />
       )}
 
       {modalEvent && (
         <EventModal
           value={modalEvent}
-          defaultDate={anchor}
+          defaultDate={newEventAt}
           onClose={() => setModalEvent(null)}
           onSaved={() => {
             setModalEvent(null);
@@ -139,63 +154,166 @@ export default function CalendarPage() {
   );
 }
 
-function EventList({
-  view,
-  anchor,
-  events,
-  onEdit,
-}: {
-  view: View;
-  anchor: Date;
-  events: CalendarEventRow[];
-  onEdit: (e: CalendarEventRow) => void;
-}) {
-  const dayList = view === "day" ? [anchor] : eachDayOfInterval({ start: startOfWeek(anchor), end: endOfWeek(anchor) });
+const HOUR_HEIGHT = 60; // px per hour
+const GRID_HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-  if (view === "week" && events.length === 0) {
-    return <p className="text-[13px] text-muted-foreground">Nothing scheduled this week.</p>;
+interface PositionedEvent {
+  event: CalendarEventRow;
+  top: number;
+  height: number;
+  col: number;
+  cols: number;
+}
+
+/** Greedy same-day overlap layout: events that overlap in time share columns,
+ * like a real calendar, so nothing visually collides. */
+function layoutDayEvents(dayEvents: CalendarEventRow[]): PositionedEvent[] {
+  const sorted = [...dayEvents].sort(
+    (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+  );
+  const result: PositionedEvent[] = [];
+  let cluster: CalendarEventRow[] = [];
+  let clusterEnd = -Infinity;
+
+  function flush() {
+    if (!cluster.length) return;
+    const colEndTimes: number[] = [];
+    const assigned: { event: CalendarEventRow; col: number }[] = [];
+    for (const ev of cluster) {
+      const start = new Date(ev.start_time).getTime();
+      let col = colEndTimes.findIndex((endTime) => endTime <= start);
+      if (col === -1) {
+        col = colEndTimes.length;
+        colEndTimes.push(0);
+      }
+      colEndTimes[col] = new Date(ev.end_time).getTime();
+      assigned.push({ event: ev, col });
+    }
+    const cols = colEndTimes.length;
+    for (const { event, col } of assigned) {
+      const start = new Date(event.start_time);
+      const end = new Date(event.end_time);
+      const top = (start.getHours() + start.getMinutes() / 60) * HOUR_HEIGHT;
+      const height = Math.max(((end.getTime() - start.getTime()) / 3_600_000) * HOUR_HEIGHT, 24);
+      result.push({ event, top, height, col, cols });
+    }
+    cluster = [];
   }
 
+  for (const ev of sorted) {
+    const start = new Date(ev.start_time).getTime();
+    if (cluster.length && start >= clusterEnd) flush();
+    cluster.push(ev);
+    clusterEnd = Math.max(clusterEnd, new Date(ev.end_time).getTime());
+  }
+  flush();
+  return result;
+}
+
+function TimeGrid({
+  days,
+  events,
+  onEdit,
+  onCreateAt,
+}: {
+  days: Date[];
+  events: CalendarEventRow[];
+  onEdit: (e: CalendarEventRow) => void;
+  onCreateAt: (at: Date) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const today = new Date();
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = Math.max(0, (today.getHours() - 2) * HOUR_HEIGHT);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days.length]);
+
   return (
-    <div className="space-y-4">
-      {dayList.map((day) => {
-        const dayEvents = events.filter((e) => isSameDay(new Date(e.start_time), day));
-        if (view === "week" && dayEvents.length === 0) return null;
-        return (
-          <div key={day.toISOString()}>
-            {view === "week" && (
-              <p className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
-                {format(day, "EEEE, MMM d")}
+    <Card className="overflow-hidden p-0">
+      {days.length > 1 && (
+        <div className="flex border-b border-border pl-14">
+          {days.map((day) => (
+            <div key={day.toISOString()} className="flex-1 border-l border-border py-2 text-center">
+              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {format(day, "EEE")}
               </p>
-            )}
-            {dayEvents.length === 0 ? (
-              <p className="text-[13px] text-muted-foreground">Nothing scheduled.</p>
-            ) : (
-              <div className="space-y-2">
-                {dayEvents.map((e) => (
-                  <Card key={e.id} className="flex items-center justify-between gap-3 p-3.5">
-                    <div className="min-w-0">
-                      <p className="truncate text-[14px] font-medium text-foreground">{e.title}</p>
-                      <p className="text-[12.5px] text-muted-foreground">
-                        {format(new Date(e.start_time), "h:mm a")} – {format(new Date(e.end_time), "h:mm a")}
-                        {e.notes ? ` · ${e.notes}` : ""}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => onEdit(e)}
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                      aria-label="Edit"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
+              <p
+                className={cn(
+                  "mx-auto mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-[13px]",
+                  isSameDay(day, today) ? "bg-accent font-semibold text-accent-foreground" : "text-foreground"
+                )}
+              >
+                {format(day, "d")}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+      <div ref={scrollRef} className="flex max-h-[600px] overflow-y-auto">
+        <div className="w-14 shrink-0">
+          {GRID_HOURS.map((h) => (
+            <div key={h} style={{ height: HOUR_HEIGHT }} className="relative">
+              {h > 0 && (
+                <span className="absolute -top-2 right-2 text-[10.5px] text-muted-foreground">
+                  {format(setHours(today, h), "h a")}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        {days.map((day) => {
+          const dayEvents = events.filter((e) => isSameDay(new Date(e.start_time), day));
+          const positioned = layoutDayEvents(dayEvents);
+          const isToday = isSameDay(day, today);
+          const nowTop = (today.getHours() + today.getMinutes() / 60) * HOUR_HEIGHT;
+          return (
+            <div
+              key={day.toISOString()}
+              className="relative flex-1 border-l border-border"
+              style={{ height: HOUR_HEIGHT * 24 }}
+            >
+              {GRID_HOURS.map((h) => (
+                <button
+                  key={h}
+                  onClick={() => onCreateAt(setMinutes(setHours(day, h), 0))}
+                  style={{ top: h * HOUR_HEIGHT, height: HOUR_HEIGHT }}
+                  className="absolute inset-x-0 border-t border-border/60 hover:bg-muted/40"
+                  aria-label={`New event at ${format(setHours(day, h), "h a")} on ${format(day, "EEEE, MMM d")}`}
+                />
+              ))}
+              {isToday && (
+                <div className="pointer-events-none absolute inset-x-0 z-10" style={{ top: nowTop }}>
+                  <div className="h-px bg-danger" />
+                  <div className="absolute -left-0.5 -top-1 h-2 w-2 rounded-full bg-danger" />
+                </div>
+              )}
+              {positioned.map(({ event, top, height, col, cols }) => (
+                <button
+                  key={event.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(event);
+                  }}
+                  style={{
+                    top,
+                    height,
+                    left: `${(col / cols) * 100}%`,
+                    width: `${(1 / cols) * 100}%`,
+                  }}
+                  className="absolute z-[5] overflow-hidden rounded-md border border-accent/30 bg-accent-soft px-1.5 py-0.5 text-left text-accent transition-colors hover:brightness-95"
+                >
+                  <p className="truncate text-[10.5px] font-medium leading-tight">{event.title}</p>
+                  <p className="truncate text-[9px] leading-tight opacity-80">{format(new Date(event.start_time), "h:mm a")}</p>
+                </button>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </Card>
   );
 }
 
@@ -382,8 +500,9 @@ function EventModal({
 
 function roundToHour(d: Date) {
   const copy = new Date(d);
+  const onTheHour = copy.getMinutes() === 0 && copy.getSeconds() === 0 && copy.getMilliseconds() === 0;
   copy.setMinutes(0, 0, 0);
-  copy.setHours(copy.getHours() + 1);
+  if (!onTheHour) copy.setHours(copy.getHours() + 1);
   return copy;
 }
 function addHour(d: Date) {
