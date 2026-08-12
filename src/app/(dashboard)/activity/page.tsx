@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { CalendarPlus, CalendarClock, CalendarX, History } from "lucide-react";
 import { Card } from "@/components/ui/Card";
@@ -71,23 +72,30 @@ export default function ActivityPage() {
         />
       ) : (
         <div className="space-y-2">
-          {actions.map((a) => {
+          {actions.map((a, i) => {
             const Icon = toolIcon[a.tool] ?? History;
             return (
-              <Card key={a.id} className="flex items-start gap-3 p-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft">
-                  <Icon className="h-4 w-4 text-accent" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-[13.5px] font-medium text-foreground">{a.action}</p>
-                    <Badge tone={a.status === "success" ? "success" : "danger"}>{a.status}</Badge>
+              <motion.div
+                key={a.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: Math.min(i, 8) * 0.03, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Card className="flex items-start gap-3 p-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft">
+                    <Icon className="h-4 w-4 text-accent" />
                   </div>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    {a.tool} · {format(new Date(a.created_at), "MMM d, h:mm a")}
-                  </p>
-                </div>
-              </Card>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[13.5px] font-medium text-foreground">{a.action}</p>
+                      <Badge tone={a.status === "success" ? "success" : "danger"}>{a.status}</Badge>
+                    </div>
+                    <p className="mt-0.5 text-[12px] text-muted-foreground">
+                      {a.tool} · {format(new Date(a.created_at), "MMM d, h:mm a")}
+                    </p>
+                  </div>
+                </Card>
+              </motion.div>
             );
           })}
         </div>

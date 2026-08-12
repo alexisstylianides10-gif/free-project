@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   Plus,
@@ -46,14 +47,19 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-medium transition-colors",
-                active
-                  ? "bg-accent-soft text-accent"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                "relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-medium transition-colors",
+                active ? "text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              <item.icon className="h-[17px] w-[17px]" strokeWidth={active ? 2.1 : 1.8} />
-              {item.label}
+              {active && (
+                <motion.span
+                  layoutId="sidebar-active-pill"
+                  className="absolute inset-0 rounded-lg bg-accent-soft"
+                  transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                />
+              )}
+              <item.icon className="relative z-10 h-[17px] w-[17px]" strokeWidth={active ? 2.1 : 1.8} />
+              <span className="relative z-10">{item.label}</span>
             </Link>
           );
         })}

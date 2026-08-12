@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { format } from "date-fns";
 import { BrainCircuit, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
@@ -96,25 +97,35 @@ export default function WhatAlxioumKnowsPage() {
             Calendar ({events.length})
           </h2>
           <div className="space-y-2">
-            {events.map((e) => (
-              <Card key={e.id} className="flex items-start justify-between gap-3 p-3.5">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13.5px] text-foreground">
-                    <span className="font-medium">{e.title}</span> — {format(new Date(e.start_time), "EEEE, MMM d, h:mm a")} to{" "}
-                    {format(new Date(e.end_time), "h:mm a")}
-                  </p>
-                  {e.notes && <p className="mt-0.5 text-[12.5px] text-muted-foreground">Notes: {e.notes}</p>}
-                </div>
-                <button
-                  onClick={() => remove(e.id)}
-                  disabled={busy}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger disabled:opacity-40"
-                  aria-label="Delete"
+            <AnimatePresence initial={false}>
+              {events.map((e, i) => (
+                <motion.div
+                  key={e.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -8, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.25, delay: Math.min(i, 8) * 0.03, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </Card>
-            ))}
+                  <Card className="flex items-start justify-between gap-3 p-3.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13.5px] text-foreground">
+                        <span className="font-medium">{e.title}</span> — {format(new Date(e.start_time), "EEEE, MMM d, h:mm a")} to{" "}
+                        {format(new Date(e.end_time), "h:mm a")}
+                      </p>
+                      {e.notes && <p className="mt-0.5 text-[12.5px] text-muted-foreground">Notes: {e.notes}</p>}
+                    </div>
+                    <button
+                      onClick={() => remove(e.id)}
+                      disabled={busy}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger disabled:opacity-40"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       )}

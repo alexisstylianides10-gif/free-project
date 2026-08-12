@@ -18,6 +18,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
@@ -122,22 +123,34 @@ export default function CalendarPage() {
 
       {loading ? (
         <Card className="flex h-40 items-center justify-center text-sm text-muted-foreground">Loading...</Card>
-      ) : view === "month" ? (
-        <MonthGrid
-          anchor={anchor}
-          events={events}
-          onDayClick={(d) => {
-            setAnchor(d);
-            setView("day");
-          }}
-        />
       ) : (
-        <TimeGrid
-          days={view === "day" ? [startOfDay(anchor)] : eachDayOfInterval({ start: startOfWeek(anchor), end: endOfWeek(anchor) })}
-          events={events}
-          onEdit={setModalEvent}
-          onCreateAt={openNewEvent}
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {view === "month" ? (
+              <MonthGrid
+                anchor={anchor}
+                events={events}
+                onDayClick={(d) => {
+                  setAnchor(d);
+                  setView("day");
+                }}
+              />
+            ) : (
+              <TimeGrid
+                days={view === "day" ? [startOfDay(anchor)] : eachDayOfInterval({ start: startOfWeek(anchor), end: endOfWeek(anchor) })}
+                events={events}
+                onEdit={setModalEvent}
+                onCreateAt={openNewEvent}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       )}
 
       {modalEvent && (
@@ -292,12 +305,17 @@ function TimeGrid({
                 </div>
               )}
               {positioned.map(({ event, top, height, col, cols }) => (
-                <button
+                <motion.button
                   key={event.id}
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit(event);
                   }}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.015 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
                   style={{
                     top,
                     height,
@@ -308,7 +326,7 @@ function TimeGrid({
                 >
                   <p className="truncate text-[10.5px] font-medium leading-tight">{event.title}</p>
                   <p className="truncate text-[9px] leading-tight opacity-80">{format(new Date(event.start_time), "h:mm a")}</p>
-                </button>
+                </motion.button>
               ))}
             </div>
           );
@@ -344,9 +362,10 @@ function MonthGrid({
         const inMonth = isSameMonth(day, anchor);
         const isToday = isSameDay(day, new Date());
         return (
-          <button
+          <motion.button
             key={day.toISOString()}
             onClick={() => onDayClick(day)}
+            whileTap={{ scale: 0.96 }}
             className={`flex min-h-[64px] flex-col items-start gap-1 rounded-lg border p-1.5 text-left transition-colors hover:bg-muted ${
               inMonth ? "border-border" : "border-transparent opacity-40"
             }`}
@@ -364,7 +383,7 @@ function MonthGrid({
               </span>
             ))}
             {dayEvents.length > 2 && <span className="text-[10px] text-muted-foreground">+{dayEvents.length - 2} more</span>}
-          </button>
+          </motion.button>
         );
       })}
     </div>
