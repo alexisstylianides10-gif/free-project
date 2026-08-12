@@ -1,4 +1,5 @@
 import {
+  Sun,
   MessageCircle,
   Calendar,
   History,
@@ -14,6 +15,7 @@ export interface NavItem {
 }
 
 export const primaryNav: NavItem[] = [
+  { label: "My Day", href: "/today", icon: Sun },
   { label: "Chat", href: "/app", icon: MessageCircle },
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Activity", href: "/activity", icon: History },
@@ -22,6 +24,7 @@ export const primaryNav: NavItem[] = [
 ];
 
 export const mobilePrimaryNav: NavItem[] = [
+  { label: "My Day", href: "/today", icon: Sun },
   { label: "Chat", href: "/app", icon: MessageCircle },
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Activity", href: "/activity", icon: History },
