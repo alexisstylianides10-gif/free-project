@@ -28,7 +28,7 @@ function fmtRange(start: string, end: string, timezone: string) {
 }
 
 // ---------------------------------------------------------------------------
-// calendar.create_event
+// calendar_create_event
 // ---------------------------------------------------------------------------
 const createEventParams = z.object({
   title: z.string().min(1).max(200),
@@ -39,7 +39,7 @@ const createEventParams = z.object({
 type CreateEventParams = z.infer<typeof createEventParams>;
 
 export const createEventTool: ToolDefinition<CreateEventParams> = {
-  name: "calendar.create_event",
+  name: "calendar_create_event",
   description:
     "Create a new calendar event. Resolve any relative dates/times (e.g. 'next Tuesday at 3pm') to absolute ISO 8601 datetimes yourself before calling this, using the current date provided in context.",
   inputSchema: {
@@ -70,7 +70,7 @@ export const createEventTool: ToolDefinition<CreateEventParams> = {
 };
 
 // ---------------------------------------------------------------------------
-// calendar.get_events
+// calendar_get_events
 // ---------------------------------------------------------------------------
 const getEventsParams = z.object({
   from: isoDatetime.optional(),
@@ -80,7 +80,7 @@ const getEventsParams = z.object({
 type GetEventsParams = z.infer<typeof getEventsParams>;
 
 export const getEventsTool: ToolDefinition<GetEventsParams> = {
-  name: "calendar.get_events",
+  name: "calendar_get_events",
   description:
     "Read the user's calendar for a date range (inclusive). Resolve relative ranges ('this week', 'tomorrow') to absolute ISO 8601 datetimes yourself. Also usable to search for an event by title. Read-only — never requires confirmation.",
   inputSchema: {
@@ -151,7 +151,7 @@ async function resolveOneEvent(ctx: Parameters<ToolDefinition["execute"]>[1], ev
 }
 
 // ---------------------------------------------------------------------------
-// calendar.update_event
+// calendar_update_event
 // ---------------------------------------------------------------------------
 const updateEventParams = z
   .object({
@@ -166,7 +166,7 @@ const updateEventParams = z
 type UpdateEventParams = z.infer<typeof updateEventParams>;
 
 export const updateEventTool: ToolDefinition<UpdateEventParams> = {
-  name: "calendar.update_event",
+  name: "calendar_update_event",
   description:
     "Update an existing event's title, time, or notes. Identify the event with event_id if you already have it (e.g. from a prior get_events call), otherwise with search_title. Only include the fields that are actually changing.",
   inputSchema: {
@@ -220,7 +220,7 @@ export const updateEventTool: ToolDefinition<UpdateEventParams> = {
 };
 
 // ---------------------------------------------------------------------------
-// calendar.delete_event
+// calendar_delete_event
 // ---------------------------------------------------------------------------
 const deleteEventParams = z
   .object({
@@ -231,7 +231,7 @@ const deleteEventParams = z
 type DeleteEventParams = z.infer<typeof deleteEventParams>;
 
 export const deleteEventTool: ToolDefinition<DeleteEventParams> = {
-  name: "calendar.delete_event",
+  name: "calendar_delete_event",
   description: "Delete an event. Identify it with event_id if known, otherwise search_title.",
   inputSchema: {
     type: "object",

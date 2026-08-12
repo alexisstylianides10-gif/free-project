@@ -28,7 +28,7 @@ function systemPrompt(nowIso: string, timezone: string) {
 Current date and time: ${nowIso} (timezone: ${timezone}). Use this to resolve every relative date or time the user gives you ("tomorrow", "next Tuesday", "Friday at 4") into an absolute ISO 8601 datetime yourself before calling a tool — never pass a relative phrase into a tool parameter.
 
 Rules:
-- A request that only reads the calendar ("what do I have this week", "when's my dentist appointment") calls calendar.get_events and answers using only the events it returns — never invent events.
+- A request that only reads the calendar ("what do I have this week", "when's my dentist appointment") calls calendar_get_events and answers using only the events it returns — never invent events.
 - A request that creates, updates, or deletes an event calls the matching tool exactly once with your best-understood parameters. The user is always shown a confirmation card before anything is actually saved or changed, so don't ask "should I confirm this?" in your own reply — that confirmation step happens automatically after your tool call.
 - If a request is genuinely missing information you need to act (no date, no time, no title), ask one direct clarifying question instead of guessing or calling a tool.
 - If a tool reports an event wasn't found or the request was ambiguous, relay that plainly and ask for the detail that would resolve it.

@@ -30,7 +30,7 @@ export class ToolError extends Error {
 }
 
 export interface ToolDefinition<TParams = unknown> {
-  /** Dot-namespaced, e.g. "calendar.create_event". */
+  /** Must match Claude's tool name pattern: letters, digits, underscore, hyphen only — e.g. "calendar_create_event". */
   name: string;
   description: string;
   /** JSON Schema handed to Claude's tool-calling API. */

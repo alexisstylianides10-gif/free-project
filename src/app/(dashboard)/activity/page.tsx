@@ -22,9 +22,9 @@ interface AgentAction {
 }
 
 const toolIcon: Record<string, typeof CalendarPlus> = {
-  "calendar.create_event": CalendarPlus,
-  "calendar.update_event": CalendarClock,
-  "calendar.delete_event": CalendarX,
+  "calendar_create_event": CalendarPlus,
+  "calendar_update_event": CalendarClock,
+  "calendar_delete_event": CalendarX,
 };
 
 export default function ActivityPage() {
