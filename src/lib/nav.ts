@@ -1,19 +1,4 @@
-import {
-  Home,
-  Sparkles,
-  Sun,
-  CheckSquare,
-  Calendar,
-  Target,
-  Wallet,
-  FileText,
-  Repeat,
-  ListChecks,
-  BarChart3,
-  Bot,
-  BrainCircuit,
-  type LucideIcon,
-} from "lucide-react";
+import { MessageCircle, Sun, Calendar, CheckSquare, BrainCircuit, History, Bot, Settings, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   label: string;
@@ -21,37 +6,27 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
+/** The 8 sections of the product, in nav order. Every route lives under /app. */
 export const primaryNav: NavItem[] = [
-  { label: "Home", href: "/", icon: Home },
-  { label: "AI", href: "/ai", icon: Sparkles },
-  { label: "Today", href: "/today", icon: Sun },
-  { label: "Tasks", href: "/tasks", icon: CheckSquare },
-  { label: "Calendar", href: "/calendar", icon: Calendar },
-  { label: "Goals", href: "/goals", icon: Target },
-  { label: "Finance", href: "/finance", icon: Wallet },
-  { label: "Documents", href: "/documents", icon: FileText },
-  { label: "Habits", href: "/habits", icon: Repeat },
-  { label: "Lists", href: "/lists", icon: ListChecks },
-  { label: "Insights", href: "/insights", icon: BarChart3 },
-  { label: "Agents", href: "/agents", icon: Bot },
-  { label: "Memory", href: "/memory", icon: BrainCircuit },
+  { label: "Chat", href: "/app/chat", icon: MessageCircle },
+  { label: "My Day", href: "/app/today", icon: Sun },
+  { label: "Calendar", href: "/app/calendar", icon: Calendar },
+  { label: "Tasks", href: "/app/tasks", icon: CheckSquare },
+  { label: "Memory", href: "/app/memory", icon: BrainCircuit },
+  { label: "Activity", href: "/app/activity", icon: History },
+  { label: "Agents", href: "/app/agents", icon: Bot },
+  { label: "Settings", href: "/app/settings", icon: Settings },
 ];
 
 export const mobilePrimaryNav: NavItem[] = [
-  { label: "Home", href: "/", icon: Home },
-  { label: "Today", href: "/today", icon: Sun },
-  { label: "AI", href: "/ai", icon: Sparkles },
-  { label: "Tasks", href: "/tasks", icon: CheckSquare },
+  { label: "My Day", href: "/app/today", icon: Sun },
+  { label: "Chat", href: "/app/chat", icon: MessageCircle },
+  { label: "Calendar", href: "/app/calendar", icon: Calendar },
+  { label: "Tasks", href: "/app/tasks", icon: CheckSquare },
 ];
 
 export const mobileMoreNav: NavItem[] = [
-  { label: "Calendar", href: "/calendar", icon: Calendar },
-  { label: "Goals", href: "/goals", icon: Target },
-  { label: "Finance", href: "/finance", icon: Wallet },
-  { label: "Documents", href: "/documents", icon: FileText },
-  { label: "Habits", href: "/habits", icon: Repeat },
-  { label: "Lists", href: "/lists", icon: ListChecks },
-  { label: "Insights", href: "/insights", icon: BarChart3 },
-  { label: "Agents", href: "/agents", icon: Bot },
-  { label: "Memory", href: "/memory", icon: BrainCircuit },
+  { label: "Memory", href: "/app/memory", icon: BrainCircuit },
+  { label: "Activity", href: "/app/activity", icon: History },
+  { label: "Agents", href: "/app/agents", icon: Bot },
 ];

@@ -2,34 +2,25 @@
 
 import Link from "next/link";
 import * as Popover from "@radix-ui/react-popover";
-import { Bell, Search } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Logo } from "./Logo";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { formatDayLabel } from "@/lib/utils";
 
 export function TopBar() {
-  const setCommandOpen = useLifeOS((s) => s.setCommandOpen);
-  const notifications = useLifeOS((s) => s.notifications);
-  const markRead = useLifeOS((s) => s.markNotificationRead);
+  const notifications = useAlxioum((s) => s.notifications);
+  const markRead = useAlxioum((s) => s.markNotificationRead);
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-surface/85 px-4 backdrop-blur md:justify-end md:border-none md:bg-transparent md:px-6">
-      <Link href="/" className="flex items-center gap-2 md:hidden">
+      <Link href="/app/today" className="flex items-center gap-2 md:hidden">
         <Logo />
-        <span className="text-[15px] font-semibold tracking-tight">LifeOS</span>
+        <span className="text-[15px] font-semibold tracking-tight">Alxioum</span>
       </Link>
 
       <div className="flex items-center gap-1.5">
-        <button
-          onClick={() => setCommandOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted md:hidden"
-          aria-label="Search"
-        >
-          <Search className="h-[18px] w-[18px]" />
-        </button>
-
         <Popover.Root>
           <Popover.Trigger asChild>
             <button
@@ -37,23 +28,13 @@ export function TopBar() {
               aria-label="Notifications"
             >
               <Bell className="h-[18px] w-[18px]" />
-              {unread > 0 && (
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger ring-2 ring-surface" />
-              )}
+              {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger ring-2 ring-surface" />}
             </button>
           </Popover.Trigger>
           <Popover.Portal>
-            <Popover.Content
-              align="end"
-              sideOffset={10}
-              className="z-50 w-80 rounded-xl border border-border bg-surface p-2 shadow-pop animate-scale-in"
-            >
-              <p className="px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Notifications
-              </p>
-              {notifications.length === 0 && (
-                <p className="px-2.5 py-6 text-center text-sm text-muted-foreground">You&apos;re all caught up.</p>
-              )}
+            <Popover.Content align="end" sideOffset={10} className="z-50 w-80 rounded-xl border border-border bg-surface p-2 shadow-pop animate-scale-in">
+              <p className="px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">Notifications</p>
+              {notifications.length === 0 && <p className="px-2.5 py-6 text-center text-sm text-muted-foreground">You&apos;re all caught up.</p>}
               <div className="max-h-80 space-y-0.5 overflow-y-auto">
                 {notifications.map((n) => (
                   <button

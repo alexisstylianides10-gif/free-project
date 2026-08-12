@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CalendarEvent } from "@/lib/types";
 import { eventTypeMeta } from "@/lib/eventStyle";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn, formatTime12 } from "@/lib/utils";
 
 const START_HOUR = 7;
@@ -16,7 +16,7 @@ function toMinutes(hhmm: string): number {
 }
 
 export function DayGrid({ date, events, onEventClick }: { date: string; events: CalendarEvent[]; onEventClick: (e: CalendarEvent) => void }) {
-  const moveEvent = useLifeOS((s) => s.moveEvent);
+  const updateEvent = useAlxioum((s) => s.updateEvent);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverHour, setDragOverHour] = useState<number | null>(null);
 
@@ -33,12 +33,11 @@ export function DayGrid({ date, events, onEventClick }: { date: string; events: 
     const duration = toMinutes(event.endTime) - toMinutes(event.startTime);
     const newStart = hour * 60;
     const newEnd = newStart + duration;
-    moveEvent(
-      event.id,
+    updateEvent(event.id, {
       date,
-      `${String(hour).padStart(2, "0")}:00`,
-      `${String(Math.floor(newEnd / 60)).padStart(2, "0")}:${String(newEnd % 60).padStart(2, "0")}`
-    );
+      startTime: `${String(hour).padStart(2, "0")}:00`,
+      endTime: `${String(Math.floor(newEnd / 60)).padStart(2, "0")}:${String(newEnd % 60).padStart(2, "0")}`,
+    });
     setDraggingId(null);
     setDragOverHour(null);
   }

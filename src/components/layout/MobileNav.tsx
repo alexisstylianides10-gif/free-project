@@ -12,7 +12,7 @@ export function MobileNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const moreActive = mobileMoreNav.some((i) => pathname.startsWith(i.href)) || pathname.startsWith("/settings");
+  const moreActive = mobileMoreNav.some((i) => pathname.startsWith(i.href)) || pathname.startsWith("/app/settings");
 
   return (
     <>
@@ -68,7 +68,7 @@ export function MobileNav() {
                 </Link>
               ))}
               <Link
-                href="/settings"
+                href="/app/settings"
                 onClick={() => setMoreOpen(false)}
                 className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border py-4 text-[12.5px] font-medium text-foreground transition-colors hover:bg-muted"
               >

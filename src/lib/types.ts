@@ -1,14 +1,6 @@
 export type Priority = "critical" | "high" | "medium" | "low";
 
-export type LifeArea =
-  | "school"
-  | "home"
-  | "work"
-  | "health"
-  | "finance"
-  | "social"
-  | "travel"
-  | "personal";
+export type LifeArea = "school" | "home" | "work" | "health" | "social" | "travel" | "personal";
 
 export interface Subtask {
   id: string;
@@ -26,13 +18,14 @@ export interface Task {
   estimatedMinutes?: number;
   category: LifeArea;
   project?: string;
-  goalId?: string;
-  recurring?: "daily" | "weekly" | "none";
+  recurring: "daily" | "weekly" | "none";
   subtasks: Subtask[];
   aiContext?: string;
   createdAt: string;
   completedAt?: string;
 }
+
+export type EventType = "school" | "health" | "social" | "study" | "work" | "personal" | "travel";
 
 export interface CalendarEvent {
   id: string;
@@ -40,179 +33,72 @@ export interface CalendarEvent {
   date: string; // ISO date (yyyy-MM-dd)
   startTime: string; // HH:mm
   endTime: string; // HH:mm
-  type: "school" | "health" | "social" | "study" | "work" | "personal" | "travel";
+  type: EventType;
   location?: string;
+  notes?: string;
+  timezone: string;
+  recurrence: "none" | "daily" | "weekly";
+  recurrenceUntil?: string;
   linkedTaskId?: string;
-  linkedGoalId?: string;
   aiGenerated?: boolean;
-  movable?: boolean;
-}
-
-export interface Milestone {
-  id: string;
-  title: string;
-  done: boolean;
-}
-
-export interface Goal {
-  id: string;
-  name: string;
-  why: string;
-  progress: number; // 0-100
-  deadline?: string;
-  category: LifeArea;
-  milestones: Milestone[];
-  linkedTaskIds: string[];
-  linkedHabitIds: string[];
-  aiPlan: string;
-  archived?: boolean;
-}
-
-export interface Habit {
-  id: string;
-  name: string;
-  emoji: string;
-  targetPerWeek: number;
-  history: Record<string, boolean>; // ISO date -> completed
-  bestStreak: number;
-  aiNote?: string;
-}
-
-export type TxCategory =
-  | "Food"
-  | "Transport"
-  | "Shopping"
-  | "Entertainment"
-  | "Subscriptions"
-  | "School"
-  | "Other";
-
-export interface Transaction {
-  id: string;
-  merchant: string;
-  amount: number; // negative = expense, positive = income
-  date: string;
-  category: TxCategory;
-}
-
-export interface Subscription {
-  id: string;
-  name: string;
-  amount: number;
-  renewsOn: string;
-  category: TxCategory;
-}
-
-export interface Budget {
-  category: TxCategory;
-  limit: number;
-}
-
-export interface DocumentTag {
-  id: string;
-  label: string;
-}
-
-export interface LifeDocument {
-  id: string;
-  name: string;
-  kind: "pdf" | "docx" | "image" | "text";
-  folder: string;
-  tags: string[];
-  sizeKb: number;
-  uploadedAt: string;
-  aiSummary?: string;
-  extractedDates?: { label: string; date: string }[];
-}
-
-export interface ListItem {
-  id: string;
-  label: string;
-  done: boolean;
-}
-
-export interface LifeList {
-  id: string;
-  name: string;
-  emoji: string;
-  items: ListItem[];
-  kind: "shopping" | "packing" | "wishlist" | "custom";
+  movable: boolean;
 }
 
 export type MemoryCategory =
-  | "Personal"
   | "Preferences"
-  | "Goals"
-  | "People"
-  | "Projects"
   | "Important dates"
+  | "People"
   | "Routines"
-  | "Past decisions";
+  | "Facts";
 
 export interface MemoryItem {
   id: string;
   category: MemoryCategory;
   content: string;
   reason: string;
-  source: string;
+  source: "user" | "ai";
   createdAt: string;
   active: boolean;
 }
 
-export type AgentCategory =
-  | "Productivity"
-  | "Finance"
-  | "School"
-  | "Travel"
-  | "Communication"
-  | "Shopping"
-  | "Business"
-  | "Personal";
+export type AgentStatus = "active" | "coming_soon";
 
-export interface AgentRun {
-  id: string;
-  ranAt: string;
-  summary: string;
-  status: "success" | "needs_approval" | "failed";
-}
-
-export interface Agent {
+export interface AgentCatalogEntry {
   id: string;
   name: string;
   description: string;
-  category: AgentCategory;
-  capabilities: string[];
-  permissions: string[];
-  connectedServices: string[];
-  installed: boolean;
-  active: boolean;
-  runHistory: AgentRun[];
+  status: AgentStatus;
   icon: string;
+  tools: string[];
 }
 
-export type ActionKind =
-  | "create_event"
-  | "create_task"
-  | "add_list_item"
-  | "create_reminder"
-  | "create_goal"
-  | "add_expense";
+export type ToolAction = "create" | "update" | "delete" | "complete";
 
-export interface PendingAction {
+export interface PendingActionCard {
   id: string;
-  kind: ActionKind;
-  title: string;
-  detail: string;
-  payload: Record<string, unknown>;
-  createdAt: string;
+  tool: string;
+  action: ToolAction;
+  summary: string;
+  args: Record<string, unknown>;
+  status: "pending" | "confirmed" | "cancelled" | "expired";
 }
 
 export interface ChatMessage {
   id: string;
-  role: "user" | "ai";
+  conversationId: string;
+  role: "user" | "assistant";
   content: string;
+  toolCalls: { tool: string; status: "success" | "failed" }[];
+  pendingAction?: PendingActionCard | null;
+  resolvedAction?: (PendingActionCard & { resultSummary: string }) | null;
   createdAt: string;
-  actions?: PendingAction[];
+}
+
+export interface Conversation {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AppNotification {
@@ -221,16 +107,27 @@ export interface AppNotification {
   body: string;
   createdAt: string;
   read: boolean;
-  kind: "deadline" | "finance" | "schedule" | "goal" | "system";
+  kind: "deadline" | "schedule" | "system";
 }
 
-export type ProactivityLevel = "low" | "balanced" | "high";
+export type ActivityStatus = "SUCCESS" | "FAILED" | "CANCELLED";
+
+export interface ActivityEntry {
+  id: string;
+  tool: string;
+  action: string;
+  status: ActivityStatus;
+  metadata: Record<string, unknown>;
+  eventId?: string;
+  createdAt: string;
+}
+
+export type Plan = "Free" | "Pro";
 
 export interface NotificationPrefs {
   deadlines: boolean;
-  financeAlerts: boolean;
   scheduleGaps: boolean;
-  goalNudges: boolean;
+  dailyBriefing: boolean;
 }
 
 export interface Profile {
@@ -239,9 +136,13 @@ export interface Profile {
   timezone: string;
   location: string;
   avatarInitials: string;
-  plan: "Free" | "Pro" | "Ultra";
-  proactivity: ProactivityLevel;
+  plan: Plan;
   theme: "light" | "dark" | "system";
   memoryEnabled: boolean;
   notificationPrefs: NotificationPrefs;
+  onboarded: boolean;
+  aiMessagesUsed: number;
+  aiTokensUsed: number;
+  usagePeriodStart: string;
+  proInterestAt?: string | null;
 }

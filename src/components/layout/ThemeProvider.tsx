@@ -1,17 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 
-const STORAGE_KEY = "lifeos-theme";
+const STORAGE_KEY = "alxioum-theme";
 
 export function ThemeProvider() {
-  const theme = useLifeOS((s) => s.profile.theme);
-  const updateProfile = useLifeOS((s) => s.updateProfile);
+  const theme = useAlxioum((s) => s.profile?.theme ?? "system");
+  const updateProfile = useAlxioum((s) => s.updateProfile);
   const restoredRef = useRef(false);
 
-  // Restore a saved theme preference once on mount. Applied imperatively
-  // (never rendered into SSR HTML), so this can't cause a hydration mismatch.
   useEffect(() => {
     if (restoredRef.current) return;
     restoredRef.current = true;

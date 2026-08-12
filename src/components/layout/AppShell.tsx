@@ -1,39 +1,60 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { MobileNav } from "./MobileNav";
-import { CommandBar } from "./CommandBar";
-import { QuickAddModal } from "./QuickAddModal";
 import { TooltipProvider } from "@/components/ui/Tooltip";
-import { AuthScreen } from "@/components/auth/AuthScreen";
 import { Logo } from "./Logo";
-import { backendConfigured, useLifeOS } from "@/lib/store";
+import { backendConfigured, useAlxioum } from "@/lib/store";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const authStatus = useLifeOS((s) => s.authStatus);
-  const dataLoading = useLifeOS((s) => s.dataLoading);
-  const initAuth = useLifeOS((s) => s.initAuth);
+  const router = useRouter();
+  const authStatus = useAlxioum((s) => s.authStatus);
+  const dataLoading = useAlxioum((s) => s.dataLoading);
+  const profile = useAlxioum((s) => s.profile);
+  const initAuth = useAlxioum((s) => s.initAuth);
 
   useEffect(() => {
     if (backendConfigured) initAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (backendConfigured && authStatus === "checking") {
+  useEffect(() => {
+    if (backendConfigured && authStatus === "signed_out") {
+      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+    }
+  }, [authStatus, pathname, router]);
+
+  useEffect(() => {
+    if (authStatus === "signed_in" && profile && !profile.onboarded && pathname !== "/app/onboarding") {
+      router.replace("/app/onboarding");
+    }
+  }, [authStatus, profile, pathname, router]);
+
+  if (!backendConfigured) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background px-6 text-center">
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Alxioum isn&apos;t connected to a backend yet. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to continue.
+        </p>
+      </div>
+    );
+  }
+
+  if (authStatus === "checking" || authStatus === "signed_out" || (authStatus === "signed_in" && dataLoading)) {
     return <LoadingScreen />;
   }
 
-  if (backendConfigured && authStatus === "signed_out") {
-    return <AuthScreen />;
+  if (profile && !profile.onboarded && pathname !== "/app/onboarding") {
+    return <LoadingScreen />;
   }
 
-  if (backendConfigured && authStatus === "signed_in" && dataLoading) {
-    return <LoadingScreen />;
+  if (pathname === "/app/onboarding") {
+    return <>{children}</>;
   }
 
   return (
@@ -57,8 +78,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <MobileNav />
-      <CommandBar />
-      <QuickAddModal />
     </TooltipProvider>
   );
 }

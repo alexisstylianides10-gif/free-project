@@ -1,11 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://alxioum-production.up.railway.app";
 
 export const metadata: Metadata = {
-  title: "LifeOS",
-  description: "The AI operating system for your life.",
+  metadataBase: new URL(siteUrl),
+  title: { default: "Alxioum — AI that doesn't just answer. It acts.", template: "%s · Alxioum" },
+  description:
+    "Alxioum turns natural-language requests into real actions across your calendar, tasks, and memory — with your permission at every step.",
+  manifest: "/manifest.json",
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Alxioum" },
 };
 
 export const viewport: Viewport = {
@@ -22,7 +29,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider />
-        <AppShell>{children}</AppShell>
+        <ServiceWorkerRegister />
+        {children}
       </body>
     </html>
   );

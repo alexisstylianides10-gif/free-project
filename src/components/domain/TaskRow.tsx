@@ -6,7 +6,7 @@ import { Check, ChevronDown, Clock, Sparkles } from "lucide-react";
 import { Task } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 import { PriorityDot } from "@/components/ui/PriorityDot";
-import { useLifeOS } from "@/lib/store";
+import { useAlxioum } from "@/lib/store";
 import { cn, formatDayLabel } from "@/lib/utils";
 
 const categoryLabel: Record<Task["category"], string> = {
@@ -14,7 +14,6 @@ const categoryLabel: Record<Task["category"], string> = {
   home: "Home",
   work: "Work",
   health: "Health",
-  finance: "Finance",
   social: "Social",
   travel: "Travel",
   personal: "Personal",
@@ -22,9 +21,7 @@ const categoryLabel: Record<Task["category"], string> = {
 
 export function TaskRow({ task }: { task: Task }) {
   const [open, setOpen] = useState(false);
-  const toggleTask = useLifeOS((s) => s.toggleTask);
-  const goals = useLifeOS((s) => s.goals);
-  const linkedGoal = task.goalId ? goals.find((g) => g.id === task.goalId) : undefined;
+  const toggleTask = useAlxioum((s) => s.toggleTask);
 
   return (
     <motion.div layout className="rounded-xl border border-border bg-surface">
@@ -33,9 +30,7 @@ export function TaskRow({ task }: { task: Task }) {
           onClick={() => toggleTask(task.id)}
           className={cn(
             "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
-            task.done
-              ? "border-success bg-success text-white"
-              : "border-border-strong text-transparent hover:border-success"
+            task.done ? "border-success bg-success text-white" : "border-border-strong text-transparent hover:border-success"
           )}
           aria-label="Toggle complete"
         >
@@ -45,22 +40,15 @@ export function TaskRow({ task }: { task: Task }) {
         <button className="min-w-0 flex-1 text-left" onClick={() => setOpen((o) => !o)}>
           <div className="flex items-center gap-2">
             <PriorityDot priority={task.priority} />
-            <p className={cn("truncate text-[14px] font-medium text-foreground", task.done && "text-muted-foreground line-through")}>
-              {task.title}
-            </p>
+            <p className={cn("truncate text-[14px] font-medium text-foreground", task.done && "text-muted-foreground line-through")}>{task.title}</p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <Badge tone="neutral">{categoryLabel[task.category]}</Badge>
-            {task.dueDate && (
-              <span className="text-[12px] text-muted-foreground">{formatDayLabel(task.dueDate)}</span>
-            )}
+            {task.dueDate && <span className="text-[12px] text-muted-foreground">{formatDayLabel(task.dueDate)}</span>}
             {task.estimatedMinutes && (
               <span className="flex items-center gap-1 text-[12px] text-muted-foreground">
                 <Clock className="h-3 w-3" /> {task.estimatedMinutes}m
               </span>
-            )}
-            {linkedGoal && (
-              <Badge tone="accent">{linkedGoal.name}</Badge>
             )}
           </div>
         </button>
