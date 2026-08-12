@@ -21,6 +21,7 @@ import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
+import { Switch } from "@/components/ui/Switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { cn } from "@/lib/utils";
 import {
@@ -384,24 +385,33 @@ function EventModal({
   const isNew = value === "new";
   const existing = isNew ? null : value;
 
+  const initialStart = existing ? new Date(existing.start_time) : roundToHour(defaultDate);
+  const initialEnd = existing ? new Date(existing.end_time) : addHour(roundToHour(defaultDate));
+
   const [title, setTitle] = useState(existing?.title ?? "");
-  const [start, setStart] = useState(toLocalInput(existing ? new Date(existing.start_time) : roundToHour(defaultDate)));
-  const [end, setEnd] = useState(
-    toLocalInput(existing ? new Date(existing.end_time) : addHour(roundToHour(defaultDate)))
-  );
+  const [allDay, setAllDay] = useState(false);
+  const [startDate, setStartDate] = useState(toDateInput(initialStart));
+  const [startTime, setStartTime] = useState(toTimeInput(initialStart));
+  const [endDate, setEndDate] = useState(toDateInput(initialEnd));
+  const [endTime, setEndTime] = useState(toTimeInput(initialEnd));
   const [notes, setNotes] = useState(existing?.notes ?? "");
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  function setAllDayChecked(v: boolean) {
+    setAllDay(v);
+    if (v && endDate < startDate) setEndDate(startDate);
+  }
 
   async function save() {
     if (!title.trim()) {
       setFormError("Give the event a title.");
       return;
     }
-    const startIso = new Date(start).toISOString();
-    const endIso = new Date(end).toISOString();
+    const startIso = new Date(`${startDate}T${allDay ? "00:00" : startTime}`).toISOString();
+    const endIso = new Date(`${endDate}T${allDay ? "23:59" : endTime}`).toISOString();
     if (new Date(endIso) <= new Date(startIso)) {
-      setFormError("End time has to be after start time.");
+      setFormError("End has to be after start.");
       return;
     }
     setBusy(true);
@@ -435,44 +445,44 @@ function EventModal({
   return (
     <Modal open onOpenChange={(o) => !o && onClose()} title={isNew ? "New event" : "Edit event"}>
       <div className="space-y-3">
-        <div>
-          <label className="mb-1 block text-[12.5px] font-medium text-muted-foreground">Title</label>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
-            placeholder="Dentist appointment"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-[12.5px] font-medium text-muted-foreground">Starts</label>
-            <input
-              type="datetime-local"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
-              className="h-10 w-full rounded-lg border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
-            />
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full border-b border-border bg-transparent pb-2 text-[16px] font-medium text-foreground placeholder:font-normal placeholder:text-muted-foreground/70 focus:border-accent focus:outline-none"
+          placeholder="Title"
+          autoFocus
+        />
+
+        <Card className="divide-y divide-border shadow-none">
+          <div className="flex items-center justify-between px-3.5 py-2.5">
+            <span className="text-[13.5px] font-medium text-foreground">All-day</span>
+            <Switch checked={allDay} onCheckedChange={setAllDayChecked} />
           </div>
-          <div>
-            <label className="mb-1 block text-[12.5px] font-medium text-muted-foreground">Ends</label>
-            <input
-              type="datetime-local"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-              className="h-10 w-full rounded-lg border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
-            />
+          <div className="flex items-center justify-between px-3.5 py-2.5">
+            <span className="text-[13.5px] font-medium text-foreground">Starts</span>
+            <div className="flex gap-1.5">
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={pillInputClass} />
+              {!allDay && (
+                <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={pillInputClass} />
+              )}
+            </div>
           </div>
-        </div>
-        <div>
-          <label className="mb-1 block text-[12.5px] font-medium text-muted-foreground">Notes (optional)</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={2}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
-          />
-        </div>
+          <div className="flex items-center justify-between px-3.5 py-2.5">
+            <span className="text-[13.5px] font-medium text-foreground">Ends</span>
+            <div className="flex gap-1.5">
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={pillInputClass} />
+              {!allDay && <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={pillInputClass} />}
+            </div>
+          </div>
+        </Card>
+
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          placeholder="Notes"
+          className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-[13.5px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-accent/40"
+        />
 
         {formError && <p className="text-[12.5px] text-danger">{formError}</p>}
 
@@ -498,6 +508,9 @@ function EventModal({
   );
 }
 
+const pillInputClass =
+  "rounded-full bg-muted px-3 py-1.5 text-[13px] font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 [color-scheme:light] dark:[color-scheme:dark]";
+
 function roundToHour(d: Date) {
   const copy = new Date(d);
   const onTheHour = copy.getMinutes() === 0 && copy.getSeconds() === 0 && copy.getMilliseconds() === 0;
@@ -508,7 +521,11 @@ function roundToHour(d: Date) {
 function addHour(d: Date) {
   return new Date(d.getTime() + 60 * 60 * 1000);
 }
-function toLocalInput(d: Date) {
+function toDateInput(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+function toTimeInput(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
