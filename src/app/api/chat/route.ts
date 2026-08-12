@@ -5,7 +5,7 @@ import { runHeadAgent } from "@/lib/ai/headAgent";
 import { isRateLimited } from "@/lib/ai/rateLimit";
 import { planLimits } from "@/lib/billing/plans";
 import type { Plan } from "@/lib/types";
-import { todayISO } from "@/lib/utils";
+import { todayISOInTimezone } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
   const plan = planLimits((profileRow.plan as Plan) ?? "Free");
   const timezone = profileRow.timezone || "UTC";
-  const today = todayISO();
+  const today = todayISOInTimezone(timezone);
 
   const periodStart = new Date(profileRow.usage_period_start as string);
   const now = new Date();

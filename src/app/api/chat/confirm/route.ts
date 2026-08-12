@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { getTool } from "@/lib/ai/tools";
-import { todayISO } from "@/lib/utils";
+import { todayISOInTimezone } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Unknown tool "${pending.tool}".` }, { status: 500 });
   }
 
-  const result = await spec.execute({ supabase: client, userId: user.id, timezone, today: todayISO() }, pending.args);
+  const result = await spec.execute({ supabase: client, userId: user.id, timezone, today: todayISOInTimezone(timezone) }, pending.args);
 
   await client
     .from("pending_actions")

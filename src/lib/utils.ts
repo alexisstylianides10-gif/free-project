@@ -26,8 +26,21 @@ export function formatMoney(n: number): string {
   return `${sign}€${Math.abs(n).toFixed(2)}`;
 }
 
+/** Today's date in the *local* timezone (never UTC — toISOString() would be
+ * wrong for roughly half the day in most timezones). */
 export function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Today's date in an arbitrary IANA timezone — for server code, which has
+ * no "local" timezone of its own and must use the user's stored one. */
+export function todayISOInTimezone(timeZone: string): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  } catch {
+    return todayISO();
+  }
 }
 
 export function addDaysISO(iso: string, days: number): string {
