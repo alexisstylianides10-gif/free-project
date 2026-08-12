@@ -65,6 +65,7 @@ export async function runHeadAgent(opts: {
       messages,
     });
   } catch (err) {
+    console.error("[headAgent] Claude request failed:", err instanceof Error ? err.message : err);
     return { reply: describeClaudeError(err) };
   }
 
