@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Send, Sparkles } from "lucide-react";
+import { Check, X, Send, Sparkles, Mic, Plus, CalendarPlus, CalendarClock, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { authedPost, ApiError } from "@/lib/apiClient";
 import { useAlxioum } from "@/lib/store";
+import { useVoiceInput } from "@/lib/useVoiceInput";
 
 interface PendingAction {
   tool: string;
@@ -28,14 +29,15 @@ interface Msg {
 }
 
 const SUGGESTIONS = [
-  "Add tennis Friday at 6.",
-  "What do I have this week?",
-  "Move my dentist appointment to 4pm.",
+  { icon: CalendarPlus, text: "Add tennis Friday at 6." },
+  { icon: CalendarClock, text: "What do I have this week?" },
+  { icon: ListChecks, text: "Move my dentist appointment to 4pm." },
 ];
 
 export default function ChatPage() {
   const profile = useAlxioum((s) => s.profile);
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -43,16 +45,26 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get("q");
-    if (q) {
-      setInput(q);
-      window.history.replaceState(null, "", "/app");
-    }
-  }, []);
+  const voice = useVoiceInput({
+    onResult: (text) => setInput(text),
+  });
+
+  function startNewChat() {
+    setMessages([]);
+    setConversationId(null);
+    setInput("");
+    setError(null);
+  }
 
   useEffect(() => {
     async function load() {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q");
+      const conv = params.get("conversation");
+      const isNew = params.get("new");
+      if (q || conv || isNew) window.history.replaceState(null, "", "/app");
+      if (q) setInput(q);
+
       if (!isSupabaseConfigured || !supabase) {
         setLoading(false);
         return;
@@ -64,21 +76,32 @@ export default function ChatPage() {
         setLoading(false);
         return;
       }
-      const { data: convo } = await supabase
-        .from("conversations")
-        .select("id")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
 
-      if (convo) {
+      if (isNew) {
+        setLoading(false);
+        return;
+      }
+
+      let targetId = conv;
+      if (!targetId) {
+        const { data: recent } = await supabase
+          .from("conversations")
+          .select("id")
+          .eq("user_id", user.id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        targetId = recent?.id ?? null;
+      }
+
+      if (targetId) {
         const { data: rows } = await supabase
           .from("messages")
           .select("id, role, content, pending_action, resolved_action, created_at")
-          .eq("conversation_id", convo.id)
+          .eq("conversation_id", targetId)
           .order("created_at", { ascending: true });
         setMessages((rows as Msg[]) ?? []);
+        setConversationId(targetId);
       }
       setLoading(false);
     }
@@ -109,12 +132,14 @@ export default function ChatPage() {
 
     try {
       const res = await authedPost<{
+        conversationId: string;
         messageId: string;
         reply: string;
         pendingAction: PendingAction | null;
         createdAt: string;
-      }>("/api/chat", { message: trimmed });
+      }>("/api/chat", { message: trimmed, conversationId });
 
+      setConversationId(res.conversationId);
       setMessages((m) => [
         ...m,
         {
@@ -176,36 +201,61 @@ export default function ChatPage() {
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-9.5rem-env(safe-area-inset-bottom))] max-w-2xl flex-col md:h-[calc(100dvh-6rem)]">
-      <div className="mb-1">
-        <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
-          Hi {profile.name?.split(" ")[0] || "there"}.
-        </h1>
-        <p className="text-[13.5px] text-muted-foreground">Tell Alxioum what you need — it'll act on it.</p>
+      <div className="mb-1 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
+            Hi {profile.name?.split(" ")[0] || "there"}.
+          </h1>
+          <p className="text-[13.5px] text-muted-foreground">Tell Alxioum what you need — it'll act on it.</p>
+        </div>
+        {messages.length > 0 && (
+          <button
+            onClick={startNewChat}
+            className="flex shrink-0 items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <Plus className="h-3.5 w-3.5" /> New chat
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto py-4">
         {loading ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading...</div>
         ) : messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex h-full flex-col items-center justify-center gap-4 text-center"
+          >
+            <motion.div
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft"
+              animate={{ scale: [1, 1.06, 1] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            >
               <Sparkles className="h-5 w-5 text-accent" />
+            </motion.div>
+            <div>
+              <p className="max-w-xs text-[13.5px] font-medium text-foreground">
+                Alxioum doesn't just chat — it acts.
+              </p>
+              <p className="mt-1 max-w-xs text-[12.5px] text-muted-foreground">
+                Ask it to add, move, or cancel something on your calendar and it'll do it — with your confirmation
+                every time.
+              </p>
             </div>
-            <p className="max-w-xs text-[13.5px] text-muted-foreground">
-              Try one of these, or type your own request.
-            </p>
             <div className="flex flex-col gap-2">
               {SUGGESTIONS.map((s) => (
                 <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="rounded-lg border border-border px-3.5 py-2 text-[13px] text-foreground transition-colors hover:bg-muted"
+                  key={s.text}
+                  onClick={() => send(s.text)}
+                  className="flex items-center gap-2 rounded-lg border border-border px-3.5 py-2 text-[13px] text-foreground transition-colors hover:bg-muted"
                 >
-                  {s}
+                  <s.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                  {s.text}
                 </button>
               ))}
             </div>
-          </div>
+          </motion.div>
         ) : (
           <div className="space-y-3">
             {messages.map((m) => (
@@ -234,9 +284,30 @@ export default function ChatPage() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Tell Alxioum what you need..."
+          placeholder={voice.listening ? "Listening..." : "Tell Alxioum what you need..."}
           className="h-11 flex-1 rounded-lg border border-border bg-surface px-3.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
+        {voice.supported && (
+          <button
+            type="button"
+            onClick={() => (voice.listening ? voice.stop() : voice.start())}
+            aria-label={voice.listening ? "Stop voice input" : "Speak to Alxioum"}
+            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+              voice.listening
+                ? "border-danger/30 bg-danger/10 text-danger"
+                : "border-border bg-surface text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            {voice.listening && (
+              <motion.span
+                className="absolute inset-0 rounded-lg bg-danger/20"
+                animate={{ opacity: [0.5, 0, 0.5], scale: [1, 1.25, 1] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
+            <Mic className="relative h-4 w-4" />
+          </button>
+        )}
         <Button type="submit" size="icon" disabled={!input.trim() || sending} aria-label="Send">
           <Send className="h-4 w-4" />
         </Button>

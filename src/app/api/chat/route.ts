@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   if (!authed) return NextResponse.json({ error: "Your session has expired. Please sign in again." }, { status: 401 });
   const { client: supabase, userId } = authed;
 
-  let body: { message?: string };
+  let body: { message?: string; conversationId?: string | null };
   try {
     body = await req.json();
   } catch {
@@ -54,13 +54,33 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  let { data: conversation } = await supabase
-    .from("conversations")
-    .select("id")
-    .eq("user_id", userId)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  let conversation: { id: string } | null = null;
+
+  if (body.conversationId) {
+    const { data: existing } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("id", body.conversationId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!existing) {
+      return NextResponse.json({ error: "That conversation couldn't be found." }, { status: 404 });
+    }
+    conversation = existing;
+  } else if (body.conversationId === undefined) {
+    // No conversationId at all (older clients, or deep links) — keep
+    // continuing the most recent conversation rather than forcing a new one.
+    const { data: recent } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    conversation = recent;
+  }
+  // body.conversationId === null means the client explicitly asked for a
+  // new conversation (e.g. "New chat"), so we fall through and create one.
 
   if (!conversation) {
     const { data: created, error: createError } = await supabase
