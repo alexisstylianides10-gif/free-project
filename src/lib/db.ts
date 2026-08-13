@@ -45,7 +45,11 @@ function profileFromRow(r: ProfileRow): Profile {
     plan: r.plan,
     theme: r.theme,
     memoryEnabled: r.memory_enabled,
-    notificationPrefs: r.notification_prefs,
+    notificationPrefs: {
+      deadlines: r.notification_prefs?.deadlines ?? true,
+      scheduleGaps: r.notification_prefs?.scheduleGaps ?? true,
+      dailyBriefing: r.notification_prefs?.dailyBriefing ?? true,
+    },
     onboarded: r.onboarded,
     aiMessagesUsed: r.ai_messages_used,
     aiTokensUsed: r.ai_tokens_used,

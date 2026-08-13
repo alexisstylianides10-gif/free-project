@@ -31,7 +31,6 @@ export const PLANS: Record<Plan, PlanDefinition> = {
       "Calendar agent",
       "Tasks agent",
       "My Day",
-      "Activity history",
     ],
   },
   Pro: {
