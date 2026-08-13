@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Sparkles, Clock, CalendarClock, ListChecks } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import { useGreeting } from "@/lib/useGreeting";
 import { findFreeSlots, nowMinutes } from "@/lib/schedule";
@@ -59,6 +60,7 @@ export default function TodayPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
+          <FadeIn index={0}>
           <Card>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
@@ -91,7 +93,9 @@ export default function TodayPage() {
               )}
             </CardContent>
           </Card>
+          </FadeIn>
 
+          <FadeIn index={1}>
           <Card>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
@@ -124,9 +128,11 @@ export default function TodayPage() {
               )}
             </CardContent>
           </Card>
+          </FadeIn>
 
           {freeSlots.length > 0 && (
-            <Card className="md:col-span-2">
+            <FadeIn index={2} className="md:col-span-2">
+            <Card>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
                   <Clock className="h-4 w-4 text-accent" /> Free time today
@@ -140,10 +146,12 @@ export default function TodayPage() {
                 </div>
               </CardContent>
             </Card>
+            </FadeIn>
           )}
 
           {tomorrow.length > 0 && (
-            <Card className="md:col-span-2">
+            <FadeIn index={3} className="md:col-span-2">
+            <Card>
               <CardContent className="space-y-2">
                 <p className="text-[13px] font-semibold text-foreground">Tomorrow</p>
                 <ul className="space-y-1.5">
@@ -159,6 +167,7 @@ export default function TodayPage() {
                 </ul>
               </CardContent>
             </Card>
+            </FadeIn>
           )}
         </div>
       )}

@@ -3,19 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Share, Plus, MoreVertical, Smartphone } from "lucide-react";
+import { Share, Plus, Smartphone, Bot, Check, X } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { Button } from "@/components/ui/Button";
 import { useAlxioum } from "@/lib/store";
 
 const USE_CASES = ["Stay on top of my schedule", "Manage tasks & deadlines", "Remember things for me", "All of it"];
 
-const EXAMPLE_COMMANDS = [
-  "Schedule tennis Friday at 6.",
-  "What's on my calendar tomorrow?",
-  "Create a task to study tonight.",
-  "Remember that I prefer morning meetings.",
-];
+const DEMO_STEP_DURATIONS = [900, 1000, 1500, 2000, 1600];
 
 type Platform = "ios" | "android" | "desktop";
 
@@ -126,19 +121,53 @@ function StepUseCase({ useCase, setUseCase, onNext, onBack }: { useCase: string 
 }
 
 function StepExamples({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+  const [demoStep, setDemoStep] = useState(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDemoStep((s) => (s + 1) % 5), DEMO_STEP_DURATIONS[demoStep]);
+    return () => clearTimeout(t);
+  }, [demoStep]);
+
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
-      <h2 className="text-[16px] font-semibold text-foreground">Alxioum works best when you just tell it what you need.</h2>
-      <p className="mt-1 text-[13px] text-muted-foreground">Try things like:</p>
-      <div className="mt-3 space-y-2">
-        {EXAMPLE_COMMANDS.map((c) => (
-          <div key={c} className="rounded-lg bg-muted px-3 py-2 text-[13px] text-foreground">
-            &ldquo;{c}&rdquo;
-          </div>
-        ))}
+      <h2 className="text-[16px] font-semibold text-foreground">Just tell it what you need.</h2>
+      <p className="mt-1 text-[13px] text-muted-foreground">Watch how a request becomes a confirmed action:</p>
+
+      <div className="mt-4 min-h-[168px] rounded-xl border border-border bg-background p-3">
+        <div className="space-y-2.5">
+          <AnimatePresence>
+            {demoStep >= 0 && (
+              <motion.div key="u" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex justify-end">
+                <span className="max-w-[85%] rounded-2xl bg-accent px-3 py-1.5 text-[12.5px] text-accent-foreground">Schedule tennis Friday at 6.</span>
+              </motion.div>
+            )}
+            {demoStep >= 1 && demoStep < 3 && (
+              <motion.div key="c" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="ml-1 rounded-xl border border-accent/30 bg-accent-soft/40 p-2.5">
+                <p className="text-[12px] text-foreground">Create &ldquo;Tennis&rdquo; — Friday, 6:00–7:00 PM?</p>
+                <div className="mt-1.5 flex gap-1.5">
+                  <span className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold text-accent-foreground transition-colors ${demoStep === 2 ? "bg-accent" : "bg-accent/90"}`}>
+                    <Check className="h-2.5 w-2.5" /> Confirm
+                  </span>
+                  <span className="flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    <X className="h-2.5 w-2.5" /> Cancel
+                  </span>
+                </div>
+              </motion.div>
+            )}
+            {demoStep >= 3 && (
+              <motion.div key="d" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex gap-1.5">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft">
+                  <Bot className="h-3 w-3 text-accent" />
+                </div>
+                <span className="max-w-[85%] rounded-2xl border border-border bg-surface px-3 py-1.5 text-[12.5px] text-foreground">Done — tennis is on your calendar Friday at 6.</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
+
       <p className="mt-3 text-[12.5px] text-muted-foreground">
-        Anything that creates, changes, or deletes something will always ask you to confirm first.
+        Anything that creates, changes, or deletes something always asks you to confirm first — nothing happens silently.
       </p>
       <div className="mt-5 flex gap-2">
         <Button variant="ghost" onClick={onBack}>
@@ -152,42 +181,64 @@ function StepExamples({ onNext, onBack }: { onNext: () => void; onBack: () => vo
   );
 }
 
+const IOS_STEPS = [
+  <>In Safari, tap the Share icon — on iPhone it&apos;s at the bottom of the screen, on iPad it&apos;s at the top right.</>,
+  <>Scroll down the share menu and tap <b>Add to Home Screen</b>.</>,
+  <>Tap <b>Add</b> (top right). Alxioum now opens full-screen like a real app — no Safari address bar.</>,
+];
+
+const ANDROID_STEPS = [
+  <>Tap the menu in Chrome&apos;s toolbar.</>,
+  <>Tap <b>Add to Home screen</b> (or <b>Install app</b>).</>,
+  <>Confirm. Alxioum now opens like an app, full-screen.</>,
+];
+
 function StepInstall({ platform, onFinish, onBack }: { platform: Platform; onFinish: () => void; onBack: () => void }) {
+  const stepsForPlatform = platform === "android" ? ANDROID_STEPS : IOS_STEPS;
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    if (platform === "desktop") return;
+    const t = setTimeout(() => setActive((a) => (a + 1) % stepsForPlatform.length), 1600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, platform]);
+
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
       <div className="mb-3 flex items-center gap-2">
-        <Smartphone className="h-4 w-4 text-accent" />
+        <motion.span animate={{ rotate: [0, -8, 8, 0] }} transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 1.5 }}>
+          <Smartphone className="h-4 w-4 text-accent" />
+        </motion.span>
         <h2 className="text-[16px] font-semibold text-foreground">
-          {platform === "ios" ? "Put Alxioum on your iPhone or iPad home screen" : "Put Alxioum on your home screen"}
+          {platform === "ios" ? "Put Alxioum on your iPhone or iPad home screen" : platform === "android" ? "Put Alxioum on your home screen" : "Put Alxioum on your home screen"}
         </h2>
       </div>
 
-      {platform === "ios" && (
-        <ol className="space-y-2.5 text-[13.5px] text-foreground">
-          <li className="flex gap-2">
-            <span className="font-semibold text-accent">1.</span> In Safari, tap the Share icon <Share className="inline h-3.5 w-3.5 align-text-bottom" /> — on iPhone it&apos;s at the bottom of the screen, on iPad it&apos;s at the top right.
-          </li>
-          <li className="flex gap-2">
-            <span className="font-semibold text-accent">2.</span> Scroll down the share menu and tap <b>Add to Home Screen</b>.
-          </li>
-          <li className="flex gap-2">
-            <span className="font-semibold text-accent">3.</span> Tap <b>Add</b> (top right). Alxioum now appears on your home screen and opens full-screen like a real app — no Safari address bar.
-          </li>
+      {platform !== "desktop" && (
+        <ol className="space-y-2">
+          {stepsForPlatform.map((s, i) => (
+            <li
+              key={i}
+              className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
+                active === i ? "border-accent/40 bg-accent-soft/40" : "border-transparent"
+              }`}
+            >
+              <motion.div
+                animate={active === i ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                transition={{ duration: 0.8, repeat: active === i ? Infinity : 0 }}
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold ${
+                  active === i ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {i + 1}
+              </motion.div>
+              <span className="text-[13.5px] text-foreground">{s}</span>
+            </li>
+          ))}
         </ol>
       )}
-      {platform === "android" && (
-        <ol className="space-y-2.5 text-[13.5px] text-foreground">
-          <li className="flex gap-2">
-            <span className="font-semibold text-accent">1.</span> Tap the menu <MoreVertical className="inline h-3.5 w-3.5 align-text-bottom" /> in Chrome&apos;s toolbar.
-          </li>
-          <li className="flex gap-2">
-            <span className="font-semibold text-accent">2.</span> Tap <b>Add to Home screen</b> (or <b>Install app</b>).
-          </li>
-          <li className="flex gap-2">
-            <span className="font-semibold text-accent">3.</span> Confirm. Alxioum now opens like an app, full-screen.
-          </li>
-        </ol>
-      )}
+
       {platform === "desktop" && (
         <div className="space-y-2 text-[13.5px] text-foreground">
           <p>

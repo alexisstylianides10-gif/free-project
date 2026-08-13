@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
+import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { planLimits } from "@/lib/billing/plans";
@@ -65,6 +66,7 @@ export default function SettingsPage() {
         <h1 className="text-[22px] font-semibold tracking-tight text-foreground">Settings</h1>
       </div>
 
+      <FadeIn index={0}>
       <Card>
         <CardContent className="space-y-4 p-5">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Profile</p>
@@ -99,7 +101,9 @@ export default function SettingsPage() {
           </Button>
         </CardContent>
       </Card>
+      </FadeIn>
 
+      <FadeIn index={1}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center justify-between">
@@ -136,7 +140,9 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+      </FadeIn>
 
+      <FadeIn index={2}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Notifications</p>
@@ -157,7 +163,9 @@ export default function SettingsPage() {
           />
         </CardContent>
       </Card>
+      </FadeIn>
 
+      <FadeIn index={3}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">
@@ -178,6 +186,7 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </FadeIn>
     </div>
   );
 }

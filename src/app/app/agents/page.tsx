@@ -1,6 +1,7 @@
 import { Calendar, CheckSquare, BrainCircuit, Mail, Wallet, Plane, ShoppingCart, FileSearch, Search, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { FadeIn } from "@/components/ui/FadeIn";
 
 interface AgentCatalogRow {
   id: string;
@@ -34,30 +35,32 @@ export default function AgentsPage() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {catalog.map((agent) => (
-          <Card key={agent.id}>
-            <CardContent className="space-y-3 p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
-                  <agent.icon className="h-[18px] w-[18px]" />
+        {catalog.map((agent, i) => (
+          <FadeIn key={agent.id} index={i}>
+            <Card>
+              <CardContent className="space-y-3 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                    <agent.icon className="h-[18px] w-[18px]" />
+                  </div>
+                  <Badge tone={agent.status === "active" ? "success" : "neutral"}>{agent.status === "active" ? "Active" : "Coming soon"}</Badge>
                 </div>
-                <Badge tone={agent.status === "active" ? "success" : "neutral"}>{agent.status === "active" ? "Active" : "Coming soon"}</Badge>
-              </div>
-              <div>
-                <p className="text-[14.5px] font-semibold text-foreground">{agent.name}</p>
-                <p className="mt-1 text-[13px] text-muted-foreground">{agent.description}</p>
-              </div>
-              {agent.tools.length > 0 && (
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {agent.tools.map((t) => (
-                    <span key={t} className="rounded bg-muted px-1.5 py-0.5 text-[10.5px] font-mono text-muted-foreground">
-                      {t}
-                    </span>
-                  ))}
+                <div>
+                  <p className="text-[14.5px] font-semibold text-foreground">{agent.name}</p>
+                  <p className="mt-1 text-[13px] text-muted-foreground">{agent.description}</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                {agent.tools.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {agent.tools.map((t) => (
+                      <span key={t} className="rounded bg-muted px-1.5 py-0.5 text-[10.5px] font-mono text-muted-foreground">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </FadeIn>
         ))}
       </div>
     </div>

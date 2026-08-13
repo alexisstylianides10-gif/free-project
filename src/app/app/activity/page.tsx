@@ -5,6 +5,7 @@ import { History, CheckCircle2, XCircle, CircleSlash } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { ActivityEntry } from "@/lib/types";
@@ -49,26 +50,28 @@ export default function ActivityPage() {
         <EmptyState icon={History} title="No actions yet" body="Once you confirm an action in Chat, it'll show up here with what happened." />
       ) : (
         <div className="space-y-2">
-          {activity.map((a) => {
+          {activity.map((a, i) => {
             const meta = statusMeta[a.status];
             const Icon = meta.icon;
             const summary = typeof a.metadata?.summary === "string" ? (a.metadata.summary as string) : undefined;
             const error = typeof a.metadata?.error === "string" ? (a.metadata.error as string) : undefined;
             return (
-              <Card key={a.id}>
-                <CardContent className="flex items-start gap-3 p-4">
-                  <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${a.status === "SUCCESS" ? "text-success" : a.status === "FAILED" ? "text-danger" : "text-muted-foreground"}`} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[13.5px] font-medium text-foreground">{toolLabel[a.tool] ?? a.tool}</p>
-                      <Badge tone={meta.tone}>{a.status}</Badge>
-                      <span className="text-[11px] text-muted-foreground">{new Date(a.createdAt).toLocaleString()}</span>
+              <FadeIn key={a.id} index={i}>
+                <Card>
+                  <CardContent className="flex items-start gap-3 p-4">
+                    <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${a.status === "SUCCESS" ? "text-success" : a.status === "FAILED" ? "text-danger" : "text-muted-foreground"}`} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-[13.5px] font-medium text-foreground">{toolLabel[a.tool] ?? a.tool}</p>
+                        <Badge tone={meta.tone}>{a.status}</Badge>
+                        <span className="text-[11px] text-muted-foreground">{new Date(a.createdAt).toLocaleString()}</span>
+                      </div>
+                      {summary && <p className="mt-1 text-[13px] text-muted-foreground">{summary}</p>}
+                      {error && <p className="mt-1 text-[13px] text-danger">{error}</p>}
                     </div>
-                    {summary && <p className="mt-1 text-[13px] text-muted-foreground">{summary}</p>}
-                    {error && <p className="mt-1 text-[13px] text-danger">{error}</p>}
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </FadeIn>
             );
           })}
         </div>

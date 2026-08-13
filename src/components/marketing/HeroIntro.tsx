@@ -28,7 +28,7 @@ export function HeroIntro() {
         permission first.
       </motion.p>
       <motion.div variants={item} className="mt-7 flex flex-wrap gap-3">
-        <Link href="/login?mode=signup" className="rounded-lg bg-accent px-5 py-3 text-[14.5px] font-semibold text-accent-foreground shadow-subtle transition-opacity hover:opacity-90">
+        <Link href="/login" className="rounded-lg bg-accent px-5 py-3 text-[14.5px] font-semibold text-accent-foreground shadow-subtle transition-opacity hover:opacity-90">
           Get Early Access
         </Link>
         <Link href="#how-it-works" className="rounded-lg border border-border px-5 py-3 text-[14.5px] font-semibold text-foreground transition-colors hover:bg-muted">

@@ -35,10 +35,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             </Link>
           </nav>
           <div className="flex items-center gap-2">
-            <Link href="/login" className="rounded-lg px-3.5 py-2 text-[13.5px] font-medium text-foreground transition-colors hover:bg-muted">
-              Sign in
-            </Link>
-            <Link href="/login?mode=signup" className="rounded-lg bg-accent px-3.5 py-2 text-[13.5px] font-semibold text-accent-foreground transition-opacity hover:opacity-90">
+            <Link href="/login" className="rounded-lg bg-accent px-3.5 py-2 text-[13.5px] font-semibold text-accent-foreground transition-opacity hover:opacity-90">
               Get started
             </Link>
           </div>

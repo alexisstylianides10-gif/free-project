@@ -48,7 +48,7 @@ function PlanCard({ planId, highlight }: { planId: "Free" | "Pro"; highlight?: b
         ))}
       </ul>
       <Link
-        href="/login?mode=signup"
+        href="/login"
         className={`mt-6 block rounded-lg px-4 py-2.5 text-center text-[13.5px] font-semibold transition-opacity hover:opacity-90 ${
           highlight ? "bg-accent text-accent-foreground" : "border border-border text-foreground"
         }`}

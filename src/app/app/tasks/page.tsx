@@ -5,6 +5,7 @@ import { Plus, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TaskRow } from "@/components/domain/TaskRow";
+import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import { Priority } from "@/lib/types";
 import { daysBetween, todayISO } from "@/lib/utils";
@@ -85,8 +86,10 @@ export default function TasksPage() {
                     {g.label} · {g.items.length}
                   </h2>
                   <div className="space-y-2">
-                    {g.items.map((t) => (
-                      <TaskRow key={t.id} task={t} />
+                    {g.items.map((t, i) => (
+                      <FadeIn key={t.id} index={i}>
+                        <TaskRow task={t} />
+                      </FadeIn>
                     ))}
                   </div>
                 </div>

@@ -30,15 +30,9 @@ interface AlxioumState {
   setCommandOpen: (open: boolean) => void;
 
   initAuth: () => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<"signed_in" | "check_code" | "already_registered" | "error">;
-  signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
-  verifySignupCode: (email: string, code: string) => Promise<boolean>;
-  resendSignupCode: (email: string) => Promise<boolean>;
-  forgotPassword: (email: string) => Promise<boolean>;
-  updatePassword: (newPassword: string) => Promise<boolean>;
 
   refreshAll: () => Promise<void>;
 
@@ -140,8 +134,16 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       supabase.auth.onAuthStateChange((event, newSession) => {
         if (event === "SIGNED_OUT") {
           set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [] });
-        } else if (event === "SIGNED_IN" && newSession) {
+          return;
+        }
+        if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && newSession) {
+          // Fires after the OAuth (Google) redirect completes, and can also
+          // re-fire for a session we already loaded via getSession() above —
+          // only (re)load account data if this is actually a new sign-in.
+          const current = get();
+          if (current.authUserId === newSession.user.id && current.hydrated) return;
           set({ authStatus: "signed_in", authUserId: newSession.user.id, authEmail: newSession.user.email ?? "" });
+          loadUserData(newSession.user.id, newSession.user.email ?? "");
         }
       });
     },
@@ -161,49 +163,6 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       await loadUserData(userId, email);
     },
 
-    signUp: async (email, password, name) => {
-      if (!supabase) return "error";
-      set({ authBusy: true, authError: null });
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
-      if (error) {
-        set({ authBusy: false, authError: error.message });
-        return "error";
-      }
-      if (data.session) {
-        // Email confirmation is off on this project, or this account was
-        // already confirmed and Supabase logged them straight in.
-        set({ authStatus: "signed_in", authUserId: data.session.user.id, authEmail: data.session.user.email ?? email });
-        await loadUserData(data.session.user.id, data.session.user.email ?? email);
-        if (name.trim()) db.updateProfileRow(data.session.user.id, { name: name.trim() }).catch(() => {});
-        set({ authBusy: false });
-        return "signed_in";
-      }
-      set({ authBusy: false });
-      // Supabase returns a user with an empty identities array (no error,
-      // to avoid leaking which emails are registered) when this email
-      // already has an account — no new confirmation email gets sent in
-      // that case, so telling the user to "check their email" would be a
-      // lie. Surface the real state instead.
-      if (data.user && data.user.identities && data.user.identities.length === 0) {
-        set({ authError: "This email already has an account. Sign in instead, or use \"Forgot password\" if you don't remember it." });
-        return "already_registered";
-      }
-      return "check_code";
-    },
-
-    signIn: async (email, password) => {
-      if (!supabase) return;
-      set({ authBusy: true, authError: null });
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        set({ authBusy: false, authError: error.message });
-        return;
-      }
-      set({ authStatus: "signed_in", authUserId: data.user.id, authEmail: data.user.email ?? email });
-      await loadUserData(data.user.id, data.user.email ?? email);
-      set({ authBusy: false });
-    },
-
     signInWithGoogle: async () => {
       if (!supabase) return;
       set({ authError: null });
@@ -218,45 +177,6 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     signOut: async () => {
       if (supabase) await supabase.auth.signOut();
       set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [] });
-    },
-
-    verifySignupCode: async (email, code) => {
-      if (!supabase) return false;
-      set({ authBusy: true, authError: null });
-      const { data, error } = await supabase.auth.verifyOtp({ email, token: code.trim(), type: "signup" });
-      if (error || !data.session) {
-        set({ authBusy: false, authError: error?.message ?? "That code didn't work. Check it and try again." });
-        return false;
-      }
-      set({ authStatus: "signed_in", authUserId: data.session.user.id, authEmail: data.session.user.email ?? email });
-      await loadUserData(data.session.user.id, data.session.user.email ?? email);
-      set({ authBusy: false });
-      return true;
-    },
-
-    resendSignupCode: async (email) => {
-      if (!supabase) return false;
-      set({ authBusy: true, authError: null });
-      const { error } = await supabase.auth.resend({ type: "signup", email });
-      set({ authBusy: false, authError: error ? error.message : null });
-      return !error;
-    },
-
-    forgotPassword: async (email) => {
-      if (!supabase) return false;
-      set({ authBusy: true, authError: null });
-      const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
-      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-      set({ authBusy: false, authError: error ? error.message : null });
-      return !error;
-    },
-
-    updatePassword: async (newPassword) => {
-      if (!supabase) return false;
-      set({ authBusy: true, authError: null });
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      set({ authBusy: false, authError: error ? error.message : null });
-      return !error;
     },
 
     toggleTask: (id) => {

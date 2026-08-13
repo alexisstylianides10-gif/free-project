@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { MemoryCategory, MemoryItem } from "@/lib/types";
@@ -86,8 +87,9 @@ export default function MemoryPage() {
         <EmptyState icon={BrainCircuit} title="Nothing saved yet" body="Add something above, or tell Alxioum in Chat — e.g. 'remember that I prefer morning meetings.'" />
       ) : (
         <div className="space-y-2">
-          {active.map((m) => (
-            <Card key={m.id}>
+          {active.map((m, i) => (
+            <FadeIn key={m.id} index={i}>
+            <Card>
               <CardContent className="flex items-start justify-between gap-3 p-4">
                 <div className="min-w-0">
                   <div className="mb-1 flex items-center gap-2">
@@ -103,6 +105,7 @@ export default function MemoryPage() {
                 </button>
               </CardContent>
             </Card>
+            </FadeIn>
           ))}
         </div>
       )}

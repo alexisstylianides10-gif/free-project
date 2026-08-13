@@ -79,6 +79,7 @@ export default function ChatPage() {
   async function send(text?: string) {
     const messageText = (text ?? input).trim();
     if (!messageText || !activeId || sending) return;
+    const isFirstMessage = messages.length === 0;
     setInput("");
     setError(null);
     setSending(true);
@@ -94,10 +95,16 @@ export default function ChatPage() {
       if (!token) throw new Error("Your session expired. Please sign in again.");
       const { userMessage, assistantMessage } = await sendChatMessage(token, activeId, messageText);
       setMessages((m) => [...m.filter((x) => x.id !== optimisticId), userMessage, assistantMessage]);
+
+      // Give brand-new conversations a real title (from the first message)
+      // instead of leaving every entry in the sidebar reading "New chat".
+      const autoTitle = isFirstMessage ? messageText.slice(0, 48) + (messageText.length > 48 ? "…" : "") : null;
+      if (autoTitle) db.renameConversation(activeId, autoTitle).catch(() => {});
+
       setConversations((c) => {
         const rest = c.filter((x) => x.id !== activeId);
         const active = c.find((x) => x.id === activeId);
-        return active ? [{ ...active, updatedAt: new Date().toISOString() }, ...rest] : c;
+        return active ? [{ ...active, title: autoTitle ?? active.title, updatedAt: new Date().toISOString() }, ...rest] : c;
       });
     } catch (err) {
       setMessages((m) => m.filter((x) => x.id !== optimisticId));
@@ -234,11 +241,27 @@ export default function ChatPage() {
               onClick={toggleVoice}
               aria-label="Voice input"
               className={cn(
-                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
                 listening ? "bg-danger text-white" : "text-muted-foreground hover:bg-muted"
               )}
             >
-              <Mic className="h-4 w-4" />
+              {listening && (
+                <>
+                  <motion.span
+                    className="absolute inset-0 rounded-lg bg-danger"
+                    animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
+                  />
+                  <motion.span
+                    className="absolute inset-0 rounded-lg bg-danger"
+                    animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut", delay: 0.4 }}
+                  />
+                </>
+              )}
+              <motion.span animate={listening ? { scale: [1, 1.15, 1] } : { scale: 1 }} transition={{ duration: 0.9, repeat: listening ? Infinity : 0 }} className="relative">
+                <Mic className="h-4 w-4" />
+              </motion.span>
             </button>
           )}
           <Button type="submit" size="icon" disabled={!input.trim() || sending} aria-label="Send">
