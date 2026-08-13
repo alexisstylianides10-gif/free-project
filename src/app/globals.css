@@ -6,18 +6,18 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto,
     Helvetica, Arial, sans-serif;
 
-  --background: 30 8% 98%;
-  --foreground: 20 10% 12%;
+  --background: 240 25% 99%;
+  --foreground: 240 20% 12%;
   --surface: 0 0% 100%;
-  --surface-raised: 30 12% 96%;
-  --border: 25 10% 88%;
-  --border-strong: 25 9% 76%;
-  --muted: 28 10% 93%;
-  --muted-foreground: 25 7% 42%;
+  --surface-raised: 240 25% 97%;
+  --border: 235 20% 90%;
+  --border-strong: 235 15% 78%;
+  --muted: 235 22% 95%;
+  --muted-foreground: 235 10% 45%;
 
-  --accent: 21 88% 50%;
+  --accent: 245 83% 60%;
   --accent-foreground: 0 0% 100%;
-  --accent-soft: 21 88% 94%;
+  --accent-soft: 245 83% 95%;
 
   --success: 152 55% 34%;
   --success-soft: 152 55% 94%;
@@ -26,24 +26,24 @@
   --danger: 4 72% 50%;
   --danger-soft: 4 72% 95%;
 
-  --shadow-color: 20 30% 20%;
+  --shadow-color: 240 40% 20%;
 
   color-scheme: light;
 }
 
 :root.dark {
-  --background: 20 10% 7%;
-  --foreground: 30 12% 94%;
-  --surface: 20 9% 13%;
-  --surface-raised: 22 9% 17%;
-  --border: 20 8% 23%;
-  --border-strong: 20 8% 32%;
-  --muted: 20 8% 17%;
-  --muted-foreground: 25 7% 65%;
+  --background: 240 22% 7%;
+  --foreground: 240 20% 95%;
+  --surface: 240 19% 12%;
+  --surface-raised: 242 18% 16%;
+  --border: 240 15% 22%;
+  --border-strong: 240 13% 31%;
+  --muted: 240 16% 16%;
+  --muted-foreground: 235 12% 66%;
 
-  --accent: 22 92% 58%;
+  --accent: 250 90% 67%;
   --accent-foreground: 0 0% 100%;
-  --accent-soft: 21 55% 20%;
+  --accent-soft: 250 55% 21%;
 
   --success: 152 50% 48%;
   --success-soft: 152 35% 16%;
@@ -52,7 +52,7 @@
   --danger: 4 78% 62%;
   --danger-soft: 4 50% 18%;
 
-  --shadow-color: 20 60% 2%;
+  --shadow-color: 250 60% 3%;
 
   color-scheme: dark;
 }
