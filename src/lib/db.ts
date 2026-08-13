@@ -454,7 +454,7 @@ export async function exportAllUserData(userId: string) {
 
 export async function deleteAllUserContent(userId: string): Promise<void> {
   const c = client();
-  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications"];
+  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions"];
   for (const t of tables) {
     const { error } = await c.from(t).delete().eq("user_id", userId);
     if (error) throw error;

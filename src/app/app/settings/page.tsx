@@ -10,6 +10,7 @@ import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { planLimits } from "@/lib/billing/plans";
+import { usePushNotifications } from "@/lib/push/usePushNotifications";
 
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
@@ -161,6 +162,8 @@ export default function SettingsPage() {
             checked={profile.notificationPrefs.dailyBriefing}
             onChange={(v) => updateProfile({ notificationPrefs: { ...profile.notificationPrefs, dailyBriefing: v } })}
           />
+          <div className="my-1 border-t border-border" />
+          <PushNotificationRow />
         </CardContent>
       </Card>
       </FadeIn>
@@ -196,6 +199,39 @@ function ToggleRow({ label, checked, onChange }: { label: string; checked: boole
     <div className="flex items-center justify-between">
       <span className="text-[13.5px] text-foreground">{label}</span>
       <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
+  );
+}
+
+function PushNotificationRow() {
+  const { supported, subscribed, busy, error, subscribe, unsubscribe, sendTest } = usePushNotifications();
+
+  if (!supported) {
+    return (
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="text-[13.5px] text-muted-foreground">Push notifications on this device</span>
+          <span className="text-[12px] text-muted-foreground">Not supported here</span>
+        </div>
+        <p className="mt-1 text-[11.5px] text-muted-foreground">
+          On iPhone/iPad, add Alxioum to your Home Screen first (Safari doesn&apos;t allow push in a regular browser tab).
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[13.5px] text-foreground">Push notifications on this device</span>
+        <Switch checked={subscribed} onCheckedChange={(v) => (v ? subscribe() : unsubscribe())} disabled={busy} />
+      </div>
+      {subscribed && (
+        <button onClick={sendTest} disabled={busy} className="text-[12.5px] font-medium text-accent underline underline-offset-2 disabled:opacity-50">
+          Send a test notification
+        </button>
+      )}
+      {error && <p className="text-[12px] text-danger">{error}</p>}
     </div>
   );
 }
