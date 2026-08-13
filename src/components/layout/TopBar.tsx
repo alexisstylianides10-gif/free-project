@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import * as Popover from "@radix-ui/react-popover";
+import { motion } from "framer-motion";
 import { Bell } from "lucide-react";
 import { Logo } from "./Logo";
 import { useAlxioum } from "@/lib/store";
@@ -28,7 +29,16 @@ export function TopBar() {
               aria-label="Notifications"
             >
               <Bell className="h-[18px] w-[18px]" />
-              {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger ring-2 ring-surface" />}
+              {unread > 0 && (
+                <span className="absolute right-1.5 top-1.5 flex h-2 w-2">
+                  <motion.span
+                    className="absolute inline-flex h-full w-full rounded-full bg-danger"
+                    animate={{ scale: [1, 2.2], opacity: [0.6, 0] }}
+                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+                  />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-danger ring-2 ring-surface" />
+                </span>
+              )}
             </button>
           </Popover.Trigger>
           <Popover.Portal>

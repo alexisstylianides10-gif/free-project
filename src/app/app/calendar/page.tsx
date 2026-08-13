@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
@@ -86,18 +87,28 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {view === "day" && <DayGrid date={anchor} events={dayEvents} onEventClick={openEdit} />}
-      {view === "week" && <WeekAgenda weekStart={weekStart} events={events} onEventClick={openEdit} onAddDay={openNew} />}
-      {view === "month" && (
-        <MonthGrid
-          monthISO={anchor}
-          events={events}
-          onDayClick={(date) => {
-            setAnchor(date);
-            setView("day");
-          }}
-        />
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={`${view}-${anchor}`}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {view === "day" && <DayGrid date={anchor} events={dayEvents} onEventClick={openEdit} />}
+          {view === "week" && <WeekAgenda weekStart={weekStart} events={events} onEventClick={openEdit} onAddDay={openNew} />}
+          {view === "month" && (
+            <MonthGrid
+              monthISO={anchor}
+              events={events}
+              onDayClick={(date) => {
+                setAnchor(date);
+                setView("day");
+              }}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       <EventEditModal event={editing} open={modalOpen} onOpenChange={setModalOpen} defaultDate={defaultDate} />
     </div>

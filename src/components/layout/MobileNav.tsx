@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
+import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { mobileMoreNav, mobilePrimaryNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -28,8 +29,11 @@ export function MobileNav() {
                 active ? "text-accent" : "text-muted-foreground"
               )}
             >
-              <item.icon className="h-[21px] w-[21px]" strokeWidth={active ? 2.1 : 1.8} />
+              <motion.span animate={{ scale: active ? 1.14 : 1, y: active ? -1 : 0 }} transition={{ type: "spring", stiffness: 500, damping: 30 }}>
+                <item.icon className="h-[21px] w-[21px]" strokeWidth={active ? 2.1 : 1.8} />
+              </motion.span>
               {item.label}
+              {active && <motion.span layoutId="mobilenav-dot" className="h-1 w-1 rounded-full bg-accent" transition={{ type: "spring", stiffness: 500, damping: 38 }} />}
             </Link>
           );
         })}
