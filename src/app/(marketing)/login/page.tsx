@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { Button } from "@/components/ui/Button";
@@ -214,14 +215,14 @@ function GoogleIcon() {
 function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <div className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
+      <motion.div initial={{ opacity: 0, y: 14, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo className="mb-3" />
           <h1 className="text-[18px] font-semibold tracking-tight text-foreground">{title}</h1>
           <p className="mt-1 text-[13.5px] text-muted-foreground">{subtitle}</p>
         </div>
         <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">{children}</div>
-      </div>
+      </motion.div>
     </div>
   );
 }

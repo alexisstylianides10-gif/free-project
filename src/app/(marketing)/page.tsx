@@ -1,4 +1,5 @@
 import { HeroMockup } from "@/components/marketing/HeroMockup";
+import { HeroIntro } from "@/components/marketing/HeroIntro";
 import { ScrollReveal } from "@/components/marketing/ScrollReveal";
 import { FAQAccordion } from "@/components/marketing/FAQAccordion";
 import { MyDayMockup } from "@/components/marketing/MyDayMockup";
@@ -42,28 +43,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(60%_50%_at_50%_0%,hsl(var(--accent-soft))_0%,transparent_70%)]" />
         <div className="mx-auto grid max-w-6xl gap-12 px-5 pb-20 pt-16 lg:grid-cols-2 lg:items-center lg:pb-28 lg:pt-24">
-          <div>
-            <p className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[12.5px] font-medium text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Your personal AI command center
-            </p>
-            <h1 className="text-[38px] font-semibold leading-[1.08] tracking-tight text-foreground sm:text-[46px]">
-              AI that doesn&apos;t just answer.
-              <br />
-              <span className="text-accent">It acts.</span>
-            </h1>
-            <p className="mt-5 max-w-md text-[16px] leading-relaxed text-muted-foreground">
-              Alxioum turns natural-language requests into real actions across your calendar, tasks, and memory — always with
-              your permission first.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/login?mode=signup" className="rounded-lg bg-accent px-5 py-3 text-[14.5px] font-semibold text-accent-foreground shadow-subtle transition-opacity hover:opacity-90">
-                Get Early Access
-              </Link>
-              <Link href="#how-it-works" className="rounded-lg border border-border px-5 py-3 text-[14.5px] font-semibold text-foreground transition-colors hover:bg-muted">
-                See How It Works
-              </Link>
-            </div>
-          </div>
+          <HeroIntro />
           <HeroMockup />
         </div>
       </section>

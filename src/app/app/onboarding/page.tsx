@@ -157,19 +157,21 @@ function StepInstall({ platform, onFinish, onBack }: { platform: Platform; onFin
     <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
       <div className="mb-3 flex items-center gap-2">
         <Smartphone className="h-4 w-4 text-accent" />
-        <h2 className="text-[16px] font-semibold text-foreground">Put Alxioum on your home screen</h2>
+        <h2 className="text-[16px] font-semibold text-foreground">
+          {platform === "ios" ? "Put Alxioum on your iPhone or iPad home screen" : "Put Alxioum on your home screen"}
+        </h2>
       </div>
 
       {platform === "ios" && (
         <ol className="space-y-2.5 text-[13.5px] text-foreground">
           <li className="flex gap-2">
-            <span className="font-semibold text-accent">1.</span> Tap the Share icon <Share className="inline h-3.5 w-3.5 align-text-bottom" /> in Safari&apos;s toolbar.
+            <span className="font-semibold text-accent">1.</span> In Safari, tap the Share icon <Share className="inline h-3.5 w-3.5 align-text-bottom" /> — on iPhone it&apos;s at the bottom of the screen, on iPad it&apos;s at the top right.
           </li>
           <li className="flex gap-2">
-            <span className="font-semibold text-accent">2.</span> Scroll down and tap <b>Add to Home Screen</b>.
+            <span className="font-semibold text-accent">2.</span> Scroll down the share menu and tap <b>Add to Home Screen</b>.
           </li>
           <li className="flex gap-2">
-            <span className="font-semibold text-accent">3.</span> Tap <b>Add</b>. Alxioum now opens like an app, full-screen.
+            <span className="font-semibold text-accent">3.</span> Tap <b>Add</b> (top right). Alxioum now appears on your home screen and opens full-screen like a real app — no Safari address bar.
           </li>
         </ol>
       )}
@@ -187,10 +189,15 @@ function StepInstall({ platform, onFinish, onBack }: { platform: Platform; onFin
         </ol>
       )}
       {platform === "desktop" && (
-        <p className="text-[13.5px] text-foreground">
-          Open this page on your phone&apos;s browser and tap <Plus className="inline h-3.5 w-3.5 align-text-bottom" /> <b>Add to Home Screen</b> (Safari)
-          or <b>Install app</b> from the browser menu (Chrome/Android) to use Alxioum like a native app.
-        </p>
+        <div className="space-y-2 text-[13.5px] text-foreground">
+          <p>
+            On <b>iPhone or iPad</b>: open <span className="font-mono text-[12.5px]">alxioum-production.up.railway.app</span> in Safari, tap the Share
+            icon <Share className="inline h-3.5 w-3.5 align-text-bottom" />, then <b>Add to Home Screen</b>.
+          </p>
+          <p className="text-muted-foreground">
+            On Android: tap <Plus className="inline h-3.5 w-3.5 align-text-bottom" /> <b>Install app</b> from Chrome&apos;s menu.
+          </p>
+        </div>
       )}
 
       <div className="mt-5 flex gap-2">

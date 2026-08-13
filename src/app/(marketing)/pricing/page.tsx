@@ -1,21 +1,26 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { PLANS } from "@/lib/billing/plans";
+import { ScrollReveal } from "@/components/marketing/ScrollReveal";
 
 export const metadata = { title: "Pricing" };
 
 export default function PricingPage() {
   return (
     <div className="mx-auto max-w-4xl px-5 py-20">
-      <div className="text-center">
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Simple pricing</h1>
-        <p className="mt-2 text-[15px] text-muted-foreground">Start free. Upgrade when you need more AI actions.</p>
-      </div>
+      <ScrollReveal>
+        <div className="text-center">
+          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Simple pricing</h1>
+          <p className="mt-2 text-[15px] text-muted-foreground">Start free. Upgrade when you need more AI actions.</p>
+        </div>
+      </ScrollReveal>
 
-      <div className="mt-12 grid gap-5 sm:grid-cols-2">
-        <PlanCard planId="Free" />
-        <PlanCard planId="Pro" highlight />
-      </div>
+      <ScrollReveal>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2">
+          <PlanCard planId="Free" />
+          <PlanCard planId="Pro" highlight />
+        </div>
+      </ScrollReveal>
 
       <p className="mt-8 text-center text-[13px] text-muted-foreground">
         Prices in EUR. Manually adding events, tasks, or memories in the app never counts against your AI action limit — only
