@@ -1,27 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
   <defs>
     <linearGradient id="tile" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0B0C16"/>
-      <stop offset="1" stop-color="#05060B"/>
+      <stop offset="0" stop-color="#080a14"/>
+      <stop offset="1" stop-color="#03040a"/>
     </linearGradient>
-    <linearGradient id="lu" x1="50" y1="18" x2="31" y2="56" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#9BDBFF"/>
-      <stop offset="1" stop-color="#4F86F0"/>
+    <linearGradient id="right" x1="50" y1="18" x2="74" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#DCF3FF"/>
+      <stop offset="0.35" stop-color="#4FA8FF"/>
+      <stop offset="1" stop-color="#1E4FD0"/>
     </linearGradient>
-    <linearGradient id="ll" x1="31" y1="55" x2="20" y2="86" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#3E63E0"/>
-      <stop offset="1" stop-color="#5B3FD6"/>
-    </linearGradient>
-    <linearGradient id="ru" x1="50" y1="18" x2="69" y2="56" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#8E9BFF"/>
-      <stop offset="1" stop-color="#8B5CF0"/>
-    </linearGradient>
-    <linearGradient id="rl" x1="69" y1="55" x2="80" y2="86" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#7B4CE0"/>
+    <linearGradient id="leftInner" x1="50" y1="18" x2="38" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B8E8FF"/>
+      <stop offset="0.55" stop-color="#5B8CFF"/>
       <stop offset="1" stop-color="#B24FE0"/>
     </linearGradient>
-    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="4.5" result="b"/>
+    <linearGradient id="leftOuter" x1="30" y1="30" x2="18" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#141B33"/>
+      <stop offset="1" stop-color="#05060B"/>
+    </linearGradient>
+    <linearGradient id="swoosh" x1="46" y1="66" x2="58" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#BFE8FF"/>
+      <stop offset="1" stop-color="#3D7CF0"/>
+    </linearGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
       <feMerge>
         <feMergeNode in="b"/>
         <feMergeNode in="SourceGraphic"/>
@@ -29,13 +31,21 @@
     </filter>
   </defs>
   <rect width="100" height="100" rx="24" fill="url(#tile)"/>
-  <g filter="url(#glow)" opacity="0.55">
-    <path d="M50,18 L57,20 L45.5,56.3 L31.3,55.4 Z" fill="#5B8CFF"/>
-    <path d="M50,18 L43,20 L54.5,56.3 L68.7,55.4 Z" fill="#9B5CF0"/>
+
+  <g filter="url(#glow)" opacity="0.6">
+    <path d="M50,18 L84,86 L64,86 L43,20 Z" fill="#4FA8FF"/>
+    <path d="M50,18 L57,20 L38,60 L27,58 Z" fill="#7B8CFF"/>
+    <path d="M27,58 L38,60 L18,86 L12,84 Z" fill="#2A3050"/>
+    <path d="M46,66 C50,68 54,70 57,74 C55,79 52,83 47,86 C44,80 44,72 46,66 Z" fill="#5B9CFF"/>
   </g>
-  <path d="M50,18 L57,20 L45.5,56.3 L31.3,55.4 Z" fill="url(#lu)"/>
-  <path d="M31.3,55.4 L45.5,56.3 L36,86 L16,86 Z" fill="url(#ll)"/>
-  <path d="M50,18 L43,20 L54.5,56.3 L68.7,55.4 Z" fill="url(#ru)"/>
-  <path d="M68.7,55.4 L54.5,56.3 L64,86 L84,86 Z" fill="url(#rl)"/>
-  <path d="M50,18 L16,86 M50,18 L84,86" stroke="#CFE6FF" stroke-width="0.8" stroke-opacity="0.5" fill="none"/>
+
+  <path d="M27,58 L38,60 L18,86 L12,84 Z" fill="url(#leftOuter)"/>
+  <path d="M50,18 L57,20 L38,60 L27,58 Z" fill="url(#leftInner)"/>
+  <path d="M50,18 L84,86 L64,86 L43,20 Z" fill="url(#right)"/>
+  <path d="M46,66 C50,68 54,70 57,74 C55,79 52,83 47,86 C44,80 44,72 46,66 Z" fill="url(#swoosh)"/>
+
+  <path
+    d="M50,18 L57,20 L38,60 L27,58 Z M50,18 L84,86 M27,58 L12,84"
+    stroke="#EAF6FF" stroke-width="0.9" stroke-opacity="0.65" fill="none" stroke-linejoin="round"
+  />
 </svg>
