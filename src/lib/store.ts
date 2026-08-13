@@ -32,6 +32,7 @@ interface AlxioumState {
   initAuth: () => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<"signed_in" | "check_code" | "already_registered" | "error">;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
   verifySignupCode: (email: string, code: string) => Promise<boolean>;
@@ -201,6 +202,17 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       set({ authStatus: "signed_in", authUserId: data.user.id, authEmail: data.user.email ?? email });
       await loadUserData(data.user.id, data.user.email ?? email);
       set({ authBusy: false });
+    },
+
+    signInWithGoogle: async () => {
+      if (!supabase) return;
+      set({ authError: null });
+      const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/app/today` : undefined;
+      const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
+      // On success the browser navigates away to Google immediately; there's
+      // no further local state to set here. Only a synchronous failure
+      // (e.g. provider not configured) reports back before that happens.
+      if (error) set({ authError: error.message });
     },
 
     signOut: async () => {
