@@ -51,6 +51,7 @@ export function MessageBubble({
           <ConfirmationCard
             action={message.pendingAction}
             resolvedSummary={message.resolvedAction?.resultSummary}
+            resolvedStatus={message.resolvedAction?.status}
             onDecide={(decision) => onDecide(message.id, message.pendingAction!.id, decision)}
           />
         )}

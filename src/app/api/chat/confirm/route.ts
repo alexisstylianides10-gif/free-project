@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     action: pending.action,
     summary: pending.summary,
     args: pending.args,
-    status: result.ok ? "confirmed" : "confirmed",
+    status: result.ok ? "confirmed" : "failed",
     resultSummary,
   };
   if (pending.message_id) await client.from("messages").update({ resolved_action: resolvedAction }).eq("id", pending.message_id);

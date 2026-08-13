@@ -4,21 +4,32 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, X, Loader2 } from "lucide-react";
 import { PendingActionCard } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export function ConfirmationCard({
   action,
   resolvedSummary,
+  resolvedStatus,
   onDecide,
 }: {
   action: PendingActionCard;
   resolvedSummary?: string;
+  resolvedStatus?: PendingActionCard["status"];
   onDecide: (decision: "confirm" | "cancel") => Promise<void>;
 }) {
   const [busy, setBusy] = useState<"confirm" | "cancel" | null>(null);
 
   if (resolvedSummary) {
+    const failed = resolvedStatus === "failed";
     return (
-      <div className="mt-2 rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 text-[13px] text-foreground">{resolvedSummary}</div>
+      <div
+        className={cn(
+          "mt-2 rounded-xl border px-3.5 py-2.5 text-[13px]",
+          failed ? "border-danger/30 bg-danger-soft/50 text-danger" : "border-border bg-muted/40 text-foreground"
+        )}
+      >
+        {resolvedSummary}
+      </div>
     );
   }
 

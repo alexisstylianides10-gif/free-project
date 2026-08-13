@@ -4,7 +4,6 @@ import { SignedInRedirect } from "@/components/marketing/SignedInRedirect";
 import { ScrollReveal } from "@/components/marketing/ScrollReveal";
 import { FAQAccordion } from "@/components/marketing/FAQAccordion";
 import { MyDayMockup } from "@/components/marketing/MyDayMockup";
-import { ActivityMockup } from "@/components/marketing/ActivityMockup";
 import { AgentDiagram } from "@/components/marketing/AgentDiagram";
 import Link from "next/link";
 import { Check, MessageSquare, Brain, ShieldCheck, Zap, CircleCheck } from "lucide-react";
@@ -34,7 +33,7 @@ const FLOW_STEPS = [
   { n: "02", title: "Alxioum understands", body: "It figures out what you're asking and finds what's relevant." },
   { n: "03", title: "You confirm", body: "You review and confirm the exact action before anything changes." },
   { n: "04", title: "Alxioum acts", body: "It carries out the confirmed action against your data." },
-  { n: "05", title: "Done", body: "You get a clear result, and it's logged to your Activity history." },
+  { n: "05", title: "Done", body: "You get a clear result — ask Alxioum anytime what it's done and why." },
 ];
 
 export default function LandingPage() {
@@ -172,23 +171,6 @@ export default function LandingPage() {
               Alxioum starts as a focused calendar-and-tasks AI assistant. The Head Agent and tool architecture behind it are
               built to expand — new agents get added by registering their tools, not rewriting the product.
             </p>
-          </div>
-        </section>
-      </ScrollReveal>
-
-      {/* Activity */}
-      <ScrollReveal>
-        <section className="mx-auto max-w-5xl px-5 py-20">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <ActivityMockup />
-            <div>
-              <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">Activity</p>
-              <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-foreground">See what Alxioum has done.</h2>
-              <p className="mt-3 max-w-md text-[15px] text-muted-foreground">
-                Every confirmed action is logged — what happened, when, and whether it succeeded. Your audit trail, always
-                visible.
-              </p>
-            </div>
           </div>
         </section>
       </ScrollReveal>

@@ -80,7 +80,7 @@ export interface PendingActionCard {
   action: ToolAction;
   summary: string;
   args: Record<string, unknown>;
-  status: "pending" | "confirmed" | "cancelled" | "expired";
+  status: "pending" | "confirmed" | "cancelled" | "expired" | "failed";
 }
 
 export interface ChatMessage {

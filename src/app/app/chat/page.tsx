@@ -128,7 +128,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] gap-4 md:h-[calc(100dvh-2rem)]">
+    <div className="flex h-[calc(100dvh-11.5rem)] gap-4 md:h-[calc(100dvh-10rem)]">
       <aside className="hidden w-56 shrink-0 flex-col gap-1 md:flex">
         <Button size="sm" variant="outline" className="mb-2 w-full justify-start" onClick={newConversation}>
           <Plus className="h-3.5 w-3.5" /> New chat
