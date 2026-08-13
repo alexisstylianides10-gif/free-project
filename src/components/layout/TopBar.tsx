@@ -3,7 +3,7 @@
 import Link from "next/link";
 import * as Popover from "@radix-ui/react-popover";
 import { motion } from "framer-motion";
-import { Bell } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { Logo } from "./Logo";
 import { useAlxioum } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,15 @@ export function TopBar() {
       </Link>
 
       <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => window.dispatchEvent(new Event("alxioum:open-command-palette"))}
+          className="hidden items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-[12.5px] text-muted-foreground transition-colors hover:bg-muted md:flex"
+          aria-label="Open command palette"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span>Quick jump</span>
+          <kbd className="rounded border border-border bg-muted/60 px-1 py-0.5 text-[10px]">⌘K</kbd>
+        </button>
         <Popover.Root>
           <Popover.Trigger asChild>
             <button

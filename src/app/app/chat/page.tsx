@@ -198,8 +198,17 @@ export default function ChatPage() {
             messages.map((m) => <MessageBubble key={m.id} message={m} onDecide={handleDecide} />)
           )}
           {sending && (
-            <div className="flex items-center gap-2 pl-9 text-[13px] text-muted-foreground">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
+            <div className="flex items-center gap-2.5 pl-9">
+              <div className="flex items-center gap-1 rounded-2xl border border-border bg-surface px-3.5 py-2.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
+                    animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>

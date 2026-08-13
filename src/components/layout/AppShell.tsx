@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { MobileNav } from "./MobileNav";
+import { CommandPalette } from "./CommandPalette";
 import { TooltipProvider } from "@/components/ui/Tooltip";
 import { Logo } from "./Logo";
 import { backendConfigured, useAlxioum } from "@/lib/store";
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <TooltipProvider>
+      <CommandPalette />
       <Sidebar />
       <div className="flex min-h-dvh flex-col md:pl-64">
         <TopBar />

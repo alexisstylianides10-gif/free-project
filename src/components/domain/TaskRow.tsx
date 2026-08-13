@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Clock, Sparkles } from "lucide-react";
 import { Task } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
@@ -19,22 +19,49 @@ const categoryLabel: Record<Task["category"], string> = {
   personal: "Personal",
 };
 
+const BURST_ANGLES = [0, 60, 120, 180, 240, 300];
+
 export function TaskRow({ task }: { task: Task }) {
   const [open, setOpen] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const toggleTask = useAlxioum((s) => s.toggleTask);
+
+  function handleToggle() {
+    if (!task.done) setCelebrate(true);
+    toggleTask(task.id);
+  }
 
   return (
     <motion.div layout className="rounded-xl border border-border bg-surface">
       <div className="flex items-start gap-3 p-3.5">
         <button
-          onClick={() => toggleTask(task.id)}
-          className={cn(
-            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
-            task.done ? "border-success bg-success text-white" : "border-border-strong text-transparent hover:border-success"
-          )}
+          onClick={handleToggle}
+          className="relative mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center"
           aria-label="Toggle complete"
         >
-          <Check className="h-3 w-3" />
+          <AnimatePresence>
+            {celebrate &&
+              BURST_ANGLES.map((angle) => (
+                <motion.span
+                  key={angle}
+                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  animate={{ x: Math.cos((angle * Math.PI) / 180) * 16, y: Math.sin((angle * Math.PI) / 180) * 16, opacity: 0, scale: 0 }}
+                  transition={{ duration: 0.45, ease: "easeOut" }}
+                  onAnimationComplete={() => setCelebrate(false)}
+                  className="pointer-events-none absolute left-1/2 top-1/2 h-1 w-1 rounded-full bg-success"
+                />
+              ))}
+          </AnimatePresence>
+          <motion.span
+            animate={{ scale: task.done ? [1, 1.3, 1] : 1 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className={cn(
+              "flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
+              task.done ? "border-success bg-success text-white" : "border-border-strong text-transparent hover:border-success"
+            )}
+          >
+            <Check className="h-3 w-3" />
+          </motion.span>
         </button>
 
         <button className="min-w-0 flex-1 text-left" onClick={() => setOpen((o) => !o)}>
