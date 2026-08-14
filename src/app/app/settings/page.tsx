@@ -77,7 +77,7 @@ export default function SettingsPage() {
       <Card>
         <CardContent className="space-y-4 p-5">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Profile</p>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-[12.5px] text-muted-foreground">Name</span>
               <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} onBlur={() => name.trim() && updateProfile({ name: name.trim() })} />
@@ -165,7 +165,7 @@ export default function SettingsPage() {
           <p className="text-[12.5px] text-muted-foreground">
             Running low before your plan renews? One-time top-ups will let you buy extra AI actions without changing your plan.
           </p>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {CREDIT_PACKS.map((pack) => (
               <div key={pack.id} className="rounded-lg border border-border p-3 text-center">
                 <p className="text-[13px] font-semibold text-foreground">{pack.actions.toLocaleString()}</p>

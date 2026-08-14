@@ -231,7 +231,7 @@ export default function ChatPage() {
 
       <div className="flex min-w-0 flex-1 flex-col rounded-2xl border border-border/70 bg-surface shadow-card">
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5 md:hidden">
-          <button onClick={() => setConvOpen((v) => !v)} className="truncate text-[13.5px] font-semibold text-foreground">
+          <button onClick={() => setConvOpen((v) => !v)} className="min-w-0 flex-1 truncate text-left text-[13.5px] font-semibold text-foreground">
             {conversations.find((c) => c.id === activeId)?.title ?? "Chat"}
           </button>
           <button onClick={newConversation} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="New chat">

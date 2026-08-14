@@ -43,7 +43,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(60%_50%_at_50%_0%,hsl(var(--accent-soft))_0%,transparent_70%)]" />
-        <div className="mx-auto grid max-w-6xl gap-12 px-5 pb-20 pt-16 lg:grid-cols-2 lg:items-center lg:pb-28 lg:pt-24">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-5 pb-20 pt-16 lg:grid-cols-2 lg:items-center lg:pb-28 lg:pt-24">
           <HeroIntro />
           <HeroMockup />
         </div>
@@ -77,7 +77,7 @@ export default function LandingPage() {
             <h2 className="text-[26px] font-semibold tracking-tight text-foreground">Tell it what you need.</h2>
             <p className="mt-2 text-[15px] text-muted-foreground">No commands to memorize. No settings to configure first.</p>
           </div>
-          <div className="mx-auto mt-8 grid max-w-3xl gap-2.5 sm:grid-cols-2">
+          <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-2.5 sm:grid-cols-2">
             {EXAMPLES.map((e) => (
               <div key={e} className="rounded-xl border border-border bg-surface px-4 py-3 text-[13.5px] text-foreground shadow-subtle">
                 &ldquo;{e}&rdquo;
@@ -95,7 +95,7 @@ export default function LandingPage() {
               <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">How it works</p>
               <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-foreground">From conversation to action.</h2>
             </div>
-            <div className="mt-12 grid gap-6 sm:grid-cols-5">
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-5">
               {FLOW_STEPS.map((s, i) => (
                 <div key={s.n} className="relative text-center">
                   {i < FLOW_STEPS.length - 1 && <div className="absolute right-[-12px] top-5 hidden h-px w-6 bg-border sm:block" />}
@@ -112,7 +112,7 @@ export default function LandingPage() {
       {/* My Day */}
       <ScrollReveal>
         <section className="mx-auto max-w-6xl px-5 py-20">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
             <div>
               <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">My Day</p>
               <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-foreground">Your day, in one place.</h2>
@@ -133,7 +133,7 @@ export default function LandingPage() {
               <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">Trust</p>
               <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-foreground">Your information stays yours.</h2>
             </div>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {TRUST_PRINCIPLES.map((p) => (
                 <div key={p.title} className="flex gap-3 rounded-xl border border-border bg-surface p-4">
                   <p.icon className="mt-0.5 h-5 w-5 shrink-0 text-accent" />

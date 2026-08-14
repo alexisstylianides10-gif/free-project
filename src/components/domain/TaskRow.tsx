@@ -65,9 +65,9 @@ export function TaskRow({ task }: { task: Task }) {
         </button>
 
         <button className="min-w-0 flex-1 text-left" onClick={() => setOpen((o) => !o)}>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <PriorityDot priority={task.priority} />
-            <p className={cn("truncate text-[14px] font-medium text-foreground", task.done && "text-muted-foreground line-through")}>{task.title}</p>
+            <p className={cn("min-w-0 flex-1 truncate text-[14px] font-medium text-foreground", task.done && "text-muted-foreground line-through")}>{task.title}</p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <Badge tone="neutral">{categoryLabel[task.category]}</Badge>

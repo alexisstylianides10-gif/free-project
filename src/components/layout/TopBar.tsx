@@ -80,7 +80,7 @@ export function TopBar() {
                   >
                     <div className="flex w-full items-center gap-2">
                       {!n.read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />}
-                      <p className="flex-1 truncate text-[13px] font-medium text-foreground">{n.title}</p>
+                      <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">{n.title}</p>
                     </div>
                     <p className="text-[12px] text-muted-foreground">{n.body}</p>
                     <p className="text-[11px] text-muted-foreground/70">{formatDayLabel(n.createdAt.slice(0, 10))}</p>

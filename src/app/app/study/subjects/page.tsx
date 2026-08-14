@@ -65,7 +65,7 @@ export default function SubjectsPage() {
           }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {subjects.map((subject, i) => {
             const colorway = subjectColorway(subject.color);
             const stats = statsFor(subject.id);

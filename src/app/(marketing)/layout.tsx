@@ -46,7 +46,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
 
       <footer className="border-t border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-12">
-          <div className="grid gap-8 sm:grid-cols-[2fr_1fr_1fr]">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-[2fr_1fr_1fr]">
             <div>
               <div className="flex items-center gap-2.5">
                 <Logo />

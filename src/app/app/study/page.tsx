@@ -36,7 +36,7 @@ export default function StudyOverviewPage() {
     <div className="space-y-5">
       <SchoolCard />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FadeIn index={0}>
         <Card className="bg-gradient-to-br from-violet-500/10 to-purple-500/5 border-violet-500/20">
           <CardContent className="space-y-1 p-5">
@@ -123,8 +123,8 @@ export default function StudyOverviewPage() {
             </div>
             <ul className="space-y-1.5">
               {openSchoolTasks.map((t) => (
-                <li key={t.id} className="flex items-center justify-between text-[13px]">
-                  <span className="truncate text-foreground">{t.title}</span>
+                <li key={t.id} className="flex items-center justify-between gap-2 text-[13px]">
+                  <span className="min-w-0 flex-1 truncate text-foreground">{t.title}</span>
                   <span className="shrink-0 text-muted-foreground">{t.dueDate === today ? "Today" : t.dueDate ?? ""}</span>
                 </li>
               ))}

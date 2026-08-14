@@ -53,7 +53,7 @@ export function WeekAgenda({
                     e.aiGenerated ? "border-accent/30 bg-accent-soft/40" : "border-border bg-muted/50"
                   )}
                 >
-                  <span className="truncate text-[12px] font-medium text-foreground">{e.title}</span>
+                  <span className="w-full truncate text-[12px] font-medium text-foreground">{e.title}</span>
                   <span className="text-[10.5px] text-muted-foreground">{formatTime12(e.startTime)}</span>
                 </button>
               ))}

@@ -56,7 +56,7 @@ export function SchoolCard() {
           <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
             <GraduationCap className="h-4 w-4 text-accent" /> Tell us about your school
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-[12.5px] text-muted-foreground">School name</span>
               <input className={inputClass} value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. Lincoln High School" />

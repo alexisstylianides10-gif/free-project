@@ -38,7 +38,7 @@ export function PricingCards() {
         </div>
       </div>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <PlanCard planId="Free" yearly={yearly} />
         <PlanCard planId="Student" yearly={yearly} />
         <PlanCard planId="Pro" yearly={yearly} highlight />

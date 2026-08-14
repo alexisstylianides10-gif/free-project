@@ -62,7 +62,7 @@ export default function CalendarPage() {
           <h1 className="text-[22px] font-semibold tracking-tight text-foreground">Calendar</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">{heading}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center rounded-lg border border-border">
             <button onClick={() => shift(-1)} className="flex h-8 w-8 items-center justify-center text-muted-foreground hover:bg-muted" aria-label="Previous">
               <ChevronLeft className="h-4 w-4" />

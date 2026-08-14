@@ -136,7 +136,7 @@ export function CommandPalette() {
                 )}
               >
                 <cmd.icon className="h-4 w-4 shrink-0" />
-                <span className="flex-1 truncate font-medium">{cmd.label}</span>
+                <span className="min-w-0 flex-1 truncate font-medium">{cmd.label}</span>
                 {cmd.hint && <span className="text-[11px] text-muted-foreground">{cmd.hint}</span>}
                 {i === activeIndex && <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-accent" />}
               </motion.button>
