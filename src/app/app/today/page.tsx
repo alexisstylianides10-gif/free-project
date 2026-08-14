@@ -42,7 +42,7 @@ export default function TodayPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
+        <h1 className="font-serif text-[24px] font-medium tracking-tight text-foreground">
           {greeting}, {profile?.name?.split(" ")[0] ?? "there"}.
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -174,7 +174,7 @@ export default function TodayPage() {
 
       <Link
         href="/app/chat"
-        className="flex items-center justify-between rounded-2xl bg-gradient-accent px-5 py-4 text-[13.5px] font-medium text-white shadow-glow-accent transition-opacity hover:opacity-90"
+        className="flex items-center justify-between rounded-2xl bg-accent px-5 py-4 text-[13.5px] font-medium text-white transition-opacity hover:opacity-90"
       >
         <span className="flex items-center gap-2">
           <Sparkles className="h-4 w-4" /> Tell Alxioum what you need

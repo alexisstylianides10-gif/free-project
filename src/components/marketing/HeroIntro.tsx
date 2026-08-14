@@ -18,17 +18,17 @@ export function HeroIntro() {
       <motion.p variants={item} className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[12.5px] font-medium text-muted-foreground">
         <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Your personal AI command center
       </motion.p>
-      <motion.h1 variants={item} className="text-[38px] font-semibold leading-[1.08] tracking-tight text-foreground sm:text-[46px]">
+      <motion.h1 variants={item} className="font-serif text-[40px] font-normal leading-[1.1] tracking-tight text-foreground sm:text-[50px]">
         AI that doesn&apos;t just answer.
         <br />
-        <span className="text-gradient-accent">It acts.</span>
+        <span className="italic text-accent">It acts.</span>
       </motion.h1>
       <motion.p variants={item} className="mt-5 max-w-md text-[16px] leading-relaxed text-muted-foreground">
         Alxioum turns natural-language requests into real actions across your calendar, tasks, and memory — always with your
         permission first.
       </motion.p>
       <motion.div variants={item} className="mt-7 flex flex-wrap gap-3">
-        <Link href="/login" className="rounded-lg bg-gradient-accent px-5 py-3 text-[14.5px] font-semibold text-accent-foreground shadow-glow-accent transition-opacity hover:opacity-90">
+        <Link href="/login" className="rounded-lg bg-accent px-5 py-3 text-[14.5px] font-semibold text-accent-foreground transition-opacity hover:opacity-90">
           Get Early Access
         </Link>
         <Link href="#how-it-works" className="rounded-lg border border-border px-5 py-3 text-[14.5px] font-semibold text-foreground transition-colors hover:bg-muted">

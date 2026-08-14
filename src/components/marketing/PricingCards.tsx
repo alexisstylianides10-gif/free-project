@@ -29,7 +29,7 @@ export function PricingCards() {
               )}
             >
               {(mode === "yearly") === yearly && (
-                <motion.span layoutId="pricing-toggle-pill" className="absolute inset-0 -z-10 rounded-full bg-gradient-accent shadow-glow-accent" transition={{ type: "spring", stiffness: 500, damping: 38 }} />
+                <motion.span layoutId="pricing-toggle-pill" className="absolute inset-0 -z-10 rounded-full bg-accent" transition={{ type: "spring", stiffness: 500, damping: 38 }} />
               )}
               {mode}
               {mode === "yearly" && <span className={cn("text-[11px]", yearly ? "text-accent-foreground/80" : "text-accent")}>Save {savingsPct(PLANS.Pro.priceMonthlyEUR, PLANS.Pro.priceYearlyEUR)}%</span>}
@@ -73,7 +73,7 @@ function PlanCard({ planId, yearly, highlight }: { planId: "Free" | "Student" | 
       <Link
         href="/login"
         className={`mt-6 block rounded-lg px-4 py-2.5 text-center text-[13.5px] font-semibold transition-opacity hover:opacity-90 ${
-          highlight ? "bg-gradient-accent text-accent-foreground shadow-glow-accent" : "border border-border text-foreground"
+          highlight ? "bg-accent text-accent-foreground" : "border border-border text-foreground"
         }`}
       >
         {planId === "Free" ? "Get started free" : "Get early access"}

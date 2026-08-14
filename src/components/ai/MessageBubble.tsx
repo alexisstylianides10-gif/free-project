@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bot, Search, User, XCircle } from "lucide-react";
+import { Search, XCircle } from "lucide-react";
 import { ChatMessage } from "@/lib/types";
 import { ConfirmationCard } from "./ConfirmationCard";
 import { cn } from "@/lib/utils";
@@ -23,13 +23,10 @@ export function MessageBubble({
   const time = new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }} className={cn("flex gap-2.5", isUser && "flex-row-reverse")}>
-      <div className={cn("mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full", isUser ? "bg-muted" : "bg-accent-soft")}>
-        {isUser ? <User className="h-3.5 w-3.5 text-muted-foreground" /> : <Bot className="h-3.5 w-3.5 text-accent" />}
-      </div>
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }} className={cn("flex", isUser && "justify-end")}>
       <div className={cn("max-w-[85%] sm:max-w-[75%]", isUser && "flex flex-col items-end")}>
         {!isUser && message.toolCalls.length > 0 && (
-          <div className="mb-1 flex flex-wrap gap-1.5">
+          <div className="mb-1.5 flex flex-wrap gap-1.5">
             {message.toolCalls.map((tc, i) => (
               <span
                 key={`${tc.tool}-${i}`}
@@ -46,15 +43,15 @@ export function MessageBubble({
         )}
         <div
           className={cn(
-            "overflow-hidden rounded-2xl text-[14px] leading-relaxed",
-            isUser ? "bg-gradient-accent text-accent-foreground shadow-glow-accent" : "bg-surface border border-border/70 text-foreground shadow-card"
+            "overflow-hidden text-[14px] leading-relaxed",
+            isUser ? "rounded-2xl bg-accent-soft text-foreground" : "text-foreground"
           )}
         >
           {message.imagePreviewUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={message.imagePreviewUrl} alt="Attached" className="max-h-56 w-full object-cover" />
+            <img src={message.imagePreviewUrl} alt="Attached" className={cn("max-h-56 w-full object-cover", !isUser && "rounded-xl")} />
           )}
-          <p className="whitespace-pre-wrap px-3.5 py-2.5">{message.content}</p>
+          <p className={cn("whitespace-pre-wrap", isUser ? "px-3.5 py-2.5" : "py-0.5")}>{message.content}</p>
         </div>
         {message.pendingAction && (
           <ConfirmationCard

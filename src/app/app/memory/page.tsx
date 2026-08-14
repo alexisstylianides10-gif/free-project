@@ -57,7 +57,7 @@ export default function MemoryPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight text-foreground">Memory</h1>
+          <h1 className="font-serif text-[24px] font-medium tracking-tight text-foreground">Memory</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">What Alxioum remembers about you — fully yours to control.</p>
         </div>
         {active.length > 0 && (

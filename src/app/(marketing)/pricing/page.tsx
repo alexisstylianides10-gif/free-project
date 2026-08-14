@@ -8,7 +8,7 @@ export default function PricingPage() {
     <div className="mx-auto max-w-5xl px-5 py-20">
       <ScrollReveal>
         <div className="text-center">
-          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Simple pricing</h1>
+          <h1 className="font-serif text-[36px] font-normal tracking-tight text-foreground">Simple pricing</h1>
           <p className="mt-2 text-[15px] text-muted-foreground">Start free. Upgrade when you need more AI actions.</p>
         </div>
       </ScrollReveal>

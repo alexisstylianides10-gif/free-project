@@ -56,7 +56,7 @@ export default function TasksPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[22px] font-semibold tracking-tight text-foreground">Tasks</h1>
+        <h1 className="font-serif text-[24px] font-medium tracking-tight text-foreground">Tasks</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">{open.length ? `${open.length} open` : "Nothing outstanding"}</p>
       </div>
 

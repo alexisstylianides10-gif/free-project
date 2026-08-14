@@ -52,7 +52,7 @@ export default function LandingPage() {
       {/* The problem */}
       <ScrollReveal>
         <section className="mx-auto max-w-4xl px-5 py-16 text-center">
-          <h2 className="text-[26px] font-semibold tracking-tight text-foreground">Your digital life is fragmented.</h2>
+          <h2 className="text-[26px] font-serif font-normal tracking-tight text-foreground">Your digital life is fragmented.</h2>
           <p className="mx-auto mt-3 max-w-xl text-[15px] text-muted-foreground">
             Calendar here. Tasks there. Reminders somewhere else. You shouldn&apos;t have to open five apps to organize one day.
           </p>
@@ -74,7 +74,7 @@ export default function LandingPage() {
       <ScrollReveal>
         <section className="mx-auto max-w-5xl px-5 py-16">
           <div className="text-center">
-            <h2 className="text-[26px] font-semibold tracking-tight text-foreground">Tell it what you need.</h2>
+            <h2 className="text-[26px] font-serif font-normal tracking-tight text-foreground">Tell it what you need.</h2>
             <p className="mt-2 text-[15px] text-muted-foreground">No commands to memorize. No settings to configure first.</p>
           </div>
           <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -93,7 +93,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-5xl px-5">
             <div className="text-center">
               <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">How it works</p>
-              <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-foreground">From conversation to action.</h2>
+              <h2 className="mt-2 text-[26px] font-serif font-normal tracking-tight text-foreground">From conversation to action.</h2>
             </div>
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-5">
               {FLOW_STEPS.map((s, i) => (
@@ -115,7 +115,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
             <div>
               <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">My Day</p>
-              <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-foreground">Your day, in one place.</h2>
+              <h2 className="mt-2 text-[26px] font-serif font-normal tracking-tight text-foreground">Your day, in one place.</h2>
               <p className="mt-3 max-w-md text-[15px] text-muted-foreground">
                 Real events, real tasks, real free time — never invented. If nothing&apos;s scheduled, Alxioum just says so.
               </p>
@@ -131,7 +131,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-5xl px-5">
             <div className="text-center">
               <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">Trust</p>
-              <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-foreground">Your information stays yours.</h2>
+              <h2 className="mt-2 text-[26px] font-serif font-normal tracking-tight text-foreground">Your information stays yours.</h2>
             </div>
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {TRUST_PRINCIPLES.map((p) => (
@@ -153,7 +153,7 @@ export default function LandingPage() {
         <section id="agents" className="mx-auto max-w-5xl px-5 py-20">
           <div className="text-center">
             <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">Architecture</p>
-            <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-foreground">One brain. Many capabilities.</h2>
+            <h2 className="mt-2 text-[26px] font-serif font-normal tracking-tight text-foreground">One brain. Many capabilities.</h2>
             <p className="mx-auto mt-2 max-w-lg text-[15px] text-muted-foreground">
               A single Head Agent routes requests to specialized agents. Calendar, Tasks, and Memory are live today — more are on the way.
             </p>
@@ -166,7 +166,7 @@ export default function LandingPage() {
       <ScrollReveal>
         <section className="border-y border-border/60 bg-muted/20 py-16">
           <div className="mx-auto max-w-3xl px-5 text-center">
-            <h2 className="text-[24px] font-semibold tracking-tight text-foreground">Built to grow with you.</h2>
+            <h2 className="text-[24px] font-serif font-normal tracking-tight text-foreground">Built to grow with you.</h2>
             <p className="mt-3 text-[15px] text-muted-foreground">
               Alxioum starts as a focused calendar-and-tasks AI assistant. The Head Agent and tool architecture behind it are
               built to expand — new agents get added by registering their tools, not rewriting the product.
@@ -179,7 +179,7 @@ export default function LandingPage() {
       <ScrollReveal>
         <section className="border-y border-border/60 bg-muted/20 py-20">
           <div className="mx-auto max-w-4xl px-5 text-center">
-            <h2 className="text-[26px] font-semibold tracking-tight text-foreground">Simple pricing.</h2>
+            <h2 className="text-[26px] font-serif font-normal tracking-tight text-foreground">Simple pricing.</h2>
             <p className="mt-2 text-[15px] text-muted-foreground">Start free. Upgrade for more AI actions.</p>
             <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
               {(["Free", "Pro"] as const).map((id) => (
@@ -203,7 +203,7 @@ export default function LandingPage() {
       {/* FAQ */}
       <ScrollReveal>
         <section className="mx-auto max-w-2xl px-5 py-20">
-          <h2 className="text-center text-[26px] font-semibold tracking-tight text-foreground">Frequently asked questions</h2>
+          <h2 className="text-center text-[26px] font-serif font-normal tracking-tight text-foreground">Frequently asked questions</h2>
           <FAQAccordion />
         </section>
       </ScrollReveal>
@@ -212,9 +212,9 @@ export default function LandingPage() {
       <ScrollReveal>
         <section className="mx-auto max-w-3xl px-5 pb-24 text-center">
           <CircleCheck className="mx-auto mb-4 h-8 w-8 text-accent" />
-          <h2 className="text-[26px] font-semibold tracking-tight text-foreground">Ready to try it?</h2>
+          <h2 className="text-[26px] font-serif font-normal tracking-tight text-foreground">Ready to try it?</h2>
           <p className="mt-2 text-[15px] text-muted-foreground">Free to start. No credit card required.</p>
-          <Link href="/login" className="mt-6 inline-block rounded-lg bg-gradient-accent px-6 py-3 text-[14.5px] font-semibold text-accent-foreground shadow-glow-accent transition-opacity hover:opacity-90">
+          <Link href="/login" className="mt-6 inline-block rounded-lg bg-accent px-6 py-3 text-[14.5px] font-semibold text-accent-foreground transition-opacity hover:opacity-90">
             Get Early Access
           </Link>
         </section>

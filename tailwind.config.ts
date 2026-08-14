@@ -17,6 +17,7 @@ const config: Config = {
           "Segoe UI",
           "sans-serif",
         ],
+        serif: ["var(--font-serif)", "Georgia", "Times New Roman", "serif"],
       },
       colors: {
         background: "hsl(var(--background))",
@@ -54,10 +55,10 @@ const config: Config = {
         "2xl": "26px",
       },
       boxShadow: {
-        subtle: "0 1px 2px hsl(var(--shadow-color) / 0.04), 0 1px 1px hsl(var(--shadow-color) / 0.03)",
-        card: "0 1px 2px hsl(var(--shadow-color) / 0.04), 0 16px 32px -14px hsl(var(--shadow-color) / 0.16)",
-        raised: "0 4px 14px hsl(var(--shadow-color) / 0.10), 0 1px 3px hsl(var(--shadow-color) / 0.08)",
-        pop: "0 20px 48px -14px hsl(var(--shadow-color) / 0.32)",
+        subtle: "0 1px 2px hsl(var(--shadow-color) / 0.03)",
+        card: "0 1px 2px hsl(var(--shadow-color) / 0.04)",
+        raised: "0 2px 8px hsl(var(--shadow-color) / 0.06)",
+        pop: "0 12px 32px -12px hsl(var(--shadow-color) / 0.22)",
       },
       keyframes: {
         "fade-in": {

@@ -270,8 +270,8 @@ export default function ChatPage() {
             messages.map((m) => <MessageBubble key={m.id} message={m} onDecide={handleDecide} />)
           )}
           {sending && (
-            <div className="flex items-center gap-2.5 pl-9">
-              <div className="flex items-center gap-1 rounded-2xl border border-border bg-surface px-3.5 py-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1 py-2.5">
                 {[0, 1, 2].map((i) => (
                   <motion.span
                     key={i}

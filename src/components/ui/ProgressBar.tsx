@@ -10,7 +10,7 @@ export function ProgressBar({
   tone?: "accent" | "success" | "warning";
 }) {
   const toneClass = {
-    accent: "bg-gradient-accent",
+    accent: "bg-accent",
     success: "bg-success",
     warning: "bg-warning",
   }[tone];

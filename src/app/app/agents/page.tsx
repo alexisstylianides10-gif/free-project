@@ -28,7 +28,7 @@ export default function AgentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[22px] font-semibold tracking-tight text-foreground">Agents</h1>
+        <h1 className="font-serif text-[24px] font-medium tracking-tight text-foreground">Agents</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
           The Head Agent routes your requests to the right specialist. More agents are coming.
         </p>
