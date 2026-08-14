@@ -165,4 +165,14 @@ export interface Profile {
   aiTokensUsed: number;
   usagePeriodStart: string;
   proInterestAt?: string | null;
+  creditsInterestAt?: string | null;
+}
+
+export interface StudentProfile {
+  schoolName: string;
+  country: string;
+  educationLevel: string;
+  termStartDate?: string;
+  researchSummary?: string;
+  researchedAt?: string;
 }

@@ -40,12 +40,21 @@ function fromAnthropicContent(blocks: Anthropic.Messages.ContentBlock[]): Conten
 export class ClaudeProvider implements AIProvider {
   readonly name = "claude";
 
-  async createMessage({ system, messages, tools, maxTokens }: CreateMessageArgs): Promise<ProviderResponse> {
+  async createMessage({ system, messages, tools, maxTokens, enableWebSearch }: CreateMessageArgs): Promise<ProviderResponse> {
+    const clientTools: Anthropic.Messages.ToolUnion[] = tools.map((t) => ({
+      name: t.name,
+      description: t.description,
+      input_schema: t.inputSchema as Anthropic.Messages.Tool.InputSchema,
+    }));
+    if (enableWebSearch) {
+      clientTools.push({ type: "web_search_20250305", name: "web_search", max_uses: 5 });
+    }
+
     const response = await client().messages.create({
       model: MODEL,
       max_tokens: maxTokens,
       system,
-      tools: tools.map((t) => ({ name: t.name, description: t.description, input_schema: t.inputSchema as Anthropic.Messages.Tool.InputSchema })),
+      tools: clientTools,
       messages: messages.map((m) => ({ role: m.role, content: toAnthropicContent(m.content) })),
     });
 

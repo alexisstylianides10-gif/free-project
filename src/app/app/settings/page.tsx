@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, FlaskConical, LogOut, ShieldCheck, Sparkles } from "lucide-react";
+import { Download, FlaskConical, LogOut, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
-import { planLimits, PLANS } from "@/lib/billing/plans";
+import { CREDIT_PACKS, planLimits, PLANS } from "@/lib/billing/plans";
 import { usePushNotifications } from "@/lib/push/usePushNotifications";
 import type { Plan } from "@/lib/types";
 
@@ -152,6 +152,36 @@ export default function SettingsPage() {
       </FadeIn>
 
       <FadeIn index={2}>
+      <Card>
+        <CardContent className="space-y-3 p-5">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-accent" />
+            <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Buy more AI actions</p>
+          </div>
+          <p className="text-[12.5px] text-muted-foreground">
+            Running low before your plan renews? One-time top-ups will let you buy extra AI actions without changing your plan.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {CREDIT_PACKS.map((pack) => (
+              <div key={pack.id} className="rounded-lg border border-border p-3 text-center">
+                <p className="text-[13px] font-semibold text-foreground">{pack.actions.toLocaleString()}</p>
+                <p className="text-[11.5px] text-muted-foreground">actions</p>
+                <p className="mt-1.5 text-[13px] font-medium text-accent">€{pack.priceEUR}</p>
+              </div>
+            ))}
+          </div>
+          {profile.creditsInterestAt ? (
+            <p className="text-[12.5px] text-accent">Thanks — we&apos;ll let you know as soon as top-ups are available.</p>
+          ) : (
+            <Button size="sm" variant="outline" onClick={() => updateProfile({ creditsInterestAt: new Date().toISOString() })}>
+              <Sparkles className="h-3.5 w-3.5" /> Notify me when this is ready
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+      </FadeIn>
+
+      <FadeIn index={3}>
       <Card className="border-dashed border-accent/40 bg-accent-soft/20">
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">
@@ -179,7 +209,7 @@ export default function SettingsPage() {
       </Card>
       </FadeIn>
 
-      <FadeIn index={3}>
+      <FadeIn index={4}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Notifications</p>
@@ -204,7 +234,7 @@ export default function SettingsPage() {
       </Card>
       </FadeIn>
 
-      <FadeIn index={4}>
+      <FadeIn index={5}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">

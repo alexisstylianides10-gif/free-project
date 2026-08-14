@@ -7,6 +7,7 @@ import {
   FocusSession,
   MemoryItem,
   Profile,
+  StudentProfile,
   Subject,
   Task,
 } from "./types";
@@ -35,6 +36,7 @@ interface ProfileRow {
   ai_tokens_used: number;
   usage_period_start: string;
   pro_interest_at: string | null;
+  credits_interest_at: string | null;
 }
 
 function profileFromRow(r: ProfileRow): Profile {
@@ -57,6 +59,7 @@ function profileFromRow(r: ProfileRow): Profile {
     aiTokensUsed: r.ai_tokens_used,
     usagePeriodStart: r.usage_period_start,
     proInterestAt: r.pro_interest_at,
+    creditsInterestAt: r.credits_interest_at,
   };
 }
 
@@ -77,6 +80,7 @@ export async function updateProfileRow(userId: string, patch: Partial<Profile>):
   if (patch.notificationPrefs !== undefined) row.notification_prefs = patch.notificationPrefs;
   if (patch.onboarded !== undefined) row.onboarded = patch.onboarded;
   if (patch.proInterestAt !== undefined) row.pro_interest_at = patch.proInterestAt;
+  if (patch.creditsInterestAt !== undefined) row.credits_interest_at = patch.creditsInterestAt;
   if (patch.plan !== undefined) row.plan = patch.plan;
   const { error } = await client().from("profiles").update(row).eq("id", userId);
   if (error) throw error;
@@ -421,6 +425,49 @@ export async function fetchMessages(conversationId: string): Promise<import("./t
 }
 
 // ---------------------------------------------------------------------------
+// student profile (Study section)
+// ---------------------------------------------------------------------------
+
+interface StudentProfileRow {
+  school_name: string | null;
+  country: string | null;
+  education_level: string | null;
+  term_start_date: string | null;
+  research_summary: string | null;
+  researched_at: string | null;
+}
+
+function studentProfileFromRow(r: StudentProfileRow): StudentProfile {
+  return {
+    schoolName: r.school_name ?? "",
+    country: r.country ?? "",
+    educationLevel: r.education_level ?? "",
+    termStartDate: r.term_start_date ?? undefined,
+    researchSummary: r.research_summary ?? undefined,
+    researchedAt: r.researched_at ?? undefined,
+  };
+}
+
+export async function fetchStudentProfile(userId: string): Promise<StudentProfile | null> {
+  const { data, error } = await client().from("student_profiles").select("*").eq("user_id", userId).maybeSingle();
+  if (error) throw error;
+  return data ? studentProfileFromRow(data as StudentProfileRow) : null;
+}
+
+export async function upsertStudentProfile(userId: string, patch: Partial<StudentProfile>): Promise<StudentProfile> {
+  const row: Record<string, unknown> = { user_id: userId, updated_at: new Date().toISOString() };
+  if (patch.schoolName !== undefined) row.school_name = patch.schoolName;
+  if (patch.country !== undefined) row.country = patch.country;
+  if (patch.educationLevel !== undefined) row.education_level = patch.educationLevel;
+  if (patch.termStartDate !== undefined) row.term_start_date = patch.termStartDate;
+  if (patch.researchSummary !== undefined) row.research_summary = patch.researchSummary;
+  if (patch.researchedAt !== undefined) row.researched_at = patch.researchedAt;
+  const { data, error } = await client().from("student_profiles").upsert(row).select("*").single();
+  if (error) throw error;
+  return studentProfileFromRow(data as StudentProfileRow);
+}
+
+// ---------------------------------------------------------------------------
 // subjects (Study section)
 // ---------------------------------------------------------------------------
 
@@ -553,7 +600,7 @@ export async function exportAllUserData(userId: string) {
 
 export async function deleteAllUserContent(userId: string): Promise<void> {
   const c = client();
-  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions", "focus_sessions", "subjects"];
+  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions", "focus_sessions", "subjects", "student_profiles"];
   for (const t of tables) {
     const { error } = await c.from(t).delete().eq("user_id", userId);
     if (error) throw error;

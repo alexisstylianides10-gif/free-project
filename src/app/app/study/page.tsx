@@ -10,6 +10,7 @@ import { FadeIn } from "@/components/ui/FadeIn";
 import { subjectColorway } from "@/lib/study/colors";
 import { dayStreak, subjectDistribution, weeklyDailyMinutes, weekOverWeekChangePct } from "@/lib/study/stats";
 import { todayISO } from "@/lib/utils";
+import { SchoolCard } from "@/components/study/SchoolCard";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -33,6 +34,8 @@ export default function StudyOverviewPage() {
 
   return (
     <div className="space-y-5">
+      <SchoolCard />
+
       <div className="grid gap-4 sm:grid-cols-2">
         <FadeIn index={0}>
         <Card className="bg-gradient-to-br from-violet-500/10 to-purple-500/5 border-violet-500/20">

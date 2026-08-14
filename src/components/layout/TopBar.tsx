@@ -3,16 +3,21 @@
 import Link from "next/link";
 import * as Popover from "@radix-ui/react-popover";
 import { motion } from "framer-motion";
-import { Bell, Search } from "lucide-react";
+import { Bell, Flame, Search } from "lucide-react";
 import { Logo } from "./Logo";
 import { useAlxioum } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { formatDayLabel } from "@/lib/utils";
+import { dayStreak } from "@/lib/study/stats";
 
 export function TopBar() {
   const notifications = useAlxioum((s) => s.notifications);
   const markRead = useAlxioum((s) => s.markNotificationRead);
+  const profile = useAlxioum((s) => s.profile);
+  const focusSessions = useAlxioum((s) => s.focusSessions);
   const unread = notifications.filter((n) => !n.read).length;
+  const showStreak = profile?.plan === "Student" || profile?.plan === "Max";
+  const streak = showStreak ? dayStreak(focusSessions) : 0;
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-surface/85 px-4 backdrop-blur md:justify-end md:border-none md:bg-transparent md:px-6">
@@ -22,6 +27,15 @@ export function TopBar() {
       </Link>
 
       <div className="flex items-center gap-1.5">
+        {showStreak && (
+          <Link
+            href="/app/study"
+            className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            <Flame className={cn("h-3.5 w-3.5", streak > 0 ? "text-orange-500" : "text-muted-foreground")} />
+            {streak}
+          </Link>
+        )}
         <button
           onClick={() => window.dispatchEvent(new Event("alxioum:open-command-palette"))}
           className="hidden items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-[12.5px] text-muted-foreground transition-colors hover:bg-muted md:flex"

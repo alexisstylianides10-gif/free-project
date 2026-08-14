@@ -86,3 +86,17 @@ export const PLANS: Record<Plan, PlanDefinition> = {
 export function planLimits(plan: Plan): PlanDefinition {
   return PLANS[plan] ?? PLANS.Free;
 }
+
+export interface CreditPack {
+  id: string;
+  name: string;
+  actions: number;
+  priceEUR: number;
+}
+
+/** One-off AI-action top-ups, for when someone runs out before their plan renews. */
+export const CREDIT_PACKS: CreditPack[] = [
+  { id: "small", name: "Small", actions: 150, priceEUR: 2 },
+  { id: "medium", name: "Medium", actions: 500, priceEUR: 6 },
+  { id: "large", name: "Large", actions: 1500, priceEUR: 15 },
+];

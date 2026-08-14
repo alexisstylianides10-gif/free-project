@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { AppNotification, CalendarEvent, FocusSession, Profile, Subject, Task } from "./types";
+import { AppNotification, CalendarEvent, FocusSession, Profile, StudentProfile, Subject, Task } from "./types";
 import { newId } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
@@ -20,6 +20,7 @@ interface AlxioumState {
   notifications: AppNotification[];
   subjects: Subject[];
   focusSessions: FocusSession[];
+  studentProfile: StudentProfile | null;
   commandOpen: boolean;
 
   authStatus: AuthStatus;
@@ -57,6 +58,8 @@ interface AlxioumState {
 
   startFocusSession: (session: { subjectId?: string; plannedMinutes: number }) => Promise<FocusSession | null>;
   completeFocusSession: (id: string, actualMinutes: number) => void;
+
+  updateStudentProfile: (patch: Partial<StudentProfile>) => Promise<void>;
 }
 
 function reportSyncError(context: string, err: unknown) {
@@ -72,13 +75,14 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
   async function loadUserData(userId: string, email: string) {
     set({ dataLoading: true, authError: null });
     try {
-      const [profile, tasks, events, notifications, subjects, focusSessions] = await Promise.all([
+      const [profile, tasks, events, notifications, subjects, focusSessions, studentProfile] = await Promise.all([
         db.fetchProfile(userId),
         db.fetchTasks(userId),
         db.fetchEvents(userId),
         db.fetchNotifications(userId),
         db.fetchSubjects(userId),
         db.fetchFocusSessions(userId),
+        db.fetchStudentProfile(userId),
       ]);
       set({
         profile:
@@ -102,6 +106,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         notifications,
         subjects,
         focusSessions,
+        studentProfile,
         dataLoading: false,
         hydrated: true,
       });
@@ -119,6 +124,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     notifications: [],
     subjects: [],
     focusSessions: [],
+    studentProfile: null,
     commandOpen: false,
 
     authStatus: backendConfigured ? "checking" : "signed_out",
@@ -148,7 +154,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
 
       supabase.auth.onAuthStateChange((event, newSession) => {
         if (event === "SIGNED_OUT") {
-          set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [], subjects: [], focusSessions: [] });
+          set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [], subjects: [], focusSessions: [], studentProfile: null });
           return;
         }
         if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && newSession) {
@@ -191,7 +197,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
 
     signOut: async () => {
       if (supabase) await supabase.auth.signOut();
-      set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [], subjects: [], focusSessions: [] });
+      set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [], subjects: [], focusSessions: [], studentProfile: null });
     },
 
     toggleTask: (id) => {
@@ -300,6 +306,18 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       const completedAt = new Date().toISOString();
       set((s) => ({ focusSessions: s.focusSessions.map((f) => (f.id === id ? { ...f, actualMinutes, completedAt } : f)) }));
       if (synced()) db.updateFocusSessionRow(id, { actualMinutes, completedAt }).catch((e) => reportSyncError("complete focus session", e));
+    },
+
+    updateStudentProfile: async (patch) => {
+      const userId = synced();
+      set((s) => ({ studentProfile: { ...(s.studentProfile ?? { schoolName: "", country: "", educationLevel: "" }), ...patch } }));
+      if (!userId) return;
+      try {
+        const saved = await db.upsertStudentProfile(userId, patch);
+        set({ studentProfile: saved });
+      } catch (e) {
+        reportSyncError("update student profile", e);
+      }
     },
   };
 });

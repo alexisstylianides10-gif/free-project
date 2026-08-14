@@ -34,6 +34,8 @@ export interface CreateMessageArgs {
   messages: ProviderMessage[];
   tools: ProviderTool[];
   maxTokens: number;
+  /** Grants the model a provider-side web search tool, for tasks that need current, real information (e.g. researching a school). */
+  enableWebSearch?: boolean;
 }
 
 export interface AIProvider {
