@@ -6,14 +6,17 @@ import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { mobileMoreNav, mobilePrimaryNav } from "@/lib/nav";
+import { mobileMoreNav, mobilePrimaryNav, visibleNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import { useAlxioum } from "@/lib/store";
 
 export function MobileNav() {
   const pathname = usePathname();
+  const profile = useAlxioum((s) => s.profile);
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const moreActive = mobileMoreNav.some((i) => pathname.startsWith(i.href)) || pathname.startsWith("/app/settings");
+  const moreNavItems = visibleNav(mobileMoreNav, profile?.plan);
+  const moreActive = moreNavItems.some((i) => pathname.startsWith(i.href)) || pathname.startsWith("/app/settings");
 
   return (
     <>
@@ -60,7 +63,7 @@ export function MobileNav() {
               </Dialog.Close>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {mobileMoreNav.map((item) => (
+              {moreNavItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

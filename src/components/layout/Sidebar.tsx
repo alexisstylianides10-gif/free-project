@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Settings } from "lucide-react";
 import { Logo } from "./Logo";
-import { primaryNav } from "@/lib/nav";
+import { primaryNav, visibleNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAlxioum } from "@/lib/store";
@@ -14,7 +14,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const profile = useAlxioum((s) => s.profile);
 
-  const navItems = primaryNav.filter((i) => i.label !== "Settings");
+  const navItems = visibleNav(primaryNav, profile?.plan).filter((i) => i.label !== "Settings");
   const settingsItem = primaryNav.find((i) => i.label === "Settings")!;
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { AppNotification, CalendarEvent, Profile, Task } from "./types";
+import { AppNotification, CalendarEvent, FocusSession, Profile, Subject, Task } from "./types";
 import { newId } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
@@ -18,6 +18,8 @@ interface AlxioumState {
   tasks: Task[];
   events: CalendarEvent[];
   notifications: AppNotification[];
+  subjects: Subject[];
+  focusSessions: FocusSession[];
   commandOpen: boolean;
 
   authStatus: AuthStatus;
@@ -48,6 +50,13 @@ interface AlxioumState {
   markNotificationRead: (id: string) => void;
 
   updateProfile: (patch: Partial<Profile>) => void;
+
+  addSubject: (subject: { name: string; color: string; icon: string }) => Promise<Subject | null>;
+  updateSubject: (id: string, patch: Partial<Subject>) => void;
+  deleteSubject: (id: string) => void;
+
+  startFocusSession: (session: { subjectId?: string; plannedMinutes: number }) => Promise<FocusSession | null>;
+  completeFocusSession: (id: string, actualMinutes: number) => void;
 }
 
 function reportSyncError(context: string, err: unknown) {
@@ -63,11 +72,13 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
   async function loadUserData(userId: string, email: string) {
     set({ dataLoading: true, authError: null });
     try {
-      const [profile, tasks, events, notifications] = await Promise.all([
+      const [profile, tasks, events, notifications, subjects, focusSessions] = await Promise.all([
         db.fetchProfile(userId),
         db.fetchTasks(userId),
         db.fetchEvents(userId),
         db.fetchNotifications(userId),
+        db.fetchSubjects(userId),
+        db.fetchFocusSessions(userId),
       ]);
       set({
         profile:
@@ -89,6 +100,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         tasks,
         events,
         notifications,
+        subjects,
+        focusSessions,
         dataLoading: false,
         hydrated: true,
       });
@@ -104,6 +117,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     tasks: [],
     events: [],
     notifications: [],
+    subjects: [],
+    focusSessions: [],
     commandOpen: false,
 
     authStatus: backendConfigured ? "checking" : "signed_out",
@@ -133,7 +148,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
 
       supabase.auth.onAuthStateChange((event, newSession) => {
         if (event === "SIGNED_OUT") {
-          set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [] });
+          set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [], subjects: [], focusSessions: [] });
           return;
         }
         if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && newSession) {
@@ -176,7 +191,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
 
     signOut: async () => {
       if (supabase) await supabase.auth.signOut();
-      set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [] });
+      set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [], subjects: [], focusSessions: [] });
     },
 
     toggleTask: (id) => {
@@ -243,6 +258,48 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       set((s) => ({ profile: s.profile ? { ...s.profile, ...patch } : s.profile }));
       const userId = synced();
       if (userId) db.updateProfileRow(userId, patch).catch((e) => reportSyncError("update profile", e));
+    },
+
+    addSubject: async (subject) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertSubject(userId, subject);
+        set((s) => ({ subjects: [...s.subjects, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add subject", e);
+        return null;
+      }
+    },
+
+    updateSubject: (id, patch) => {
+      set((s) => ({ subjects: s.subjects.map((sub) => (sub.id === id ? { ...sub, ...patch } : sub)) }));
+      if (synced()) db.updateSubjectRow(id, patch).catch((e) => reportSyncError("update subject", e));
+    },
+
+    deleteSubject: (id) => {
+      set((s) => ({ subjects: s.subjects.filter((sub) => sub.id !== id) }));
+      if (synced()) db.deleteSubjectRow(id).catch((e) => reportSyncError("delete subject", e));
+    },
+
+    startFocusSession: async (session) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertFocusSession(userId, session);
+        set((s) => ({ focusSessions: [created, ...s.focusSessions] }));
+        return created;
+      } catch (e) {
+        reportSyncError("start focus session", e);
+        return null;
+      }
+    },
+
+    completeFocusSession: (id, actualMinutes) => {
+      const completedAt = new Date().toISOString();
+      set((s) => ({ focusSessions: s.focusSessions.map((f) => (f.id === id ? { ...f, actualMinutes, completedAt } : f)) }));
+      if (synced()) db.updateFocusSessionRow(id, { actualMinutes, completedAt }).catch((e) => reportSyncError("complete focus session", e));
     },
   };
 });

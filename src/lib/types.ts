@@ -126,6 +126,24 @@ export interface ActivityEntry {
 
 export type Plan = "Free" | "Student" | "Pro" | "Max";
 
+export interface Subject {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+  createdAt: string;
+}
+
+export interface FocusSession {
+  id: string;
+  subjectId?: string;
+  plannedMinutes: number;
+  actualMinutes: number;
+  startedAt: string;
+  completedAt?: string;
+  createdAt: string;
+}
+
 export interface NotificationPrefs {
   deadlines: boolean;
   scheduleGaps: boolean;

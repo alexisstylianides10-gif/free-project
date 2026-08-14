@@ -4,8 +4,10 @@ import {
   AppNotification,
   CalendarEvent,
   Conversation,
+  FocusSession,
   MemoryItem,
   Profile,
+  Subject,
   Task,
 } from "./types";
 
@@ -419,6 +421,98 @@ export async function fetchMessages(conversationId: string): Promise<import("./t
 }
 
 // ---------------------------------------------------------------------------
+// subjects (Study section)
+// ---------------------------------------------------------------------------
+
+interface SubjectRow {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+  created_at: string;
+}
+
+function subjectFromRow(r: SubjectRow): Subject {
+  return { id: r.id, name: r.name, color: r.color, icon: r.icon, createdAt: r.created_at };
+}
+
+export async function fetchSubjects(userId: string): Promise<Subject[]> {
+  const { data, error } = await client().from("subjects").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as SubjectRow[]).map(subjectFromRow);
+}
+
+export async function insertSubject(userId: string, subject: { name: string; color: string; icon: string }): Promise<Subject> {
+  const { data, error } = await client().from("subjects").insert({ user_id: userId, ...subject }).select("*").single();
+  if (error) throw error;
+  return subjectFromRow(data as SubjectRow);
+}
+
+export async function updateSubjectRow(id: string, patch: Partial<Subject>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.name !== undefined) row.name = patch.name;
+  if (patch.color !== undefined) row.color = patch.color;
+  if (patch.icon !== undefined) row.icon = patch.icon;
+  const { error } = await client().from("subjects").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteSubjectRow(id: string): Promise<void> {
+  const { error } = await client().from("subjects").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// focus sessions (Study section)
+// ---------------------------------------------------------------------------
+
+interface FocusSessionRow {
+  id: string;
+  subject_id: string | null;
+  planned_minutes: number;
+  actual_minutes: number;
+  started_at: string;
+  completed_at: string | null;
+  created_at: string;
+}
+
+function focusSessionFromRow(r: FocusSessionRow): FocusSession {
+  return {
+    id: r.id,
+    subjectId: r.subject_id ?? undefined,
+    plannedMinutes: r.planned_minutes,
+    actualMinutes: r.actual_minutes,
+    startedAt: r.started_at,
+    completedAt: r.completed_at ?? undefined,
+    createdAt: r.created_at,
+  };
+}
+
+export async function fetchFocusSessions(userId: string): Promise<FocusSession[]> {
+  const { data, error } = await client().from("focus_sessions").select("*").eq("user_id", userId).order("started_at", { ascending: false }).limit(500);
+  if (error) throw error;
+  return (data as FocusSessionRow[]).map(focusSessionFromRow);
+}
+
+export async function insertFocusSession(userId: string, session: { subjectId?: string; plannedMinutes: number }): Promise<FocusSession> {
+  const { data, error } = await client()
+    .from("focus_sessions")
+    .insert({ user_id: userId, subject_id: session.subjectId ?? null, planned_minutes: session.plannedMinutes, actual_minutes: 0 })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return focusSessionFromRow(data as FocusSessionRow);
+}
+
+export async function updateFocusSessionRow(id: string, patch: { actualMinutes?: number; completedAt?: string }): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.actualMinutes !== undefined) row.actual_minutes = patch.actualMinutes;
+  if (patch.completedAt !== undefined) row.completed_at = patch.completedAt;
+  const { error } = await client().from("focus_sessions").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
 // activity (agent_actions) — the audit trail
 // ---------------------------------------------------------------------------
 
@@ -459,7 +553,7 @@ export async function exportAllUserData(userId: string) {
 
 export async function deleteAllUserContent(userId: string): Promise<void> {
   const c = client();
-  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions"];
+  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions", "focus_sessions", "subjects"];
   for (const t of tables) {
     const { error } = await c.from(t).delete().eq("user_id", userId);
     if (error) throw error;

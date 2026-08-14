@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Mic, Plus, Send, Trash2, Loader2, AlertCircle, MessageCircle, ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -56,6 +57,18 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { supported: voiceSupported, listening, toggle: toggleVoice } = useVoiceInput((text) => setInput((v) => (v ? `${v} ${text}` : text)));
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const prefill = searchParams.get("prefill");
+    if (prefill) {
+      setInput(prefill);
+      router.replace("/app/chat");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!authUserId) return;
