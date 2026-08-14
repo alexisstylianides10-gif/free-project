@@ -7,7 +7,7 @@ export const metadata = { title: "Pricing" };
 
 export default function PricingPage() {
   return (
-    <div className="mx-auto max-w-4xl px-5 py-20">
+    <div className="mx-auto max-w-5xl px-5 py-20">
       <ScrollReveal>
         <div className="text-center">
           <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Simple pricing</h1>
@@ -16,9 +16,10 @@ export default function PricingPage() {
       </ScrollReveal>
 
       <ScrollReveal>
-        <div className="mt-12 grid gap-5 sm:grid-cols-2">
+        <div className="mt-12 grid gap-5 sm:grid-cols-3">
           <PlanCard planId="Free" />
           <PlanCard planId="Pro" highlight />
+          <PlanCard planId="Max" />
         </div>
       </ScrollReveal>
 
@@ -30,7 +31,7 @@ export default function PricingPage() {
   );
 }
 
-function PlanCard({ planId, highlight }: { planId: "Free" | "Pro"; highlight?: boolean }) {
+function PlanCard({ planId, highlight }: { planId: "Free" | "Pro" | "Max"; highlight?: boolean }) {
   const plan = PLANS[planId];
   return (
     <div className={`rounded-2xl border p-6 ${highlight ? "border-accent bg-accent-soft/30 shadow-card" : "border-border bg-surface"}`}>

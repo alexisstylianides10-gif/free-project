@@ -36,8 +36,8 @@ export const PLANS: Record<Plan, PlanDefinition> = {
   Pro: {
     id: "Pro",
     name: "Pro",
-    priceMonthlyEUR: 19,
-    priceYearlyEUR: 190,
+    priceMonthlyEUR: 8,
+    priceYearlyEUR: 80,
     aiMessagesPerMonth: 1000,
     maxOutputTokensPerReply: 1400,
     contextConversationTurns: 16,
@@ -47,6 +47,22 @@ export const PLANS: Record<Plan, PlanDefinition> = {
       "Longer conversation memory",
       "Priority support",
       "Early access to new agents",
+    ],
+  },
+  Max: {
+    id: "Max",
+    name: "Max",
+    priceMonthlyEUR: 30,
+    priceYearlyEUR: 300,
+    aiMessagesPerMonth: Infinity,
+    maxOutputTokensPerReply: 2000,
+    contextConversationTurns: 30,
+    features: [
+      "Unlimited AI actions",
+      "Every agent, including new ones as they launch",
+      "Longest conversation memory",
+      "Priority support",
+      "Everything in Pro",
     ],
   },
 };

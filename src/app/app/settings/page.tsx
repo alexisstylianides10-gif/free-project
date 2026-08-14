@@ -36,7 +36,9 @@ export default function SettingsPage() {
   if (!profile) return null;
 
   const plan = planLimits(profile.plan);
-  const usagePct = Math.min(100, Math.round((profile.aiMessagesUsed / plan.aiMessagesPerMonth) * 100));
+  const isUnlimited = !Number.isFinite(plan.aiMessagesPerMonth);
+  const usagePct = isUnlimited ? 0 : Math.min(100, Math.round((profile.aiMessagesUsed / plan.aiMessagesPerMonth) * 100));
+  const upgradeTarget = profile.plan === "Free" ? planLimits("Pro") : profile.plan === "Pro" ? planLimits("Max") : null;
 
   async function exportData() {
     if (!authUserId) return;
@@ -109,32 +111,34 @@ export default function SettingsPage() {
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center justify-between">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Plan &amp; usage</p>
-            <Badge tone={profile.plan === "Pro" ? "accent" : "neutral"}>{profile.plan}</Badge>
+            <Badge tone={profile.plan === "Free" ? "neutral" : "accent"}>{profile.plan}</Badge>
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between text-[12.5px] text-muted-foreground">
               <span>AI actions this month</span>
-              <span>
-                {profile.aiMessagesUsed} / {plan.aiMessagesPerMonth}
-              </span>
+              <span>{isUnlimited ? `${profile.aiMessagesUsed} used · Unlimited` : `${profile.aiMessagesUsed} / ${plan.aiMessagesPerMonth}`}</span>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${usagePct}%` }} />
-            </div>
+            {!isUnlimited && (
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${usagePct}%` }} />
+              </div>
+            )}
           </div>
-          {profile.plan === "Free" && (
+          {upgradeTarget && (
             <div className="rounded-lg border border-border bg-muted/40 p-3">
-              <p className="text-[13px] font-medium text-foreground">Pro — €{plan.priceMonthlyEUR}/month</p>
+              <p className="text-[13px] font-medium text-foreground">
+                {upgradeTarget.name} — €{upgradeTarget.priceMonthlyEUR}/month
+              </p>
               <ul className="mt-1.5 space-y-0.5 text-[12.5px] text-muted-foreground">
-                {planLimits("Pro").features.map((f) => (
+                {upgradeTarget.features.map((f) => (
                   <li key={f}>· {f}</li>
                 ))}
               </ul>
               {profile.proInterestAt ? (
-                <p className="mt-2 text-[12.5px] text-accent">Thanks — we&apos;ll let you know when Pro billing is open.</p>
+                <p className="mt-2 text-[12.5px] text-accent">Thanks — we&apos;ll let you know when billing is open.</p>
               ) : (
                 <Button size="sm" className="mt-2" onClick={() => updateProfile({ proInterestAt: new Date().toISOString() })}>
-                  <Sparkles className="h-3.5 w-3.5" /> Interested in Pro
+                  <Sparkles className="h-3.5 w-3.5" /> Interested in {upgradeTarget.name}
                 </Button>
               )}
             </div>

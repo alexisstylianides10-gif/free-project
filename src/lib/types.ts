@@ -122,7 +122,7 @@ export interface ActivityEntry {
   createdAt: string;
 }
 
-export type Plan = "Free" | "Pro";
+export type Plan = "Free" | "Pro" | "Max";
 
 export interface NotificationPrefs {
   deadlines: boolean;
