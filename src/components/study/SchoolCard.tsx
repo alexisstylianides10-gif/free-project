@@ -66,19 +66,26 @@ export function SchoolCard() {
               <input className={inputClass} value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g. United States" />
             </label>
             <label className="block">
-              <span className="mb-1 block text-[12.5px] text-muted-foreground">Education level</span>
-              <select className={inputClass} value={educationLevel} onChange={(e) => setEducationLevel(e.target.value)}>
-                {EDUCATION_LEVELS.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
               <span className="mb-1 block text-[12.5px] text-muted-foreground">Term starts (optional)</span>
               <input type="date" className={inputClass} value={termStartDate} onChange={(e) => setTermStartDate(e.target.value)} />
             </label>
+          </div>
+          <div>
+            <span className="mb-1.5 block text-[12.5px] text-muted-foreground">Education level</span>
+            <div className="flex flex-wrap gap-1.5">
+              {EDUCATION_LEVELS.map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => setEducationLevel(l)}
+                  className={`rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                    educationLevel === l ? "border-accent bg-accent-soft text-accent" : "border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex gap-2">
             <Button onClick={save} disabled={!schoolName.trim() || !country.trim() || saving}>
