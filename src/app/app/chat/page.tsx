@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MessageBubble } from "@/components/ai/MessageBubble";
 import { VoiceButton } from "@/components/ai/VoiceButton";
+import { ListeningAurora } from "@/components/ai/ListeningAurora";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { ChatMessage, Conversation } from "@/lib/types";
@@ -230,7 +231,8 @@ export default function ChatPage() {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col rounded-2xl border border-border/70 bg-surface shadow-card">
+      <div className="relative z-0 flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border/70 bg-surface shadow-card">
+        <ListeningAurora active={listening} />
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5 md:hidden">
           <button onClick={() => setConvOpen((v) => !v)} className="min-w-0 flex-1 truncate text-left text-[13.5px] font-semibold text-foreground">
             {conversations.find((c) => c.id === activeId)?.title ?? "Chat"}
