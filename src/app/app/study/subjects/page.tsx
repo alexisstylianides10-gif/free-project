@@ -48,7 +48,7 @@ export default function SubjectsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Your subjects</p>
-        <Button size="sm" className="bg-gradient-to-br from-violet-600 to-fuchsia-600" onClick={() => setOpen(true)}>
+        <Button size="sm" onClick={() => setOpen(true)}>
           <Plus className="h-3.5 w-3.5" /> Add subject
         </Button>
       </div>
@@ -59,7 +59,7 @@ export default function SubjectsPage() {
           title="No subjects yet"
           body="Add a subject to organize your focus sessions and see time spent per topic."
           action={
-            <Button className="bg-gradient-to-br from-violet-600 to-fuchsia-600" onClick={() => setOpen(true)}>
+            <Button onClick={() => setOpen(true)}>
               <Plus className="h-4 w-4" /> Add your first subject
             </Button>
           }
@@ -139,7 +139,7 @@ export default function SubjectsPage() {
               ))}
             </div>
           </div>
-          <Button className="w-full bg-gradient-to-br from-violet-600 to-fuchsia-600" onClick={handleCreate} disabled={!name.trim() || saving}>
+          <Button className="w-full" onClick={handleCreate} disabled={!name.trim() || saving}>
             {saving ? "Adding…" : "Add subject"}
           </Button>
         </div>

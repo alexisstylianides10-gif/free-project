@@ -81,7 +81,7 @@ export function SchoolCard() {
             </label>
           </div>
           <div className="flex gap-2">
-            <Button className="bg-gradient-to-br from-violet-600 to-fuchsia-600" onClick={save} disabled={!schoolName.trim() || !country.trim() || saving}>
+            <Button onClick={save} disabled={!schoolName.trim() || !country.trim() || saving}>
               {saving ? "Saving…" : "Save"}
             </Button>
             {hasSchool && (

@@ -72,7 +72,7 @@ export default function StudyPlannerPage() {
     <div className="space-y-4">
       <button
         onClick={autoSchedule}
-        className="flex w-full items-center justify-between rounded-xl border border-transparent bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-3.5 text-left text-[13.5px] font-medium text-white shadow-card transition-opacity hover:opacity-90"
+        className="flex w-full items-center justify-between rounded-xl border border-transparent bg-accent px-4 py-3.5 text-left text-[13.5px] font-medium text-accent-foreground transition-opacity hover:opacity-90"
       >
         <span className="flex items-center gap-2">
           <Sparkles className="h-4 w-4" /> Auto-schedule with AI

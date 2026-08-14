@@ -38,7 +38,7 @@ export default function StudyOverviewPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FadeIn index={0}>
-        <Card className="bg-gradient-to-br from-violet-500/10 to-purple-500/5 border-violet-500/20">
+        <Card className="border-accent/20 bg-accent-soft/40">
           <CardContent className="space-y-1 p-5">
             <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
               <Timer className="h-3.5 w-3.5" /> This week
@@ -57,7 +57,7 @@ export default function StudyOverviewPage() {
         </FadeIn>
 
         <FadeIn index={1}>
-        <Card className="bg-gradient-to-br from-fuchsia-500/10 to-pink-500/5 border-fuchsia-500/20">
+        <Card className="border-accent/20 bg-accent-soft/40">
           <CardContent className="space-y-1 p-5">
             <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
               <Flame className="h-3.5 w-3.5" /> Day streak
@@ -78,7 +78,7 @@ export default function StudyOverviewPage() {
               <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
                 <div className="flex w-full flex-1 items-end">
                   <div
-                    className="w-full rounded-md bg-gradient-to-t from-violet-500 to-fuchsia-500"
+                    className="w-full rounded-md bg-accent"
                     style={{ height: `${Math.max(4, (m / maxDaily) * 100)}%` }}
                   />
                 </div>

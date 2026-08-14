@@ -122,7 +122,7 @@ export default function FocusModePage() {
                   }}
                   className={cn(
                     "rounded-lg border px-3.5 py-2 text-[13px] font-medium transition-colors",
-                    plannedMinutes === d ? "border-transparent bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white" : "border-border text-muted-foreground hover:bg-muted"
+                    plannedMinutes === d ? "border-transparent bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:bg-muted"
                   )}
                 >
                   {d} min
@@ -160,7 +160,7 @@ export default function FocusModePage() {
             </div>
           )}
 
-          <Button size="lg" className="w-full bg-gradient-to-br from-violet-600 to-fuchsia-600" onClick={handleStart}>
+          <Button size="lg" className="w-full" onClick={handleStart}>
             <Play className="h-4 w-4" /> Start focus session
           </Button>
         </CardContent>
@@ -188,8 +188,8 @@ export default function FocusModePage() {
             />
             <defs>
               <linearGradient id="focus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#8b5cf6" />
-                <stop offset="100%" stopColor="#d946ef" />
+                <stop offset="0%" stopColor="hsl(var(--accent))" />
+                <stop offset="100%" stopColor="hsl(var(--accent-end))" />
               </linearGradient>
             </defs>
           </svg>
