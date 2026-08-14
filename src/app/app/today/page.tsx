@@ -174,7 +174,7 @@ export default function TodayPage() {
 
       <Link
         href="/app/chat"
-        className="flex items-center justify-between rounded-xl border border-accent/30 bg-accent-soft/40 px-4 py-3 text-[13.5px] font-medium text-accent transition-colors hover:bg-accent-soft/60"
+        className="flex items-center justify-between rounded-2xl bg-gradient-accent px-5 py-4 text-[13.5px] font-medium text-white shadow-glow-accent transition-opacity hover:opacity-90"
       >
         <span className="flex items-center gap-2">
           <Sparkles className="h-4 w-4" /> Tell Alxioum what you need

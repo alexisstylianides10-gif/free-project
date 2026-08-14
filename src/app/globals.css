@@ -6,18 +6,19 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto,
     Helvetica, Arial, sans-serif;
 
-  --background: 240 25% 99%;
-  --foreground: 240 20% 12%;
+  --background: 250 32% 98.5%;
+  --foreground: 250 24% 11%;
   --surface: 0 0% 100%;
-  --surface-raised: 240 25% 97%;
-  --border: 235 20% 90%;
-  --border-strong: 235 15% 78%;
-  --muted: 235 22% 95%;
-  --muted-foreground: 235 10% 45%;
+  --surface-raised: 250 30% 97%;
+  --border: 250 22% 91%;
+  --border-strong: 250 15% 78%;
+  --muted: 250 24% 95.5%;
+  --muted-foreground: 250 10% 45%;
 
-  --accent: 245 83% 60%;
+  --accent: 262 83% 58%;
+  --accent-end: 292 84% 61%;
   --accent-foreground: 0 0% 100%;
-  --accent-soft: 245 83% 95%;
+  --accent-soft: 262 75% 96%;
 
   --success: 152 55% 34%;
   --success-soft: 152 55% 94%;
@@ -26,24 +27,25 @@
   --danger: 4 72% 50%;
   --danger-soft: 4 72% 95%;
 
-  --shadow-color: 240 40% 20%;
+  --shadow-color: 258 45% 22%;
 
   color-scheme: light;
 }
 
 :root.dark {
-  --background: 240 22% 7%;
-  --foreground: 240 20% 95%;
-  --surface: 240 19% 12%;
-  --surface-raised: 242 18% 16%;
-  --border: 240 15% 22%;
-  --border-strong: 240 13% 31%;
-  --muted: 240 16% 16%;
-  --muted-foreground: 235 12% 66%;
+  --background: 250 24% 6.5%;
+  --foreground: 250 20% 95%;
+  --surface: 250 20% 11%;
+  --surface-raised: 250 19% 15%;
+  --border: 250 16% 21%;
+  --border-strong: 250 13% 30%;
+  --muted: 250 17% 15%;
+  --muted-foreground: 250 12% 66%;
 
-  --accent: 250 90% 67%;
+  --accent: 260 88% 68%;
+  --accent-end: 292 80% 70%;
   --accent-foreground: 0 0% 100%;
-  --accent-soft: 250 55% 21%;
+  --accent-soft: 260 55% 21%;
 
   --success: 152 50% 48%;
   --success-soft: 152 35% 16%;
@@ -52,7 +54,7 @@
   --danger: 4 78% 62%;
   --danger-soft: 4 50% 18%;
 
-  --shadow-color: 250 60% 3%;
+  --shadow-color: 258 60% 3%;
 
   color-scheme: dark;
 }
@@ -105,4 +107,17 @@ body {
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+.bg-gradient-accent {
+  background-image: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-end)));
+}
+.text-gradient-accent {
+  background-image: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-end)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.shadow-glow-accent {
+  box-shadow: 0 10px 28px -8px hsl(var(--accent) / 0.45);
 }

@@ -10,7 +10,7 @@ export function Logo({ className, glow = true }: { className?: string; glow?: bo
         <motion.div
           aria-hidden
           className="absolute inset-0 rounded-[10px]"
-          style={{ background: "linear-gradient(135deg, #4FA8FF, #B24FE0)", filter: "blur(9px)" }}
+          style={{ background: "linear-gradient(135deg, #7C3AED, #D946EF)", filter: "blur(9px)" }}
           animate={{ opacity: [0.32, 0.62, 0.32], scale: [0.88, 1.06, 0.88] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
         />

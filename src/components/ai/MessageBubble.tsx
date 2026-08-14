@@ -44,7 +44,12 @@ export function MessageBubble({
             ))}
           </div>
         )}
-        <div className={cn("overflow-hidden rounded-2xl text-[14px] leading-relaxed", isUser ? "bg-accent text-accent-foreground" : "bg-surface border border-border text-foreground")}>
+        <div
+          className={cn(
+            "overflow-hidden rounded-2xl text-[14px] leading-relaxed",
+            isUser ? "bg-gradient-accent text-accent-foreground shadow-glow-accent" : "bg-surface border border-border/70 text-foreground shadow-card"
+          )}
+        >
           {message.imagePreviewUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={message.imagePreviewUrl} alt="Attached" className="max-h-56 w-full object-cover" />

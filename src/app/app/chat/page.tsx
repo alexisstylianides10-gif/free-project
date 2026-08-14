@@ -229,7 +229,7 @@ export default function ChatPage() {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-border bg-surface">
+      <div className="flex min-w-0 flex-1 flex-col rounded-2xl border border-border/70 bg-surface shadow-card">
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5 md:hidden">
           <button onClick={() => setConvOpen((v) => !v)} className="truncate text-[13.5px] font-semibold text-foreground">
             {conversations.find((c) => c.id === activeId)?.title ?? "Chat"}
@@ -325,7 +325,7 @@ export default function ChatPage() {
             e.preventDefault();
             send();
           }}
-          className="flex items-end gap-2 border-t border-border p-3"
+          className="flex items-end gap-2 border-t border-border/70 p-3"
         >
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
           <button
@@ -347,7 +347,7 @@ export default function ChatPage() {
             }}
             rows={1}
             placeholder={attachedImage ? "Add a caption (optional)…" : "Tell Alxioum what you need…"}
-            className="max-h-32 min-h-[40px] flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className="max-h-32 min-h-[40px] flex-1 resize-none rounded-2xl border border-border/70 bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
           />
           {voiceSupported && (
             <button

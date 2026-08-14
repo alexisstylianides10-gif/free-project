@@ -214,7 +214,7 @@ export default function LandingPage() {
           <CircleCheck className="mx-auto mb-4 h-8 w-8 text-accent" />
           <h2 className="text-[26px] font-semibold tracking-tight text-foreground">Ready to try it?</h2>
           <p className="mt-2 text-[15px] text-muted-foreground">Free to start. No credit card required.</p>
-          <Link href="/login" className="mt-6 inline-block rounded-lg bg-accent px-6 py-3 text-[14.5px] font-semibold text-accent-foreground transition-opacity hover:opacity-90">
+          <Link href="/login" className="mt-6 inline-block rounded-lg bg-gradient-accent px-6 py-3 text-[14.5px] font-semibold text-accent-foreground shadow-glow-accent transition-opacity hover:opacity-90">
             Get Early Access
           </Link>
         </section>

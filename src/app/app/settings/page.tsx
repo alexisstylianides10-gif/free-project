@@ -115,7 +115,11 @@ export default function SettingsPage() {
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center justify-between">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Plan &amp; usage</p>
-            <Badge tone={profile.plan === "Free" ? "neutral" : "accent"}>{profile.plan}</Badge>
+            {profile.plan === "Free" ? (
+              <Badge tone="neutral">{profile.plan}</Badge>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-gradient-accent px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-glow-accent">{profile.plan}</span>
+            )}
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between text-[12.5px] text-muted-foreground">
@@ -124,7 +128,7 @@ export default function SettingsPage() {
             </div>
             {!isUnlimited && (
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${usagePct}%` }} />
+                <div className="h-full rounded-full bg-gradient-accent transition-[width]" style={{ width: `${usagePct}%` }} />
               </div>
             )}
           </div>

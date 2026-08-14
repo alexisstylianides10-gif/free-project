@@ -31,6 +31,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
           soft: "hsl(var(--accent-soft))",
+          end: "hsl(var(--accent-end))",
         },
         success: {
           DEFAULT: "hsl(var(--success))",
@@ -54,9 +55,9 @@ const config: Config = {
       },
       boxShadow: {
         subtle: "0 1px 2px hsl(var(--shadow-color) / 0.04), 0 1px 1px hsl(var(--shadow-color) / 0.03)",
-        card: "0 1px 3px hsl(var(--shadow-color) / 0.06), 0 6px 20px -8px hsl(var(--shadow-color) / 0.10)",
+        card: "0 1px 2px hsl(var(--shadow-color) / 0.04), 0 16px 32px -14px hsl(var(--shadow-color) / 0.16)",
         raised: "0 4px 14px hsl(var(--shadow-color) / 0.10), 0 1px 3px hsl(var(--shadow-color) / 0.08)",
-        pop: "0 12px 40px -12px hsl(var(--shadow-color) / 0.28)",
+        pop: "0 20px 48px -14px hsl(var(--shadow-color) / 0.32)",
       },
       keyframes: {
         "fade-in": {
