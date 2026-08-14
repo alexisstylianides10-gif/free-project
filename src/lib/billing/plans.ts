@@ -52,8 +52,8 @@ export const PLANS: Record<Plan, PlanDefinition> = {
   Max: {
     id: "Max",
     name: "Max",
-    priceMonthlyEUR: 30,
-    priceYearlyEUR: 300,
+    priceMonthlyEUR: 25,
+    priceYearlyEUR: 250,
     aiMessagesPerMonth: Infinity,
     maxOutputTokensPerReply: 2000,
     contextConversationTurns: 30,
