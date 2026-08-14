@@ -124,7 +124,7 @@ export interface ActivityEntry {
   createdAt: string;
 }
 
-export type Plan = "Free" | "Pro" | "Max";
+export type Plan = "Free" | "Student" | "Pro" | "Max";
 
 export interface NotificationPrefs {
   deadlines: boolean;

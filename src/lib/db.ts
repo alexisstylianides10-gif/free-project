@@ -75,6 +75,7 @@ export async function updateProfileRow(userId: string, patch: Partial<Profile>):
   if (patch.notificationPrefs !== undefined) row.notification_prefs = patch.notificationPrefs;
   if (patch.onboarded !== undefined) row.onboarded = patch.onboarded;
   if (patch.proInterestAt !== undefined) row.pro_interest_at = patch.proInterestAt;
+  if (patch.plan !== undefined) row.plan = patch.plan;
   const { error } = await client().from("profiles").update(row).eq("id", userId);
   if (error) throw error;
 }

@@ -38,8 +38,9 @@ export function PricingCards() {
         </div>
       </div>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-3">
+      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <PlanCard planId="Free" yearly={yearly} />
+        <PlanCard planId="Student" yearly={yearly} />
         <PlanCard planId="Pro" yearly={yearly} highlight />
         <PlanCard planId="Max" yearly={yearly} />
       </div>
@@ -47,7 +48,7 @@ export function PricingCards() {
   );
 }
 
-function PlanCard({ planId, yearly, highlight }: { planId: "Free" | "Pro" | "Max"; yearly: boolean; highlight?: boolean }) {
+function PlanCard({ planId, yearly, highlight }: { planId: "Free" | "Student" | "Pro" | "Max"; yearly: boolean; highlight?: boolean }) {
   const plan = PLANS[planId];
   const hasYearly = plan.priceYearlyEUR > 0;
   const price = yearly && hasYearly ? plan.priceYearlyEUR : plan.priceMonthlyEUR;

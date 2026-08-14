@@ -33,6 +33,22 @@ export const PLANS: Record<Plan, PlanDefinition> = {
       "My Day",
     ],
   },
+  Student: {
+    id: "Student",
+    name: "Student",
+    priceMonthlyEUR: 4,
+    priceYearlyEUR: 40,
+    aiMessagesPerMonth: 1000,
+    maxOutputTokensPerReply: 1400,
+    contextConversationTurns: 16,
+    features: [
+      "Everything in Pro, at student pricing",
+      "1,000 AI actions / month",
+      "Calendar + Tasks + Memory agents",
+      "Longer conversation memory",
+      "Priority support",
+    ],
+  },
   Pro: {
     id: "Pro",
     name: "Pro",

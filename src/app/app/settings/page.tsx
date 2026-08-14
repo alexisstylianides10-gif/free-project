@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, LogOut, ShieldCheck, Sparkles } from "lucide-react";
+import { Download, FlaskConical, LogOut, ShieldCheck, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
@@ -9,8 +9,11 @@ import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
-import { planLimits } from "@/lib/billing/plans";
+import { planLimits, PLANS } from "@/lib/billing/plans";
 import { usePushNotifications } from "@/lib/push/usePushNotifications";
+import type { Plan } from "@/lib/types";
+
+const ALL_PLANS: Plan[] = ["Free", "Student", "Pro", "Max"];
 
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
@@ -38,7 +41,8 @@ export default function SettingsPage() {
   const plan = planLimits(profile.plan);
   const isUnlimited = !Number.isFinite(plan.aiMessagesPerMonth);
   const usagePct = isUnlimited ? 0 : Math.min(100, Math.round((profile.aiMessagesUsed / plan.aiMessagesPerMonth) * 100));
-  const upgradeTarget = profile.plan === "Free" ? planLimits("Pro") : profile.plan === "Pro" ? planLimits("Max") : null;
+  const upgradeTarget =
+    profile.plan === "Free" ? planLimits("Pro") : profile.plan === "Pro" || profile.plan === "Student" ? planLimits("Max") : null;
 
   async function exportData() {
     if (!authUserId) return;
@@ -148,6 +152,34 @@ export default function SettingsPage() {
       </FadeIn>
 
       <FadeIn index={2}>
+      <Card className="border-dashed border-accent/40 bg-accent-soft/20">
+        <CardContent className="space-y-3 p-5">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="h-4 w-4 text-accent" />
+            <p className="text-[13px] font-semibold uppercase tracking-wide text-accent">Testing — plan switcher</p>
+          </div>
+          <p className="text-[12.5px] text-muted-foreground">
+            Billing isn&apos;t live yet, so you can freely switch your own account between plans to test the app. This
+            panel will be removed once Alxioum publishes real payments.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {ALL_PLANS.map((p) => (
+              <button
+                key={p}
+                onClick={() => updateProfile({ plan: p })}
+                className={`rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                  profile.plan === p ? "border-accent bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {PLANS[p].name}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      </FadeIn>
+
+      <FadeIn index={3}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Notifications</p>
@@ -172,7 +204,7 @@ export default function SettingsPage() {
       </Card>
       </FadeIn>
 
-      <FadeIn index={3}>
+      <FadeIn index={4}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">
