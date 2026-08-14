@@ -12,11 +12,16 @@ function client(): Anthropic {
   return cachedClient;
 }
 
-type AnthropicContentParam = Anthropic.Messages.TextBlockParam | Anthropic.Messages.ToolUseBlockParam | Anthropic.Messages.ToolResultBlockParam;
+type AnthropicContentParam =
+  | Anthropic.Messages.TextBlockParam
+  | Anthropic.Messages.ImageBlockParam
+  | Anthropic.Messages.ToolUseBlockParam
+  | Anthropic.Messages.ToolResultBlockParam;
 
 function toAnthropicContent(blocks: ContentBlock[]): AnthropicContentParam[] {
   return blocks.map((b): AnthropicContentParam => {
     if (b.type === "text") return { type: "text", text: b.text };
+    if (b.type === "image") return { type: "image", source: { type: "base64", media_type: b.mediaType, data: b.data } };
     if (b.type === "tool_use") return { type: "tool_use", id: b.id, name: b.name, input: b.input };
     return { type: "tool_result", tool_use_id: b.toolUseId, content: b.content, is_error: b.isError };
   });

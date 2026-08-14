@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Mic, Plus, Send, Trash2, Loader2, AlertCircle, MessageCircle } from "lucide-react";
+import { Mic, Plus, Send, Trash2, Loader2, AlertCircle, MessageCircle, ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MessageBubble } from "@/components/ai/MessageBubble";
@@ -12,6 +12,30 @@ import { ChatMessage, Conversation } from "@/lib/types";
 import { confirmPendingAction, sendChatMessage } from "@/lib/ai/chatClient";
 import { useVoiceInput } from "@/lib/useVoiceInput";
 import { cn } from "@/lib/utils";
+
+const MAX_IMAGE_DIMENSION = 1600;
+
+async function fileToCompressedDataUrl(file: File): Promise<string> {
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("Couldn't read that image."));
+      el.src = objectUrl;
+    });
+    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(img.width, img.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Couldn't process that image.");
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", 0.82);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
 
 export default function ChatPage() {
   const authUserId = useAlxioum((s) => s.authUserId);
@@ -26,7 +50,10 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [convOpen, setConvOpen] = useState(false);
+  const [attachedImage, setAttachedImage] = useState<{ dataUrl: string } | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { supported: voiceSupported, listening, toggle: toggleVoice } = useVoiceInput((text) => setInput((v) => (v ? `${v} ${text}` : text)));
 
@@ -76,29 +103,60 @@ export default function ChatPage() {
     }
   }
 
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setImageError(null);
+    if (!file.type.startsWith("image/")) {
+      setImageError("That's not an image.");
+      return;
+    }
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file);
+      setAttachedImage({ dataUrl });
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : "Couldn't attach that image.");
+    }
+  }
+
   async function send(text?: string) {
     const messageText = (text ?? input).trim();
-    if (!messageText || !activeId || sending) return;
+    const image = attachedImage;
+    if ((!messageText && !image) || !activeId || sending) return;
     const isFirstMessage = messages.length === 0;
     setInput("");
+    setAttachedImage(null);
     setError(null);
     setSending(true);
 
     const optimisticId = `optimistic_${Date.now()}`;
     setMessages((m) => [
       ...m,
-      { id: optimisticId, conversationId: activeId, role: "user", content: messageText, toolCalls: [], pendingAction: null, resolvedAction: null, createdAt: new Date().toISOString() },
+      {
+        id: optimisticId,
+        conversationId: activeId,
+        role: "user",
+        content: messageText || "📷 Photo",
+        toolCalls: [],
+        pendingAction: null,
+        resolvedAction: null,
+        createdAt: new Date().toISOString(),
+        imagePreviewUrl: image?.dataUrl,
+      },
     ]);
 
     try {
       const token = await getAccessToken();
       if (!token) throw new Error("Your session expired. Please sign in again.");
-      const { userMessage, assistantMessage } = await sendChatMessage(token, activeId, messageText);
-      setMessages((m) => [...m.filter((x) => x.id !== optimisticId), userMessage, assistantMessage]);
+      const imagePayload = image ? { base64: image.dataUrl.split(",")[1], mediaType: "image/jpeg" } : undefined;
+      const { userMessage, assistantMessage } = await sendChatMessage(token, activeId, messageText, imagePayload);
+      setMessages((m) => [...m.filter((x) => x.id !== optimisticId), { ...userMessage, imagePreviewUrl: image?.dataUrl }, assistantMessage]);
 
       // Give brand-new conversations a real title (from the first message)
       // instead of leaving every entry in the sidebar reading "New chat".
-      const autoTitle = isFirstMessage ? messageText.slice(0, 48) + (messageText.length > 48 ? "…" : "") : null;
+      const titleSource = messageText || "Photo";
+      const autoTitle = isFirstMessage ? titleSource.slice(0, 48) + (titleSource.length > 48 ? "…" : "") : null;
       if (autoTitle) db.renameConversation(activeId, autoTitle).catch(() => {});
 
       setConversations((c) => {
@@ -109,6 +167,7 @@ export default function ChatPage() {
     } catch (err) {
       setMessages((m) => m.filter((x) => x.id !== optimisticId));
       setInput(messageText);
+      setAttachedImage(image);
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setSending(false);
@@ -224,6 +283,30 @@ export default function ChatPage() {
           </div>
         )}
 
+        {imageError && (
+          <div className="mx-4 mb-2 flex items-center gap-1.5 rounded-lg bg-danger-soft px-3 py-2 text-[12.5px] text-danger">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {imageError}
+          </div>
+        )}
+
+        {attachedImage && (
+          <div className="mx-3 mb-2 flex items-center gap-2">
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={attachedImage.dataUrl} alt="Attached preview" className="h-full w-full object-cover" />
+              <button
+                type="button"
+                onClick={() => setAttachedImage(null)}
+                className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white"
+                aria-label="Remove photo"
+              >
+                <X className="h-2.5 w-2.5" />
+              </button>
+            </div>
+            <span className="text-[12.5px] text-muted-foreground">Photo attached</span>
+          </div>
+        )}
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -231,6 +314,15 @@ export default function ChatPage() {
           }}
           className="flex items-end gap-2 border-t border-border p-3"
         >
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Attach photo"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted"
+          >
+            <ImagePlus className="h-4 w-4" />
+          </button>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -241,7 +333,7 @@ export default function ChatPage() {
               }
             }}
             rows={1}
-            placeholder="Tell Alxioum what you need…"
+            placeholder={attachedImage ? "Add a caption (optional)…" : "Tell Alxioum what you need…"}
             className="max-h-32 min-h-[40px] flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
           />
           {voiceSupported && (
@@ -273,7 +365,7 @@ export default function ChatPage() {
               </motion.span>
             </button>
           )}
-          <Button type="submit" size="icon" disabled={!input.trim() || sending} aria-label="Send">
+          <Button type="submit" size="icon" disabled={(!input.trim() && !attachedImage) || sending} aria-label="Send">
             <Send className="h-4 w-4" />
           </Button>
         </form>

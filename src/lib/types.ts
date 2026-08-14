@@ -92,6 +92,8 @@ export interface ChatMessage {
   pendingAction?: PendingActionCard | null;
   resolvedAction?: (PendingActionCard & { resultSummary: string }) | null;
   createdAt: string;
+  /** Client-only, not persisted: local preview of an image attached to this message. */
+  imagePreviewUrl?: string;
 }
 
 export interface Conversation {

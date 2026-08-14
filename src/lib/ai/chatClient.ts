@@ -12,11 +12,16 @@ export interface ApiError {
   code?: string;
 }
 
-export async function sendChatMessage(token: string, conversationId: string, message: string): Promise<SendMessageResponse> {
+export async function sendChatMessage(
+  token: string,
+  conversationId: string,
+  message: string,
+  image?: { base64: string; mediaType: string }
+): Promise<SendMessageResponse> {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ conversationId, message }),
+    body: JSON.stringify({ conversationId, message, image }),
   });
   const body = await res.json();
   if (!res.ok) throw Object.assign(new Error((body as ApiError).error ?? "Something went wrong."), { code: (body as ApiError).code });

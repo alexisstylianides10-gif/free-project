@@ -26,16 +26,21 @@ export async function runHeadAgent(params: {
   ctx: ToolContext;
   history: { role: "user" | "assistant"; content: string }[];
   userText: string;
+  image?: { mediaType: "image/jpeg" | "image/png" | "image/webp" | "image/gif"; data: string };
   maxTokens: number;
 }): Promise<HeadAgentResult> {
-  const { provider, ctx, history, userText, maxTokens } = params;
+  const { provider, ctx, history, userText, image, maxTokens } = params;
 
   const contextSummary = await buildContextSummary(ctx);
   const system = buildSystemPrompt(contextSummary);
 
+  const userContent: ContentBlock[] = [];
+  if (image) userContent.push({ type: "image", mediaType: image.mediaType, data: image.data });
+  userContent.push({ type: "text", text: userText || "What should I add based on this photo?" });
+
   const messages: ProviderMessage[] = [
     ...history.map((h): ProviderMessage => ({ role: h.role, content: [{ type: "text", text: h.content }] })),
-    { role: "user", content: [{ type: "text", text: userText }] },
+    { role: "user", content: userContent },
   ];
 
   const toolDefs = allTools.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }));

@@ -11,9 +11,14 @@ export const runtime = "nodejs";
 
 const provider = new ClaudeProvider();
 
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
+type AllowedImageType = (typeof ALLOWED_IMAGE_TYPES)[number];
+const MAX_IMAGE_BASE64_LENGTH = 6_000_000; // ~4.5MB raw
+
 interface ChatRequestBody {
   conversationId: string;
   message: string;
+  image?: { base64: string; mediaType: string };
 }
 
 export async function POST(req: NextRequest) {
@@ -33,8 +38,21 @@ export async function POST(req: NextRequest) {
 
   const text = (body.message ?? "").trim();
   const conversationId = body.conversationId;
-  if (!text || !conversationId) return NextResponse.json({ error: "Missing message or conversationId." }, { status: 400 });
+  if (!conversationId) return NextResponse.json({ error: "Missing conversationId." }, { status: 400 });
   if (text.length > 4000) return NextResponse.json({ error: "That message is too long." }, { status: 400 });
+
+  let image: { mediaType: AllowedImageType; data: string } | undefined;
+  if (body.image) {
+    if (!ALLOWED_IMAGE_TYPES.includes(body.image.mediaType as AllowedImageType)) {
+      return NextResponse.json({ error: "Unsupported image type." }, { status: 400 });
+    }
+    if (!body.image.base64 || body.image.base64.length > MAX_IMAGE_BASE64_LENGTH) {
+      return NextResponse.json({ error: "That image is too large." }, { status: 400 });
+    }
+    image = { mediaType: body.image.mediaType as AllowedImageType, data: body.image.base64 };
+  }
+
+  if (!text && !image) return NextResponse.json({ error: "Missing message or image." }, { status: 400 });
 
   const { data: conversation, error: convError } = await client
     .from("conversations")
@@ -71,9 +89,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const storedText = text || "📷 Photo";
   const { data: userMsgRow, error: userMsgError } = await client
     .from("messages")
-    .insert({ conversation_id: conversationId, user_id: user.id, role: "user", content: text })
+    .insert({ conversation_id: conversationId, user_id: user.id, role: "user", content: storedText })
     .select("*")
     .single();
   if (userMsgError) return NextResponse.json({ error: userMsgError.message }, { status: 500 });
@@ -98,6 +117,7 @@ export async function POST(req: NextRequest) {
       ctx: { supabase: client, userId: user.id, timezone, today },
       history,
       userText: text,
+      image,
       maxTokens: plan.maxOutputTokensPerReply,
     });
   } catch (err) {
@@ -168,7 +188,7 @@ export async function POST(req: NextRequest) {
   await client.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 
   return NextResponse.json({
-    userMessage: { id: userMsgRow.id, conversationId, role: "user", content: text, toolCalls: [], pendingAction: null, resolvedAction: null, createdAt: userMsgRow.created_at },
+    userMessage: { id: userMsgRow.id, conversationId, role: "user", content: storedText, toolCalls: [], pendingAction: null, resolvedAction: null, createdAt: userMsgRow.created_at },
     assistantMessage: {
       id: assistantRow.id,
       conversationId,

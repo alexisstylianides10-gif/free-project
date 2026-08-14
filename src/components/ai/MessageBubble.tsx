@@ -44,8 +44,12 @@ export function MessageBubble({
             ))}
           </div>
         )}
-        <div className={cn("rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed", isUser ? "bg-accent text-accent-foreground" : "bg-surface border border-border text-foreground")}>
-          <p className="whitespace-pre-wrap">{message.content}</p>
+        <div className={cn("overflow-hidden rounded-2xl text-[14px] leading-relaxed", isUser ? "bg-accent text-accent-foreground" : "bg-surface border border-border text-foreground")}>
+          {message.imagePreviewUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={message.imagePreviewUrl} alt="Attached" className="max-h-56 w-full object-cover" />
+          )}
+          <p className="whitespace-pre-wrap px-3.5 py-2.5">{message.content}</p>
         </div>
         {message.pendingAction && (
           <ConfirmationCard
