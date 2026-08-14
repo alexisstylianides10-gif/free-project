@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Mic, Plus, Send, Trash2, Loader2, AlertCircle, MessageCircle, ImagePlus, X } from "lucide-react";
+import { Plus, Send, Trash2, Loader2, AlertCircle, MessageCircle, ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MessageBubble } from "@/components/ai/MessageBubble";
+import { VoiceButton } from "@/components/ai/VoiceButton";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { ChatMessage, Conversation } from "@/lib/types";
@@ -349,35 +350,7 @@ export default function ChatPage() {
             placeholder={attachedImage ? "Add a caption (optional)…" : "Tell Alxioum what you need…"}
             className="max-h-32 min-h-[40px] flex-1 resize-none rounded-2xl border border-border/70 bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
           />
-          {voiceSupported && (
-            <button
-              type="button"
-              onClick={toggleVoice}
-              aria-label="Voice input"
-              className={cn(
-                "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
-                listening ? "bg-danger text-white" : "text-muted-foreground hover:bg-muted"
-              )}
-            >
-              {listening && (
-                <>
-                  <motion.span
-                    className="absolute inset-0 rounded-lg bg-danger"
-                    animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
-                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
-                  />
-                  <motion.span
-                    className="absolute inset-0 rounded-lg bg-danger"
-                    animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
-                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut", delay: 0.4 }}
-                  />
-                </>
-              )}
-              <motion.span animate={listening ? { scale: [1, 1.15, 1] } : { scale: 1 }} transition={{ duration: 0.9, repeat: listening ? Infinity : 0 }} className="relative">
-                <Mic className="h-4 w-4" />
-              </motion.span>
-            </button>
-          )}
+          {voiceSupported && <VoiceButton listening={listening} onClick={toggleVoice} />}
           <Button type="submit" size="icon" disabled={(!input.trim() && !attachedImage) || sending} aria-label="Send">
             <Send className="h-4 w-4" />
           </Button>
