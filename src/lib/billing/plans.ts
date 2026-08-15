@@ -36,8 +36,8 @@ export const PLANS: Record<Plan, PlanDefinition> = {
   Student: {
     id: "Student",
     name: "Student",
-    priceMonthlyEUR: 4,
-    priceYearlyEUR: 40,
+    priceMonthlyEUR: 15,
+    priceYearlyEUR: 150,
     aiMessagesPerMonth: 1000,
     maxOutputTokensPerReply: 1400,
     contextConversationTurns: 16,
