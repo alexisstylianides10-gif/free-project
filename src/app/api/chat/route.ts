@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
   try {
     agentResult = await runHeadAgent({
       provider,
-      ctx: { supabase: client, userId: user.id, timezone, today },
+      ctx: { supabase: client, userId: user.id, timezone, today, conversationId },
       history,
       userText: text,
       image,

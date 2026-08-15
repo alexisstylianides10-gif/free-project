@@ -2,6 +2,7 @@ import { calendarTools } from "./calendar";
 import { taskTools } from "./tasks";
 import { memoryTools } from "./memory";
 import { settingsTools } from "./settings";
+import { conversationTools } from "./conversation";
 import type { ToolSpec } from "./types";
 
 /**
@@ -9,7 +10,13 @@ import type { ToolSpec } from "./types";
  * adding a new tools/<agent>.ts file and listing it here — the Head Agent
  * itself never changes.
  */
-export const allTools: ToolSpec<Record<string, unknown>>[] = [...calendarTools, ...taskTools, ...memoryTools, ...settingsTools] as ToolSpec<Record<string, unknown>>[];
+export const allTools: ToolSpec<Record<string, unknown>>[] = [
+  ...calendarTools,
+  ...taskTools,
+  ...memoryTools,
+  ...settingsTools,
+  ...conversationTools,
+] as ToolSpec<Record<string, unknown>>[];
 
 const byName = new Map(allTools.map((t) => [t.name, t]));
 

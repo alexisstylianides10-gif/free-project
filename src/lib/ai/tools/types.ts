@@ -6,6 +6,8 @@ export interface ToolContext {
   userId: string;
   timezone: string;
   today: string; // ISO date, in the user's timezone
+  /** The conversation this turn belongs to. Unset when a tool runs outside a chat turn (e.g. confirming a pending action later). */
+  conversationId?: string;
 }
 
 export type ToolResult = { ok: true; result: unknown } | { ok: false; error: string };
