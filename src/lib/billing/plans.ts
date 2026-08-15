@@ -70,11 +70,16 @@ export const PLANS: Record<Plan, PlanDefinition> = {
     name: "Max",
     priceMonthlyEUR: 25,
     priceYearlyEUR: 250,
-    aiMessagesPerMonth: Infinity,
+    // Genuinely unlimited usage on a fixed-price plan is an unbounded cost
+    // exposure — a single heavy user could cost far more in API fees than
+    // their subscription covers. 5,000/month is generous enough that no
+    // realistic personal-assistant usage pattern hits it, while keeping the
+    // worst case bounded.
+    aiMessagesPerMonth: 5000,
     maxOutputTokensPerReply: 2000,
     contextConversationTurns: 30,
     features: [
-      "Unlimited AI actions",
+      "5,000 AI actions / month",
       "Every agent, including new ones as they launch",
       "Longest conversation memory",
       "Priority support",

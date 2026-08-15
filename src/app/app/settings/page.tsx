@@ -15,6 +15,15 @@ import type { Plan } from "@/lib/types";
 
 const ALL_PLANS: Plan[] = ["Free", "Student", "Pro", "Max"];
 
+// Billing isn't live yet, so plan changes still go through a direct,
+// RLS-permitted profile update — there's no server-side gate that can tell
+// "clicked this button" apart from "called the Supabase API directly" for
+// that column. Hiding the switcher from everyone except the developer
+// account at least stops an ordinary new signup from finding a free
+// self-upgrade button; it is not a substitute for the real fix, which is
+// routing plan changes through a service-role-only path once Stripe lands.
+const PLAN_SWITCHER_EMAILS = ["alexis.stylianides10@gmail.com"];
+
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
 
@@ -181,33 +190,35 @@ export default function SettingsPage() {
       </Card>
       </FadeIn>
 
-      <FadeIn index={3}>
-      <Card className="border-dashed border-accent/40 bg-accent-soft/20">
-        <CardContent className="space-y-3 p-5">
-          <div className="flex items-center gap-2">
-            <FlaskConical className="h-4 w-4 text-accent" />
-            <p className="text-[13px] font-semibold uppercase tracking-wide text-accent">Testing — plan switcher</p>
-          </div>
-          <p className="text-[12.5px] text-muted-foreground">
-            Billing isn&apos;t live yet, so you can freely switch your own account between plans to test the app. This
-            panel will be removed once Alxioum publishes real payments.
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {ALL_PLANS.map((p) => (
-              <button
-                key={p}
-                onClick={() => updateProfile({ plan: p })}
-                className={`rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
-                  profile.plan === p ? "border-accent bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {PLANS[p].name}
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      </FadeIn>
+      {PLAN_SWITCHER_EMAILS.includes(profile.email) && (
+        <FadeIn index={3}>
+        <Card className="border-dashed border-accent/40 bg-accent-soft/20">
+          <CardContent className="space-y-3 p-5">
+            <div className="flex items-center gap-2">
+              <FlaskConical className="h-4 w-4 text-accent" />
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-accent">Testing — plan switcher</p>
+            </div>
+            <p className="text-[12.5px] text-muted-foreground">
+              Billing isn&apos;t live yet, so you can freely switch your own account between plans to test the app. This
+              panel will be removed once Alxioum publishes real payments.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {ALL_PLANS.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => updateProfile({ plan: p })}
+                  className={`rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                    profile.plan === p ? "border-accent bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {PLANS[p].name}
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        </FadeIn>
+      )}
 
       <FadeIn index={4}>
       <Card>
