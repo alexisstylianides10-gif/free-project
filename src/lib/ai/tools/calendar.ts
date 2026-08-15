@@ -1,5 +1,7 @@
 import { formatDayLabel, formatTime12, timeOverlap } from "@/lib/utils";
+import { pushEventToGoogle } from "@/lib/google/calendar";
 import type { ToolSpec } from "./types";
+import type { ToolContext } from "./types";
 
 const EVENT_TYPES = ["school", "health", "social", "study", "work", "personal", "travel"] as const;
 
@@ -12,11 +14,32 @@ interface EventRow {
   type: string;
   location: string | null;
   notes: string | null;
+  timezone?: string;
+  recurrence?: "none" | "daily" | "weekly";
+  source?: "alxioum" | "google";
+  google_event_id?: string | null;
 }
 
 function eventLabel(e: EventRow): string {
   const loc = e.location ? ` @ ${e.location}` : "";
   return `"${e.title}" — ${formatDayLabel(e.date)} ${formatTime12(e.start_time)}–${formatTime12(e.end_time)}${loc} (id: ${e.id})`;
+}
+
+/** Fire-and-forget push of an AI-driven calendar change out to the user's connected Google Calendar, if any. */
+function syncToGoogle(ctx: ToolContext, action: "create" | "update" | "delete", row: EventRow) {
+  pushEventToGoogle(ctx.supabase, ctx.userId, action, {
+    id: row.id,
+    title: row.title,
+    date: row.date,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    location: row.location ?? undefined,
+    notes: row.notes ?? undefined,
+    timezone: row.timezone ?? ctx.timezone,
+    recurrence: row.recurrence ?? "none",
+    source: row.source ?? "alxioum",
+    googleEventId: row.google_event_id ?? undefined,
+  }).catch((err) => console.error("[google calendar] AI push failed:", err));
 }
 
 export const calendarSearch: ToolSpec<{ query?: string; from?: string; to?: string; limit?: number }> = {
@@ -113,6 +136,7 @@ export const calendarCreate: ToolSpec<{
       .select("*")
       .single();
     if (error) return { ok: false, error: error.message };
+    syncToGoogle(ctx, "create", data as EventRow);
     return { ok: true, result: { event: data } };
   },
 };
@@ -163,6 +187,7 @@ export const calendarUpdate: ToolSpec<{
     const { data, error } = await ctx.supabase.from("events").update(row).eq("id", input.eventId).eq("user_id", ctx.userId).select("*").maybeSingle();
     if (error) return { ok: false, error: error.message };
     if (!data) return { ok: false, error: "Event no longer exists." };
+    syncToGoogle(ctx, "update", data as EventRow);
     return { ok: true, result: { event: data } };
   },
 };
@@ -180,10 +205,11 @@ export const calendarDelete: ToolSpec<{ eventId: string }> = {
     return { summary: `Delete ${eventLabel(data as EventRow)}?` };
   },
   execute: async (ctx, input) => {
-    const { data, error } = await ctx.supabase.from("events").delete().eq("id", input.eventId).eq("user_id", ctx.userId).select("id,title").maybeSingle();
+    const { data, error } = await ctx.supabase.from("events").delete().eq("id", input.eventId).eq("user_id", ctx.userId).select("*").maybeSingle();
     if (error) return { ok: false, error: error.message };
     if (!data) return { ok: false, error: "Event no longer exists." };
-    return { ok: true, result: { deleted: data } };
+    syncToGoogle(ctx, "delete", data as EventRow);
+    return { ok: true, result: { deleted: { id: data.id, title: data.title } } };
   },
 };
 

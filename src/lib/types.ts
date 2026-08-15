@@ -42,6 +42,17 @@ export interface CalendarEvent {
   linkedTaskId?: string;
   aiGenerated?: boolean;
   movable: boolean;
+  /** Whether this row originated in Alxioum or was pulled in from Google Calendar. */
+  source: "alxioum" | "google";
+  /** Set when this event is linked to a Google Calendar event (either pulled in, or pushed out from Alxioum). */
+  googleEventId?: string;
+}
+
+export interface CalendarConnection {
+  connected: true;
+  googleCalendarId: string;
+  connectedAt: string;
+  lastSyncedAt?: string;
 }
 
 export type MemoryCategory =

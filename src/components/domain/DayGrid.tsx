@@ -87,7 +87,10 @@ export function DayGrid({ date, events, onEventClick }: { date: string; events: 
                   draggingId === event.id && "opacity-40"
                 )}
               >
-                <p className={cn("truncate text-[12.5px] font-semibold", event.aiGenerated ? "text-accent" : "text-foreground")}>{event.title}</p>
+                <p className={cn("flex items-center gap-1 truncate text-[12.5px] font-semibold", event.aiGenerated ? "text-accent" : "text-foreground")}>
+                  {event.source === "google" && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" title="Synced from Google Calendar" />}
+                  <span className="truncate">{event.title}</span>
+                </p>
                 <p className="truncate text-[11px] text-muted-foreground">
                   {formatTime12(event.startTime)}–{formatTime12(event.endTime)}
                 </p>

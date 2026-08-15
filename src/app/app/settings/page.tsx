@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, FlaskConical, LogOut, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle2, Download, FlaskConical, LogOut, ShieldCheck, Sparkles, X, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/FadeIn";
+import { CalendarConnectionCard } from "@/components/settings/CalendarConnectionCard";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { CREDIT_PACKS, planLimits, PLANS } from "@/lib/billing/plans";
@@ -34,16 +36,29 @@ export default function SettingsPage() {
   const authUserId = useAlxioum((s) => s.authUserId);
   const updateProfile = useAlxioum((s) => s.updateProfile);
   const signOut = useAlxioum((s) => s.signOut);
+  const refreshAll = useAlxioum((s) => s.refreshAll);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [name, setName] = useState(profile?.name ?? "");
   const [timezone, setTimezone] = useState(profile?.timezone ?? "UTC");
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [calendarBanner, setCalendarBanner] = useState<{ kind: "connected" | "error"; message?: string } | null>(null);
 
   useEffect(() => {
     setName(profile?.name ?? "");
     setTimezone(profile?.timezone ?? "UTC");
   }, [profile?.name, profile?.timezone]);
+
+  useEffect(() => {
+    const calendar = searchParams.get("calendar");
+    if (!calendar) return;
+    setCalendarBanner(calendar === "connected" ? { kind: "connected" } : { kind: "error", message: searchParams.get("message") ?? undefined });
+    if (calendar === "connected") refreshAll();
+    router.replace("/app/settings");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!profile) return null;
 
@@ -81,6 +96,22 @@ export default function SettingsPage() {
       <div>
         <h1 className="font-serif text-[24px] font-medium tracking-tight text-foreground">Settings</h1>
       </div>
+
+      {calendarBanner && (
+        <div
+          className={`flex items-start justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-[13px] ${
+            calendarBanner.kind === "connected" ? "border-success/30 bg-success-soft text-success" : "border-danger/30 bg-danger-soft text-danger"
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+            {calendarBanner.kind === "connected" ? "Google Calendar connected." : `Couldn't connect Google Calendar: ${calendarBanner.message ?? "Something went wrong."}`}
+          </span>
+          <button onClick={() => setCalendarBanner(null)} className="shrink-0">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
 
       <FadeIn index={0}>
       <Card>
@@ -161,6 +192,10 @@ export default function SettingsPage() {
       </FadeIn>
 
       <FadeIn index={2}>
+        <CalendarConnectionCard />
+      </FadeIn>
+
+      <FadeIn index={3}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">
@@ -191,7 +226,7 @@ export default function SettingsPage() {
       </FadeIn>
 
       {PLAN_SWITCHER_EMAILS.includes(profile.email) && (
-        <FadeIn index={3}>
+        <FadeIn index={4}>
         <Card className="border-dashed border-accent/40 bg-accent-soft/20">
           <CardContent className="space-y-3 p-5">
             <div className="flex items-center gap-2">
@@ -220,7 +255,7 @@ export default function SettingsPage() {
         </FadeIn>
       )}
 
-      <FadeIn index={4}>
+      <FadeIn index={5}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Notifications</p>
@@ -245,7 +280,7 @@ export default function SettingsPage() {
       </Card>
       </FadeIn>
 
-      <FadeIn index={5}>
+      <FadeIn index={6}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">

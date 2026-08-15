@@ -196,6 +196,8 @@ interface EventRow {
   linked_task_id: string | null;
   ai_generated: boolean;
   movable: boolean;
+  source: CalendarEvent["source"];
+  google_event_id: string | null;
 }
 
 function eventFromRow(r: EventRow): CalendarEvent {
@@ -214,6 +216,8 @@ function eventFromRow(r: EventRow): CalendarEvent {
     linkedTaskId: r.linked_task_id ?? undefined,
     aiGenerated: r.ai_generated,
     movable: r.movable,
+    source: r.source ?? "alxioum",
+    googleEventId: r.google_event_id ?? undefined,
   };
 }
 
@@ -600,7 +604,7 @@ export async function exportAllUserData(userId: string) {
 
 export async function deleteAllUserContent(userId: string): Promise<void> {
   const c = client();
-  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions", "focus_sessions", "subjects", "student_profiles"];
+  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions", "focus_sessions", "subjects", "student_profiles", "calendar_connections"];
   for (const t of tables) {
     const { error } = await c.from(t).delete().eq("user_id", userId);
     if (error) throw error;

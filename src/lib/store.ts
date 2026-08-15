@@ -5,6 +5,7 @@ import { AppNotification, CalendarEvent, FocusSession, Profile, StudentProfile, 
 import { newId } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
+import { pushEventToGoogleClient } from "./googleCalendarClient";
 
 export type AuthStatus = "checking" | "signed_out" | "signed_in";
 
@@ -44,7 +45,9 @@ interface AlxioumState {
   updateTask: (id: string, patch: Partial<Task>) => void;
   deleteTask: (id: string) => void;
 
-  addEvent: (event: Omit<CalendarEvent, "id" | "movable" | "timezone" | "recurrence"> & Partial<Pick<CalendarEvent, "movable" | "timezone" | "recurrence">>) => Promise<CalendarEvent | null>;
+  addEvent: (
+    event: Omit<CalendarEvent, "id" | "movable" | "timezone" | "recurrence" | "source"> & Partial<Pick<CalendarEvent, "movable" | "timezone" | "recurrence">>
+  ) => Promise<CalendarEvent | null>;
   updateEvent: (id: string, patch: Partial<CalendarEvent>) => void;
   removeEvent: (id: string) => void;
 
@@ -236,8 +239,11 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       const userId = synced();
       if (!userId) return null;
       try {
-        const created = await db.insertEvent(userId, { ...event, timezone: event.timezone ?? get().profile?.timezone ?? "UTC" });
+        const created = await db.insertEvent(userId, { ...event, source: "alxioum", timezone: event.timezone ?? get().profile?.timezone ?? "UTC" });
         set((s) => ({ events: [...s.events, created].sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime)) }));
+        get()
+          .getAccessToken()
+          .then((token) => pushEventToGoogleClient(token, "create", created));
         return created;
       } catch (e) {
         reportSyncError("add event", e);
@@ -246,13 +252,27 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     },
 
     updateEvent: (id, patch) => {
-      set((s) => ({ events: s.events.map((e) => (e.id === id ? { ...e, ...patch } : e)) }));
-      if (synced()) db.updateEventRow(id, patch).catch((e) => reportSyncError("update event", e));
+      let merged: CalendarEvent | undefined;
+      set((s) => ({
+        events: s.events.map((e) => {
+          if (e.id !== id) return e;
+          merged = { ...e, ...patch };
+          return merged;
+        }),
+      }));
+      if (synced()) {
+        db.updateEventRow(id, patch).catch((e) => reportSyncError("update event", e));
+        if (merged) get().getAccessToken().then((token) => pushEventToGoogleClient(token, "update", merged!));
+      }
     },
 
     removeEvent: (id) => {
+      const existing = get().events.find((e) => e.id === id);
       set((s) => ({ events: s.events.filter((e) => e.id !== id) }));
-      if (synced()) db.deleteEventRow(id).catch((e) => reportSyncError("delete event", e));
+      if (synced()) {
+        db.deleteEventRow(id).catch((e) => reportSyncError("delete event", e));
+        if (existing) get().getAccessToken().then((token) => pushEventToGoogleClient(token, "delete", existing));
+      }
     },
 
     markNotificationRead: (id) => {

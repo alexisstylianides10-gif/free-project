@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,30 @@ import { useAlxioum } from "@/lib/store";
 import { CalendarEvent } from "@/lib/types";
 import { addDaysISO, formatDayLabel, todayISO } from "@/lib/utils";
 
+const SYNC_THROTTLE_MS = 5 * 60 * 1000;
+
+/** Best-effort, silent — a no-op if Google Calendar isn't connected. Throttled per browser tab so revisiting Calendar doesn't hammer the API. */
+function useAutoSyncGoogleCalendar() {
+  const getAccessToken = useAlxioum((s) => s.getAccessToken);
+  const refreshAll = useAlxioum((s) => s.refreshAll);
+
+  useEffect(() => {
+    const lastSync = Number(sessionStorage.getItem("alxioum:lastGoogleSync") ?? 0);
+    if (Date.now() - lastSync < SYNC_THROTTLE_MS) return;
+    sessionStorage.setItem("alxioum:lastGoogleSync", String(Date.now()));
+    (async () => {
+      const token = await getAccessToken();
+      if (!token) return;
+      const res = await fetch("/api/calendar/google/sync", { method: "POST", headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
+      if (res?.ok) {
+        const result = await res.json();
+        if (result.imported > 0 || result.updated > 0 || result.removed > 0) refreshAll();
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
 type ViewMode = "day" | "week" | "month";
 
 function startOfWeekISO(iso: string): string {
@@ -23,6 +47,7 @@ function startOfWeekISO(iso: string): string {
 
 export default function CalendarPage() {
   const events = useAlxioum((s) => s.events);
+  useAutoSyncGoogleCalendar();
   const [view, setView] = useState<ViewMode>("week");
   const [anchor, setAnchor] = useState(todayISO());
   const [editing, setEditing] = useState<CalendarEvent | null>(null);

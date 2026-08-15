@@ -53,7 +53,10 @@ export function WeekAgenda({
                     e.aiGenerated ? "border-accent/30 bg-accent-soft/40" : "border-border bg-muted/50"
                   )}
                 >
-                  <span className="w-full truncate text-[12px] font-medium text-foreground">{e.title}</span>
+                  <span className="flex w-full items-center gap-1 truncate text-[12px] font-medium text-foreground">
+                    {e.source === "google" && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" title="Synced from Google Calendar" />}
+                    <span className="truncate">{e.title}</span>
+                  </span>
                   <span className="text-[10.5px] text-muted-foreground">{formatTime12(e.startTime)}</span>
                 </button>
               ))}

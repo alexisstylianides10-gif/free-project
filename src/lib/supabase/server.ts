@@ -33,3 +33,24 @@ export async function requireUser(req: NextRequest) {
   if (error || !user) return { client: null, user: null, error: "Session expired. Please sign in again." } as const;
   return { client, user, error: null } as const;
 }
+
+/**
+ * Same idea as `requireUser`, but resolves the caller from a raw access
+ * token instead of an Authorization header. Needed for the Google Calendar
+ * OAuth connect/callback routes, which are plain browser redirects (Google
+ * won't carry our Authorization header) — the token round-trips through the
+ * `state` param instead.
+ */
+export async function requireUserFromToken(token: string | null) {
+  if (!url || !anonKey || !token) return { client: null, user: null, error: "Not signed in." } as const;
+  const client = createClient(url, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const {
+    data: { user },
+    error,
+  } = await client.auth.getUser();
+  if (error || !user) return { client: null, user: null, error: "Session expired. Please sign in again." } as const;
+  return { client, user, error: null } as const;
+}
