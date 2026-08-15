@@ -2,7 +2,6 @@
 
 import { ReactNode, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { MobileNav } from "./MobileNav";
@@ -10,6 +9,7 @@ import { CommandPalette } from "./CommandPalette";
 import { TooltipProvider } from "@/components/ui/Tooltip";
 import { Logo } from "./Logo";
 import { backendConfigured, useAlxioum } from "@/lib/store";
+import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -58,25 +58,36 @@ export function AppShell({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
+  const isChatRoute = pathname === "/app/chat";
+
   return (
     <TooltipProvider>
       <CommandPalette />
       <Sidebar />
-      <div className="flex min-h-dvh flex-col md:pl-64">
-        <TopBar />
-        <main className="flex-1 pb-20 md:pb-10">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-              className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-8"
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+      <div className={cn("flex flex-col md:pl-64", isChatRoute ? "h-dvh" : "min-h-dvh")}>
+        <div className="shrink-0">
+          <TopBar />
+        </div>
+        <main className={cn("flex flex-1 flex-col", isChatRoute ? "min-h-0 pb-16 md:pb-0" : "pb-20 md:pb-10")}>
+          {/*
+            This used to be a Framer Motion <AnimatePresence> fade. When a
+            route change was triggered from inside a closing Radix Dialog
+            (the mobile "More" sheet), the two components' updates could
+            land in the same commit and Framer Motion's JS-driven animation
+            would never get a chance to run its mount transition — the new
+            page's wrapper stayed frozen at its `initial` (opacity: 0) style
+            forever, i.e. a permanently blank content area. A plain CSS
+            `@keyframes` animation isn't driven by React effect timing at
+            all — the browser plays it as soon as the element is painted,
+            so this failure mode can't happen. `key={pathname}` still forces
+            a remount so the animation replays on every navigation.
+          */}
+          <div
+            key={pathname}
+            className={cn("flex min-h-0 flex-1 flex-col animate-fade-up", isChatRoute ? "" : "mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-8")}
+          >
+            {children}
+          </div>
         </main>
       </div>
       <MobileNav />

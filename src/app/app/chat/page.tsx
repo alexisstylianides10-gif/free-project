@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, Send, Trash2, Loader2, AlertCircle, MessageCircle, ImagePlus, X } from "lucide-react";
+import { Plus, Send, Trash2, Loader2, AlertCircle, MessageCircle, ImagePlus, X, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MessageBubble } from "@/components/ai/MessageBubble";
@@ -52,7 +52,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [convOpen, setConvOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [attachedImage, setAttachedImage] = useState<{ dataUrl: string } | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -104,7 +104,7 @@ export default function ChatPage() {
     const created = await db.createConversation(authUserId);
     setConversations((c) => [created, ...c]);
     setActiveId(created.id);
-    setConvOpen(false);
+    setHistoryOpen(false);
   }
 
   async function deleteConversation(id: string) {
@@ -168,17 +168,24 @@ export default function ChatPage() {
       const { userMessage, assistantMessage } = await sendChatMessage(token, activeId, messageText, imagePayload);
       setMessages((m) => [...m.filter((x) => x.id !== optimisticId), { ...userMessage, imagePreviewUrl: image?.dataUrl }, assistantMessage]);
 
-      // Give brand-new conversations a real title (from the first message)
-      // instead of leaving every entry in the sidebar reading "New chat".
-      const titleSource = messageText || "Photo";
-      const autoTitle = isFirstMessage ? titleSource.slice(0, 48) + (titleSource.length > 48 ? "…" : "") : null;
-      if (autoTitle) db.renameConversation(activeId, autoTitle).catch(() => {});
+      const aiRenamed = assistantMessage.toolCalls.some((t) => t.tool === "conversation_rename" && t.status === "success");
+      if (aiRenamed && authUserId) {
+        // Alxioum renamed the conversation itself via the conversation_rename
+        // tool — pull the fresh title rather than guessing it client-side.
+        setConversations(await db.fetchConversations(authUserId));
+      } else {
+        // Give brand-new conversations a real title (from the first message)
+        // instead of leaving every entry in the sidebar reading "New chat".
+        const titleSource = messageText || "Photo";
+        const autoTitle = isFirstMessage ? titleSource.slice(0, 48) + (titleSource.length > 48 ? "…" : "") : null;
+        if (autoTitle) db.renameConversation(activeId, autoTitle).catch(() => {});
 
-      setConversations((c) => {
-        const rest = c.filter((x) => x.id !== activeId);
-        const active = c.find((x) => x.id === activeId);
-        return active ? [{ ...active, title: autoTitle ?? active.title, updatedAt: new Date().toISOString() }, ...rest] : c;
-      });
+        setConversations((c) => {
+          const rest = c.filter((x) => x.id !== activeId);
+          const active = c.find((x) => x.id === activeId);
+          return active ? [{ ...active, title: autoTitle ?? active.title, updatedAt: new Date().toISOString() }, ...rest] : c;
+        });
+      }
     } catch (err) {
       setMessages((m) => m.filter((x) => x.id !== optimisticId));
       setInput(messageText);
@@ -201,66 +208,91 @@ export default function ChatPage() {
     }
   }
 
-  return (
-    <div className="flex h-[calc(100dvh-11.5rem)] gap-4 md:h-[calc(100dvh-10rem)]">
-      <aside className="hidden w-56 shrink-0 flex-col gap-1 md:flex">
-        <Button size="sm" variant="outline" className="mb-2 w-full justify-start" onClick={newConversation}>
-          <Plus className="h-3.5 w-3.5" /> New chat
-        </Button>
-        <div className="flex-1 space-y-0.5 overflow-y-auto">
-          {conversations.map((c) => (
-            <div key={c.id} className="group relative">
-              <button
-                onClick={() => setActiveId(c.id)}
-                className={cn(
-                  "w-full truncate rounded-lg px-2.5 py-2 text-left text-[13px] font-medium transition-colors",
-                  c.id === activeId ? "bg-accent-soft text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                {c.title}
-              </button>
-              <button
-                onClick={() => deleteConversation(c.id)}
-                className="absolute right-1.5 top-1.5 hidden rounded p-1 text-muted-foreground hover:bg-muted group-hover:block"
-                aria-label="Delete conversation"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </aside>
+  const activeTitle = conversations.find((c) => c.id === activeId)?.title ?? "Chat";
 
-      <div className="relative z-0 flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border/70 bg-surface shadow-card">
-        <ListeningAurora active={listening} />
-        <div className="flex items-center justify-between border-b border-border px-4 py-2.5 md:hidden">
-          <button onClick={() => setConvOpen((v) => !v)} className="min-w-0 flex-1 truncate text-left text-[13.5px] font-semibold text-foreground">
-            {conversations.find((c) => c.id === activeId)?.title ?? "Chat"}
-          </button>
-          <button onClick={newConversation} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="New chat">
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
-        <AnimatePresence>
-          {convOpen && (
-            <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-b border-border md:hidden">
-              <div className="max-h-48 overflow-y-auto p-2">
+  return (
+    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-surface">
+      <AnimatePresence>
+        {historyOpen && (
+          <>
+            <motion.div
+              key="history-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              onClick={() => setHistoryOpen(false)}
+              className="absolute inset-0 z-30 bg-black/30 backdrop-blur-[2px]"
+            />
+            <motion.aside
+              key="history-panel"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 420, damping: 38 }}
+              className="absolute inset-y-0 left-0 z-40 flex w-72 max-w-[85vw] flex-col border-r border-border bg-surface p-3 shadow-pop"
+            >
+              <div className="mb-2 flex items-center justify-between px-1">
+                <p className="text-[13px] font-semibold text-foreground">Chats</p>
+                <button onClick={() => setHistoryOpen(false)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="Close chat history">
+                  <PanelLeft className="h-4 w-4" />
+                </button>
+              </div>
+              <Button size="sm" variant="outline" className="mb-2 w-full justify-start" onClick={newConversation}>
+                <Plus className="h-3.5 w-3.5" /> New chat
+              </Button>
+              <div className="flex-1 space-y-0.5 overflow-y-auto">
                 {conversations.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => {
-                      setActiveId(c.id);
-                      setConvOpen(false);
-                    }}
-                    className={cn("block w-full truncate rounded-lg px-2.5 py-2 text-left text-[13px]", c.id === activeId ? "bg-accent-soft text-accent" : "text-foreground hover:bg-muted")}
-                  >
-                    {c.title}
-                  </button>
+                  <div key={c.id} className="group relative">
+                    <button
+                      onClick={() => {
+                        setActiveId(c.id);
+                        setHistoryOpen(false);
+                      }}
+                      className={cn(
+                        "w-full truncate rounded-lg py-2 pl-2.5 pr-8 text-left text-[13px] font-medium transition-colors",
+                        c.id === activeId ? "bg-accent-soft text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      {c.title}
+                    </button>
+                    <button
+                      onClick={() => deleteConversation(c.id)}
+                      className="absolute right-1.5 top-1.5 rounded p-1 text-muted-foreground opacity-0 hover:bg-muted group-hover:opacity-100"
+                      aria-label="Delete conversation"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      <div className="relative z-0 flex min-w-0 flex-1 flex-col overflow-hidden">
+        <ListeningAurora active={listening} />
+        <div className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5">
+          <button onClick={() => setHistoryOpen(true)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted" aria-label="Chat history">
+            <PanelLeft className="h-[18px] w-[18px]" />
+          </button>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={activeTitle}
+              initial={{ opacity: 0, y: -3 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 3 }}
+              transition={{ duration: 0.14 }}
+              className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-foreground"
+            >
+              {activeTitle}
+            </motion.span>
+          </AnimatePresence>
+          <button onClick={newConversation} className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="New chat">
+            <Plus className="h-[18px] w-[18px]" />
+          </button>
+        </div>
 
         <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
           {loadingMessages ? (
