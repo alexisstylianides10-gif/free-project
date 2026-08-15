@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
 
   const { data: profileRow, error: profileError } = await client
     .from("profiles")
-    .select("plan, timezone, ai_messages_used, ai_tokens_used, usage_period_start")
+    .select("plan, timezone, ai_messages_used, ai_tokens_used, usage_period_start, credits_balance")
     .eq("id", user.id)
     .maybeSingle();
   if (profileError || !profileRow) return NextResponse.json({ error: "Could not load your profile." }, { status: 500 });
@@ -78,16 +78,21 @@ export async function POST(req: NextRequest) {
   const now = new Date();
   const periodExpired = periodStart.getUTCFullYear() !== now.getUTCFullYear() || periodStart.getUTCMonth() !== now.getUTCMonth();
   const messagesUsed = periodExpired ? 0 : (profileRow.ai_messages_used as number);
+  const creditsBalance = (profileRow.credits_balance as number) ?? 0;
+  const withinPlanAllowance = messagesUsed < plan.aiMessagesPerMonth;
 
-  if (messagesUsed >= plan.aiMessagesPerMonth) {
+  if (!withinPlanAllowance && creditsBalance <= 0) {
     return NextResponse.json(
       {
-        error: `You've used all ${plan.aiMessagesPerMonth} AI actions included in your ${plan.name} plan this month. Upgrade in Settings for a higher limit, or it resets next month.`,
+        error: `You've used all ${plan.aiMessagesPerMonth} AI actions included in your ${plan.name} plan this month. Buy more actions or upgrade in Settings, or it resets next month.`,
         code: "USAGE_LIMIT_REACHED",
       },
       { status: 402 }
     );
   }
+  // This message either fits inside the plan's monthly allowance, or (if
+  // that's exhausted) spends one purchased credit instead.
+  const usingCredit = !withinPlanAllowance;
 
   const storedText = text || "📷 Photo";
   const { data: userMsgRow, error: userMsgError } = await client
@@ -182,6 +187,7 @@ export async function POST(req: NextRequest) {
       ai_messages_used: messagesUsed + 1,
       ai_tokens_used: periodExpired ? totalTokens : (profileRow.ai_tokens_used as number) + totalTokens,
       usage_period_start: periodExpired ? today : profileRow.usage_period_start,
+      credits_balance: usingCredit ? creditsBalance - 1 : creditsBalance,
     })
     .eq("id", user.id);
 

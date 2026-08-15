@@ -39,6 +39,7 @@ interface ProfileRow {
   credits_interest_at: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_status: string | null;
+  credits_balance: number;
 }
 
 function profileFromRow(r: ProfileRow): Profile {
@@ -64,6 +65,7 @@ function profileFromRow(r: ProfileRow): Profile {
     creditsInterestAt: r.credits_interest_at,
     stripeCustomerId: r.stripe_customer_id,
     stripeSubscriptionStatus: r.stripe_subscription_status,
+    creditsBalance: r.credits_balance,
   };
 }
 

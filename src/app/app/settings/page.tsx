@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { CalendarConnectionCard } from "@/components/settings/CalendarConnectionCard";
 import { BillingActions } from "@/components/settings/BillingActions";
+import { CreditsPurchaseButtons } from "@/components/settings/CreditsPurchaseButtons";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
-import { CREDIT_PACKS, planLimits, PLANS } from "@/lib/billing/plans";
+import { planLimits, PLANS } from "@/lib/billing/plans";
 import { usePushNotifications } from "@/lib/push/usePushNotifications";
 import type { Plan } from "@/lib/types";
 
@@ -207,24 +208,10 @@ export default function SettingsPage() {
             <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Buy more AI actions</p>
           </div>
           <p className="text-[12.5px] text-muted-foreground">
-            Running low before your plan renews? One-time top-ups will let you buy extra AI actions without changing your plan.
+            Running low before your plan renews? Buy extra AI actions without changing your plan
+            {profile.creditsBalance > 0 && ` — you have ${profile.creditsBalance.toLocaleString()} credited now.`}
           </p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {CREDIT_PACKS.map((pack) => (
-              <div key={pack.id} className="rounded-lg border border-border p-3 text-center">
-                <p className="text-[13px] font-semibold text-foreground">{pack.actions.toLocaleString()}</p>
-                <p className="text-[11.5px] text-muted-foreground">actions</p>
-                <p className="mt-1.5 text-[13px] font-medium text-accent">€{pack.priceEUR}</p>
-              </div>
-            ))}
-          </div>
-          {profile.creditsInterestAt ? (
-            <p className="text-[12.5px] text-accent">Thanks — we&apos;ll let you know as soon as top-ups are available.</p>
-          ) : (
-            <Button size="sm" variant="outline" onClick={() => updateProfile({ creditsInterestAt: new Date().toISOString() })}>
-              <Sparkles className="h-3.5 w-3.5" /> Notify me when this is ready
-            </Button>
-          )}
+          <CreditsPurchaseButtons />
         </CardContent>
       </Card>
       </FadeIn>

@@ -103,6 +103,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
             aiMessagesUsed: 0,
             aiTokensUsed: 0,
             usagePeriodStart: new Date().toISOString().slice(0, 10),
+            creditsBalance: 0,
           },
         tasks,
         events,

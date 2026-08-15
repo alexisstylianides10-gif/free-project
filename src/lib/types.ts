@@ -179,6 +179,7 @@ export interface Profile {
   creditsInterestAt?: string | null;
   stripeCustomerId?: string | null;
   stripeSubscriptionStatus?: string | null;
+  creditsBalance: number;
 }
 
 export interface StudentProfile {

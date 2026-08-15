@@ -33,7 +33,18 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      const userId = session.client_reference_id;
+      const userId = session.client_reference_id ?? session.metadata?.supabaseUserId;
+
+      if (session.mode === "payment" && session.metadata?.kind === "credits") {
+        const actions = Number(session.metadata.actions ?? 0);
+        if (userId && actions > 0) {
+          const { data: current } = await supabase.from("profiles").select("credits_balance").eq("id", userId).maybeSingle();
+          const newBalance = (current?.credits_balance ?? 0) + actions;
+          await supabase.from("profiles").update({ credits_balance: newBalance }).eq("id", userId);
+        }
+        break;
+      }
+
       const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
       if (userId && subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);

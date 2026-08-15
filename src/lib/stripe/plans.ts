@@ -24,3 +24,9 @@ export function planFromPriceId(priceId: string): Plan | null {
   }
   return null;
 }
+
+/** Same env-var pattern as plan prices, for the one-off AI-action top-ups in CREDIT_PACKS. */
+export function stripeCreditsPriceId(packId: string): string | null {
+  const key = `STRIPE_PRICE_CREDITS_${packId.toUpperCase()}`;
+  return process.env[key] || null;
+}
