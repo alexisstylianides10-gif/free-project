@@ -10,6 +10,7 @@ import {
   ShoppingCart,
   Target,
   History,
+  Repeat,
   type LucideIcon,
 } from "lucide-react";
 import type { Plan } from "./types";
@@ -37,6 +38,7 @@ export const primaryNav: NavItem[] = [
   { label: "Study", href: "/app/study", icon: GraduationCap, planGate: ["Student"], group: "LIFE" },
   { label: "Shopping", href: "/app/shopping", icon: ShoppingCart, group: "LIFE" },
   { label: "Goals", href: "/app/goals", icon: Target, group: "LIFE" },
+  { label: "Routines", href: "/app/routines", icon: Repeat, group: "LIFE" },
   { label: "Memory", href: "/app/memory", icon: BrainCircuit, group: "INTELLIGENCE" },
   { label: "Activity", href: "/app/activity", icon: History, group: "INTELLIGENCE" },
   { label: "Agents", href: "/app/agents", icon: Bot, group: "INTELLIGENCE" },
@@ -53,6 +55,7 @@ export const mobilePrimaryNav: NavItem[] = [
 export const mobileMoreNav: NavItem[] = [
   { label: "Shopping", href: "/app/shopping", icon: ShoppingCart },
   { label: "Goals", href: "/app/goals", icon: Target },
+  { label: "Routines", href: "/app/routines", icon: Repeat },
   { label: "Study", href: "/app/study", icon: GraduationCap, planGate: ["Student"] },
   { label: "Memory", href: "/app/memory", icon: BrainCircuit },
   { label: "Activity", href: "/app/activity", icon: History },

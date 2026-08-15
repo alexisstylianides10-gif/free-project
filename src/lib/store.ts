@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { AppNotification, CalendarEvent, FocusSession, Goal, GoalMilestone, Profile, ShoppingItem, ShoppingList, StudentProfile, Subject, Task } from "./types";
+import { AppNotification, CalendarEvent, FocusSession, Goal, GoalMilestone, Profile, Routine, RoutineStep, ShoppingItem, ShoppingList, StudentProfile, Subject, Task } from "./types";
 import { newId } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
@@ -26,6 +26,8 @@ interface AlxioumState {
   shoppingItems: ShoppingItem[];
   goals: Goal[];
   goalMilestones: GoalMilestone[];
+  routines: Routine[];
+  routineSteps: RoutineStep[];
   commandOpen: boolean;
 
   authStatus: AuthStatus;
@@ -63,7 +65,7 @@ interface AlxioumState {
   updateSubject: (id: string, patch: Partial<Subject>) => void;
   deleteSubject: (id: string) => void;
 
-  startFocusSession: (session: { subjectId?: string; plannedMinutes: number }) => Promise<FocusSession | null>;
+  startFocusSession: (session: { subjectId?: string; taskId?: string; plannedMinutes: number }) => Promise<FocusSession | null>;
   completeFocusSession: (id: string, actualMinutes: number) => void;
 
   updateStudentProfile: (patch: Partial<StudentProfile>) => Promise<void>;
@@ -79,6 +81,13 @@ interface AlxioumState {
   deleteGoal: (id: string) => void;
   addMilestone: (milestone: { goalId: string; title: string; sortOrder?: number }) => Promise<GoalMilestone | null>;
   toggleMilestone: (id: string) => void;
+
+  addRoutine: (routine: { name: string; frequency?: string }) => Promise<Routine | null>;
+  deleteRoutine: (id: string) => void;
+  addRoutineStep: (step: { routineId: string; title: string; timeLabel?: string; sortOrder?: number }) => Promise<RoutineStep | null>;
+  toggleRoutineStep: (id: string) => void;
+  deleteRoutineStep: (id: string) => void;
+  moveRoutineStep: (id: string, direction: "up" | "down") => void;
 }
 
 function reportSyncError(context: string, err: unknown) {
@@ -94,20 +103,35 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
   async function loadUserData(userId: string, email: string) {
     set({ dataLoading: true, authError: null });
     try {
-      const [profile, tasks, events, notifications, subjects, focusSessions, studentProfile, shoppingLists, shoppingItems, goals, goalMilestones] =
-        await Promise.all([
-          db.fetchProfile(userId),
-          db.fetchTasks(userId),
-          db.fetchEvents(userId),
-          db.fetchNotifications(userId),
-          db.fetchSubjects(userId),
-          db.fetchFocusSessions(userId),
-          db.fetchStudentProfile(userId),
-          db.fetchShoppingLists(userId),
-          db.fetchShoppingItems(userId),
-          db.fetchGoals(userId),
-          db.fetchGoalMilestones(userId),
-        ]);
+      const [
+        profile,
+        tasks,
+        events,
+        notifications,
+        subjects,
+        focusSessions,
+        studentProfile,
+        shoppingLists,
+        shoppingItems,
+        goals,
+        goalMilestones,
+        routines,
+        routineSteps,
+      ] = await Promise.all([
+        db.fetchProfile(userId),
+        db.fetchTasks(userId),
+        db.fetchEvents(userId),
+        db.fetchNotifications(userId),
+        db.fetchSubjects(userId),
+        db.fetchFocusSessions(userId),
+        db.fetchStudentProfile(userId),
+        db.fetchShoppingLists(userId),
+        db.fetchShoppingItems(userId),
+        db.fetchGoals(userId),
+        db.fetchGoalMilestones(userId),
+        db.fetchRoutines(userId),
+        db.fetchRoutineSteps(userId),
+      ]);
       set({
         profile:
           profile ?? {
@@ -136,6 +160,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         shoppingItems,
         goals,
         goalMilestones,
+        routines,
+        routineSteps,
         dataLoading: false,
         hydrated: true,
       });
@@ -158,6 +184,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     shoppingItems: [],
     goals: [],
     goalMilestones: [],
+    routines: [],
+    routineSteps: [],
     commandOpen: false,
 
     authStatus: backendConfigured ? "checking" : "signed_out",
@@ -203,6 +231,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
             shoppingItems: [],
             goals: [],
             goalMilestones: [],
+            routines: [],
+            routineSteps: [],
           });
           return;
         }
@@ -262,6 +292,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         shoppingItems: [],
         goals: [],
         goalMilestones: [],
+        routines: [],
+        routineSteps: [],
       });
     },
 
@@ -494,6 +526,77 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       const done = !existing.done;
       set((s) => ({ goalMilestones: s.goalMilestones.map((m) => (m.id === id ? { ...m, done } : m)) }));
       if (synced()) db.updateGoalMilestoneRow(id, { done }).catch((e) => reportSyncError("toggle milestone", e));
+    },
+
+    addRoutine: async (routine) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertRoutine(userId, routine);
+        set((s) => ({ routines: [...s.routines, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add routine", e);
+        return null;
+      }
+    },
+
+    deleteRoutine: (id) => {
+      set((s) => ({
+        routines: s.routines.filter((r) => r.id !== id),
+        routineSteps: s.routineSteps.filter((step) => step.routineId !== id),
+      }));
+      if (synced()) db.deleteRoutineRow(id).catch((e) => reportSyncError("delete routine", e));
+    },
+
+    addRoutineStep: async (step) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertRoutineStep(userId, step);
+        set((s) => ({ routineSteps: [...s.routineSteps, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add routine step", e);
+        return null;
+      }
+    },
+
+    toggleRoutineStep: (id) => {
+      const existing = get().routineSteps.find((s) => s.id === id);
+      if (!existing) return;
+      const done = !existing.done;
+      set((s) => ({ routineSteps: s.routineSteps.map((step) => (step.id === id ? { ...step, done } : step)) }));
+      if (synced()) db.updateRoutineStepRow(id, { done }).catch((e) => reportSyncError("toggle routine step", e));
+    },
+
+    deleteRoutineStep: (id) => {
+      set((s) => ({ routineSteps: s.routineSteps.filter((step) => step.id !== id) }));
+      if (synced()) db.deleteRoutineStepRow(id).catch((e) => reportSyncError("delete routine step", e));
+    },
+
+    moveRoutineStep: (id, direction) => {
+      const current = get().routineSteps.find((s) => s.id === id);
+      if (!current) return;
+      const siblings = get()
+        .routineSteps.filter((s) => s.routineId === current.routineId)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+      const index = siblings.findIndex((s) => s.id === id);
+      const swapIndex = direction === "up" ? index - 1 : index + 1;
+      if (swapIndex < 0 || swapIndex >= siblings.length) return;
+      const other = siblings[swapIndex];
+      const [aOrder, bOrder] = [current.sortOrder, other.sortOrder];
+      set((s) => ({
+        routineSteps: s.routineSteps.map((step) => {
+          if (step.id === current.id) return { ...step, sortOrder: bOrder };
+          if (step.id === other.id) return { ...step, sortOrder: aOrder };
+          return step;
+        }),
+      }));
+      if (synced()) {
+        db.updateRoutineStepRow(current.id, { sortOrder: bOrder }).catch((e) => reportSyncError("reorder routine step", e));
+        db.updateRoutineStepRow(other.id, { sortOrder: aOrder }).catch((e) => reportSyncError("reorder routine step", e));
+      }
     },
   };
 });

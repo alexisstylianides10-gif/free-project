@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { Sparkles, Clock, CalendarClock, ListChecks } from "lucide-react";
+import { Sparkles, Clock, CalendarClock, ListChecks, Timer, CalendarRange } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/FadeIn";
@@ -171,6 +171,27 @@ export default function TodayPage() {
           )}
         </div>
       )}
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Link
+          href={freeSlots.length > 0 ? `/app/focus?minutes=${Math.min(90, freeSlots[0].minutes)}` : "/app/focus"}
+          className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
+        >
+          <span className="flex items-center gap-2">
+            <Timer className="h-4 w-4 text-accent" /> Suggested focus
+          </span>
+          <span aria-hidden className="text-muted-foreground">→</span>
+        </Link>
+        <Link
+          href="/app/weekly-review"
+          className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
+        >
+          <span className="flex items-center gap-2">
+            <CalendarRange className="h-4 w-4 text-accent" /> Your week
+          </span>
+          <span aria-hidden className="text-muted-foreground">→</span>
+        </Link>
+      </div>
 
       <Link
         href="/app/chat"

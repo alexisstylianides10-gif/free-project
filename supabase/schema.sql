@@ -205,10 +205,44 @@ create table if not exists public.focus_sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   subject_id uuid references public.subjects (id) on delete set null,
+  task_id uuid references public.tasks (id) on delete set null,
   planned_minutes int not null,
   actual_minutes int not null default 0,
   started_at timestamptz not null default now(),
   completed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
+-- routines / routine_steps
+-- ---------------------------------------------------------------------------
+create table if not exists public.routines (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  name text not null,
+  frequency text not null default 'daily',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.routine_steps (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  routine_id uuid not null references public.routines (id) on delete cascade,
+  title text not null,
+  time_label text not null default '',
+  done boolean not null default false,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
+-- weekly_reviews (persisted snapshots; the page itself always computes live)
+-- ---------------------------------------------------------------------------
+create table if not exists public.weekly_reviews (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  week_start date not null,
+  stats jsonb not null default '{}',
   created_at timestamptz not null default now()
 );
 
@@ -308,7 +342,8 @@ begin
       'profiles', 'tasks', 'events', 'memory', 'conversations', 'messages',
       'pending_actions', 'agent_actions', 'notifications', 'push_subscriptions',
       'subjects', 'focus_sessions', 'student_profiles', 'calendar_connections', 'waitlist',
-      'shopping_lists', 'shopping_items', 'goals', 'goal_milestones'
+      'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
+      'routines', 'routine_steps', 'weekly_reviews'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -376,7 +411,8 @@ begin
     select unnest(array[
       'tasks', 'events', 'memory', 'conversations', 'messages',
       'pending_actions', 'agent_actions', 'notifications',
-      'shopping_lists', 'shopping_items', 'goals', 'goal_milestones'
+      'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
+      'routines', 'routine_steps', 'weekly_reviews'
     ])
   loop
     execute format('drop policy if exists "%s_owner" on public.%I;', t, t);

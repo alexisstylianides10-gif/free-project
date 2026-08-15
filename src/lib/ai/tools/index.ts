@@ -5,6 +5,9 @@ import { settingsTools } from "./settings";
 import { conversationTools } from "./conversation";
 import { shoppingTools } from "./shopping";
 import { goalTools } from "./goals";
+import { routineTools } from "./routines";
+import { focusTools } from "./focus";
+import { weeklyReviewTools } from "./weeklyReview";
 import type { ToolSpec } from "./types";
 
 /**
@@ -20,6 +23,9 @@ export const allTools: ToolSpec<Record<string, unknown>>[] = [
   ...conversationTools,
   ...shoppingTools,
   ...goalTools,
+  ...routineTools,
+  ...focusTools,
+  ...weeklyReviewTools,
 ] as ToolSpec<Record<string, unknown>>[];
 
 const byName = new Map(allTools.map((t) => [t.name, t]));

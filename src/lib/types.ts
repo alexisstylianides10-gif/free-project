@@ -148,6 +148,7 @@ export interface Subject {
 export interface FocusSession {
   id: string;
   subjectId?: string;
+  taskId?: string;
   plannedMinutes: number;
   actualMinutes: number;
   startedAt: string;
@@ -217,6 +218,30 @@ export interface GoalMilestone {
   title: string;
   done: boolean;
   sortOrder: number;
+  createdAt: string;
+}
+
+export interface Routine {
+  id: string;
+  name: string;
+  frequency: string;
+  createdAt: string;
+}
+
+export interface RoutineStep {
+  id: string;
+  routineId: string;
+  title: string;
+  timeLabel?: string;
+  done: boolean;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface WeeklyReview {
+  id: string;
+  weekStart: string;
+  stats: Record<string, unknown>;
   createdAt: string;
 }
 

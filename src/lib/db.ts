@@ -9,11 +9,14 @@ import {
   GoalMilestone,
   MemoryItem,
   Profile,
+  Routine,
+  RoutineStep,
   ShoppingItem,
   ShoppingList,
   StudentProfile,
   Subject,
   Task,
+  WeeklyReview,
 } from "./types";
 
 function client() {
@@ -522,6 +525,7 @@ export async function deleteSubjectRow(id: string): Promise<void> {
 interface FocusSessionRow {
   id: string;
   subject_id: string | null;
+  task_id: string | null;
   planned_minutes: number;
   actual_minutes: number;
   started_at: string;
@@ -533,6 +537,7 @@ function focusSessionFromRow(r: FocusSessionRow): FocusSession {
   return {
     id: r.id,
     subjectId: r.subject_id ?? undefined,
+    taskId: r.task_id ?? undefined,
     plannedMinutes: r.planned_minutes,
     actualMinutes: r.actual_minutes,
     startedAt: r.started_at,
@@ -547,10 +552,10 @@ export async function fetchFocusSessions(userId: string): Promise<FocusSession[]
   return (data as FocusSessionRow[]).map(focusSessionFromRow);
 }
 
-export async function insertFocusSession(userId: string, session: { subjectId?: string; plannedMinutes: number }): Promise<FocusSession> {
+export async function insertFocusSession(userId: string, session: { subjectId?: string; taskId?: string; plannedMinutes: number }): Promise<FocusSession> {
   const { data, error } = await client()
     .from("focus_sessions")
-    .insert({ user_id: userId, subject_id: session.subjectId ?? null, planned_minutes: session.plannedMinutes, actual_minutes: 0 })
+    .insert({ user_id: userId, subject_id: session.subjectId ?? null, task_id: session.taskId ?? null, planned_minutes: session.plannedMinutes, actual_minutes: 0 })
     .select("*")
     .single();
   if (error) throw error;
@@ -751,6 +756,124 @@ export async function deleteGoalMilestoneRow(id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// routines / routine steps
+// ---------------------------------------------------------------------------
+
+interface RoutineRow {
+  id: string;
+  name: string;
+  frequency: string;
+  created_at: string;
+}
+
+function routineFromRow(r: RoutineRow): Routine {
+  return { id: r.id, name: r.name, frequency: r.frequency, createdAt: r.created_at };
+}
+
+export async function fetchRoutines(userId: string): Promise<Routine[]> {
+  const { data, error } = await client().from("routines").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as RoutineRow[]).map(routineFromRow);
+}
+
+export async function insertRoutine(userId: string, routine: { name: string; frequency?: string }): Promise<Routine> {
+  const { data, error } = await client()
+    .from("routines")
+    .insert({ user_id: userId, name: routine.name, frequency: routine.frequency ?? "daily" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return routineFromRow(data as RoutineRow);
+}
+
+export async function deleteRoutineRow(id: string): Promise<void> {
+  const { error } = await client().from("routines").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface RoutineStepRow {
+  id: string;
+  routine_id: string;
+  title: string;
+  time_label: string;
+  done: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+function routineStepFromRow(r: RoutineStepRow): RoutineStep {
+  return { id: r.id, routineId: r.routine_id, title: r.title, timeLabel: r.time_label || undefined, done: r.done, sortOrder: r.sort_order, createdAt: r.created_at };
+}
+
+export async function fetchRoutineSteps(userId: string): Promise<RoutineStep[]> {
+  const { data, error } = await client().from("routine_steps").select("*").eq("user_id", userId).order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data as RoutineStepRow[]).map(routineStepFromRow);
+}
+
+export async function insertRoutineStep(userId: string, step: { routineId: string; title: string; timeLabel?: string; sortOrder?: number }): Promise<RoutineStep> {
+  const { data, error } = await client()
+    .from("routine_steps")
+    .insert({ user_id: userId, routine_id: step.routineId, title: step.title, time_label: step.timeLabel ?? "", sort_order: step.sortOrder ?? 0 })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return routineStepFromRow(data as RoutineStepRow);
+}
+
+export async function updateRoutineStepRow(id: string, patch: Partial<RoutineStep>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.done !== undefined) row.done = patch.done;
+  if (patch.title !== undefined) row.title = patch.title;
+  if (patch.timeLabel !== undefined) row.time_label = patch.timeLabel;
+  if (patch.sortOrder !== undefined) row.sort_order = patch.sortOrder;
+  const { error } = await client().from("routine_steps").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteRoutineStepRow(id: string): Promise<void> {
+  const { error } = await client().from("routine_steps").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// weekly reviews (persisted snapshots)
+// ---------------------------------------------------------------------------
+
+interface WeeklyReviewRow {
+  id: string;
+  week_start: string;
+  stats: Record<string, unknown>;
+  created_at: string;
+}
+
+function weeklyReviewFromRow(r: WeeklyReviewRow): WeeklyReview {
+  return { id: r.id, weekStart: r.week_start, stats: r.stats, createdAt: r.created_at };
+}
+
+export async function fetchLatestWeeklyReview(userId: string): Promise<WeeklyReview | null> {
+  const { data, error } = await client()
+    .from("weekly_reviews")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? weeklyReviewFromRow(data as WeeklyReviewRow) : null;
+}
+
+export async function insertWeeklyReview(userId: string, review: { weekStart: string; stats: Record<string, unknown> }): Promise<WeeklyReview> {
+  const { data, error } = await client()
+    .from("weekly_reviews")
+    .insert({ user_id: userId, week_start: review.weekStart, stats: review.stats })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return weeklyReviewFromRow(data as WeeklyReviewRow);
+}
+
+// ---------------------------------------------------------------------------
 // activity (agent_actions) — the audit trail
 // ---------------------------------------------------------------------------
 
@@ -791,7 +914,28 @@ export async function exportAllUserData(userId: string) {
 
 export async function deleteAllUserContent(userId: string): Promise<void> {
   const c = client();
-  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions", "focus_sessions", "subjects", "student_profiles", "calendar_connections", "shopping_items", "shopping_lists", "goal_milestones", "goals"];
+  const tables = [
+    "tasks",
+    "events",
+    "memory",
+    "messages",
+    "conversations",
+    "agent_actions",
+    "pending_actions",
+    "notifications",
+    "push_subscriptions",
+    "focus_sessions",
+    "subjects",
+    "student_profiles",
+    "calendar_connections",
+    "shopping_items",
+    "shopping_lists",
+    "goal_milestones",
+    "goals",
+    "routine_steps",
+    "routines",
+    "weekly_reviews",
+  ];
   for (const t of tables) {
     const { error } = await c.from(t).delete().eq("user_id", userId);
     if (error) throw error;
