@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Settings } from "lucide-react";
 import { Logo } from "./Logo";
-import { primaryNav, visibleNav } from "@/lib/nav";
+import { NAV_GROUP_ORDER, primaryNav, visibleNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAlxioum } from "@/lib/store";
@@ -16,6 +16,7 @@ export function Sidebar() {
 
   const navItems = visibleNav(primaryNav, profile?.plan).filter((i) => i.label !== "Settings");
   const settingsItem = primaryNav.find((i) => i.label === "Settings")!;
+  const groups = NAV_GROUP_ORDER.map((group) => ({ group, items: navItems.filter((i) => i.group === group) })).filter((g) => g.items.length > 0);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-surface md:flex">
@@ -24,30 +25,35 @@ export function Sidebar() {
         <span className="text-[15px] font-semibold tracking-tight">Alxioum</span>
       </Link>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-3 pt-2">
-        {navItems.map((item) => {
-          const active = pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-medium transition-colors",
-                active ? "text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              {active && (
-                <motion.span
-                  layoutId="sidebar-active-pill"
-                  className="absolute inset-0 rounded-lg bg-accent-soft"
-                  transition={{ type: "spring", stiffness: 500, damping: 38 }}
-                />
-              )}
-              <item.icon className="relative h-[17px] w-[17px]" strokeWidth={active ? 2.1 : 1.8} />
-              <span className="relative">{item.label}</span>
-            </Link>
-          );
-        })}
+      <nav className="flex-1 space-y-4 overflow-y-auto px-3 pb-3 pt-2">
+        {groups.map(({ group, items }) => (
+          <div key={group} className="space-y-0.5">
+            <p className="px-2.5 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/70">{group}</p>
+            {items.map((item) => {
+              const active = pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-medium transition-colors",
+                    active ? "text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="sidebar-active-pill"
+                      className="absolute inset-0 rounded-lg bg-accent-soft"
+                      transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                    />
+                  )}
+                  <item.icon className="relative h-[17px] w-[17px]" strokeWidth={active ? 2.1 : 1.8} />
+                  <span className="relative">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-border p-3">

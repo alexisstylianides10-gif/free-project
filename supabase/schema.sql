@@ -213,6 +213,52 @@ create table if not exists public.focus_sessions (
 );
 
 -- ---------------------------------------------------------------------------
+-- shopping_lists / shopping_items
+-- ---------------------------------------------------------------------------
+create table if not exists public.shopping_lists (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  name text not null,
+  kind text not null default 'general' check (kind in ('grocery', 'general', 'wishlist')),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.shopping_items (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  list_id uuid not null references public.shopping_lists (id) on delete cascade,
+  name text not null,
+  quantity text not null default '',
+  category text not null default '',
+  done boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
+-- goals / goal_milestones
+-- ---------------------------------------------------------------------------
+create table if not exists public.goals (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  name text not null,
+  description text not null default '',
+  target_date date,
+  progress int not null default 0 check (progress between 0 and 100),
+  completed boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.goal_milestones (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  goal_id uuid not null references public.goals (id) on delete cascade,
+  title text not null,
+  done boolean not null default false,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
 -- student_profiles (one row per Student-plan user)
 -- ---------------------------------------------------------------------------
 create table if not exists public.student_profiles (
@@ -261,7 +307,8 @@ begin
     select unnest(array[
       'profiles', 'tasks', 'events', 'memory', 'conversations', 'messages',
       'pending_actions', 'agent_actions', 'notifications', 'push_subscriptions',
-      'subjects', 'focus_sessions', 'student_profiles', 'calendar_connections', 'waitlist'
+      'subjects', 'focus_sessions', 'student_profiles', 'calendar_connections', 'waitlist',
+      'shopping_lists', 'shopping_items', 'goals', 'goal_milestones'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -328,7 +375,8 @@ begin
   for t in
     select unnest(array[
       'tasks', 'events', 'memory', 'conversations', 'messages',
-      'pending_actions', 'agent_actions', 'notifications'
+      'pending_actions', 'agent_actions', 'notifications',
+      'shopping_lists', 'shopping_items', 'goals', 'goal_milestones'
     ])
   loop
     execute format('drop policy if exists "%s_owner" on public.%I;', t, t);

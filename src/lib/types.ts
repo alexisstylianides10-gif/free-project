@@ -182,6 +182,44 @@ export interface Profile {
   creditsBalance: number;
 }
 
+export type ShoppingListKind = "grocery" | "general" | "wishlist";
+
+export interface ShoppingList {
+  id: string;
+  name: string;
+  kind: ShoppingListKind;
+  createdAt: string;
+}
+
+export interface ShoppingItem {
+  id: string;
+  listId: string;
+  name: string;
+  quantity?: string;
+  category?: string;
+  done: boolean;
+  createdAt: string;
+}
+
+export interface Goal {
+  id: string;
+  name: string;
+  description: string;
+  targetDate?: string;
+  progress: number;
+  completed: boolean;
+  createdAt: string;
+}
+
+export interface GoalMilestone {
+  id: string;
+  goalId: string;
+  title: string;
+  done: boolean;
+  sortOrder: number;
+  createdAt: string;
+}
+
 export interface StudentProfile {
   schoolName: string;
   country: string;

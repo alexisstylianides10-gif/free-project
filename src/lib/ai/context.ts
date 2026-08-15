@@ -10,10 +10,12 @@ export async function buildContextSummary(ctx: ToolContext): Promise<string> {
   in7.setDate(in7.getDate() + 7);
   const in7ISO = in7.toISOString().slice(0, 10);
 
-  const [{ data: todayEvents }, { count: upcomingTaskCount }, { count: memoryCount }] = await Promise.all([
+  const [{ data: todayEvents }, { count: upcomingTaskCount }, { count: memoryCount }, { count: shoppingOpenCount }, { count: goalsActiveCount }] = await Promise.all([
     ctx.supabase.from("events").select("title,start_time,end_time").eq("user_id", ctx.userId).eq("date", ctx.today).order("start_time", { ascending: true }).limit(6),
     ctx.supabase.from("tasks").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("done", false).lte("due_date", in7ISO),
     ctx.supabase.from("memory").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("active", true),
+    ctx.supabase.from("shopping_items").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("done", false),
+    ctx.supabase.from("goals").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("completed", false),
   ]);
 
   const eventsLine = todayEvents?.length
@@ -25,5 +27,7 @@ export async function buildContextSummary(ctx: ToolContext): Promise<string> {
     `Today's events on the calendar: ${eventsLine}.`,
     `Tasks due within 7 days: ${upcomingTaskCount ?? 0}.`,
     `Active memories stored: ${memoryCount ?? 0}.`,
+    `Open shopping items: ${shoppingOpenCount ?? 0}.`,
+    `Active goals: ${goalsActiveCount ?? 0}.`,
   ].join("\n");
 }

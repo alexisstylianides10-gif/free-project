@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { AppNotification, CalendarEvent, FocusSession, Profile, StudentProfile, Subject, Task } from "./types";
+import { AppNotification, CalendarEvent, FocusSession, Goal, GoalMilestone, Profile, ShoppingItem, ShoppingList, StudentProfile, Subject, Task } from "./types";
 import { newId } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
@@ -22,6 +22,10 @@ interface AlxioumState {
   subjects: Subject[];
   focusSessions: FocusSession[];
   studentProfile: StudentProfile | null;
+  shoppingLists: ShoppingList[];
+  shoppingItems: ShoppingItem[];
+  goals: Goal[];
+  goalMilestones: GoalMilestone[];
   commandOpen: boolean;
 
   authStatus: AuthStatus;
@@ -63,6 +67,18 @@ interface AlxioumState {
   completeFocusSession: (id: string, actualMinutes: number) => void;
 
   updateStudentProfile: (patch: Partial<StudentProfile>) => Promise<void>;
+
+  addShoppingList: (list: { name: string; kind?: ShoppingList["kind"] }) => Promise<ShoppingList | null>;
+  deleteShoppingList: (id: string) => void;
+  addShoppingItem: (item: { listId: string; name: string; quantity?: string; category?: string }) => Promise<ShoppingItem | null>;
+  toggleShoppingItem: (id: string) => void;
+  deleteShoppingItem: (id: string) => void;
+
+  addGoal: (goal: { name: string; description?: string; targetDate?: string }) => Promise<Goal | null>;
+  updateGoal: (id: string, patch: Partial<Goal>) => void;
+  deleteGoal: (id: string) => void;
+  addMilestone: (milestone: { goalId: string; title: string; sortOrder?: number }) => Promise<GoalMilestone | null>;
+  toggleMilestone: (id: string) => void;
 }
 
 function reportSyncError(context: string, err: unknown) {
@@ -78,15 +94,20 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
   async function loadUserData(userId: string, email: string) {
     set({ dataLoading: true, authError: null });
     try {
-      const [profile, tasks, events, notifications, subjects, focusSessions, studentProfile] = await Promise.all([
-        db.fetchProfile(userId),
-        db.fetchTasks(userId),
-        db.fetchEvents(userId),
-        db.fetchNotifications(userId),
-        db.fetchSubjects(userId),
-        db.fetchFocusSessions(userId),
-        db.fetchStudentProfile(userId),
-      ]);
+      const [profile, tasks, events, notifications, subjects, focusSessions, studentProfile, shoppingLists, shoppingItems, goals, goalMilestones] =
+        await Promise.all([
+          db.fetchProfile(userId),
+          db.fetchTasks(userId),
+          db.fetchEvents(userId),
+          db.fetchNotifications(userId),
+          db.fetchSubjects(userId),
+          db.fetchFocusSessions(userId),
+          db.fetchStudentProfile(userId),
+          db.fetchShoppingLists(userId),
+          db.fetchShoppingItems(userId),
+          db.fetchGoals(userId),
+          db.fetchGoalMilestones(userId),
+        ]);
       set({
         profile:
           profile ?? {
@@ -111,6 +132,10 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         subjects,
         focusSessions,
         studentProfile,
+        shoppingLists,
+        shoppingItems,
+        goals,
+        goalMilestones,
         dataLoading: false,
         hydrated: true,
       });
@@ -129,6 +154,10 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     subjects: [],
     focusSessions: [],
     studentProfile: null,
+    shoppingLists: [],
+    shoppingItems: [],
+    goals: [],
+    goalMilestones: [],
     commandOpen: false,
 
     authStatus: backendConfigured ? "checking" : "signed_out",
@@ -158,7 +187,23 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
 
       supabase.auth.onAuthStateChange((event, newSession) => {
         if (event === "SIGNED_OUT") {
-          set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [], subjects: [], focusSessions: [], studentProfile: null });
+          set({
+            authStatus: "signed_out",
+            authUserId: null,
+            authEmail: null,
+            hydrated: false,
+            profile: null,
+            tasks: [],
+            events: [],
+            notifications: [],
+            subjects: [],
+            focusSessions: [],
+            studentProfile: null,
+            shoppingLists: [],
+            shoppingItems: [],
+            goals: [],
+            goalMilestones: [],
+          });
           return;
         }
         if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && newSession) {
@@ -201,7 +246,23 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
 
     signOut: async () => {
       if (supabase) await supabase.auth.signOut();
-      set({ authStatus: "signed_out", authUserId: null, authEmail: null, hydrated: false, profile: null, tasks: [], events: [], notifications: [], subjects: [], focusSessions: [], studentProfile: null });
+      set({
+        authStatus: "signed_out",
+        authUserId: null,
+        authEmail: null,
+        hydrated: false,
+        profile: null,
+        tasks: [],
+        events: [],
+        notifications: [],
+        subjects: [],
+        focusSessions: [],
+        studentProfile: null,
+        shoppingLists: [],
+        shoppingItems: [],
+        goals: [],
+        goalMilestones: [],
+      });
     },
 
     toggleTask: (id) => {
@@ -339,6 +400,100 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       } catch (e) {
         reportSyncError("update student profile", e);
       }
+    },
+
+    addShoppingList: async (list) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertShoppingList(userId, list);
+        set((s) => ({ shoppingLists: [...s.shoppingLists, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add shopping list", e);
+        return null;
+      }
+    },
+
+    deleteShoppingList: (id) => {
+      set((s) => ({
+        shoppingLists: s.shoppingLists.filter((l) => l.id !== id),
+        shoppingItems: s.shoppingItems.filter((i) => i.listId !== id),
+      }));
+      if (synced()) db.deleteShoppingListRow(id).catch((e) => reportSyncError("delete shopping list", e));
+    },
+
+    addShoppingItem: async (item) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertShoppingItem(userId, item);
+        set((s) => ({ shoppingItems: [...s.shoppingItems, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add shopping item", e);
+        return null;
+      }
+    },
+
+    toggleShoppingItem: (id) => {
+      const existing = get().shoppingItems.find((i) => i.id === id);
+      if (!existing) return;
+      const done = !existing.done;
+      set((s) => ({ shoppingItems: s.shoppingItems.map((i) => (i.id === id ? { ...i, done } : i)) }));
+      if (synced()) db.updateShoppingItemRow(id, { done }).catch((e) => reportSyncError("toggle shopping item", e));
+    },
+
+    deleteShoppingItem: (id) => {
+      set((s) => ({ shoppingItems: s.shoppingItems.filter((i) => i.id !== id) }));
+      if (synced()) db.deleteShoppingItemRow(id).catch((e) => reportSyncError("delete shopping item", e));
+    },
+
+    addGoal: async (goal) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertGoal(userId, goal);
+        set((s) => ({ goals: [...s.goals, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add goal", e);
+        return null;
+      }
+    },
+
+    updateGoal: (id, patch) => {
+      set((s) => ({ goals: s.goals.map((g) => (g.id === id ? { ...g, ...patch } : g)) }));
+      if (synced()) db.updateGoalRow(id, patch).catch((e) => reportSyncError("update goal", e));
+    },
+
+    deleteGoal: (id) => {
+      set((s) => ({
+        goals: s.goals.filter((g) => g.id !== id),
+        goalMilestones: s.goalMilestones.filter((m) => m.goalId !== id),
+      }));
+      if (synced()) db.deleteGoalRow(id).catch((e) => reportSyncError("delete goal", e));
+    },
+
+    addMilestone: async (milestone) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertGoalMilestone(userId, milestone);
+        set((s) => ({ goalMilestones: [...s.goalMilestones, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add milestone", e);
+        return null;
+      }
+    },
+
+    toggleMilestone: (id) => {
+      const existing = get().goalMilestones.find((m) => m.id === id);
+      if (!existing) return;
+      const done = !existing.done;
+      set((s) => ({ goalMilestones: s.goalMilestones.map((m) => (m.id === id ? { ...m, done } : m)) }));
+      if (synced()) db.updateGoalMilestoneRow(id, { done }).catch((e) => reportSyncError("toggle milestone", e));
     },
   };
 });

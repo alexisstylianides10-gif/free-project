@@ -5,8 +5,12 @@ import {
   CalendarEvent,
   Conversation,
   FocusSession,
+  Goal,
+  GoalMilestone,
   MemoryItem,
   Profile,
+  ShoppingItem,
+  ShoppingList,
   StudentProfile,
   Subject,
   Task,
@@ -562,6 +566,191 @@ export async function updateFocusSessionRow(id: string, patch: { actualMinutes?:
 }
 
 // ---------------------------------------------------------------------------
+// shopping lists / items
+// ---------------------------------------------------------------------------
+
+interface ShoppingListRow {
+  id: string;
+  name: string;
+  kind: ShoppingList["kind"];
+  created_at: string;
+}
+
+function shoppingListFromRow(r: ShoppingListRow): ShoppingList {
+  return { id: r.id, name: r.name, kind: r.kind, createdAt: r.created_at };
+}
+
+export async function fetchShoppingLists(userId: string): Promise<ShoppingList[]> {
+  const { data, error } = await client().from("shopping_lists").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as ShoppingListRow[]).map(shoppingListFromRow);
+}
+
+export async function insertShoppingList(userId: string, list: { name: string; kind?: ShoppingList["kind"] }): Promise<ShoppingList> {
+  const { data, error } = await client()
+    .from("shopping_lists")
+    .insert({ user_id: userId, name: list.name, kind: list.kind ?? "general" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return shoppingListFromRow(data as ShoppingListRow);
+}
+
+export async function deleteShoppingListRow(id: string): Promise<void> {
+  const { error } = await client().from("shopping_lists").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface ShoppingItemRow {
+  id: string;
+  list_id: string;
+  name: string;
+  quantity: string;
+  category: string;
+  done: boolean;
+  created_at: string;
+}
+
+function shoppingItemFromRow(r: ShoppingItemRow): ShoppingItem {
+  return { id: r.id, listId: r.list_id, name: r.name, quantity: r.quantity || undefined, category: r.category || undefined, done: r.done, createdAt: r.created_at };
+}
+
+export async function fetchShoppingItems(userId: string): Promise<ShoppingItem[]> {
+  const { data, error } = await client().from("shopping_items").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as ShoppingItemRow[]).map(shoppingItemFromRow);
+}
+
+export async function insertShoppingItem(
+  userId: string,
+  item: { listId: string; name: string; quantity?: string; category?: string }
+): Promise<ShoppingItem> {
+  const { data, error } = await client()
+    .from("shopping_items")
+    .insert({ user_id: userId, list_id: item.listId, name: item.name, quantity: item.quantity ?? "", category: item.category ?? "" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return shoppingItemFromRow(data as ShoppingItemRow);
+}
+
+export async function updateShoppingItemRow(id: string, patch: Partial<ShoppingItem>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.done !== undefined) row.done = patch.done;
+  if (patch.name !== undefined) row.name = patch.name;
+  if (patch.quantity !== undefined) row.quantity = patch.quantity;
+  if (patch.category !== undefined) row.category = patch.category;
+  const { error } = await client().from("shopping_items").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteShoppingItemRow(id: string): Promise<void> {
+  const { error } = await client().from("shopping_items").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// goals / goal milestones
+// ---------------------------------------------------------------------------
+
+interface GoalRow {
+  id: string;
+  name: string;
+  description: string;
+  target_date: string | null;
+  progress: number;
+  completed: boolean;
+  created_at: string;
+}
+
+function goalFromRow(r: GoalRow): Goal {
+  return {
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    targetDate: r.target_date ?? undefined,
+    progress: r.progress,
+    completed: r.completed,
+    createdAt: r.created_at,
+  };
+}
+
+export async function fetchGoals(userId: string): Promise<Goal[]> {
+  const { data, error } = await client().from("goals").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as GoalRow[]).map(goalFromRow);
+}
+
+export async function insertGoal(userId: string, goal: { name: string; description?: string; targetDate?: string }): Promise<Goal> {
+  const { data, error } = await client()
+    .from("goals")
+    .insert({ user_id: userId, name: goal.name, description: goal.description ?? "", target_date: goal.targetDate ?? null })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return goalFromRow(data as GoalRow);
+}
+
+export async function updateGoalRow(id: string, patch: Partial<Goal>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.name !== undefined) row.name = patch.name;
+  if (patch.description !== undefined) row.description = patch.description;
+  if (patch.targetDate !== undefined) row.target_date = patch.targetDate;
+  if (patch.progress !== undefined) row.progress = patch.progress;
+  if (patch.completed !== undefined) row.completed = patch.completed;
+  const { error } = await client().from("goals").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteGoalRow(id: string): Promise<void> {
+  const { error } = await client().from("goals").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface GoalMilestoneRow {
+  id: string;
+  goal_id: string;
+  title: string;
+  done: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+function goalMilestoneFromRow(r: GoalMilestoneRow): GoalMilestone {
+  return { id: r.id, goalId: r.goal_id, title: r.title, done: r.done, sortOrder: r.sort_order, createdAt: r.created_at };
+}
+
+export async function fetchGoalMilestones(userId: string): Promise<GoalMilestone[]> {
+  const { data, error } = await client().from("goal_milestones").select("*").eq("user_id", userId).order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data as GoalMilestoneRow[]).map(goalMilestoneFromRow);
+}
+
+export async function insertGoalMilestone(userId: string, milestone: { goalId: string; title: string; sortOrder?: number }): Promise<GoalMilestone> {
+  const { data, error } = await client()
+    .from("goal_milestones")
+    .insert({ user_id: userId, goal_id: milestone.goalId, title: milestone.title, sort_order: milestone.sortOrder ?? 0 })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return goalMilestoneFromRow(data as GoalMilestoneRow);
+}
+
+export async function updateGoalMilestoneRow(id: string, patch: Partial<GoalMilestone>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.done !== undefined) row.done = patch.done;
+  if (patch.title !== undefined) row.title = patch.title;
+  if (patch.sortOrder !== undefined) row.sort_order = patch.sortOrder;
+  const { error } = await client().from("goal_milestones").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteGoalMilestoneRow(id: string): Promise<void> {
+  const { error } = await client().from("goal_milestones").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
 // activity (agent_actions) — the audit trail
 // ---------------------------------------------------------------------------
 
@@ -602,7 +791,7 @@ export async function exportAllUserData(userId: string) {
 
 export async function deleteAllUserContent(userId: string): Promise<void> {
   const c = client();
-  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions", "focus_sessions", "subjects", "student_profiles", "calendar_connections"];
+  const tables = ["tasks", "events", "memory", "messages", "conversations", "agent_actions", "pending_actions", "notifications", "push_subscriptions", "focus_sessions", "subjects", "student_profiles", "calendar_connections", "shopping_items", "shopping_lists", "goal_milestones", "goals"];
   for (const t of tables) {
     const { error } = await c.from(t).delete().eq("user_id", userId);
     if (error) throw error;

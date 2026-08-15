@@ -3,6 +3,8 @@ import { taskTools } from "./tasks";
 import { memoryTools } from "./memory";
 import { settingsTools } from "./settings";
 import { conversationTools } from "./conversation";
+import { shoppingTools } from "./shopping";
+import { goalTools } from "./goals";
 import type { ToolSpec } from "./types";
 
 /**
@@ -16,6 +18,8 @@ export const allTools: ToolSpec<Record<string, unknown>>[] = [
   ...memoryTools,
   ...settingsTools,
   ...conversationTools,
+  ...shoppingTools,
+  ...goalTools,
 ] as ToolSpec<Record<string, unknown>>[];
 
 const byName = new Map(allTools.map((t) => [t.name, t]));
