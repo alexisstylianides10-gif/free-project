@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { Sparkles, Clock, CalendarClock, ListChecks, Timer, CalendarRange } from "lucide-react";
+import { Sparkles, Clock, CalendarClock, ListChecks, Timer, CalendarRange, Lightbulb } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/FadeIn";
@@ -38,6 +38,17 @@ export default function TodayPage() {
   })());
 
   const isClear = todaysEvents.length === 0 && dueToday.length === 0 && overdue.length === 0;
+
+  // Smart suggestions — only ever computed from real, already-loaded data.
+  const weekStart = (() => {
+    const d = new Date(today + "T00:00:00");
+    d.setDate(d.getDate() - 6);
+    return d.toISOString().slice(0, 10);
+  })();
+  const nearestDeadline = upcomingDeadlines[0];
+  const biggestFreeSlot = [...freeSlots].sort((a, b) => b.minutes - a.minutes)[0];
+  const deadlineFreeTimeSuggestion = nearestDeadline && biggestFreeSlot;
+  const openedThisWeekCount = openTasks.filter((t) => t.createdAt.slice(0, 10) >= weekStart).length;
 
   return (
     <div className="space-y-6">
@@ -168,6 +179,38 @@ export default function TodayPage() {
               </CardContent>
             </Card>
             </FadeIn>
+          )}
+        </div>
+      )}
+
+      {(deadlineFreeTimeSuggestion || openedThisWeekCount > 0) && (
+        <div className="space-y-2">
+          {deadlineFreeTimeSuggestion && (
+            <div className="flex items-start gap-2.5 rounded-xl bg-accent-soft px-4 py-3 text-[13px] text-foreground">
+              <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+              <p>
+                <span className="font-medium">{nearestDeadline.title}</span> is due {formatDayLabel(nearestDeadline.dueDate!)}, and you have a{" "}
+                {biggestFreeSlot.minutes >= 60 ? `${Math.floor(biggestFreeSlot.minutes / 60)}h${biggestFreeSlot.minutes % 60 ? ` ${biggestFreeSlot.minutes % 60}m` : ""}` : `${biggestFreeSlot.minutes}m`}{" "}
+                gap today ({formatTime12(biggestFreeSlot.start)}–{formatTime12(biggestFreeSlot.end)}).{" "}
+                <Link
+                  href={`/app/chat?prefill=${encodeURIComponent(`Should I schedule time today for "${nearestDeadline.title}"?`)}`}
+                  className="font-medium text-accent underline underline-offset-2"
+                >
+                  Ask Alxioum
+                </Link>
+              </p>
+            </div>
+          )}
+          {openedThisWeekCount > 0 && (
+            <div className="flex items-center justify-between gap-2.5 rounded-xl bg-muted px-4 py-3 text-[13px] text-foreground">
+              <span className="flex items-center gap-2.5">
+                <Lightbulb className="h-4 w-4 shrink-0 text-muted-foreground" />
+                {openedThisWeekCount} task{openedThisWeekCount > 1 ? "s" : ""} you added this week {openedThisWeekCount > 1 ? "are" : "is"} still open.
+              </span>
+              <Link href="/app/tasks" className="shrink-0 font-medium text-accent underline underline-offset-2">
+                Review
+              </Link>
+            </div>
           )}
         </div>
       )}
