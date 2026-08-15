@@ -322,6 +322,42 @@ create table if not exists public.calendar_connections (
 );
 
 -- ---------------------------------------------------------------------------
+-- documents (Storage-backed uploads: PDFs, images, text)
+-- ---------------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('documents', 'documents', false)
+on conflict (id) do nothing;
+
+-- Objects live at `${user_id}/${filename}` — this policy trio is the
+-- standard Supabase per-user-folder pattern, scoped to this one bucket.
+drop policy if exists "documents_storage_select_own" on storage.objects;
+create policy "documents_storage_select_own" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "documents_storage_insert_own" on storage.objects;
+create policy "documents_storage_insert_own" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "documents_storage_delete_own" on storage.objects;
+create policy "documents_storage_delete_own" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create table if not exists public.documents (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  name text not null,
+  storage_path text not null,
+  mime_type text not null,
+  size_bytes int not null default 0,
+  summary text not null default '',
+  extracted_dates jsonb not null default '[]',
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
 -- waitlist (public marketing site sign-ups, pre-auth)
 -- ---------------------------------------------------------------------------
 create table if not exists public.waitlist (
@@ -343,7 +379,7 @@ begin
       'pending_actions', 'agent_actions', 'notifications', 'push_subscriptions',
       'subjects', 'focus_sessions', 'student_profiles', 'calendar_connections', 'waitlist',
       'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
-      'routines', 'routine_steps', 'weekly_reviews'
+      'routines', 'routine_steps', 'weekly_reviews', 'documents'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -412,7 +448,7 @@ begin
       'tasks', 'events', 'memory', 'conversations', 'messages',
       'pending_actions', 'agent_actions', 'notifications',
       'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
-      'routines', 'routine_steps', 'weekly_reviews'
+      'routines', 'routine_steps', 'weekly_reviews', 'documents'
     ])
   loop
     execute format('drop policy if exists "%s_owner" on public.%I;', t, t);

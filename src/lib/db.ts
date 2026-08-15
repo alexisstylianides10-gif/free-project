@@ -5,6 +5,8 @@ import {
   CalendarEvent,
   Conversation,
   FocusSession,
+  Document,
+  ExtractedDate,
   Goal,
   GoalMilestone,
   MemoryItem,
@@ -874,6 +876,58 @@ export async function insertWeeklyReview(userId: string, review: { weekStart: st
 }
 
 // ---------------------------------------------------------------------------
+// documents
+// ---------------------------------------------------------------------------
+
+interface DocumentRow {
+  id: string;
+  name: string;
+  storage_path: string;
+  mime_type: string;
+  size_bytes: number;
+  summary: string;
+  extracted_dates: ExtractedDate[];
+  created_at: string;
+}
+
+function documentFromRow(r: DocumentRow): Document {
+  return {
+    id: r.id,
+    name: r.name,
+    storagePath: r.storage_path,
+    mimeType: r.mime_type,
+    sizeBytes: r.size_bytes,
+    summary: r.summary,
+    extractedDates: r.extracted_dates ?? [],
+    createdAt: r.created_at,
+  };
+}
+
+export async function fetchDocuments(userId: string): Promise<Document[]> {
+  const { data, error } = await client().from("documents").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as DocumentRow[]).map(documentFromRow);
+}
+
+export async function searchDocumentsByName(userId: string, query: string): Promise<Document[]> {
+  const { data, error } = await client()
+    .from("documents")
+    .select("*")
+    .eq("user_id", userId)
+    .or(`name.ilike.%${query}%,summary.ilike.%${query}%`)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  if (error) throw error;
+  return (data as DocumentRow[]).map(documentFromRow);
+}
+
+export async function deleteDocumentRow(id: string, storagePath: string): Promise<void> {
+  await client().storage.from("documents").remove([storagePath]);
+  const { error } = await client().from("documents").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
 // activity (agent_actions) — the audit trail
 // ---------------------------------------------------------------------------
 
@@ -935,7 +989,12 @@ export async function deleteAllUserContent(userId: string): Promise<void> {
     "routine_steps",
     "routines",
     "weekly_reviews",
+    "documents",
   ];
+  const { data: storedFiles } = await c.storage.from("documents").list(userId);
+  if (storedFiles?.length) {
+    await c.storage.from("documents").remove(storedFiles.map((f) => `${userId}/${f.name}`));
+  }
   for (const t of tables) {
     const { error } = await c.from(t).delete().eq("user_id", userId);
     if (error) throw error;

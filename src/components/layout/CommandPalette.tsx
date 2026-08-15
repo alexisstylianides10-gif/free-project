@@ -4,9 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "framer-motion";
-import { CornerDownLeft, LogOut, Moon, Search, Sun, SunMoon } from "lucide-react";
+import { CornerDownLeft, LogOut, MessageCircle, Moon, Search, Sun, SunMoon } from "lucide-react";
 import { primaryNav } from "@/lib/nav";
 import { useAlxioum } from "@/lib/store";
+import * as db from "@/lib/db";
+import { Document } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface Command {
@@ -22,10 +24,17 @@ export function CommandPalette() {
   const profile = useAlxioum((s) => s.profile);
   const updateProfile = useAlxioum((s) => s.updateProfile);
   const signOut = useAlxioum((s) => s.signOut);
+  const authUserId = useAlxioum((s) => s.authUserId);
+  const tasks = useAlxioum((s) => s.tasks);
+  const events = useAlxioum((s) => s.events);
+  const goals = useAlxioum((s) => s.goals);
+  const shoppingItems = useAlxioum((s) => s.shoppingItems);
+  const routines = useAlxioum((s) => s.routines);
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [docResults, setDocResults] = useState<Document[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -50,11 +59,26 @@ export function CommandPalette() {
     if (open) {
       setQuery("");
       setActiveIndex(0);
+      setDocResults([]);
       requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [open]);
 
-  const commands = useMemo<Command[]>(() => {
+  // Document text isn't preloaded into the store (can be large), so search
+  // it server-side with a short debounce instead of client-side filtering.
+  useEffect(() => {
+    const q = query.trim();
+    if (!authUserId || q.length < 2) {
+      setDocResults([]);
+      return;
+    }
+    const handle = setTimeout(() => {
+      db.searchDocumentsByName(authUserId, q).then(setDocResults).catch(() => setDocResults([]));
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [query, authUserId]);
+
+  const staticCommands = useMemo<Command[]>(() => {
     const nextTheme = profile?.theme === "light" ? "dark" : profile?.theme === "dark" ? "system" : "light";
     const themeIcon = nextTheme === "dark" ? Moon : nextTheme === "light" ? Sun : SunMoon;
     const nav = primaryNav.map((item) => ({
@@ -67,17 +91,57 @@ export function CommandPalette() {
       ...nav,
       { id: "new-task", label: "New task", hint: "Tasks", icon: primaryNav.find((n) => n.label === "Tasks")!.icon, run: () => router.push("/app/tasks") },
       { id: "new-event", label: "New event", hint: "Calendar", icon: primaryNav.find((n) => n.label === "Calendar")!.icon, run: () => router.push("/app/calendar") },
-      { id: "ask-alxioum", label: "Ask Alxioum something", hint: "Chat", icon: primaryNav.find((n) => n.label === "Chat")!.icon, run: () => router.push("/app/chat") },
       { id: "toggle-theme", label: `Switch theme to ${nextTheme}`, icon: themeIcon, run: () => updateProfile({ theme: nextTheme }) },
       { id: "sign-out", label: "Sign out", icon: LogOut, run: () => signOut() },
     ];
   }, [profile?.theme, router, updateProfile, signOut]);
 
-  const filtered = useMemo(() => {
+  const searchResults = useMemo<Command[]>(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return commands;
-    return commands.filter((c) => c.label.toLowerCase().includes(q));
-  }, [commands, query]);
+    if (!q) return [];
+    const results: Command[] = [];
+    for (const t of tasks) {
+      if (t.title.toLowerCase().includes(q)) results.push({ id: `task-${t.id}`, label: t.title, hint: "Tasks", icon: primaryNav.find((n) => n.label === "Tasks")!.icon, run: () => router.push("/app/tasks") });
+    }
+    for (const e of events) {
+      if (e.title.toLowerCase().includes(q)) results.push({ id: `event-${e.id}`, label: e.title, hint: "Calendar", icon: primaryNav.find((n) => n.label === "Calendar")!.icon, run: () => router.push("/app/calendar") });
+    }
+    for (const g of goals) {
+      if (g.name.toLowerCase().includes(q)) results.push({ id: `goal-${g.id}`, label: g.name, hint: "Goals", icon: primaryNav.find((n) => n.label === "Goals")!.icon, run: () => router.push("/app/goals") });
+    }
+    for (const item of shoppingItems) {
+      if (item.name.toLowerCase().includes(q)) results.push({ id: `shopping-${item.id}`, label: item.name, hint: "Shopping", icon: primaryNav.find((n) => n.label === "Shopping")!.icon, run: () => router.push("/app/shopping") });
+    }
+    for (const r of routines) {
+      if (r.name.toLowerCase().includes(q)) results.push({ id: `routine-${r.id}`, label: r.name, hint: "Routines", icon: primaryNav.find((n) => n.label === "Routines")!.icon, run: () => router.push("/app/routines") });
+    }
+    for (const doc of docResults) {
+      results.push({ id: `doc-${doc.id}`, label: doc.name, hint: "Documents", icon: primaryNav.find((n) => n.label === "Documents")!.icon, run: () => router.push("/app/documents") });
+    }
+    return results.slice(0, 8);
+  }, [query, tasks, events, goals, shoppingItems, routines, docResults, router]);
+
+  const matchedStatic = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return staticCommands;
+    return staticCommands.filter((c) => c.label.toLowerCase().includes(q));
+  }, [staticCommands, query]);
+
+  // Free-text "ask Alxioum" is always available and isn't filtered by the
+  // query match logic above — it IS the fallback for anything that doesn't
+  // match a page or a specific item.
+  const askCommand = useMemo<Command>(() => {
+    const q = query.trim();
+    return {
+      id: "ask-alxioum",
+      label: q ? `Ask Alxioum: "${q}"` : "Ask Alxioum something",
+      hint: "Chat",
+      icon: MessageCircle,
+      run: () => router.push(q ? `/app/chat?prefill=${encodeURIComponent(q)}` : "/app/chat"),
+    };
+  }, [query, router]);
+
+  const filtered = useMemo(() => [...searchResults, ...matchedStatic, askCommand], [searchResults, matchedStatic, askCommand]);
 
   function run(cmd: Command) {
     cmd.run();
@@ -117,14 +181,13 @@ export function CommandPalette() {
                 setActiveIndex(0);
               }}
               onKeyDown={onKeyDown}
-              placeholder="Jump to a page, or run a command…"
+              placeholder="Search everything, or ask Alxioum…"
               className="min-w-0 flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             <kbd className="hidden shrink-0 rounded border border-border px-1.5 py-0.5 text-[10.5px] text-muted-foreground sm:block">esc</kbd>
           </div>
 
           <div className="max-h-80 overflow-y-auto p-1.5">
-            {filtered.length === 0 && <p className="px-3 py-6 text-center text-[13px] text-muted-foreground">No matches.</p>}
             {filtered.map((cmd, i) => (
               <motion.button
                 key={cmd.id}
@@ -137,7 +200,7 @@ export function CommandPalette() {
               >
                 <cmd.icon className="h-4 w-4 shrink-0" />
                 <span className="min-w-0 flex-1 truncate font-medium">{cmd.label}</span>
-                {cmd.hint && <span className="text-[11px] text-muted-foreground">{cmd.hint}</span>}
+                {cmd.hint && <span className="shrink-0 text-[11px] text-muted-foreground">{cmd.hint}</span>}
                 {i === activeIndex && <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-accent" />}
               </motion.button>
             ))}

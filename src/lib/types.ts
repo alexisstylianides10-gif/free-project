@@ -245,6 +245,22 @@ export interface WeeklyReview {
   createdAt: string;
 }
 
+export interface ExtractedDate {
+  label: string;
+  date: string;
+}
+
+export interface Document {
+  id: string;
+  name: string;
+  storagePath: string;
+  mimeType: string;
+  sizeBytes: number;
+  summary: string;
+  extractedDates: ExtractedDate[];
+  createdAt: string;
+}
+
 export interface StudentProfile {
   schoolName: string;
   country: string;
