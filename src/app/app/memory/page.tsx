@@ -23,6 +23,7 @@ export default function MemoryPage() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<MemoryCategory>("Facts");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authUserId) return;
@@ -33,15 +34,27 @@ export default function MemoryPage() {
     e.preventDefault();
     if (!authUserId || !content.trim() || busy) return;
     setBusy(true);
-    const created = await db.insertMemoryRow(authUserId, { category, content: content.trim(), reason: "Added manually.", source: "user", active: true });
-    setMemories((m) => [created, ...(m ?? [])]);
-    setContent("");
-    setBusy(false);
+    setError(null);
+    try {
+      const created = await db.insertMemoryRow(authUserId, { category, content: content.trim(), reason: "Added manually.", source: "user", active: true });
+      setMemories((m) => [created, ...(m ?? [])]);
+      setContent("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't save that — try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function remove(id: string) {
+    const previous = memories;
     setMemories((m) => m?.filter((x) => x.id !== id) ?? null);
-    await db.deleteMemoryRow(id).catch(() => {});
+    try {
+      await db.deleteMemoryRow(id);
+    } catch {
+      setMemories(previous);
+      setError("Couldn't delete that — try again.");
+    }
   }
 
   async function deleteAll() {
@@ -80,6 +93,7 @@ export default function MemoryPage() {
           <Plus className="h-4 w-4" /> Save
         </Button>
       </form>
+      {error && <p className="text-[12px] text-danger">{error}</p>}
 
       {memories === null ? (
         <p className="text-sm text-muted-foreground">Loading…</p>

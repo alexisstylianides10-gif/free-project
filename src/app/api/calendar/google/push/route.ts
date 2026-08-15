@@ -26,6 +26,11 @@ export async function POST(req: NextRequest) {
   }
   if (!body.event?.id || !body.action) return NextResponse.json({ error: "Missing event or action." }, { status: 400 });
 
-  await pushEventToGoogle(client, user.id, body.action, body.event);
+  try {
+    await pushEventToGoogle(client, user.id, body.action, body.event);
+  } catch (err) {
+    console.error("[calendar push] failed:", err);
+    return NextResponse.json({ error: "Couldn't sync that change to Google Calendar." }, { status: 502 });
+  }
   return NextResponse.json({ ok: true });
 }

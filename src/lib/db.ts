@@ -321,14 +321,6 @@ export async function insertMemoryRow(userId: string, item: Omit<MemoryItem, "id
   return memoryFromRow(data as MemoryRow);
 }
 
-export async function updateMemoryRow(id: string, patch: Partial<MemoryItem>): Promise<void> {
-  const row: Record<string, unknown> = {};
-  if (patch.active !== undefined) row.active = patch.active;
-  if (patch.content !== undefined) row.content = patch.content;
-  const { error } = await client().from("memory").update(row).eq("id", id);
-  if (error) throw error;
-}
-
 export async function deleteMemoryRow(id: string): Promise<void> {
   const { error } = await client().from("memory").delete().eq("id", id);
   if (error) throw error;
