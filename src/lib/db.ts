@@ -37,6 +37,8 @@ interface ProfileRow {
   usage_period_start: string;
   pro_interest_at: string | null;
   credits_interest_at: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_status: string | null;
 }
 
 function profileFromRow(r: ProfileRow): Profile {
@@ -60,6 +62,8 @@ function profileFromRow(r: ProfileRow): Profile {
     usagePeriodStart: r.usage_period_start,
     proInterestAt: r.pro_interest_at,
     creditsInterestAt: r.credits_interest_at,
+    stripeCustomerId: r.stripe_customer_id,
+    stripeSubscriptionStatus: r.stripe_subscription_status,
   };
 }
 

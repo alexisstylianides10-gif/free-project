@@ -21,7 +21,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
 
   if (!profile) return null;
 
-  const unlocked = profile.plan === "Student" || profile.plan === "Max";
+  const unlocked = profile.plan === "Student";
 
   if (!unlocked) {
     return (
@@ -31,7 +31,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
         </div>
         <p className="text-[16px] font-semibold text-foreground">Study tools are a Student perk</p>
         <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
-          Focus Mode, Subjects, and the Study Planner are included with the Student plan (and Max). Switch plans in Settings to try it out.
+          Focus Mode, Subjects, and the Study Planner are included with the Student plan. Switch plans in Settings to try it out.
         </p>
         <Link href="/app/settings" className="mt-5">
           <Button>

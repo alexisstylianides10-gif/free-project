@@ -13,7 +13,7 @@ export interface NavItem {
 export const primaryNav: NavItem[] = [
   { label: "Chat", href: "/app/chat", icon: MessageCircle },
   { label: "My Day", href: "/app/today", icon: Sun },
-  { label: "Study", href: "/app/study", icon: GraduationCap, planGate: ["Student", "Max"] },
+  { label: "Study", href: "/app/study", icon: GraduationCap, planGate: ["Student"] },
   { label: "Calendar", href: "/app/calendar", icon: Calendar },
   { label: "Tasks", href: "/app/tasks", icon: CheckSquare },
   { label: "Memory", href: "/app/memory", icon: BrainCircuit },
@@ -30,7 +30,7 @@ export const mobilePrimaryNav: NavItem[] = [
 
 export const mobileMoreNav: NavItem[] = [
   { label: "Memory", href: "/app/memory", icon: BrainCircuit },
-  { label: "Study", href: "/app/study", icon: GraduationCap, planGate: ["Student", "Max"] },
+  { label: "Study", href: "/app/study", icon: GraduationCap, planGate: ["Student"] },
   { label: "Agents", href: "/app/agents", icon: Bot },
 ];
 

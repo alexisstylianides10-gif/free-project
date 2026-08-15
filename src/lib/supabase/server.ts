@@ -54,3 +54,17 @@ export async function requireUserFromToken(token: string | null) {
   if (error || !user) return { client: null, user: null, error: "Session expired. Please sign in again." } as const;
   return { client, user, error: null } as const;
 }
+
+/**
+ * A privileged client that bypasses Row Level Security entirely. Reserved
+ * for the Stripe webhook handler: Stripe calls our server directly with no
+ * user session at all, so there's no JWT to scope an RLS-bound client to —
+ * but by the time this is used, `stripe.webhooks.constructEvent()` has
+ * already cryptographically verified the request really came from Stripe.
+ * Never use this outside that one call site.
+ */
+export function supabaseServiceRole(): SupabaseClient | null {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return null;
+  return createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+}

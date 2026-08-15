@@ -42,7 +42,8 @@ export const PLANS: Record<Plan, PlanDefinition> = {
     maxOutputTokensPerReply: 1400,
     contextConversationTurns: 16,
     features: [
-      "Everything in Pro, at student pricing",
+      "Study tools — Focus Mode, Subjects, Planner",
+      "Day-streak tracking",
       "1,000 AI actions / month",
       "Calendar + Tasks + Memory agents",
       "Longer conversation memory",

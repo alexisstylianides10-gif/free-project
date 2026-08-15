@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { CalendarConnectionCard } from "@/components/settings/CalendarConnectionCard";
+import { BillingActions } from "@/components/settings/BillingActions";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { CREDIT_PACKS, planLimits, PLANS } from "@/lib/billing/plans";
@@ -53,10 +54,13 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const calendar = searchParams.get("calendar");
-    if (!calendar) return;
-    setCalendarBanner(calendar === "connected" ? { kind: "connected" } : { kind: "error", message: searchParams.get("message") ?? undefined });
-    if (calendar === "connected") refreshAll();
-    router.replace("/app/settings");
+    if (calendar) {
+      setCalendarBanner(calendar === "connected" ? { kind: "connected" } : { kind: "error", message: searchParams.get("message") ?? undefined });
+      if (calendar === "connected") refreshAll();
+    }
+    const billing = searchParams.get("billing");
+    if (billing === "success") refreshAll();
+    if (calendar || billing) router.replace("/app/settings");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -65,8 +69,11 @@ export default function SettingsPage() {
   const plan = planLimits(profile.plan);
   const isUnlimited = !Number.isFinite(plan.aiMessagesPerMonth);
   const usagePct = isUnlimited ? 0 : Math.min(100, Math.round((profile.aiMessagesUsed / plan.aiMessagesPerMonth) * 100));
-  const upgradeTarget =
-    profile.plan === "Free" ? planLimits("Pro") : profile.plan === "Pro" || profile.plan === "Student" ? planLimits("Max") : null;
+  // Student isn't a rung below Max on this ladder — it's Study tools at a
+  // discount, and Max doesn't include Study. So Student users don't get an
+  // "upgrade to Max" prompt; that would read as a step up but actually
+  // drops the thing that plan is for.
+  const upgradeTarget = profile.plan === "Free" ? planLimits("Pro") : profile.plan === "Pro" ? planLimits("Max") : null;
 
   async function exportData() {
     if (!authUserId) return;
@@ -178,15 +185,12 @@ export default function SettingsPage() {
                   <li key={f}>· {f}</li>
                 ))}
               </ul>
-              {profile.proInterestAt ? (
-                <p className="mt-2 text-[12.5px] text-accent">Thanks — we&apos;ll let you know when billing is open.</p>
-              ) : (
-                <Button size="sm" className="mt-2" onClick={() => updateProfile({ proInterestAt: new Date().toISOString() })}>
-                  <Sparkles className="h-3.5 w-3.5" /> Interested in {upgradeTarget.name}
-                </Button>
-              )}
+              <div className="mt-2">
+                <BillingActions upgradeTarget={upgradeTarget} hasStripeCustomer={false} />
+              </div>
             </div>
           )}
+          {profile.plan !== "Free" && <BillingActions upgradeTarget={null} hasStripeCustomer={Boolean(profile.stripeCustomerId)} />}
         </CardContent>
       </Card>
       </FadeIn>

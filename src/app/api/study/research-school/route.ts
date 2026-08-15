@@ -17,8 +17,8 @@ export async function POST(req: NextRequest) {
 
   const { data: profileRow } = await client.from("profiles").select("plan").eq("id", user.id).maybeSingle();
   const plan = profileRow?.plan;
-  if (plan !== "Student" && plan !== "Max") {
-    return NextResponse.json({ error: "School research is part of the Study section (Student and Max plans)." }, { status: 403 });
+  if (plan !== "Student") {
+    return NextResponse.json({ error: "School research is part of the Study section (Student plan)." }, { status: 403 });
   }
 
   const { data: studentRow } = await client

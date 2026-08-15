@@ -16,7 +16,7 @@ export function TopBar() {
   const profile = useAlxioum((s) => s.profile);
   const focusSessions = useAlxioum((s) => s.focusSessions);
   const unread = notifications.filter((n) => !n.read).length;
-  const showStreak = profile?.plan === "Student" || profile?.plan === "Max";
+  const showStreak = profile?.plan === "Student";
   const streak = showStreak ? dayStreak(focusSessions) : 0;
 
   return (

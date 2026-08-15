@@ -177,6 +177,8 @@ export interface Profile {
   usagePeriodStart: string;
   proInterestAt?: string | null;
   creditsInterestAt?: string | null;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionStatus?: string | null;
 }
 
 export interface StudentProfile {
