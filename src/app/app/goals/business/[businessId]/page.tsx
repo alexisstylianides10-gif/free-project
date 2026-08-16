@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, FileText, MessageCircle, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowLeft, Check, FileText, MessageCircle, Sparkles, Trash2, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useAlxioum } from "@/lib/store";
 import { daysBetween, todayISO, cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ type Tab = (typeof TABS)[number];
 export default function BusinessDetailPage() {
   const params = useParams<{ businessId: string }>();
   const businessId = params.businessId;
+  const router = useRouter();
 
   const businesses = useAlxioum((s) => s.businesses);
   const goals = useAlxioum((s) => s.goals);
@@ -47,9 +49,11 @@ export default function BusinessDetailPage() {
   const businessCustomers = useAlxioum((s) => s.businessCustomers);
   const documents = useAlxioum((s) => s.documents);
   const toggleBusinessMilestone = useAlxioum((s) => s.toggleBusinessMilestone);
+  const deleteBusiness = useAlxioum((s) => s.deleteBusiness);
 
   const coachRef = useRef<BusinessCoachChatHandle>(null);
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const business = businesses.find((b) => b.id === businessId);
   const goal = business ? goals.find((g) => g.id === business.goalId) : undefined;
@@ -81,6 +85,11 @@ export default function BusinessDetailPage() {
     coachRef.current?.send("Based on this week's review, help me plan next week for this business.");
   }
 
+  function handleDeleteBusiness() {
+    deleteBusiness(business!.id);
+    router.push("/app/goals");
+  }
+
   const overallProgress = milestones.length > 0 ? Math.round((milestones.filter((m) => m.done).length / milestones.length) * 100) : 0;
   const health = computeBusinessHealth(business, milestones, metrics, insights, experiments, customers);
   const openRisks = insights.filter((i) => i.kind === "risk" && i.status === "open");
@@ -103,6 +112,13 @@ export default function BusinessDetailPage() {
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge tone="accent">{JOURNEY_STAGES[stageIndex(business.stage)]?.icon} {JOURNEY_STAGES[stageIndex(business.stage)]?.label}</Badge>
           <Badge tone={business.status === "building" ? "success" : "neutral"}>{business.status === "building" ? "Building" : business.status === "paused" ? "Paused" : "Archived"}</Badge>
+          <button
+            onClick={() => setDeleteOpen(true)}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-danger-soft hover:text-danger"
+            aria-label="Delete business"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 
@@ -266,6 +282,22 @@ export default function BusinessDetailPage() {
         </p>
         <BusinessCoachChat ref={coachRef} businessId={business.id} businessName={business.name} />
       </div>
+
+      <Modal
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={`Delete ${business.name}?`}
+        description="This business and everything in it — milestones, metrics, customers, experiments, insights, missions, and content — will be permanently deleted. This can't be undone."
+      >
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 justify-center">
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleDeleteBusiness} className="flex-1 justify-center">
+            Delete
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
