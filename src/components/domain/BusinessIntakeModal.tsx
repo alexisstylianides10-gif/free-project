@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Sparkles } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -57,6 +58,7 @@ function reviewFromIdea(idea: IdeaCandidate): ReviewState {
 export function BusinessIntakeModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const createBusinessGoal = useAlxioum((s) => s.createBusinessGoal);
   const getAccessToken = useAlxioum((s) => s.getAccessToken);
+  const router = useRouter();
 
   const [step, setStep] = useState<Step>("start");
   const [input, setInput] = useState("");
@@ -132,11 +134,8 @@ export function BusinessIntakeModal({ open, onOpenChange }: { open: boolean; onO
         targetDate: review.targetDate || undefined,
       });
       if (!created) throw new Error("Couldn't start that business. Try again.");
-      // The dedicated Business Builder dashboard route ships in the very
-      // next build phase — until then, the new business goal simply shows
-      // up in the regular Goals list (createBusinessGoal already updated
-      // the store) rather than linking somewhere that doesn't exist yet.
       onOpenChange(false);
+      router.push(`/app/goals/business/${created.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't start that business. Try again.");
     } finally {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Pause, Play, Plus, Search, Sparkles, Target, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Check, Pause, Play, Plus, Rocket, Search, Sparkles, Target, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -85,7 +86,10 @@ export default function GoalsPage() {
   }, [enriched]);
 
   const focusGoal = useMemo(() => {
-    const candidates = enriched.filter((e) => !e.goal.completed && !e.goal.paused);
+    // Business goals get their own dedicated dashboard/snapshot instead of
+    // the generic "focus" hero treatment — their milestones live in a
+    // separate business_milestones table this page doesn't load.
+    const candidates = enriched.filter((e) => !e.goal.completed && !e.goal.paused && e.goal.kind !== "business");
     if (candidates.length === 0) return null;
     const weight = { high: 2, medium: 1, low: 0 };
     return [...candidates].sort((a, b) => {
@@ -307,6 +311,8 @@ function GoalCard({
 }) {
   const { goal, milestones, status, progress } = entry;
   const doneCount = milestones.filter((m) => m.done).length;
+  const businesses = useAlxioum((s) => s.businesses);
+  const business = goal.kind === "business" ? businesses.find((b) => b.goalId === goal.id) : undefined;
 
   return (
     <Card className={goal.paused ? "opacity-70" : undefined}>
@@ -316,7 +322,13 @@ function GoalCard({
             <span className="text-xl leading-none">{goal.icon}</span>
             <div className="min-w-0">
               <h2 className="truncate text-[14.5px] font-semibold text-foreground">{goal.name}</h2>
-              {goal.category && <p className="text-[11px] text-muted-foreground">{goal.category}</p>}
+              {goal.kind === "business" ? (
+                <p className="flex items-center gap-1 text-[11px] font-medium text-accent">
+                  <Rocket className="h-3 w-3" /> Business
+                </p>
+              ) : (
+                goal.category && <p className="text-[11px] text-muted-foreground">{goal.category}</p>
+              )}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-0.5">
@@ -339,22 +351,33 @@ function GoalCard({
           {goal.targetDate && <span className="text-[11px] text-muted-foreground">Target {formatDayLabel(goal.targetDate)}</span>}
         </div>
 
-        {milestones.length > 0 && (
-          <button onClick={onToggleExpand} className="mt-2.5 text-[12px] font-medium text-accent hover:opacity-80">
-            {doneCount} / {milestones.length} milestones {expanded ? "▴" : "▾"}
-          </button>
-        )}
-        {expanded && milestones.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {milestones.map((m) => (
-              <button key={m.id} onClick={() => onToggleMilestone(m.id)} className="flex w-full items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-muted/60">
-                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${m.done ? "border-accent bg-accent text-accent-foreground" : "border-border"}`}>
-                  {m.done && <Check className="h-3 w-3" />}
-                </span>
-                <span className={`text-[12.5px] ${m.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{m.title}</span>
+        {goal.kind === "business" && business ? (
+          <Link
+            href={`/app/goals/business/${business.id}`}
+            className="mt-2.5 flex items-center gap-1 text-[12px] font-medium text-accent hover:opacity-80"
+          >
+            Open Business Builder <ArrowRight className="h-3 w-3" />
+          </Link>
+        ) : (
+          <>
+            {milestones.length > 0 && (
+              <button onClick={onToggleExpand} className="mt-2.5 text-[12px] font-medium text-accent hover:opacity-80">
+                {doneCount} / {milestones.length} milestones {expanded ? "▴" : "▾"}
               </button>
-            ))}
-          </div>
+            )}
+            {expanded && milestones.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {milestones.map((m) => (
+                  <button key={m.id} onClick={() => onToggleMilestone(m.id)} className="flex w-full items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-muted/60">
+                    <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${m.done ? "border-accent bg-accent text-accent-foreground" : "border-border"}`}>
+                      {m.done && <Check className="h-3 w-3" />}
+                    </span>
+                    <span className={`text-[12.5px] ${m.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{m.title}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
