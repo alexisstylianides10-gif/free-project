@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Check, MessageCircle, Sparkles, TrendingUp } from "lucide-react";
@@ -9,10 +9,15 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useAlxioum } from "@/lib/store";
-import { daysBetween, todayISO } from "@/lib/utils";
+import { daysBetween, todayISO, cn } from "@/lib/utils";
 import { JOURNEY_STAGES, stageIndex } from "@/lib/business/journeyStages";
 import { computeBusinessHealth, HEALTH_DIMENSION_LABEL, HEALTH_STATUS_LABEL, HealthDimensionStatus } from "@/lib/business/health";
 import { BusinessCoachChat, BusinessCoachChatHandle } from "@/components/domain/business/BusinessCoachChat";
+import { MoneyTab } from "@/components/domain/business/MoneyTab";
+import { CustomersTab } from "@/components/domain/business/CustomersTab";
+import { CompetitorsTab } from "@/components/domain/business/CompetitorsTab";
+import { ExperimentsTab } from "@/components/domain/business/ExperimentsTab";
+import { InsightsTab } from "@/components/domain/business/InsightsTab";
 
 const HEALTH_TONE: Record<HealthDimensionStatus, "success" | "accent" | "warning" | "danger" | "neutral"> = {
   good: "success",
@@ -21,6 +26,9 @@ const HEALTH_TONE: Record<HealthDimensionStatus, "success" | "accent" | "warning
   weak: "danger",
   unknown: "neutral",
 };
+
+const TABS = ["Overview", "Money", "Customers", "Competitors", "Experiments", "Insights", "Coach"] as const;
+type Tab = (typeof TABS)[number];
 
 export default function BusinessDetailPage() {
   const params = useParams<{ businessId: string }>();
@@ -36,6 +44,7 @@ export default function BusinessDetailPage() {
   const toggleBusinessMilestone = useAlxioum((s) => s.toggleBusinessMilestone);
 
   const coachRef = useRef<BusinessCoachChatHandle>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("Overview");
 
   const business = businesses.find((b) => b.id === businessId);
   const goal = business ? goals.find((g) => g.id === business.goalId) : undefined;
@@ -83,7 +92,7 @@ export default function BusinessDetailPage() {
 
       <Button
         onClick={() => {
-          document.getElementById("business-coach")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          setActiveTab("Coach");
           coachRef.current?.send("What should I do next?");
         }}
         className="w-full justify-center sm:w-auto"
@@ -101,89 +110,117 @@ export default function BusinessDetailPage() {
         <SnapshotStat label="Biggest risk" value={openRisks[0]?.title ?? "None flagged yet"} />
       </div>
 
-      {/* Overall progress */}
-      <Card>
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-[13px] font-semibold text-foreground">Overall progress</p>
-            <span className="text-[12.5px] font-medium tabular-nums text-muted-foreground">{overallProgress}%</span>
-          </div>
-          <ProgressBar value={overallProgress} className="mt-2" />
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] text-muted-foreground">
-            {daysLeft !== null && <span>{daysLeft >= 0 ? `${daysLeft} days to target date` : "Target date passed"}</span>}
-            {nextMilestone && (
-              <button onClick={() => toggleBusinessMilestone(nextMilestone.id)} className="flex items-center gap-1 font-medium text-accent hover:opacity-80">
-                <Check className="h-3 w-3" /> Next: {nextMilestone.title}
-              </button>
+      <div className="flex flex-wrap gap-1.5 border-b border-border/70 pb-2">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              "rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors",
+              activeTab === tab ? "border-accent bg-accent-soft text-accent" : "border-border text-muted-foreground hover:bg-muted"
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Business Health */}
-      <Card>
-        <CardContent className="p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-[13px] font-semibold text-foreground">Business Health</p>
-            <span className="flex items-center gap-1 text-[13px] font-semibold tabular-nums text-foreground">
-              <TrendingUp className="h-3.5 w-3.5 text-accent" /> {health.overall !== null ? `${health.overall} / 100` : "Not enough data yet"}
-            </span>
-          </div>
-          <div className="space-y-2">
-            {(Object.keys(HEALTH_DIMENSION_LABEL) as (keyof typeof HEALTH_DIMENSION_LABEL)[]).map((key) => (
-              <div key={key} className="flex items-center justify-between gap-3">
-                <span className="text-[12.5px] text-muted-foreground">{HEALTH_DIMENSION_LABEL[key]}</span>
-                <Badge tone={HEALTH_TONE[health[key]]}>{HEALTH_STATUS_LABEL[health[key]]}</Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Business Journey */}
-      <div>
-        <p className="mb-2 text-[13px] font-semibold text-foreground">Business Journey</p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {JOURNEY_STAGES.map((stageDef, i) => {
-            const stageMilestones = milestones.filter((m) => m.stage === stageDef.key);
-            const done = stageMilestones.filter((m) => m.done).length;
-            const isCurrent = stageDef.key === business.stage;
-            const isPast = i < stageIndex(business.stage);
-            return (
-              <Card key={stageDef.key} className={isCurrent ? "border-accent/50 bg-accent-soft/30" : undefined}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base leading-none">{stageDef.icon}</span>
-                      <span className={`text-[13px] font-semibold ${isCurrent ? "text-accent" : "text-foreground"}`}>{stageDef.label}</span>
-                    </div>
-                    {isCurrent && <Badge tone="accent">Current</Badge>}
-                    {isPast && !isCurrent && <Badge tone="success">Done</Badge>}
-                  </div>
-                  {stageMilestones.length > 0 && (
-                    <div className="mt-2.5 space-y-1">
-                      {stageMilestones.map((m) => (
-                        <button key={m.id} onClick={() => toggleBusinessMilestone(m.id)} className="flex w-full items-center gap-2 rounded-md px-1 py-0.5 text-left hover:bg-muted/60">
-                          <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${m.done ? "border-accent bg-accent text-accent-foreground" : "border-border"}`}>
-                            {m.done && <Check className="h-3 w-3" />}
-                          </span>
-                          <span className={`text-[12px] ${m.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{m.title}</span>
-                        </button>
-                      ))}
-                      <p className="pl-1 pt-1 text-[11px] text-muted-foreground">
-                        {done} / {stageMilestones.length} milestones
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
-      {/* Business Coach */}
-      <div id="business-coach">
+      {activeTab === "Overview" && (
+        <div className="space-y-5">
+          {/* Overall progress */}
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[13px] font-semibold text-foreground">Overall progress</p>
+                <span className="text-[12.5px] font-medium tabular-nums text-muted-foreground">{overallProgress}%</span>
+              </div>
+              <ProgressBar value={overallProgress} className="mt-2" />
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] text-muted-foreground">
+                {daysLeft !== null && <span>{daysLeft >= 0 ? `${daysLeft} days to target date` : "Target date passed"}</span>}
+                {nextMilestone && (
+                  <button onClick={() => toggleBusinessMilestone(nextMilestone.id)} className="flex items-center gap-1 font-medium text-accent hover:opacity-80">
+                    <Check className="h-3 w-3" /> Next: {nextMilestone.title}
+                  </button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Business Health */}
+          <Card>
+            <CardContent className="p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-[13px] font-semibold text-foreground">Business Health</p>
+                <span className="flex items-center gap-1 text-[13px] font-semibold tabular-nums text-foreground">
+                  <TrendingUp className="h-3.5 w-3.5 text-accent" /> {health.overall !== null ? `${health.overall} / 100` : "Not enough data yet"}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {(Object.keys(HEALTH_DIMENSION_LABEL) as (keyof typeof HEALTH_DIMENSION_LABEL)[]).map((key) => (
+                  <div key={key} className="flex items-center justify-between gap-3">
+                    <span className="text-[12.5px] text-muted-foreground">{HEALTH_DIMENSION_LABEL[key]}</span>
+                    <Badge tone={HEALTH_TONE[health[key]]}>{HEALTH_STATUS_LABEL[health[key]]}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Business Journey */}
+          <div>
+            <p className="mb-2 text-[13px] font-semibold text-foreground">Business Journey</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {JOURNEY_STAGES.map((stageDef, i) => {
+                const stageMilestones = milestones.filter((m) => m.stage === stageDef.key);
+                const done = stageMilestones.filter((m) => m.done).length;
+                const isCurrent = stageDef.key === business.stage;
+                const isPast = i < stageIndex(business.stage);
+                return (
+                  <Card key={stageDef.key} className={isCurrent ? "border-accent/50 bg-accent-soft/30" : undefined}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base leading-none">{stageDef.icon}</span>
+                          <span className={`text-[13px] font-semibold ${isCurrent ? "text-accent" : "text-foreground"}`}>{stageDef.label}</span>
+                        </div>
+                        {isCurrent && <Badge tone="accent">Current</Badge>}
+                        {isPast && !isCurrent && <Badge tone="success">Done</Badge>}
+                      </div>
+                      {stageMilestones.length > 0 && (
+                        <div className="mt-2.5 space-y-1">
+                          {stageMilestones.map((m) => (
+                            <button key={m.id} onClick={() => toggleBusinessMilestone(m.id)} className="flex w-full items-center gap-2 rounded-md px-1 py-0.5 text-left hover:bg-muted/60">
+                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${m.done ? "border-accent bg-accent text-accent-foreground" : "border-border"}`}>
+                                {m.done && <Check className="h-3 w-3" />}
+                              </span>
+                              <span className={`text-[12px] ${m.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{m.title}</span>
+                            </button>
+                          ))}
+                          <p className="pl-1 pt-1 text-[11px] text-muted-foreground">
+                            {done} / {stageMilestones.length} milestones
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "Money" && <MoneyTab businessId={business.id} currency={business.currency} />}
+      {activeTab === "Customers" && <CustomersTab businessId={business.id} />}
+      {activeTab === "Competitors" && <CompetitorsTab businessId={business.id} />}
+      {activeTab === "Experiments" && <ExperimentsTab businessId={business.id} />}
+      {activeTab === "Insights" && <InsightsTab businessId={business.id} />}
+
+      {/* Always mounted (not gated behind the tab check like the others) so the
+          "What should I do next?" button can send into it the instant it
+          switches the tab, and so the conversation doesn't refetch every time
+          the user switches back to this tab. */}
+      <div className={activeTab === "Coach" ? undefined : "hidden"}>
         <p className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
           <MessageCircle className="h-4 w-4 text-accent" /> Business Coach
         </p>
