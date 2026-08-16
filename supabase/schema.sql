@@ -129,6 +129,7 @@ create table if not exists public.messages (
   tool_calls jsonb not null default '[]',
   pending_action jsonb,
   resolved_action jsonb,
+  response_cards jsonb,
   tokens_used int,
   created_at timestamptz not null default now()
 );

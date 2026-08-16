@@ -1,4 +1,6 @@
 import type { ToolSpec } from "./types";
+import { computeProgressPct, computeGoalStatus } from "@/lib/goals/status";
+import type { Goal, GoalMilestone, GoalAction, GoalActionLog } from "@/lib/types";
 
 interface GoalRow {
   id: string;
@@ -16,6 +18,7 @@ interface GoalRow {
   measurement_unit: string;
   measurement_target: number | null;
   measurement_current: number;
+  created_at: string;
 }
 
 interface MilestoneRow {
@@ -46,33 +49,69 @@ export const goalsSearch: ToolSpec<{ query?: string; completed?: boolean }> = {
     if (error) return { ok: false, error: error.message };
     const goalRows = goals as GoalRow[];
     const goalIds = goalRows.map((g) => g.id);
-    const { data: milestones } = await ctx.supabase
-      .from("goal_milestones")
-      .select("*")
-      .eq("user_id", ctx.userId)
-      .in("goal_id", goalIds.length ? goalIds : ["00000000-0000-0000-0000-000000000000"])
-      .order("sort_order", { ascending: true });
+    const safeIds = goalIds.length ? goalIds : ["00000000-0000-0000-0000-000000000000"];
+    const [{ data: milestones }, { data: actions }, { data: actionLogs }] = await Promise.all([
+      ctx.supabase.from("goal_milestones").select("*").eq("user_id", ctx.userId).in("goal_id", safeIds).order("sort_order", { ascending: true }),
+      ctx.supabase.from("goal_actions").select("*").eq("user_id", ctx.userId).in("goal_id", safeIds),
+      ctx.supabase.from("goal_action_logs").select("id,goal_action_id,log_date,created_at").eq("user_id", ctx.userId),
+    ]);
     const milestoneRows = (milestones ?? []) as MilestoneRow[];
+    const actionRows = (actions ?? []) as { id: string; goal_id: string; title: string; frequency_per_week: number; duration_minutes: number | null; created_at: string }[];
+    const actionLogRows = (actionLogs ?? []) as { id: string; goal_action_id: string; log_date: string; created_at: string }[];
+
     return {
       ok: true,
       result: {
-        goals: goalRows.map((g) => ({
-          id: g.id,
-          name: g.name,
-          description: g.description,
-          targetDate: g.target_date,
-          progress: g.progress,
-          completed: g.completed,
-          category: g.category,
-          priority: g.priority,
-          difficulty: g.difficulty,
-          paused: g.paused,
-          measurementType: g.measurement_type,
-          measurementUnit: g.measurement_unit,
-          measurementTarget: g.measurement_target,
-          measurementCurrent: g.measurement_current,
-          milestones: milestoneRows.filter((m) => m.goal_id === g.id).map((m) => ({ id: m.id, title: m.title, done: m.done })),
-        })),
+        goals: goalRows.map((g) => {
+          const goalMilestones: GoalMilestone[] = milestoneRows
+            .filter((m) => m.goal_id === g.id)
+            .map((m) => ({ id: m.id, goalId: m.goal_id, title: m.title, done: m.done, sortOrder: 0, createdAt: "", description: "" }));
+          const goalActions: GoalAction[] = actionRows
+            .filter((a) => a.goal_id === g.id)
+            .map((a) => ({ id: a.id, goalId: a.goal_id, title: a.title, frequencyPerWeek: a.frequency_per_week, durationMinutes: a.duration_minutes ?? undefined, createdAt: a.created_at }));
+          const actionIds = new Set(goalActions.map((a) => a.id));
+          const goalActionLogs: GoalActionLog[] = actionLogRows
+            .filter((l) => actionIds.has(l.goal_action_id))
+            .map((l) => ({ id: l.id, goalActionId: l.goal_action_id, logDate: l.log_date, createdAt: l.created_at }));
+          const goal: Goal = {
+            id: g.id,
+            name: g.name,
+            description: g.description,
+            targetDate: g.target_date ?? undefined,
+            progress: g.progress,
+            completed: g.completed,
+            createdAt: g.created_at,
+            icon: g.icon,
+            category: g.category ?? undefined,
+            priority: g.priority,
+            difficulty: g.difficulty,
+            paused: g.paused,
+            measurementType: g.measurement_type,
+            measurementUnit: g.measurement_unit,
+            measurementTarget: g.measurement_target ?? undefined,
+            measurementCurrent: g.measurement_current,
+          };
+          return {
+            id: g.id,
+            name: g.name,
+            description: g.description,
+            targetDate: g.target_date,
+            progress: computeProgressPct(goal, goalMilestones),
+            status: computeGoalStatus(goal, goalMilestones, goalActions, goalActionLogs),
+            completed: g.completed,
+            category: g.category,
+            priority: g.priority,
+            difficulty: g.difficulty,
+            paused: g.paused,
+            icon: g.icon,
+            measurementType: g.measurement_type,
+            measurementUnit: g.measurement_unit,
+            measurementTarget: g.measurement_target,
+            measurementCurrent: g.measurement_current,
+            milestones: goalMilestones.map((m) => ({ id: m.id, title: m.title, done: m.done })),
+            nextMilestone: goalMilestones.find((m) => !m.done)?.title ?? null,
+          };
+        }),
       },
     };
   },

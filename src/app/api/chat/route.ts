@@ -171,6 +171,7 @@ export async function POST(req: NextRequest) {
       content: agentResult.content,
       tool_calls: agentResult.toolCalls,
       pending_action: pendingActionCard,
+      response_cards: agentResult.cards.length ? agentResult.cards : null,
       tokens_used: totalTokens,
     })
     .select("*")
@@ -203,6 +204,7 @@ export async function POST(req: NextRequest) {
       toolCalls: assistantRow.tool_calls,
       pendingAction: assistantRow.pending_action,
       resolvedAction: assistantRow.resolved_action,
+      cards: assistantRow.response_cards ?? [],
       createdAt: assistantRow.created_at,
     },
   });

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Search, XCircle } from "lucide-react";
 import { ChatMessage } from "@/lib/types";
 import { ConfirmationCard } from "./ConfirmationCard";
+import { ResponseCardRenderer } from "./cards/ResponseCardRenderer";
 import { cn } from "@/lib/utils";
 
 const toolLabel: Record<string, string> = {
@@ -11,6 +12,10 @@ const toolLabel: Record<string, string> = {
   tasks_search: "Checked tasks",
   memory_list: "Checked memory",
 };
+
+// Tools whose results render as a dedicated card below — their pill badge
+// would just be redundant clutter above the same information.
+const CARD_MAPPED_TOOLS = new Set(["calendar_search", "calendar_create", "calendar_update", "tasks_search", "tasks_create", "goals_search", "documents_search", "documents_read", "shopping_search"]);
 
 export function MessageBubble({
   message,
@@ -25,20 +30,22 @@ export function MessageBubble({
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }} className={cn("flex", isUser && "justify-end")}>
       <div className={cn("max-w-[85%] sm:max-w-[75%]", isUser && "flex flex-col items-end")}>
-        {!isUser && message.toolCalls.length > 0 && (
+        {!isUser && message.toolCalls.some((tc) => !CARD_MAPPED_TOOLS.has(tc.tool)) && (
           <div className="mb-1.5 flex flex-wrap gap-1.5">
-            {message.toolCalls.map((tc, i) => (
-              <span
-                key={`${tc.tool}-${i}`}
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
-                  tc.status === "success" ? "bg-muted text-muted-foreground" : "bg-danger-soft text-danger"
-                )}
-              >
-                {tc.status === "success" ? <Search className="h-2.5 w-2.5" /> : <XCircle className="h-2.5 w-2.5" />}
-                {toolLabel[tc.tool] ?? tc.tool}
-              </span>
-            ))}
+            {message.toolCalls
+              .filter((tc) => !CARD_MAPPED_TOOLS.has(tc.tool))
+              .map((tc, i) => (
+                <span
+                  key={`${tc.tool}-${i}`}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
+                    tc.status === "success" ? "bg-muted text-muted-foreground" : "bg-danger-soft text-danger"
+                  )}
+                >
+                  {tc.status === "success" ? <Search className="h-2.5 w-2.5" /> : <XCircle className="h-2.5 w-2.5" />}
+                  {toolLabel[tc.tool] ?? tc.tool}
+                </span>
+              ))}
           </div>
         )}
         <div
@@ -53,6 +60,8 @@ export function MessageBubble({
           )}
           <p className={cn("whitespace-pre-wrap", isUser ? "px-3.5 py-2.5" : "py-0.5")}>{message.content}</p>
         </div>
+        {!isUser &&
+          message.cards?.map((card, i) => <ResponseCardRenderer key={i} card={card} />)}
         {message.pendingAction && (
           <ConfirmationCard
             action={message.pendingAction}

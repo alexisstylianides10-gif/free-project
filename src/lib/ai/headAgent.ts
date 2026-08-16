@@ -4,6 +4,8 @@ import type { ToolContext } from "./tools/types";
 import type { ToolAction } from "@/lib/types";
 import { buildContextSummary } from "./context";
 import { buildSystemPrompt } from "./systemPrompt";
+import { buildCardsForTool } from "./cardBuilders";
+import type { ResponseCard } from "./cards";
 
 export interface ProposedAction {
   tool: string;
@@ -16,6 +18,7 @@ export interface HeadAgentResult {
   content: string;
   toolCalls: { tool: string; status: "success" | "failed" }[];
   proposedAction: ProposedAction | null;
+  cards: ResponseCard[];
   usage: { inputTokens: number; outputTokens: number };
 }
 
@@ -46,6 +49,7 @@ export async function runHeadAgent(params: {
   const toolDefs = allTools.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }));
   const usage = { inputTokens: 0, outputTokens: 0 };
   const toolCalls: HeadAgentResult["toolCalls"] = [];
+  const cards: ResponseCard[] = [];
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const response = await provider.createMessage({ system, messages, tools: toolDefs, maxTokens });
@@ -56,7 +60,7 @@ export async function runHeadAgent(params: {
     const toolUses = response.content.filter((b): b is Extract<ContentBlock, { type: "tool_use" }> => b.type === "tool_use");
 
     if (toolUses.length === 0) {
-      return { content: textParts || "I'm not sure how to help with that yet — could you rephrase?", toolCalls, proposedAction: null, usage };
+      return { content: textParts || "I'm not sure how to help with that yet — could you rephrase?", toolCalls, proposedAction: null, cards, usage };
     }
 
     messages.push({ role: "assistant", content: response.content });
@@ -74,6 +78,7 @@ export async function runHeadAgent(params: {
       if (!spec.consequential) {
         const result = await spec.execute(ctx, call.input);
         toolCalls.push({ tool: spec.name, status: result.ok ? "success" : "failed" });
+        if (result.ok) cards.push(...buildCardsForTool(spec.name, result.result));
         toolResults.push({
           type: "tool_result",
           toolUseId: call.id,
@@ -107,7 +112,7 @@ export async function runHeadAgent(params: {
     if (proposedAction) {
       const lead = textParts.trim();
       const content = lead && lead !== proposedAction.summary ? `${lead}\n\n${proposedAction.summary}` : proposedAction.summary;
-      return { content, toolCalls, proposedAction, usage };
+      return { content, toolCalls, proposedAction, cards, usage };
     }
 
     messages.push({ role: "user", content: toolResults });
@@ -117,6 +122,7 @@ export async function runHeadAgent(params: {
     content: "I looked into this but need a bit more detail to narrow it down — could you tell me exactly what you mean?",
     toolCalls,
     proposedAction: null,
+    cards,
     usage,
   };
 }

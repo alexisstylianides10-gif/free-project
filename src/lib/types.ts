@@ -110,6 +110,8 @@ export interface ChatMessage {
   toolCalls: { tool: string; status: "success" | "failed" }[];
   pendingAction?: PendingActionCard | null;
   resolvedAction?: (PendingActionCard & { resultSummary: string }) | null;
+  /** Structured rendering data (event/task/goal/document/shopping cards) alongside the prose reply. */
+  cards?: import("./ai/cards").ResponseCard[];
   createdAt: string;
   /** Client-only, not persisted: local preview of an image attached to this message. */
   imagePreviewUrl?: string;

@@ -430,6 +430,7 @@ interface MessageRow {
   tool_calls: { tool: string; status: "success" | "failed" }[];
   pending_action: import("./types").PendingActionCard | null;
   resolved_action: (import("./types").PendingActionCard & { resultSummary: string }) | null;
+  response_cards: import("./ai/cards").ResponseCard[] | null;
   created_at: string;
 }
 
@@ -442,6 +443,7 @@ function messageFromRow(r: MessageRow): import("./types").ChatMessage {
     toolCalls: r.tool_calls ?? [],
     pendingAction: r.pending_action ?? null,
     resolvedAction: r.resolved_action ?? null,
+    cards: r.response_cards ?? [],
     createdAt: r.created_at,
   };
 }
