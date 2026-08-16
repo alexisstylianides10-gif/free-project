@@ -524,8 +524,21 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       const existing = get().goalMilestones.find((m) => m.id === id);
       if (!existing) return;
       const done = !existing.done;
-      set((s) => ({ goalMilestones: s.goalMilestones.map((m) => (m.id === id ? { ...m, done } : m)) }));
-      if (synced()) db.updateGoalMilestoneRow(id, { done }).catch((e) => reportSyncError("toggle milestone", e));
+      // Recompute the parent goal's progress from real milestone completion —
+      // mirrors goals_complete_milestone's server-side logic so the progress
+      // bar stays correct whether a milestone is toggled from chat or the UI.
+      let progress: number | null = null;
+      set((s) => {
+        const goalMilestones = s.goalMilestones.map((m) => (m.id === id ? { ...m, done } : m));
+        const siblings = goalMilestones.filter((m) => m.goalId === existing.goalId);
+        progress = siblings.length > 0 ? Math.round((siblings.filter((m) => m.done).length / siblings.length) * 100) : null;
+        const goals = progress !== null ? s.goals.map((g) => (g.id === existing.goalId ? { ...g, progress: progress!, completed: progress! >= 100 } : g)) : s.goals;
+        return { goalMilestones, goals };
+      });
+      if (synced()) {
+        db.updateGoalMilestoneRow(id, { done }).catch((e) => reportSyncError("toggle milestone", e));
+        if (progress !== null) db.updateGoalRow(existing.goalId, { progress, completed: progress >= 100 }).catch((e) => reportSyncError("update goal progress", e));
+      }
     },
 
     addRoutine: async (routine) => {

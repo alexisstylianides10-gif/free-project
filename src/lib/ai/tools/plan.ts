@@ -78,6 +78,12 @@ export const planOrganizeDay: ToolSpec<{ tasks?: PlanTaskInput[]; events?: PlanE
     const createdTasks: unknown[] = [];
     const createdEvents: unknown[] = [];
 
+    // Attempt every item rather than aborting on the first failure — a
+    // partial plan (3 of 4 things created) is a materially different, more
+    // honest outcome than reporting total failure while some rows already
+    // committed. Failures are collected and surfaced in the result instead.
+    const failures: string[] = [];
+
     for (const t of input.tasks ?? []) {
       const { data, error } = await ctx.supabase
         .from("tasks")
@@ -92,7 +98,10 @@ export const planOrganizeDay: ToolSpec<{ tasks?: PlanTaskInput[]; events?: PlanE
         })
         .select("*")
         .single();
-      if (error) return { ok: false, error: error.message };
+      if (error) {
+        failures.push(`Task "${t.title}": ${error.message}`);
+        continue;
+      }
       createdTasks.push(data);
     }
 
@@ -114,7 +123,10 @@ export const planOrganizeDay: ToolSpec<{ tasks?: PlanTaskInput[]; events?: PlanE
         })
         .select("*")
         .single();
-      if (error) return { ok: false, error: error.message };
+      if (error) {
+        failures.push(`Event "${e.title}": ${error.message}`);
+        continue;
+      }
       createdEvents.push(data);
       pushEventToGoogle(ctx.supabase, ctx.userId, "create", {
         id: data.id,
@@ -130,7 +142,10 @@ export const planOrganizeDay: ToolSpec<{ tasks?: PlanTaskInput[]; events?: PlanE
       }).catch((err) => console.error("[plan_organize_day] google sync failed:", err));
     }
 
-    return { ok: true, result: { tasks: createdTasks, events: createdEvents } };
+    if (createdTasks.length === 0 && createdEvents.length === 0 && failures.length > 0) {
+      return { ok: false, error: failures.join("; ") };
+    }
+    return { ok: true, result: { tasks: createdTasks, events: createdEvents, failures } };
   },
 };
 

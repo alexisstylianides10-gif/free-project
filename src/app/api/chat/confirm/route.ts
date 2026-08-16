@@ -72,7 +72,12 @@ export async function POST(req: NextRequest) {
     metadata: result.ok ? { summary: pending.summary, result: result.result } : { summary: pending.summary, error: result.error },
   });
 
-  const resultSummary = result.ok ? deterministicSuccessLine(pending.action, pending.summary) : `Couldn't complete this: ${result.error}`;
+  const partialFailures = result.ok ? extractPartialFailures(result.result) : null;
+  const resultSummary = !result.ok
+    ? `Couldn't complete this: ${result.error}`
+    : partialFailures?.length
+      ? `Done — but ${partialFailures.length} part${partialFailures.length > 1 ? "s" : ""} of it failed: ${partialFailures.join("; ")}`
+      : deterministicSuccessLine(pending.action, pending.summary);
   const resolvedAction = {
     id: pending.id,
     tool: pending.tool,
@@ -85,6 +90,13 @@ export async function POST(req: NextRequest) {
   if (pending.message_id) await client.from("messages").update({ resolved_action: resolvedAction }).eq("id", pending.message_id);
 
   return NextResponse.json({ resolvedAction, ok: result.ok });
+}
+
+/** A tool's execute() can succeed overall while reporting some sub-items failed (e.g. plan_organize_day creating 3 of 4 things) — surface that instead of a blanket "Done." */
+function extractPartialFailures(result: unknown): string[] | null {
+  if (!result || typeof result !== "object") return null;
+  const failures = (result as { failures?: unknown }).failures;
+  return Array.isArray(failures) && failures.every((f) => typeof f === "string") ? failures : null;
 }
 
 function deterministicSuccessLine(action: string, summary: string): string {

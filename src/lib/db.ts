@@ -911,11 +911,16 @@ export async function fetchDocuments(userId: string): Promise<Document[]> {
 }
 
 export async function searchDocumentsByName(userId: string, query: string): Promise<Document[]> {
+  // Commas and parentheses are syntax in PostgREST's .or() filter string
+  // (condition separators / grouping) — strip them from free-typed search
+  // input so a query containing one doesn't silently mangle the filter.
+  const safeQuery = query.replace(/[,()]/g, " ").trim();
+  if (!safeQuery) return [];
   const { data, error } = await client()
     .from("documents")
     .select("*")
     .eq("user_id", userId)
-    .or(`name.ilike.%${query}%,summary.ilike.%${query}%`)
+    .or(`name.ilike.%${safeQuery}%,summary.ilike.%${safeQuery}%`)
     .order("created_at", { ascending: false })
     .limit(5);
   if (error) throw error;
@@ -985,14 +990,50 @@ export async function fetchActivity(userId: string, limitCount = 100): Promise<A
 // ---------------------------------------------------------------------------
 
 export async function exportAllUserData(userId: string) {
-  const [profile, tasks, events, memory, activity] = await Promise.all([
+  const [
+    profile,
+    tasks,
+    events,
+    memory,
+    activity,
+    shoppingLists,
+    shoppingItems,
+    goals,
+    goalMilestones,
+    routines,
+    routineSteps,
+    documents,
+    studyNotes,
+  ] = await Promise.all([
     fetchProfile(userId),
     fetchTasks(userId),
     fetchEvents(userId),
     fetchMemory(userId),
     fetchActivity(userId, 500),
+    fetchShoppingLists(userId),
+    fetchShoppingItems(userId),
+    fetchGoals(userId),
+    fetchGoalMilestones(userId),
+    fetchRoutines(userId),
+    fetchRoutineSteps(userId),
+    fetchDocuments(userId),
+    fetchStudyNotes(userId),
   ]);
-  return { profile, tasks, events, memory, activity };
+  return {
+    profile,
+    tasks,
+    events,
+    memory,
+    activity,
+    shoppingLists,
+    shoppingItems,
+    goals,
+    goalMilestones,
+    routines,
+    routineSteps,
+    documents,
+    studyNotes,
+  };
 }
 
 export async function deleteAllUserContent(userId: string): Promise<void> {

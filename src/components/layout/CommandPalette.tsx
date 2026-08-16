@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "framer-motion";
-import { CornerDownLeft, LogOut, MessageCircle, Moon, Search, Sun, SunMoon } from "lucide-react";
+import { CalendarRange, CornerDownLeft, LogOut, MessageCircle, Moon, Search, Sun, SunMoon, Timer } from "lucide-react";
 import { primaryNav } from "@/lib/nav";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
@@ -91,6 +91,11 @@ export function CommandPalette() {
       ...nav,
       { id: "new-task", label: "New task", hint: "Tasks", icon: primaryNav.find((n) => n.label === "Tasks")!.icon, run: () => router.push("/app/tasks") },
       { id: "new-event", label: "New event", hint: "Calendar", icon: primaryNav.find((n) => n.label === "Calendar")!.icon, run: () => router.push("/app/calendar") },
+      // Focus and Weekly Review are deliberately kept off the persistent nav
+      // (reachable from My Day/Chat instead, to keep the sidebar lean) but
+      // should still be findable here — otherwise Cmd/Ctrl+K can't reach them.
+      { id: "go-focus", label: "Go to Focus", icon: Timer, run: () => router.push("/app/focus") },
+      { id: "go-weekly-review", label: "Go to Weekly Review", hint: "Your week", icon: CalendarRange, run: () => router.push("/app/weekly-review") },
       { id: "toggle-theme", label: `Switch theme to ${nextTheme}`, icon: themeIcon, run: () => updateProfile({ theme: nextTheme }) },
       { id: "sign-out", label: "Sign out", icon: LogOut, run: () => signOut() },
     ];
