@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Camera, FileText, Loader2, Plus, Search, Star, Trash2, Upload } from "lucide-react";
+import { Camera, FileText, FolderPlus, Loader2, Plus, Search, Star, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -30,9 +30,11 @@ const EXAMPLE_PROMPTS = ["Upload a school assignment", "Upload a travel confirma
 export default function DocumentsPage() {
   const documents = useAlxioum((s) => s.documents);
   const documentDates = useAlxioum((s) => s.documentDates);
+  const documentCollections = useAlxioum((s) => s.documentCollections);
   const uploadDocument = useAlxioum((s) => s.uploadDocument);
   const toggleStarDocument = useAlxioum((s) => s.toggleStarDocument);
   const deleteDocument = useAlxioum((s) => s.deleteDocument);
+  const addDocumentCollection = useAlxioum((s) => s.addDocumentCollection);
 
   const [section, setSection] = useState<Section>("recent");
   const [query, setQuery] = useState("");
@@ -59,12 +61,16 @@ export default function DocumentsPage() {
 
   const categories = useMemo(() => Array.from(new Set(documents.map((d) => d.category).filter((c): c is string => !!c))).sort(), [documents]);
   const [categoryFilter, setCategoryFilter] = useState<string | "all">("all");
+  const [collectionFilter, setCollectionFilter] = useState<string | "all">("all");
+  const [newCollectionOpen, setNewCollectionOpen] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState("");
 
   const visible = useMemo(() => {
     let list = documents;
     if (section === "starred") list = list.filter((d) => d.starred);
     if (section === "needsAttention") list = list.filter((d) => needsAttentionIds.has(d.id));
     if (categoryFilter !== "all") list = list.filter((d) => d.category === categoryFilter);
+    if (collectionFilter !== "all") list = list.filter((d) => d.collectionId === collectionFilter);
     const q = query.trim().toLowerCase();
     if (q) list = list.filter((d) => d.name.toLowerCase().includes(q) || d.summary.toLowerCase().includes(q));
 
@@ -74,7 +80,16 @@ export default function DocumentsPage() {
     else if (sort === "category") sorted.sort((a, b) => (a.category ?? "").localeCompare(b.category ?? ""));
     else sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return sorted;
-  }, [documents, section, categoryFilter, query, sort, needsAttentionIds]);
+  }, [documents, section, categoryFilter, collectionFilter, query, sort, needsAttentionIds]);
+
+  async function createCollection() {
+    const name = newCollectionName.trim();
+    if (!name) return;
+    const created = await addDocumentCollection(name);
+    if (created) setCollectionFilter(created.id);
+    setNewCollectionName("");
+    setNewCollectionOpen(false);
+  }
 
   async function handleUpload(file: File) {
     setError(null);
@@ -253,6 +268,20 @@ export default function DocumentsPage() {
                 ))}
               </select>
             )}
+            {documentCollections.length > 0 && (
+              <select
+                value={collectionFilter}
+                onChange={(e) => setCollectionFilter(e.target.value)}
+                className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-[12.5px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+              >
+                <option value="all">All collections</option>
+                {documentCollections.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
@@ -263,6 +292,31 @@ export default function DocumentsPage() {
               <option value="size">Size</option>
               <option value="category">Category</option>
             </select>
+            {newCollectionOpen ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  autoFocus
+                  value={newCollectionName}
+                  onChange={(e) => setNewCollectionName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") createCollection();
+                    if (e.key === "Escape") setNewCollectionOpen(false);
+                  }}
+                  placeholder="Collection name"
+                  className="w-36 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-[12.5px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                />
+                <Button size="sm" onClick={createCollection} disabled={!newCollectionName.trim()}>
+                  Create
+                </Button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setNewCollectionOpen(true)}
+                className="flex items-center gap-1 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-[12.5px] text-muted-foreground hover:bg-muted"
+              >
+                <FolderPlus className="h-3.5 w-3.5" /> New collection
+              </button>
+            )}
           </div>
 
           {visible.length === 0 ? (

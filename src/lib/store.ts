@@ -104,9 +104,12 @@ interface AlxioumState {
   setDocumentCategory: (id: string, category: string | undefined) => void;
   setDocumentTags: (id: string, tags: string[]) => void;
   setDocumentCollection: (id: string, collectionId: string | undefined) => void;
+  setDocumentLinkedGoal: (id: string, goalId: string | undefined) => void;
   deleteDocument: (id: string) => void;
   addDocumentCollection: (name: string) => Promise<DocumentCollection | null>;
   deleteDocumentCollection: (id: string) => void;
+  linkDocumentDateToEvent: (documentDateId: string, eventId: string) => void;
+  linkDocumentTaskToTask: (documentTaskId: string, taskId: string) => void;
 }
 
 function reportSyncError(context: string, err: unknown) {
@@ -807,6 +810,37 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     setDocumentCollection: (id, collectionId) => {
       set((s) => ({ documents: s.documents.map((d) => (d.id === id ? { ...d, collectionId } : d)) }));
       if (synced()) db.updateDocumentRow(id, { collectionId }).catch((e) => reportSyncError("set document collection", e));
+    },
+
+    setDocumentLinkedGoal: (id, goalId) => {
+      const existing = get().documents.find((d) => d.id === id);
+      set((s) => ({ documents: s.documents.map((d) => (d.id === id ? { ...d, linkedGoalId: goalId } : d)) }));
+      const userId = synced();
+      if (userId) {
+        db.updateDocumentRow(id, { linkedGoalId: goalId }).catch((e) => reportSyncError("set document linked goal", e));
+        if (goalId) logDocumentActivity(userId, id, "connected_to_goal", "Connected to a goal");
+        else if (existing?.linkedGoalId) logDocumentActivity(userId, id, "disconnected_from_goal", "Disconnected from goal");
+      }
+    },
+
+    linkDocumentDateToEvent: (documentDateId, eventId) => {
+      const dateEntry = get().documentDates.find((d) => d.id === documentDateId);
+      set((s) => ({ documentDates: s.documentDates.map((d) => (d.id === documentDateId ? { ...d, addedToCalendarEventId: eventId } : d)) }));
+      const userId = synced();
+      if (userId) {
+        db.updateDocumentDateRow(documentDateId, { addedToCalendarEventId: eventId }).catch((e) => reportSyncError("link document date to event", e));
+        if (dateEntry) logDocumentActivity(userId, dateEntry.documentId, "date_added_to_calendar", `Added "${dateEntry.label}" to calendar`);
+      }
+    },
+
+    linkDocumentTaskToTask: (documentTaskId, taskId) => {
+      const taskEntry = get().documentTasks.find((t) => t.id === documentTaskId);
+      set((s) => ({ documentTasks: s.documentTasks.map((t) => (t.id === documentTaskId ? { ...t, createdTaskId: taskId } : t)) }));
+      const userId = synced();
+      if (userId) {
+        db.updateDocumentTaskRow(documentTaskId, { createdTaskId: taskId }).catch((e) => reportSyncError("link document task to task", e));
+        if (taskEntry) logDocumentActivity(userId, taskEntry.documentId, "task_created", `Created task "${taskEntry.title}"`);
+      }
     },
 
     deleteDocument: (id) => {

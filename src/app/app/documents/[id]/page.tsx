@@ -3,7 +3,27 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, Building2, Calendar, Download, Eye, FileSearch, Landmark, Loader2, MapPin, Send, Star, Tag, Trash2, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Building2,
+  Calendar,
+  CalendarPlus,
+  Check,
+  Download,
+  Eye,
+  FileSearch,
+  Landmark,
+  Link2,
+  ListPlus,
+  Loader2,
+  MapPin,
+  Send,
+  Star,
+  Tag,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -25,11 +45,20 @@ export default function DocumentDetailPage() {
   const documents = useAlxioum((s) => s.documents);
   const documentDates = useAlxioum((s) => s.documentDates);
   const documentTasks = useAlxioum((s) => s.documentTasks);
+  const goals = useAlxioum((s) => s.goals);
   const authUserId = useAlxioum((s) => s.authUserId);
   const getAccessToken = useAlxioum((s) => s.getAccessToken);
   const openDocument = useAlxioum((s) => s.openDocument);
   const toggleStarDocument = useAlxioum((s) => s.toggleStarDocument);
   const deleteDocument = useAlxioum((s) => s.deleteDocument);
+  const addEvent = useAlxioum((s) => s.addEvent);
+  const addTask = useAlxioum((s) => s.addTask);
+  const linkDocumentDateToEvent = useAlxioum((s) => s.linkDocumentDateToEvent);
+  const linkDocumentTaskToTask = useAlxioum((s) => s.linkDocumentTaskToTask);
+  const setDocumentLinkedGoal = useAlxioum((s) => s.setDocumentLinkedGoal);
+  const setDocumentCategory = useAlxioum((s) => s.setDocumentCategory);
+  const setDocumentCollection = useAlxioum((s) => s.setDocumentCollection);
+  const documentCollections = useAlxioum((s) => s.documentCollections);
 
   const doc = documents.find((d) => d.id === documentId);
   const dates = useMemo(() => documentDates.filter((d) => d.documentId === documentId).sort((a, b) => a.date.localeCompare(b.date)), [documentDates, documentId]);
@@ -43,6 +72,13 @@ export default function DocumentDetailPage() {
   const [question, setQuestion] = useState("");
   const [asking, setAsking] = useState(false);
   const [askError, setAskError] = useState<string | null>(null);
+  const [addDatesOpen, setAddDatesOpen] = useState(false);
+  const [selectedDateIds, setSelectedDateIds] = useState<Set<string>>(new Set());
+  const [addingDates, setAddingDates] = useState(false);
+  const [createTasksOpen, setCreateTasksOpen] = useState(false);
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
+  const [creatingTasks, setCreatingTasks] = useState(false);
+  const [goalSuggestionDismissed, setGoalSuggestionDismissed] = useState(false);
   const openedRef = useRef(false);
 
   useEffect(() => {
@@ -107,6 +143,62 @@ export default function DocumentDetailPage() {
     }
   }
 
+  function openAddDatesModal() {
+    setSelectedDateIds(new Set(dates.filter((d) => !d.addedToCalendarEventId).map((d) => d.id)));
+    setAddDatesOpen(true);
+  }
+
+  async function confirmAddDates() {
+    if (!doc) return;
+    setAddingDates(true);
+    for (const d of dates.filter((d) => selectedDateIds.has(d.id))) {
+      const created = await addEvent({
+        title: d.label,
+        date: d.date,
+        startTime: "09:00",
+        endTime: "09:30",
+        type: "personal",
+        notes: `From document "${doc.name}".`,
+        linkedDocumentId: doc.id,
+      });
+      if (created) linkDocumentDateToEvent(d.id, created.id);
+    }
+    setAddingDates(false);
+    setAddDatesOpen(false);
+  }
+
+  function openCreateTasksModal() {
+    setSelectedTaskIds(new Set(tasksFound.filter((t) => !t.createdTaskId).map((t) => t.id)));
+    setCreateTasksOpen(true);
+  }
+
+  async function confirmCreateTasks() {
+    if (!doc) return;
+    setCreatingTasks(true);
+    for (const t of tasksFound.filter((t) => selectedTaskIds.has(t.id))) {
+      const created = await addTask({ title: t.title, description: t.description || undefined, category: "personal", documentId: doc.id });
+      if (created) linkDocumentTaskToTask(t.id, created.id);
+    }
+    setCreatingTasks(false);
+    setCreateTasksOpen(false);
+  }
+
+  // Rule-based, honestly-worded suggestion — keyword overlap between what
+  // the document is actually about and an existing goal's name/category.
+  // Never auto-connected; always requires an explicit confirm.
+  const suggestedGoal = useMemo(() => {
+    if (!doc || doc.linkedGoalId || goalSuggestionDismissed) return null;
+    const docWords = new Set([...(doc.keyTopics ?? []), doc.category ?? ""].filter(Boolean).map((w) => w.toLowerCase()));
+    if (docWords.size === 0) return null;
+    return (
+      goals.find((g) => {
+        if (g.completed) return false;
+        const goalWords = `${g.name} ${g.category ?? ""}`.toLowerCase();
+        return Array.from(docWords).some((w) => w.length > 3 && goalWords.includes(w));
+      }) ?? null
+    );
+  }, [doc, goals, goalSuggestionDismissed]);
+
   if (!doc) {
     return (
       <div className="space-y-4">
@@ -144,6 +236,34 @@ export default function DocumentDetailPage() {
             <p className="mt-0.5 text-[12.5px] text-muted-foreground">
               {labelForMimeType(doc.mimeType)} · {formatBytes(doc.sizeBytes)} · Added {formatDayLabel(doc.createdAt.slice(0, 10))}
             </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              <input
+                value={doc.category ?? ""}
+                onChange={(e) => setDocumentCategory(doc.id, e.target.value || undefined)}
+                placeholder={doc.suggestedCategory ? `Category (suggested: ${doc.suggestedCategory})` : "Add a category…"}
+                list="document-category-suggestions"
+                className="w-44 rounded-md border border-border bg-background px-2 py-1 text-[12px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+              />
+              {documentCollections.length > 0 && (
+                <select
+                  value={doc.collectionId ?? ""}
+                  onChange={(e) => setDocumentCollection(doc.id, e.target.value || undefined)}
+                  className="rounded-md border border-border bg-background px-2 py-1 text-[12px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                >
+                  <option value="">No collection</option>
+                  {documentCollections.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <datalist id="document-category-suggestions">
+              {["School", "Work", "Personal", "Finance", "Travel", "Legal", "Receipts", "Projects", "Other"].map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
@@ -239,13 +359,25 @@ export default function DocumentDetailPage() {
 
                   {dates.length > 0 && (
                     <div>
-                      <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Dates & Deadlines</h2>
+                      <div className="mb-2 flex items-center justify-between">
+                        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Dates & Deadlines</h2>
+                        {dates.some((d) => !d.addedToCalendarEventId) && (
+                          <button onClick={openAddDatesModal} className="flex items-center gap-1 text-[11.5px] font-medium text-accent hover:opacity-80">
+                            <CalendarPlus className="h-3.5 w-3.5" /> Add to Calendar
+                          </button>
+                        )}
+                      </div>
                       <div className="space-y-1.5">
                         {dates.map((d) => (
                           <div key={d.id} className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-[12.5px]">
                             <Calendar className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                             <span className="font-medium text-foreground">{formatDayLabel(d.date)}</span>
-                            <span className="text-muted-foreground">— {d.label}</span>
+                            <span className="flex-1 text-muted-foreground">— {d.label}</span>
+                            {d.addedToCalendarEventId && (
+                              <span className="flex shrink-0 items-center gap-1 text-[11px] text-success">
+                                <Check className="h-3 w-3" /> Added
+                              </span>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -254,12 +386,22 @@ export default function DocumentDetailPage() {
 
                   {tasksFound.length > 0 && (
                     <div>
-                      <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Tasks Found</h2>
+                      <div className="mb-2 flex items-center justify-between">
+                        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Tasks Found</h2>
+                        {tasksFound.some((t) => !t.createdTaskId) && (
+                          <button onClick={openCreateTasksModal} className="flex items-center gap-1 text-[11.5px] font-medium text-accent hover:opacity-80">
+                            <ListPlus className="h-3.5 w-3.5" /> Create Tasks
+                          </button>
+                        )}
+                      </div>
                       <div className="space-y-1">
                         {tasksFound.map((t) => (
-                          <div key={t.id} className="flex items-start gap-2 rounded-md px-1 py-1 text-[13px] text-foreground">
-                            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border border-border" />
-                            {t.title}
+                          <div key={t.id} className="flex items-center gap-2 rounded-md px-1 py-1 text-[13px] text-foreground">
+                            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-border">
+                              {t.createdTaskId && <Check className="h-3 w-3 text-success" />}
+                            </span>
+                            <span className="flex-1">{t.title}</span>
+                            {t.createdTaskId && <span className="shrink-0 text-[11px] text-success">Task created</span>}
                           </div>
                         ))}
                       </div>
@@ -269,6 +411,41 @@ export default function DocumentDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {doc.linkedGoalId && (
+            <Card>
+              <CardContent className="flex items-center justify-between gap-2 p-4 text-[13px]">
+                <div className="flex items-center gap-2 text-foreground">
+                  <Link2 className="h-3.5 w-3.5 shrink-0 text-accent" />
+                  Connected to goal &quot;{goals.find((g) => g.id === doc.linkedGoalId)?.name ?? "Untitled goal"}&quot;
+                </div>
+                <button onClick={() => setDocumentLinkedGoal(doc.id, undefined)} className="shrink-0 text-[12px] font-medium text-muted-foreground hover:text-foreground">
+                  Disconnect
+                </button>
+              </CardContent>
+            </Card>
+          )}
+
+          {suggestedGoal && (
+            <Card>
+              <CardContent className="space-y-2.5 p-4">
+                <div className="flex items-start gap-2 text-[13px] text-foreground">
+                  <Link2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+                  <p>
+                    This document appears relevant to your goal <span className="font-medium">&quot;{suggestedGoal.name}&quot;</span>.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => setDocumentLinkedGoal(doc.id, suggestedGoal.id)}>
+                    Connect to Goal
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setGoalSuggestionDismissed(true)}>
+                    Dismiss
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {doc.processingStatus === "ready" && (
             <Card>
@@ -373,6 +550,75 @@ export default function DocumentDetailPage() {
           <Button variant="danger" onClick={handleDelete} className="flex-1 justify-center">
             Delete
           </Button>
+        </div>
+      </Modal>
+
+      <Modal open={addDatesOpen} onOpenChange={setAddDatesOpen} title="Add to calendar" description="Review before anything is added — nothing is created until you confirm.">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            {dates
+              .filter((d) => !d.addedToCalendarEventId)
+              .map((d) => (
+                <label key={d.id} className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={selectedDateIds.has(d.id)}
+                    onChange={(e) =>
+                      setSelectedDateIds((prev) => {
+                        const next = new Set(prev);
+                        if (e.target.checked) next.add(d.id);
+                        else next.delete(d.id);
+                        return next;
+                      })
+                    }
+                  />
+                  <span className="font-medium text-foreground">{formatDayLabel(d.date)}</span>
+                  <span className="text-muted-foreground">— {d.label}</span>
+                </label>
+              ))}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setAddDatesOpen(false)} className="flex-1 justify-center">
+              Cancel
+            </Button>
+            <Button onClick={confirmAddDates} disabled={selectedDateIds.size === 0 || addingDates} className="flex-1 justify-center">
+              {addingDates ? <Loader2 className="h-4 w-4 animate-spin" /> : `Add ${selectedDateIds.size || ""}`.trim()}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={createTasksOpen} onOpenChange={setCreateTasksOpen} title="Create tasks" description="Review before anything is created — nothing is added until you confirm.">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            {tasksFound
+              .filter((t) => !t.createdTaskId)
+              .map((t) => (
+                <label key={t.id} className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={selectedTaskIds.has(t.id)}
+                    onChange={(e) =>
+                      setSelectedTaskIds((prev) => {
+                        const next = new Set(prev);
+                        if (e.target.checked) next.add(t.id);
+                        else next.delete(t.id);
+                        return next;
+                      })
+                    }
+                  />
+                  <span className="text-foreground">{t.title}</span>
+                </label>
+              ))}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setCreateTasksOpen(false)} className="flex-1 justify-center">
+              Cancel
+            </Button>
+            <Button onClick={confirmCreateTasks} disabled={selectedTaskIds.size === 0 || creatingTasks} className="flex-1 justify-center">
+              {creatingTasks ? <Loader2 className="h-4 w-4 animate-spin" /> : `Create ${selectedTaskIds.size || ""}`.trim()}
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>
