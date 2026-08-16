@@ -3,19 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, Send, Trash2, Loader2, AlertCircle, MessageCircle, ImagePlus, X, PanelLeft } from "lucide-react";
+import { Plus, Send, Trash2, Loader2, AlertCircle, ImagePlus, X, PanelLeft, CalendarPlus, ListChecks, Target, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { Logo } from "@/components/layout/Logo";
 import { MessageBubble } from "@/components/ai/MessageBubble";
 import { VoiceButton } from "@/components/ai/VoiceButton";
 import { ListeningAurora } from "@/components/ai/ListeningAurora";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { ChatMessage, Conversation } from "@/lib/types";
-import { confirmPendingAction, sendChatMessage, undoResolvedAction } from "@/lib/ai/chatClient";
+import { attachDocumentToChat, confirmPendingAction, sendChatMessage, undoResolvedAction } from "@/lib/ai/chatClient";
 import { useVoiceInput } from "@/lib/useVoiceInput";
 import { fileToCompressedDataUrl } from "@/lib/image";
+import { ALLOWED_TYPES } from "@/lib/documents/constants";
 import { cn } from "@/lib/utils";
+
+const SUGGESTIONS = [
+  "What's on my calendar tomorrow?",
+  "What do I need to finish today?",
+  "How's my running goal going?",
+  "Organize my week",
+];
 
 export default function ChatPage() {
   const authUserId = useAlxioum((s) => s.authUserId);
@@ -33,8 +41,11 @@ export default function ChatPage() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [attachedImage, setAttachedImage] = useState<{ dataUrl: string } | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [attachingDocument, setAttachingDocument] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docFileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { supported: voiceSupported, listening, toggle: toggleVoice } = useVoiceInput((text) => setInput((v) => (v ? `${v} ${text}` : text)));
 
@@ -77,6 +88,13 @@ export default function ChatPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
 
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+  }, [input]);
+
   async function newConversation() {
     if (!authUserId) return;
     const created = await db.createConversation(authUserId);
@@ -111,6 +129,39 @@ export default function ChatPage() {
     } catch (err) {
       setImageError(err instanceof Error ? err.message : "Couldn't attach that image.");
     }
+  }
+
+  async function handleDocumentSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !activeId) return;
+    if (!(ALLOWED_TYPES as readonly string[]).includes(file.type)) {
+      setError("This file type isn't supported yet — try a PDF, DOCX, image, or plain text file.");
+      return;
+    }
+    setError(null);
+    setAttachingDocument(true);
+    try {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Your session expired. Please sign in again.");
+      const { assistantMessage } = await attachDocumentToChat(token, activeId, file);
+      setMessages((m) => [...m, assistantMessage]);
+      refreshAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't attach that file.");
+    } finally {
+      setAttachingDocument(false);
+    }
+  }
+
+  function prefillAndFocus(starter: string) {
+    setInput(starter);
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
   }
 
   async function send(text?: string) {
@@ -296,7 +347,24 @@ export default function ChatPage() {
               <Loader2 className="h-5 w-5 animate-spin" />
             </div>
           ) : messages.length === 0 ? (
-            <EmptyState icon={MessageCircle} title="Tell Alxioum what you need." body={'Try "What’s on my calendar tomorrow?" or "Remind me to call the dentist."'} />
+            <div className="flex h-full flex-col items-center justify-center gap-6 px-4 text-center">
+              <Logo className="h-14 w-14" />
+              <div className="space-y-1.5">
+                <p className="text-lg font-semibold text-foreground">What can I help you with?</p>
+                <p className="text-[13px] text-muted-foreground">Plan it. Find it. Organize it. Get it done.</p>
+              </div>
+              <div className="grid w-full max-w-sm grid-cols-1 gap-2 sm:grid-cols-2">
+                {SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => send(s)}
+                    className="rounded-xl border border-border/70 bg-background px-3.5 py-2.5 text-left text-[12.5px] font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-accent-soft"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : (
             messages.map((m) => <MessageBubble key={m.id} message={m} onDecide={handleDecide} onUndo={handleUndo} onChoiceSelect={handleChoice} />)
           )}
@@ -365,6 +433,34 @@ export default function ChatPage() {
           </div>
         )}
 
+        <div className="flex items-center gap-1.5 overflow-x-auto px-3 pb-1.5">
+          <button
+            onClick={() => prefillAndFocus("Add a task to ")}
+            className="flex shrink-0 items-center gap-1 rounded-full border border-border/70 px-2.5 py-1 text-[11.5px] font-medium text-muted-foreground transition-colors hover:border-accent/50 hover:text-foreground"
+          >
+            <ListChecks className="h-3 w-3" /> Task
+          </button>
+          <button
+            onClick={() => prefillAndFocus("Schedule ")}
+            className="flex shrink-0 items-center gap-1 rounded-full border border-border/70 px-2.5 py-1 text-[11.5px] font-medium text-muted-foreground transition-colors hover:border-accent/50 hover:text-foreground"
+          >
+            <CalendarPlus className="h-3 w-3" /> Event
+          </button>
+          <button
+            onClick={() => prefillAndFocus("Create a goal to ")}
+            className="flex shrink-0 items-center gap-1 rounded-full border border-border/70 px-2.5 py-1 text-[11.5px] font-medium text-muted-foreground transition-colors hover:border-accent/50 hover:text-foreground"
+          >
+            <Target className="h-3 w-3" /> Goal
+          </button>
+          <button
+            onClick={() => docFileInputRef.current?.click()}
+            disabled={attachingDocument}
+            className="flex shrink-0 items-center gap-1 rounded-full border border-border/70 px-2.5 py-1 text-[11.5px] font-medium text-muted-foreground transition-colors hover:border-accent/50 hover:text-foreground disabled:opacity-60"
+          >
+            {attachingDocument ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileUp className="h-3 w-3" />} Document
+          </button>
+        </div>
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -373,6 +469,7 @@ export default function ChatPage() {
           className="flex items-end gap-2 border-t border-border/70 p-3"
         >
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+          <input ref={docFileInputRef} type="file" accept={ALLOWED_TYPES.join(",")} onChange={handleDocumentSelect} className="hidden" />
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -382,6 +479,7 @@ export default function ChatPage() {
             <ImagePlus className="h-4 w-4" />
           </button>
           <textarea
+            ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -391,7 +489,7 @@ export default function ChatPage() {
               }
             }}
             rows={1}
-            placeholder={attachedImage ? "Add a caption (optional)…" : "Tell Alxioum what you need…"}
+            placeholder={attachedImage ? "Add a caption (optional)…" : "What do you need?"}
             className="max-h-32 min-h-[40px] flex-1 resize-none rounded-2xl border border-border/70 bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
           />
           {voiceSupported && <VoiceButton listening={listening} onClick={toggleVoice} />}

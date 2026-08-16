@@ -76,6 +76,16 @@ export async function confirmPendingAction(token: string, pendingActionId: strin
   return body as { resolvedAction: NonNullable<ChatMessage["resolvedAction"]>; ok?: boolean };
 }
 
+export async function attachDocumentToChat(token: string, conversationId: string, file: File): Promise<{ assistantMessage: ChatMessage }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("conversationId", conversationId);
+  const res = await fetch("/api/chat/attach", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
+  const body = await res.json();
+  if (!res.ok) throw new Error((body as ApiError).error ?? "Couldn't attach that file.");
+  return body as { assistantMessage: ChatMessage };
+}
+
 export async function undoResolvedAction(token: string, messageId: string) {
   const res = await fetch("/api/chat/undo", {
     method: "POST",
