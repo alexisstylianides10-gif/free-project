@@ -18,16 +18,23 @@ export function MobileNav() {
   const moreNavItems = visibleNav(mobileMoreNav, profile?.plan);
   const moreActive = moreNavItems.some((i) => pathname.startsWith(i.href)) || pathname.startsWith("/app/settings");
 
+  // Chat already has its own send button docked in this same bottom-right
+  // corner — a second floating button there would sit on top of it and
+  // steal taps meant for Send, so skip the FAB on that one route.
+  const isChatRoute = pathname === "/app/chat";
+
   return (
     <>
-      <button
-        onClick={() => window.dispatchEvent(new Event("alxioum:open-command-palette"))}
-        aria-label="Quick action — tell Alxioum what you need"
-        className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-pop transition-transform active:scale-95 md:hidden"
-        style={{ bottom: "calc(4.75rem + env(safe-area-inset-bottom))" }}
-      >
-        <Sparkles className="h-5 w-5" />
-      </button>
+      {!isChatRoute && (
+        <button
+          onClick={() => window.dispatchEvent(new Event("alxioum:open-command-palette"))}
+          aria-label="Quick action — tell Alxioum what you need"
+          className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-pop transition-transform active:scale-95 md:hidden"
+          style={{ bottom: "calc(4.75rem + env(safe-area-inset-bottom))" }}
+        >
+          <Sparkles className="h-5 w-5" />
+        </button>
+      )}
 
       <nav className="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {mobilePrimaryNav.map((item) => {
