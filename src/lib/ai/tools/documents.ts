@@ -1,5 +1,6 @@
 import type { ToolSpec } from "./types";
 import { askDocument } from "@/lib/documents/ask";
+import { askAllDocuments } from "@/lib/documents/askAll";
 
 interface DocumentRow {
   id: string;
@@ -136,6 +137,19 @@ export const documentsAsk: ToolSpec<{ documentId: string; question: string }> = 
   consequential: false,
   execute: async (ctx, input) => {
     const outcome = await askDocument(ctx.supabase, ctx.userId, input.documentId, input.question);
+    if (!outcome.ok) return { ok: false, error: outcome.error };
+    return { ok: true, result: outcome.result };
+  },
+};
+
+export const documentsAskAll: ToolSpec<{ question: string }> = {
+  name: "documents_ask_all",
+  description:
+    "Ask a question across ALL of the user's documents at once (not just one) — use this for questions like 'what's due soon across my documents?' or 'which of my documents mentions a deposit?'. Retrieves the most relevant documents via search and grounds the answer in their summaries/content, citing which document(s) it drew from.",
+  inputSchema: { type: "object", properties: { question: { type: "string" } }, required: ["question"] },
+  consequential: false,
+  execute: async (ctx, input) => {
+    const outcome = await askAllDocuments(ctx.supabase, ctx.userId, input.question);
     if (!outcome.ok) return { ok: false, error: outcome.error };
     return { ok: true, result: outcome.result };
   },
@@ -344,6 +358,7 @@ export const documentTools = [
   documentsRead,
   documentsDelete,
   documentsAsk,
+  documentsAskAll,
   documentsFindDates,
   documentsFindTasks,
   documentsAddDatesToCalendar,

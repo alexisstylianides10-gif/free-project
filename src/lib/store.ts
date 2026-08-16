@@ -106,6 +106,7 @@ interface AlxioumState {
   setDocumentCollection: (id: string, collectionId: string | undefined) => void;
   setDocumentLinkedGoal: (id: string, goalId: string | undefined) => void;
   deleteDocument: (id: string) => void;
+  deleteAllDocuments: () => Promise<void>;
   addDocumentCollection: (name: string) => Promise<DocumentCollection | null>;
   deleteDocumentCollection: (id: string) => void;
   linkDocumentDateToEvent: (documentDateId: string, eventId: string) => void;
@@ -852,6 +853,17 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         documentTasks: s.documentTasks.filter((t) => t.documentId !== id),
       }));
       if (synced()) db.deleteDocumentRow(id, existing.storagePath).catch((e) => reportSyncError("delete document", e));
+    },
+
+    deleteAllDocuments: async () => {
+      const userId = synced();
+      set({ documents: [], documentDates: [], documentTasks: [] });
+      if (!userId) return;
+      try {
+        await db.deleteAllDocuments(userId);
+      } catch (e) {
+        reportSyncError("delete all documents", e);
+      }
     },
 
     addDocumentCollection: async (name) => {

@@ -1244,6 +1244,23 @@ export async function deleteDocumentRow(id: string, storagePath: string): Promis
   if (error) throw error;
 }
 
+/**
+ * Scoped bulk-delete for the Documents tab's own Privacy section — distinct
+ * from the full-account deleteAllUserContent. Removes every stored file plus
+ * every documents row for the user; document_dates/tasks/activity/chat
+ * messages cascade automatically via their FK. Collections are left intact
+ * (this deletes documents, not the folders they were organized into).
+ */
+export async function deleteAllDocuments(userId: string): Promise<void> {
+  const c = client();
+  const { data: storedFiles } = await c.storage.from("documents").list(userId);
+  if (storedFiles?.length) {
+    await c.storage.from("documents").remove(storedFiles.map((f) => `${userId}/${f.name}`));
+  }
+  const { error } = await c.from("documents").delete().eq("user_id", userId);
+  if (error) throw error;
+}
+
 /** Short-lived signed URL for previewing/downloading a stored document — fetch per page-view, never persist. */
 export async function getDocumentSignedUrl(storagePath: string, expiresInSeconds = 3 * 60 * 60): Promise<string | null> {
   const { data, error } = await client().storage.from("documents").createSignedUrl(storagePath, expiresInSeconds);
