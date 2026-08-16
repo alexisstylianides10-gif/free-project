@@ -99,6 +99,7 @@ interface AlxioumState {
   moveRoutineStep: (id: string, direction: "up" | "down") => void;
 
   uploadDocument: (file: File) => Promise<{ document: Document | null; error?: string }>;
+  openDocument: (id: string) => void;
   toggleStarDocument: (id: string) => void;
   setDocumentCategory: (id: string, category: string | undefined) => void;
   setDocumentTags: (id: string, tags: string[]) => void;
@@ -764,6 +765,16 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       } catch (e) {
         reportSyncError("upload document", e);
         return { document: null, error: "Couldn't upload that file." };
+      }
+    },
+
+    openDocument: (id) => {
+      const now = new Date().toISOString();
+      set((s) => ({ documents: s.documents.map((d) => (d.id === id ? { ...d, lastOpenedAt: now } : d)) }));
+      const userId = synced();
+      if (userId) {
+        db.updateDocumentRow(id, { lastOpenedAt: now }).catch((e) => reportSyncError("open document", e));
+        logDocumentActivity(userId, id, "opened", "Document opened");
       }
     },
 

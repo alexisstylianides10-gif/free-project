@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { Camera, FileText, Loader2, Plus, Search, Star, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -295,7 +296,7 @@ function DocumentCard({ doc, needsAttention, onToggleStar, onDelete }: { doc: Do
     <Card>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-1 items-start gap-2.5">
+          <Link href={`/app/documents/${doc.id}`} className="flex min-w-0 flex-1 items-start gap-2.5">
             <Icon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13.5px] font-medium text-foreground">{doc.name}</p>
@@ -308,7 +309,7 @@ function DocumentCard({ doc, needsAttention, onToggleStar, onDelete }: { doc: Do
               </p>
               {doc.summary && <p className="mt-1.5 line-clamp-2 text-[13px] text-muted-foreground">{doc.summary}</p>}
             </div>
-          </div>
+          </Link>
           <div className="flex shrink-0 items-center gap-0.5">
             <button onClick={onToggleStar} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted" aria-label={doc.starred ? "Unstar" : "Star"}>
               <Star className={`h-3.5 w-3.5 ${doc.starred ? "fill-warning text-warning" : ""}`} />
