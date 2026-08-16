@@ -293,6 +293,19 @@ create table if not exists public.goal_milestones (
 );
 
 -- ---------------------------------------------------------------------------
+-- study_notes (AI-generated study notes, Student plan)
+-- ---------------------------------------------------------------------------
+create table if not exists public.study_notes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid references public.subjects (id) on delete set null,
+  title text not null,
+  content text not null,
+  source_input text not null default '',
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
 -- student_profiles (one row per Student-plan user)
 -- ---------------------------------------------------------------------------
 create table if not exists public.student_profiles (
@@ -379,7 +392,7 @@ begin
       'pending_actions', 'agent_actions', 'notifications', 'push_subscriptions',
       'subjects', 'focus_sessions', 'student_profiles', 'calendar_connections', 'waitlist',
       'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
-      'routines', 'routine_steps', 'weekly_reviews', 'documents'
+      'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -448,7 +461,7 @@ begin
       'tasks', 'events', 'memory', 'conversations', 'messages',
       'pending_actions', 'agent_actions', 'notifications',
       'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
-      'routines', 'routine_steps', 'weekly_reviews', 'documents'
+      'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes'
     ])
   loop
     execute format('drop policy if exists "%s_owner" on public.%I;', t, t);

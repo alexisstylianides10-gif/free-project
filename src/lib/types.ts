@@ -261,6 +261,15 @@ export interface Document {
   createdAt: string;
 }
 
+export interface StudyNote {
+  id: string;
+  subjectId?: string;
+  title: string;
+  content: string;
+  sourceInput: string;
+  createdAt: string;
+}
+
 export interface StudentProfile {
   schoolName: string;
   country: string;

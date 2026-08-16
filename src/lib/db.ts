@@ -16,6 +16,7 @@ import {
   ShoppingItem,
   ShoppingList,
   StudentProfile,
+  StudyNote,
   Subject,
   Task,
   WeeklyReview,
@@ -928,6 +929,34 @@ export async function deleteDocumentRow(id: string, storagePath: string): Promis
 }
 
 // ---------------------------------------------------------------------------
+// study notes (AI-generated, Student plan)
+// ---------------------------------------------------------------------------
+
+interface StudyNoteRow {
+  id: string;
+  subject_id: string | null;
+  title: string;
+  content: string;
+  source_input: string;
+  created_at: string;
+}
+
+function studyNoteFromRow(r: StudyNoteRow): StudyNote {
+  return { id: r.id, subjectId: r.subject_id ?? undefined, title: r.title, content: r.content, sourceInput: r.source_input, createdAt: r.created_at };
+}
+
+export async function fetchStudyNotes(userId: string): Promise<StudyNote[]> {
+  const { data, error } = await client().from("study_notes").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as StudyNoteRow[]).map(studyNoteFromRow);
+}
+
+export async function deleteStudyNoteRow(id: string): Promise<void> {
+  const { error } = await client().from("study_notes").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
 // activity (agent_actions) — the audit trail
 // ---------------------------------------------------------------------------
 
@@ -990,6 +1019,7 @@ export async function deleteAllUserContent(userId: string): Promise<void> {
     "routines",
     "weekly_reviews",
     "documents",
+    "study_notes",
   ];
   const { data: storedFiles } = await c.storage.from("documents").list(userId);
   if (storedFiles?.length) {

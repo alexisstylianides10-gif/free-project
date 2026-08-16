@@ -13,6 +13,8 @@ const TABS = [
   { label: "Focus", href: "/app/study/focus" },
   { label: "Subjects", href: "/app/study/subjects" },
   { label: "Planner", href: "/app/study/planner" },
+  { label: "Notes", href: "/app/study/notes" },
+  { label: "Homework Help", href: "/app/study/homework" },
 ];
 
 export default function StudyLayout({ children }: { children: React.ReactNode }) {

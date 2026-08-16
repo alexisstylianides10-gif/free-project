@@ -7,6 +7,7 @@ interface SpeechRecognitionResultLike {
   transcript: string;
 }
 interface SpeechRecognitionEventLike extends Event {
+  resultIndex: number;
   results: { [i: number]: { [j: number]: SpeechRecognitionResultLike; isFinal: boolean }; length: number };
 }
 interface SpeechRecognitionLike extends EventTarget {
@@ -34,12 +35,22 @@ export function useVoiceInput(onTranscript: (text: string) => void) {
     setSupported(true);
     const recognition = new Ctor();
     recognition.lang = typeof navigator !== "undefined" ? navigator.language : "en-US";
-    recognition.continuous = false;
+    // continuous=true is the fix for "cuts off after a few words": in
+    // non-continuous mode the browser stops listening the moment it detects
+    // the first pause in speech, so anything said after a brief breath was
+    // silently dropped. Continuous mode keeps the mic open across pauses
+    // until the user taps to stop, and onresult fires once per finalized
+    // segment (via resultIndex) rather than once total — so segments are
+    // appended as the user keeps talking instead of only capturing the first.
+    recognition.continuous = true;
     recognition.interimResults = false;
     recognition.onresult = (e) => {
-      const last = e.results[e.results.length - 1];
-      const text = last?.[0]?.transcript;
-      if (text) onTranscript(text);
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const result = e.results[i];
+        if (!result.isFinal) continue;
+        const text = result[0]?.transcript?.trim();
+        if (text) onTranscript(text);
+      }
     };
     recognition.onend = () => setListening(false);
     recognition.onerror = () => setListening(false);
