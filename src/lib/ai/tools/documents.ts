@@ -1,4 +1,5 @@
 import type { ToolSpec } from "./types";
+import { askDocument } from "@/lib/documents/ask";
 
 interface DocumentRow {
   id: string;
@@ -123,4 +124,21 @@ export const documentsDelete: ToolSpec<{ documentId: string }> = {
   },
 };
 
-export const documentTools = [documentsSearch, documentsRead, documentsDelete];
+export const documentsAsk: ToolSpec<{ documentId: string; question: string }> = {
+  name: "documents_ask",
+  description:
+    "Ask a grounded question about ONE specific document (its real content, re-sent to Claude — not the stored summary). Requires the exact documentId from documents_search. Use this for questions that need to be answered from the document's actual text/pages, e.g. 'summarize page 4' or 'does this mention a fee'. Persists the exchange so the user sees it if they open the document.",
+  inputSchema: {
+    type: "object",
+    properties: { documentId: { type: "string" }, question: { type: "string" } },
+    required: ["documentId", "question"],
+  },
+  consequential: false,
+  execute: async (ctx, input) => {
+    const outcome = await askDocument(ctx.supabase, ctx.userId, input.documentId, input.question);
+    if (!outcome.ok) return { ok: false, error: outcome.error };
+    return { ok: true, result: outcome.result };
+  },
+};
+
+export const documentTools = [documentsSearch, documentsRead, documentsDelete, documentsAsk];

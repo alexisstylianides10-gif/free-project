@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, Building2, Calendar, Download, Eye, Landmark, Loader2, MapPin, Star, Tag, Trash2, Users } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Building2, Calendar, Download, Eye, FileSearch, Landmark, Loader2, MapPin, Send, Star, Tag, Trash2, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -11,8 +11,11 @@ import { Modal } from "@/components/ui/Modal";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { formatDayLabel } from "@/lib/utils";
+import { newId } from "@/lib/utils";
 import { formatBytes, iconForMimeType, labelForMimeType, PROCESSING_STATUS_META } from "@/lib/documents/ui";
-import { Document, DocumentActivityEntry } from "@/lib/types";
+import { Document, DocumentActivityEntry, DocumentChatMessage } from "@/lib/types";
+
+const ASK_EXAMPLE_PROMPTS = ["When is the deadline?", "What do I need to submit?", "What are the requirements?", "Summarize this for me."];
 
 export default function DocumentDetailPage() {
   const params = useParams<{ id: string }>();
@@ -23,6 +26,7 @@ export default function DocumentDetailPage() {
   const documentDates = useAlxioum((s) => s.documentDates);
   const documentTasks = useAlxioum((s) => s.documentTasks);
   const authUserId = useAlxioum((s) => s.authUserId);
+  const getAccessToken = useAlxioum((s) => s.getAccessToken);
   const openDocument = useAlxioum((s) => s.openDocument);
   const toggleStarDocument = useAlxioum((s) => s.toggleStarDocument);
   const deleteDocument = useAlxioum((s) => s.deleteDocument);
@@ -32,8 +36,13 @@ export default function DocumentDetailPage() {
   const tasksFound = useMemo(() => documentTasks.filter((t) => t.documentId === documentId), [documentTasks, documentId]);
 
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [pageAnchor, setPageAnchor] = useState<number | null>(null);
   const [activity, setActivity] = useState<DocumentActivityEntry[]>([]);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<DocumentChatMessage[]>([]);
+  const [question, setQuestion] = useState("");
+  const [asking, setAsking] = useState(false);
+  const [askError, setAskError] = useState<string | null>(null);
   const openedRef = useRef(false);
 
   useEffect(() => {
@@ -56,6 +65,47 @@ export default function DocumentDetailPage() {
       .then(setActivity)
       .catch(() => setActivity([]));
   }, [authUserId, documentId]);
+
+  useEffect(() => {
+    if (!authUserId || !documentId) return;
+    db.fetchDocumentChatMessages(authUserId, documentId)
+      .then(setChatMessages)
+      .catch(() => setChatMessages([]));
+  }, [authUserId, documentId]);
+
+  async function handleAsk(q?: string) {
+    const text = (q ?? question).trim();
+    if (!text || asking || !doc) return;
+    setAsking(true);
+    setAskError(null);
+    const optimisticUser: DocumentChatMessage = { id: newId(), documentId: doc.id, role: "user", content: text, createdAt: new Date().toISOString() };
+    setChatMessages((m) => [...m, optimisticUser]);
+    setQuestion("");
+    try {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Your session expired. Please sign in again.");
+      const res = await fetch(`/api/documents/${doc.id}/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ question: text }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Couldn't answer that.");
+      const assistantMsg: DocumentChatMessage = {
+        id: newId(),
+        documentId: doc.id,
+        role: "assistant",
+        content: json.answer,
+        sourcePage: json.sourcePage,
+        createdAt: new Date().toISOString(),
+      };
+      setChatMessages((m) => [...m, assistantMsg]);
+    } catch (err) {
+      setAskError(err instanceof Error ? err.message : "Couldn't answer that.");
+    } finally {
+      setAsking(false);
+    }
+  }
 
   if (!doc) {
     return (
@@ -114,7 +164,7 @@ export default function DocumentDetailPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
-        <DocumentPreview doc={doc} signedUrl={signedUrl} />
+        <DocumentPreview doc={doc} signedUrl={signedUrl} pageAnchor={pageAnchor} />
 
         <div className="space-y-4">
           <Card>
@@ -219,6 +269,78 @@ export default function DocumentDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {doc.processingStatus === "ready" && (
+            <Card>
+              <CardContent className="space-y-3 p-5">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ask This Document</h2>
+
+                {chatMessages.length === 0 && !asking && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {ASK_EXAMPLE_PROMPTS.map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => handleAsk(p)}
+                        className="rounded-full border border-border bg-background px-2.5 py-1 text-[12px] text-muted-foreground transition-colors hover:bg-muted"
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {chatMessages.length > 0 && (
+                  <div className="max-h-80 space-y-3 overflow-y-auto">
+                    {chatMessages.map((m) => (
+                      <div key={m.id} className={m.role === "user" ? "text-right" : ""}>
+                        <div
+                          className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-left text-[13px] ${
+                            m.role === "user" ? "bg-accent-soft text-accent" : "bg-muted/60 text-foreground"
+                          }`}
+                        >
+                          {m.content}
+                        </div>
+                        {m.role === "assistant" && m.sourcePage !== undefined && (
+                          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                            <FileSearch className="h-3 w-3" />
+                            <span>Source: Page {m.sourcePage}</span>
+                            <button onClick={() => setPageAnchor(m.sourcePage!)} className="font-medium text-accent hover:opacity-80">
+                              Open Page
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {asking && (
+                      <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin" /> Thinking…
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {askError && <p className="text-[12px] text-danger">{askError}</p>}
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleAsk();
+                  }}
+                  className="flex gap-2"
+                >
+                  <input
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    placeholder="What do you need to know?"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                  <Button type="submit" size="sm" disabled={!question.trim() || asking}>
+                    {asking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
@@ -257,7 +379,7 @@ export default function DocumentDetailPage() {
   );
 }
 
-function DocumentPreview({ doc, signedUrl }: { doc: Document; signedUrl: string | null }) {
+function DocumentPreview({ doc, signedUrl, pageAnchor }: { doc: Document; signedUrl: string | null; pageAnchor: number | null }) {
   // Extracted-text and no-preview-available cases don't depend on Storage
   // at all — extractedText is already on the doc row, and the "no preview"
   // message is true regardless. Only PDF/image rendering needs the signed
@@ -271,9 +393,10 @@ function DocumentPreview({ doc, signedUrl }: { doc: Document; signedUrl: string 
       );
     }
     if (doc.mimeType === "application/pdf") {
+      const pdfSrc = pageAnchor ? `${signedUrl}#page=${pageAnchor}` : signedUrl;
       return (
         <div className="space-y-2">
-          <iframe src={signedUrl} title={doc.name} className="h-[70vh] w-full rounded-xl border border-border bg-surface" />
+          <iframe key={pdfSrc} src={pdfSrc} title={doc.name} className="h-[70vh] w-full rounded-xl border border-border bg-surface" />
           <a href={signedUrl} target="_blank" rel="noreferrer" className="text-[12px] text-accent hover:opacity-80">
             Open in new tab (if the preview doesn&apos;t load)
           </a>
