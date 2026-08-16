@@ -24,6 +24,7 @@
     "date-fns": "4.1.0",
     "framer-motion": "11.18.2",
     "lucide-react": "0.469.0",
+    "mammoth": "^1.12.1",
     "next": "15.5.23",
     "react": "19.0.0",
     "react-dom": "19.0.0",

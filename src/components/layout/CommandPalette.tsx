@@ -73,7 +73,7 @@ export function CommandPalette() {
       return;
     }
     const handle = setTimeout(() => {
-      db.searchDocumentsByName(authUserId, q).then(setDocResults).catch(() => setDocResults([]));
+      db.searchDocuments(authUserId, q, 5).then(setDocResults).catch(() => setDocResults([]));
     }, 250);
     return () => clearTimeout(handle);
   }, [query, authUserId]);

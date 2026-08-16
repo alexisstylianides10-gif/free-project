@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import mammoth from "mammoth";
 import { requireUser } from "@/lib/supabase/server";
 import { isRateLimited } from "@/lib/ai/rateLimit";
+import { ALLOWED_TYPES, DOCX_MIME_TYPE, MAX_SIZE_BYTES } from "@/lib/documents/constants";
 
 export const runtime = "nodejs";
-
-const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif", "text/plain", "text/markdown"];
-const MAX_SIZE_BYTES = 15 * 1024 * 1024;
 
 let cachedClient: Anthropic | null = null;
 function anthropic(): Anthropic {
@@ -16,62 +15,133 @@ function anthropic(): Anthropic {
   return cachedClient;
 }
 
-interface ExtractedDate {
+interface AnalyzedDate {
   label: string;
   date: string;
+  kind?: "deadline" | "event" | "other";
+  description?: string;
+}
+interface AnalyzedTask {
+  title: string;
+  description?: string;
+}
+interface AnalyzedAmount {
+  label: string;
+  value: string;
+  currency?: string;
+}
+interface AnalysisResult {
+  documentType: string;
+  summary: string;
+  dates: AnalyzedDate[];
+  tasks: AnalyzedTask[];
+  people: string[];
+  organizations: string[];
+  amounts: AnalyzedAmount[];
+  locations: string[];
+  keyTopics: string[];
+  detectedText: string;
+  suggestedCategory: string;
 }
 
 const ANALYSIS_TOOL: Anthropic.Messages.Tool = {
-  name: "record_analysis",
-  description: "Record a structured summary of an uploaded document.",
+  name: "record_document_analysis",
+  description: "Record a structured analysis of an uploaded document. Only populate a field when the document genuinely contains that kind of information — leave arrays empty and strings blank rather than guessing.",
   input_schema: {
     type: "object",
     properties: {
+      documentType: { type: "string", description: "A short label for what kind of document this is, e.g. 'School assignment', 'Invoice', 'Travel itinerary'. Empty string if unclear." },
       summary: { type: "string", description: "A concise summary, under 100 words, of what the document contains." },
-      extractedDates: {
+      dates: {
         type: "array",
+        description: "Deadlines, due dates, or other important dates explicitly stated in the document. Empty array if none — never guess a date.",
         items: {
           type: "object",
-          properties: { label: { type: "string" }, date: { type: "string", description: "ISO date, yyyy-mm-dd." } },
+          properties: {
+            label: { type: "string" },
+            date: { type: "string", description: "ISO date, yyyy-mm-dd." },
+            kind: { type: "string", enum: ["deadline", "event", "other"] },
+            description: { type: "string" },
+          },
           required: ["label", "date"],
         },
-        description: "Deadlines, due dates, or other important dates explicitly stated in the document. Empty array if none — never guess a date.",
       },
+      tasks: {
+        type: "array",
+        description: "Concrete, actionable requirements or to-dos explicitly stated in the document (e.g. 'Submit the signed form', 'Pay the deposit'). Empty array if the document doesn't ask the reader to do anything.",
+        items: {
+          type: "object",
+          properties: { title: { type: "string" }, description: { type: "string" } },
+          required: ["title"],
+        },
+      },
+      people: { type: "array", items: { type: "string" }, description: "Names of people mentioned, if any." },
+      organizations: { type: "array", items: { type: "string" }, description: "Organizations/companies/institutions mentioned, if any." },
+      amounts: {
+        type: "array",
+        description: "Monetary amounts explicitly stated, if any.",
+        items: {
+          type: "object",
+          properties: { label: { type: "string", description: "What the amount is for." }, value: { type: "string" }, currency: { type: "string" } },
+          required: ["label", "value"],
+        },
+      },
+      locations: { type: "array", items: { type: "string" }, description: "Locations/addresses mentioned, if any." },
+      keyTopics: { type: "array", items: { type: "string" }, description: "A few short keyword topics for this document, for search/categorization." },
+      detectedText: { type: "string", description: "For an image/screenshot: the readable text you can actually see in it, transcribed as-is. Empty string if the image has no readable text or isn't legible." },
+      suggestedCategory: { type: "string", description: "One suggested category if one clearly fits: School, Work, Personal, Finance, Travel, Legal, Receipts, Projects, Other. Empty string if nothing fits well." },
     },
-    required: ["summary", "extractedDates"],
+    required: ["documentType", "summary", "dates", "tasks", "people", "organizations", "amounts", "locations", "keyTopics", "detectedText", "suggestedCategory"],
   },
 };
 
 // Uses Claude's native document (PDF) / image content-block support to
-// analyze the file directly — no OCR or PDF-parsing library needed. This is
-// a one-off call outside the Head Agent's tool loop (the ClaudeProvider
-// abstraction doesn't model document blocks), so it talks to the Anthropic
-// SDK directly, same as the Study section's research-school route does.
-async function analyzeDocument(mimeType: string, base64: string, fileName: string): Promise<{ summary: string; extractedDates: ExtractedDate[] }> {
+// analyze the file directly for those two types — no OCR/PDF-parsing
+// library needed there. DOCX is extracted to plain text via mammoth first
+// (Claude's API has no native docx content-block type), and that same
+// extracted text is what gets persisted for later search/Q&A, not thrown
+// away after this one call. This is a one-off call outside the Head
+// Agent's tool loop, same as the Study section's research-school route.
+async function analyzeDocument(mimeType: string, base64: string, fileName: string, extractedText: string | null): Promise<AnalysisResult> {
   const content: Anthropic.Messages.ContentBlockParam[] = [];
   if (mimeType === "application/pdf") {
-    content.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } });
+    content.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 }, cache_control: { type: "ephemeral" } });
   } else if (mimeType.startsWith("image/")) {
-    content.push({ type: "image", source: { type: "base64", media_type: mimeType as "image/jpeg" | "image/png" | "image/webp" | "image/gif", data: base64 } });
+    content.push({
+      type: "image",
+      source: { type: "base64", media_type: mimeType as "image/jpeg" | "image/png" | "image/webp" | "image/gif", data: base64 },
+      cache_control: { type: "ephemeral" },
+    });
   } else {
-    content.push({ type: "text", text: Buffer.from(base64, "base64").toString("utf-8").slice(0, 20000) });
+    content.push({ type: "text", text: (extractedText ?? Buffer.from(base64, "base64").toString("utf-8")).slice(0, 20000) });
   }
-  content.push({
-    type: "text",
-    text: `Summarize this document ("${fileName}") and extract any deadlines or important dates it mentions.`,
-  });
+  content.push({ type: "text", text: `Analyze this document ("${fileName}").` });
 
   const response = await anthropic().messages.create({
     model: process.env.ALXIOUM_MODEL || "claude-sonnet-4-5-20250929",
-    max_tokens: 500,
+    max_tokens: 1200,
+    system:
+      "You are analyzing a document a user uploaded to their personal assistant. Be thorough but strictly grounded — only report what the document actually contains. Never invent dates, amounts, or requirements that aren't explicitly present.",
     tools: [ANALYSIS_TOOL],
-    tool_choice: { type: "tool", name: "record_analysis" },
+    tool_choice: { type: "tool", name: "record_document_analysis" },
     messages: [{ role: "user", content }],
   });
 
   const toolUse = response.content.find((b) => b.type === "tool_use");
-  const input = (toolUse && "input" in toolUse ? (toolUse.input as { summary?: string; extractedDates?: ExtractedDate[] }) : undefined) ?? {};
-  return { summary: input.summary ?? "", extractedDates: input.extractedDates ?? [] };
+  const input = (toolUse && "input" in toolUse ? (toolUse.input as Partial<AnalysisResult>) : undefined) ?? {};
+  return {
+    documentType: input.documentType ?? "",
+    summary: input.summary ?? "",
+    dates: input.dates ?? [],
+    tasks: input.tasks ?? [],
+    people: input.people ?? [],
+    organizations: input.organizations ?? [],
+    amounts: input.amounts ?? [],
+    locations: input.locations ?? [],
+    keyTopics: input.keyTopics ?? [],
+    detectedText: input.detectedText ?? "",
+    suggestedCategory: input.suggestedCategory ?? "",
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -90,38 +160,91 @@ export async function POST(req: NextRequest) {
   }
   const file = formData.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "No file provided." }, { status: 400 });
-  if (!ALLOWED_TYPES.includes(file.type)) return NextResponse.json({ error: "Unsupported file type — PDF, image, or plain text only." }, { status: 400 });
-  if (file.size > MAX_SIZE_BYTES) return NextResponse.json({ error: "That file is too large (15MB max)." }, { status: 400 });
+  if (!(ALLOWED_TYPES as readonly string[]).includes(file.type)) {
+    return NextResponse.json({ error: "This file type isn't supported yet — try a PDF, DOCX, image, or plain text file." }, { status: 400 });
+  }
+  if (file.size > MAX_SIZE_BYTES) return NextResponse.json({ error: "The document is too large to process (15MB max)." }, { status: 400 });
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const base64 = buffer.toString("base64");
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100) || "upload";
   const storagePath = `${user.id}/${crypto.randomUUID()}-${safeName}`;
 
+  let docxText: string | null = null;
+  if (file.type === DOCX_MIME_TYPE) {
+    try {
+      const result = await mammoth.extractRawText({ buffer });
+      docxText = result.value.trim();
+    } catch (err) {
+      console.error("[documents/upload] docx extraction failed:", err);
+    }
+  }
+
   const { error: uploadError } = await client.storage.from("documents").upload(storagePath, buffer, { contentType: file.type });
-  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
+  if (uploadError) return NextResponse.json({ error: "Couldn't store that file. Try again shortly." }, { status: 500 });
 
   const { data: docRow, error: insertError } = await client
     .from("documents")
-    .insert({ user_id: user.id, name: file.name, storage_path: storagePath, mime_type: file.type, size_bytes: file.size })
+    .insert({ user_id: user.id, name: file.name, storage_path: storagePath, mime_type: file.type, size_bytes: file.size, processing_status: "analyzing" })
     .select("*")
     .single();
   if (insertError) {
     await client.storage.from("documents").remove([storagePath]);
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    return NextResponse.json({ error: "Couldn't save that document. Try again shortly." }, { status: 500 });
   }
 
-  let analysisError = false;
-  let summary = "";
-  let extractedDates: ExtractedDate[] = [];
+  let analysis: AnalysisResult | null = null;
+  let processingStatus: "ready" | "error" = "ready";
+  let processingError: string | null = null;
+
   try {
-    const analyzed = await analyzeDocument(file.type, base64, file.name);
-    summary = analyzed.summary;
-    extractedDates = analyzed.extractedDates;
-    await client.from("documents").update({ summary, extracted_dates: extractedDates }).eq("id", docRow.id);
+    analysis = await analyzeDocument(file.type, base64, file.name, docxText);
   } catch (err) {
     console.error("[documents/upload] analysis failed:", err);
-    analysisError = true;
+    processingStatus = "error";
+    processingError = "We couldn't read this document. You can try uploading it again.";
+  }
+
+  const extractedText = docxText || (file.type === "text/plain" || file.type === "text/markdown" ? Buffer.from(base64, "base64").toString("utf-8").slice(0, 20000) : analysis?.detectedText || null);
+
+  const { error: updateError } = await client
+    .from("documents")
+    .update({
+      processing_status: processingStatus,
+      processing_error: processingError,
+      summary: analysis?.summary ?? "",
+      document_type: analysis?.documentType || null,
+      extracted_text: extractedText,
+      people: analysis?.people ?? [],
+      organizations: analysis?.organizations ?? [],
+      amounts: analysis?.amounts ?? [],
+      locations: analysis?.locations ?? [],
+      key_topics: analysis?.keyTopics ?? [],
+      suggested_category: analysis?.suggestedCategory || null,
+    })
+    .eq("id", docRow.id);
+  if (updateError) console.error("[documents/upload] failed to persist analysis:", updateError);
+
+  let dateRows: { id: string; label: string; date: string; kind: string; description: string }[] = [];
+  let taskRows: { id: string; title: string; description: string }[] = [];
+  if (analysis?.dates.length) {
+    const { data } = await client
+      .from("document_dates")
+      .insert(analysis.dates.map((d) => ({ user_id: user.id, document_id: docRow.id, label: d.label, date: d.date, kind: d.kind ?? "other", description: d.description ?? "" })))
+      .select("*");
+    dateRows = data ?? [];
+  }
+  if (analysis?.tasks.length) {
+    const { data } = await client
+      .from("document_tasks")
+      .insert(analysis.tasks.map((t) => ({ user_id: user.id, document_id: docRow.id, title: t.title, description: t.description ?? "" })))
+      .select("*");
+    taskRows = data ?? [];
+  }
+
+  await client.from("document_activity").insert({ user_id: user.id, document_id: docRow.id, kind: "uploaded", description: `Uploaded "${file.name}"` });
+  if (processingStatus === "ready") {
+    await client.from("document_activity").insert({ user_id: user.id, document_id: docRow.id, kind: "analyzed", description: "AI analysis completed" });
   }
 
   return NextResponse.json({
@@ -131,10 +254,22 @@ export async function POST(req: NextRequest) {
       storagePath: docRow.storage_path,
       mimeType: docRow.mime_type,
       sizeBytes: docRow.size_bytes,
-      summary,
-      extractedDates,
+      summary: analysis?.summary ?? "",
       createdAt: docRow.created_at,
+      tags: [],
+      starred: false,
+      processingStatus,
+      processingError: processingError ?? undefined,
+      extractedText: extractedText ?? undefined,
+      documentType: analysis?.documentType || undefined,
+      people: analysis?.people ?? [],
+      organizations: analysis?.organizations ?? [],
+      amounts: analysis?.amounts ?? [],
+      locations: analysis?.locations ?? [],
+      keyTopics: analysis?.keyTopics ?? [],
+      suggestedCategory: analysis?.suggestedCategory || undefined,
     },
-    analysisError,
+    dates: dateRows.map((d) => ({ id: d.id, documentId: docRow.id, label: d.label, date: d.date, kind: d.kind, description: d.description, createdAt: docRow.created_at })),
+    tasks: taskRows.map((t) => ({ id: t.id, documentId: docRow.id, title: t.title, description: t.description, createdAt: docRow.created_at })),
   });
 }

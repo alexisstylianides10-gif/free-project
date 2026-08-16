@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { AppNotification, CalendarEvent, FocusSession, Goal, GoalAction, GoalActionLog, GoalMilestone, Profile, Routine, RoutineStep, ShoppingItem, ShoppingList, StudentProfile, Subject, Task } from "./types";
+import { AppNotification, CalendarEvent, Document, DocumentCollection, DocumentDate, DocumentTask, FocusSession, Goal, GoalAction, GoalActionLog, GoalMilestone, Profile, Routine, RoutineStep, ShoppingItem, ShoppingList, StudentProfile, Subject, Task } from "./types";
 import { newId } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
@@ -30,6 +30,10 @@ interface AlxioumState {
   goalActionLogs: GoalActionLog[];
   routines: Routine[];
   routineSteps: RoutineStep[];
+  documents: Document[];
+  documentCollections: DocumentCollection[];
+  documentDates: DocumentDate[];
+  documentTasks: DocumentTask[];
   commandOpen: boolean;
 
   authStatus: AuthStatus;
@@ -93,6 +97,15 @@ interface AlxioumState {
   toggleRoutineStep: (id: string) => void;
   deleteRoutineStep: (id: string) => void;
   moveRoutineStep: (id: string, direction: "up" | "down") => void;
+
+  uploadDocument: (file: File) => Promise<{ document: Document | null; error?: string }>;
+  toggleStarDocument: (id: string) => void;
+  setDocumentCategory: (id: string, category: string | undefined) => void;
+  setDocumentTags: (id: string, tags: string[]) => void;
+  setDocumentCollection: (id: string, collectionId: string | undefined) => void;
+  deleteDocument: (id: string) => void;
+  addDocumentCollection: (name: string) => Promise<DocumentCollection | null>;
+  deleteDocumentCollection: (id: string) => void;
 }
 
 function reportSyncError(context: string, err: unknown) {
@@ -102,6 +115,11 @@ function reportSyncError(context: string, err: unknown) {
 /** Best-effort — a missed activity row must never block the mutation itself. */
 function logGoalActivity(userId: string, goalId: string, kind: string, description: string) {
   db.insertGoalActivityRow(userId, goalId, kind, description).catch((e) => reportSyncError("log goal activity", e));
+}
+
+/** Best-effort — mirrors logGoalActivity. */
+function logDocumentActivity(userId: string, documentId: string, kind: string, description: string) {
+  db.insertDocumentActivityRow(userId, documentId, kind, description).catch((e) => reportSyncError("log document activity", e));
 }
 
 export const useAlxioum = create<AlxioumState>((set, get) => {
@@ -129,6 +147,10 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         goalActionLogs,
         routines,
         routineSteps,
+        documents,
+        documentCollections,
+        documentDates,
+        documentTasks,
       ] = await Promise.all([
         db.fetchProfile(userId),
         db.fetchTasks(userId),
@@ -145,6 +167,10 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         db.fetchGoalActionLogs(userId),
         db.fetchRoutines(userId),
         db.fetchRoutineSteps(userId),
+        db.fetchDocuments(userId),
+        db.fetchDocumentCollections(userId),
+        db.fetchDocumentDates(userId),
+        db.fetchDocumentTasks(userId),
       ]);
       set({
         profile:
@@ -178,6 +204,10 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         goalActionLogs,
         routines,
         routineSteps,
+        documents,
+        documentCollections,
+        documentDates,
+        documentTasks,
         dataLoading: false,
         hydrated: true,
       });
@@ -204,6 +234,10 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     goalActionLogs: [],
     routines: [],
     routineSteps: [],
+    documents: [],
+    documentCollections: [],
+    documentDates: [],
+    documentTasks: [],
     commandOpen: false,
 
     authStatus: backendConfigured ? "checking" : "signed_out",
@@ -253,6 +287,10 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
             goalActionLogs: [],
             routines: [],
             routineSteps: [],
+            documents: [],
+            documentCollections: [],
+            documentDates: [],
+            documentTasks: [],
           });
           return;
         }
@@ -316,6 +354,10 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         goalActionLogs: [],
         routines: [],
         routineSteps: [],
+        documents: [],
+        documentCollections: [],
+        documentDates: [],
+        documentTasks: [],
       });
     },
 
@@ -697,6 +739,95 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         db.updateRoutineStepRow(current.id, { sortOrder: bOrder }).catch((e) => reportSyncError("reorder routine step", e));
         db.updateRoutineStepRow(other.id, { sortOrder: aOrder }).catch((e) => reportSyncError("reorder routine step", e));
       }
+    },
+
+    uploadDocument: async (file) => {
+      const userId = synced();
+      if (!userId) return { document: null, error: "Your session expired. Please sign in again." };
+      try {
+        const token = await get().getAccessToken();
+        if (!token) return { document: null, error: "Your session expired. Please sign in again." };
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/documents/upload", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
+        const json = await res.json();
+        if (!res.ok) return { document: null, error: json.error ?? "Couldn't upload that file." };
+        const document = json.document as Document;
+        const dates = (json.dates ?? []) as DocumentDate[];
+        const tasksFound = (json.tasks ?? []) as DocumentTask[];
+        set((s) => ({
+          documents: [document, ...s.documents],
+          documentDates: [...s.documentDates, ...dates],
+          documentTasks: [...s.documentTasks, ...tasksFound],
+        }));
+        return { document };
+      } catch (e) {
+        reportSyncError("upload document", e);
+        return { document: null, error: "Couldn't upload that file." };
+      }
+    },
+
+    toggleStarDocument: (id) => {
+      const existing = get().documents.find((d) => d.id === id);
+      if (!existing) return;
+      const starred = !existing.starred;
+      set((s) => ({ documents: s.documents.map((d) => (d.id === id ? { ...d, starred } : d)) }));
+      const userId = synced();
+      if (userId) {
+        db.updateDocumentRow(id, { starred }).catch((e) => reportSyncError("toggle star document", e));
+        logDocumentActivity(userId, id, starred ? "starred" : "unstarred", starred ? "Starred this document" : "Unstarred this document");
+      }
+    },
+
+    setDocumentCategory: (id, category) => {
+      set((s) => ({ documents: s.documents.map((d) => (d.id === id ? { ...d, category } : d)) }));
+      const userId = synced();
+      if (userId) {
+        db.updateDocumentRow(id, { category }).catch((e) => reportSyncError("set document category", e));
+        logDocumentActivity(userId, id, "category_changed", category ? `Set category to "${category}"` : "Cleared category");
+      }
+    },
+
+    setDocumentTags: (id, tags) => {
+      set((s) => ({ documents: s.documents.map((d) => (d.id === id ? { ...d, tags } : d)) }));
+      if (synced()) db.updateDocumentRow(id, { tags }).catch((e) => reportSyncError("set document tags", e));
+    },
+
+    setDocumentCollection: (id, collectionId) => {
+      set((s) => ({ documents: s.documents.map((d) => (d.id === id ? { ...d, collectionId } : d)) }));
+      if (synced()) db.updateDocumentRow(id, { collectionId }).catch((e) => reportSyncError("set document collection", e));
+    },
+
+    deleteDocument: (id) => {
+      const existing = get().documents.find((d) => d.id === id);
+      if (!existing) return;
+      set((s) => ({
+        documents: s.documents.filter((d) => d.id !== id),
+        documentDates: s.documentDates.filter((d) => d.documentId !== id),
+        documentTasks: s.documentTasks.filter((t) => t.documentId !== id),
+      }));
+      if (synced()) db.deleteDocumentRow(id, existing.storagePath).catch((e) => reportSyncError("delete document", e));
+    },
+
+    addDocumentCollection: async (name) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertDocumentCollection(userId, name);
+        set((s) => ({ documentCollections: [...s.documentCollections, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add document collection", e);
+        return null;
+      }
+    },
+
+    deleteDocumentCollection: (id) => {
+      set((s) => ({
+        documentCollections: s.documentCollections.filter((c) => c.id !== id),
+        documents: s.documents.map((d) => (d.collectionId === id ? { ...d, collectionId: undefined } : d)),
+      }));
+      if (synced()) db.deleteDocumentCollectionRow(id).catch((e) => reportSyncError("delete document collection", e));
     },
   };
 });

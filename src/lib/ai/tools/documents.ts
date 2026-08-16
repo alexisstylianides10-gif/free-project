@@ -5,50 +5,122 @@ interface DocumentRow {
   name: string;
   mime_type: string;
   summary: string;
-  extracted_dates: { label: string; date: string }[];
   created_at: string;
+  category: string | null;
+  tags: string[];
+  starred: boolean;
+  document_type: string | null;
+  people: string[];
+  organizations: string[];
+  amounts: { label: string; value: string; currency?: string }[];
+  locations: string[];
+  key_topics: string[];
+  storage_path: string;
 }
 
-export const documentsSearch: ToolSpec<{ query?: string }> = {
+function documentSummary(d: Pick<DocumentRow, "id" | "name" | "mime_type" | "summary" | "created_at" | "category" | "tags" | "starred">) {
+  return {
+    id: d.id,
+    name: d.name,
+    mimeType: d.mime_type,
+    summary: d.summary,
+    createdAt: d.created_at,
+    category: d.category,
+    tags: d.tags,
+    starred: d.starred,
+  };
+}
+
+export const documentsSearch: ToolSpec<{ query?: string; category?: string; starredOnly?: boolean }> = {
   name: "documents_search",
-  description: "List the user's uploaded documents, optionally filtered by filename. Use this to find a document before documents_read.",
-  inputSchema: { type: "object", properties: { query: { type: "string" } } },
+  description: "Search the user's uploaded documents by name, summary, extracted text, tags, or category. Use this to find a document before documents_read or documents_delete.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "Free-text search — matches name, summary, extracted text, tags, and category." },
+      category: { type: "string" },
+      starredOnly: { type: "boolean" },
+    },
+  },
   consequential: false,
   execute: async (ctx, input) => {
-    let q = ctx.supabase.from("documents").select("id,name,mime_type,summary,created_at").eq("user_id", ctx.userId);
-    if (input.query) q = q.ilike("name", `%${input.query}%`);
+    if (input.query?.trim()) {
+      const { data, error } = await ctx.supabase.rpc("search_documents", { p_user_id: ctx.userId, p_query: input.query.trim(), p_limit: 20 });
+      if (error) return { ok: false, error: error.message };
+      let rows = data as DocumentRow[];
+      if (input.category) rows = rows.filter((d) => d.category === input.category);
+      if (input.starredOnly) rows = rows.filter((d) => d.starred);
+      return { ok: true, result: { documents: rows.map(documentSummary) } };
+    }
+    let q = ctx.supabase.from("documents").select("id,name,mime_type,summary,created_at,category,tags,starred").eq("user_id", ctx.userId);
+    if (input.category) q = q.eq("category", input.category);
+    if (input.starredOnly) q = q.eq("starred", true);
     const { data, error } = await q.order("created_at", { ascending: false }).limit(20);
     if (error) return { ok: false, error: error.message };
-    return {
-      ok: true,
-      result: {
-        documents: (data as Omit<DocumentRow, "extracted_dates">[]).map((d) => ({ id: d.id, name: d.name, mimeType: d.mime_type, summary: d.summary, createdAt: d.created_at })),
-      },
-    };
+    return { ok: true, result: { documents: (data as Omit<DocumentRow, "document_type" | "people" | "organizations" | "amounts" | "locations" | "key_topics" | "storage_path">[]).map(documentSummary) } };
   },
 };
 
 export const documentsRead: ToolSpec<{ documentId: string }> = {
   name: "documents_read",
   description:
-    "Get the full stored summary and extracted dates for one document (use documents_search first to resolve the id). Use the returned summary/dates to answer the user's question directly, or to propose a tasks_create / calendar_create action for a deadline found in it.",
+    "Get the full stored analysis for one document — summary, extracted dates, extracted tasks, and any people/organizations/amounts/locations/topics found (use documents_search first to resolve the id). Use this to answer the user's question directly, or to propose a documents_add_dates_to_calendar / documents_create_tasks action.",
   inputSchema: { type: "object", properties: { documentId: { type: "string" } }, required: ["documentId"] },
   consequential: false,
   execute: async (ctx, input) => {
     const { data, error } = await ctx.supabase
       .from("documents")
-      .select("id,name,mime_type,summary,extracted_dates,created_at")
+      .select("id,name,mime_type,summary,created_at,category,tags,starred,document_type,people,organizations,amounts,locations,key_topics")
       .eq("id", input.documentId)
       .eq("user_id", ctx.userId)
       .maybeSingle();
     if (error) return { ok: false, error: error.message };
     if (!data) return { ok: false, error: "I couldn't find that document." };
-    const row = data as DocumentRow;
+    const row = data as Omit<DocumentRow, "storage_path">;
+
+    const [{ data: dates }, { data: tasksFound }] = await Promise.all([
+      ctx.supabase.from("document_dates").select("id,label,date,kind,description").eq("document_id", row.id).eq("user_id", ctx.userId),
+      ctx.supabase.from("document_tasks").select("id,title,description").eq("document_id", row.id).eq("user_id", ctx.userId),
+    ]);
+
     return {
       ok: true,
-      result: { id: row.id, name: row.name, mimeType: row.mime_type, summary: row.summary, extractedDates: row.extracted_dates ?? [], createdAt: row.created_at },
+      result: {
+        ...documentSummary(row),
+        documentType: row.document_type,
+        people: row.people,
+        organizations: row.organizations,
+        amounts: row.amounts,
+        locations: row.locations,
+        keyTopics: row.key_topics,
+        dates: dates ?? [],
+        tasksFound: tasksFound ?? [],
+      },
     };
   },
 };
 
-export const documentTools = [documentsSearch, documentsRead];
+export const documentsDelete: ToolSpec<{ documentId: string }> = {
+  name: "documents_delete",
+  description: "Propose permanently deleting a document. Requires the exact documentId from documents_search.",
+  inputSchema: { type: "object", properties: { documentId: { type: "string" } }, required: ["documentId"] },
+  consequential: true,
+  action: "delete",
+  describe: async (ctx, input) => {
+    const { data, error } = await ctx.supabase.from("documents").select("id,name").eq("id", input.documentId).eq("user_id", ctx.userId).maybeSingle();
+    if (error) return { error: error.message };
+    if (!data) return { error: "I couldn't find that document — it may already be deleted." };
+    return { summary: `Delete "${data.name}"? This also removes its AI-generated index.` };
+  },
+  execute: async (ctx, input) => {
+    const { data, error } = await ctx.supabase.from("documents").select("id,name,storage_path").eq("id", input.documentId).eq("user_id", ctx.userId).maybeSingle();
+    if (error) return { ok: false, error: error.message };
+    if (!data) return { ok: false, error: "Document no longer exists." };
+    await ctx.supabase.storage.from("documents").remove([data.storage_path]);
+    const { error: deleteError } = await ctx.supabase.from("documents").delete().eq("id", input.documentId).eq("user_id", ctx.userId);
+    if (deleteError) return { ok: false, error: deleteError.message };
+    return { ok: true, result: { deleted: { id: data.id, name: data.name } } };
+  },
+};
+
+export const documentTools = [documentsSearch, documentsRead, documentsDelete];

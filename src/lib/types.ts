@@ -25,6 +25,8 @@ export interface Task {
   completedAt?: string;
   /** Set when this task was created from a goal's Quick Actions (Add task). */
   goalId?: string;
+  /** Set when this task was created from a document's extracted requirements. */
+  documentId?: string;
 }
 
 export type EventType = "school" | "health" | "social" | "study" | "work" | "personal" | "travel";
@@ -50,6 +52,8 @@ export interface CalendarEvent {
   googleEventId?: string;
   /** Set when this event was scheduled from a goal's Quick Actions (Schedule time). */
   linkedGoalId?: string;
+  /** Set when this event was created from a document's extracted dates. */
+  linkedDocumentId?: string;
 }
 
 export interface CalendarConnection {
@@ -301,10 +305,7 @@ export interface WeeklyReview {
   createdAt: string;
 }
 
-export interface ExtractedDate {
-  label: string;
-  date: string;
-}
+export type DocumentProcessingStatus = "uploading" | "processing" | "analyzing" | "ready" | "needs_review" | "error";
 
 export interface Document {
   id: string;
@@ -313,7 +314,68 @@ export interface Document {
   mimeType: string;
   sizeBytes: number;
   summary: string;
-  extractedDates: ExtractedDate[];
+  createdAt: string;
+  category?: string;
+  tags: string[];
+  starred: boolean;
+  collectionId?: string;
+  processingStatus: DocumentProcessingStatus;
+  processingError?: string;
+  extractedText?: string;
+  linkedGoalId?: string;
+  lastOpenedAt?: string;
+  /** Structured fields from AI analysis — only populated when genuinely present in the document. */
+  documentType?: string;
+  people: string[];
+  organizations: string[];
+  amounts: { label: string; value: string; currency?: string }[];
+  locations: string[];
+  keyTopics: string[];
+  suggestedCategory?: string;
+}
+
+export interface DocumentCollection {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
+export type DocumentDateKind = "deadline" | "event" | "other";
+
+export interface DocumentDate {
+  id: string;
+  documentId: string;
+  label: string;
+  date: string;
+  kind: DocumentDateKind;
+  description: string;
+  addedToCalendarEventId?: string;
+  createdAt: string;
+}
+
+export interface DocumentTask {
+  id: string;
+  documentId: string;
+  title: string;
+  description: string;
+  createdTaskId?: string;
+  createdAt: string;
+}
+
+export interface DocumentActivityEntry {
+  id: string;
+  documentId: string;
+  kind: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface DocumentChatMessage {
+  id: string;
+  documentId: string;
+  role: "user" | "assistant";
+  content: string;
+  sourcePage?: number;
   createdAt: string;
 }
 

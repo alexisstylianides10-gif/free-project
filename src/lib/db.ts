@@ -6,7 +6,12 @@ import {
   Conversation,
   FocusSession,
   Document,
-  ExtractedDate,
+  DocumentCollection,
+  DocumentDate,
+  DocumentDateKind,
+  DocumentTask,
+  DocumentActivityEntry,
+  DocumentChatMessage,
   Goal,
   GoalMilestone,
   GoalAction,
@@ -1112,8 +1117,23 @@ interface DocumentRow {
   mime_type: string;
   size_bytes: number;
   summary: string;
-  extracted_dates: ExtractedDate[];
   created_at: string;
+  category: string | null;
+  tags: string[];
+  starred: boolean;
+  collection_id: string | null;
+  processing_status: Document["processingStatus"];
+  processing_error: string | null;
+  extracted_text: string | null;
+  linked_goal_id: string | null;
+  last_opened_at: string | null;
+  document_type: string | null;
+  people: string[] | null;
+  organizations: string[] | null;
+  amounts: { label: string; value: string; currency?: string }[] | null;
+  locations: string[] | null;
+  key_topics: string[] | null;
+  suggested_category: string | null;
 }
 
 function documentFromRow(r: DocumentRow): Document {
@@ -1124,9 +1144,32 @@ function documentFromRow(r: DocumentRow): Document {
     mimeType: r.mime_type,
     sizeBytes: r.size_bytes,
     summary: r.summary,
-    extractedDates: r.extracted_dates ?? [],
     createdAt: r.created_at,
+    category: r.category ?? undefined,
+    tags: r.tags ?? [],
+    starred: r.starred ?? false,
+    collectionId: r.collection_id ?? undefined,
+    processingStatus: r.processing_status ?? "ready",
+    processingError: r.processing_error ?? undefined,
+    extractedText: r.extracted_text ?? undefined,
+    linkedGoalId: r.linked_goal_id ?? undefined,
+    lastOpenedAt: r.last_opened_at ?? undefined,
+    documentType: r.document_type ?? undefined,
+    people: r.people ?? [],
+    organizations: r.organizations ?? [],
+    amounts: r.amounts ?? [],
+    locations: r.locations ?? [],
+    keyTopics: r.key_topics ?? [],
+    suggestedCategory: r.suggested_category ?? undefined,
   };
+}
+
+export interface NewDocumentInput {
+  name: string;
+  storagePath: string;
+  mimeType: string;
+  sizeBytes: number;
+  processingStatus?: Document["processingStatus"];
 }
 
 export async function fetchDocuments(userId: string): Promise<Document[]> {
@@ -1135,27 +1178,271 @@ export async function fetchDocuments(userId: string): Promise<Document[]> {
   return (data as DocumentRow[]).map(documentFromRow);
 }
 
-export async function searchDocumentsByName(userId: string, query: string): Promise<Document[]> {
-  // Commas and parentheses are syntax in PostgREST's .or() filter string
-  // (condition separators / grouping) — strip them from free-typed search
-  // input so a query containing one doesn't silently mangle the filter.
-  const safeQuery = query.replace(/[,()]/g, " ").trim();
+export async function fetchDocument(userId: string, id: string): Promise<Document | null> {
+  const { data, error } = await client().from("documents").select("*").eq("user_id", userId).eq("id", id).maybeSingle();
+  if (error) throw error;
+  return data ? documentFromRow(data as DocumentRow) : null;
+}
+
+/**
+ * Real Postgres full-text search (ts_rank-ordered) — the single ranking
+ * source shared by the Head Agent's documents_search tool, the Command
+ * Palette's document search, and cross-document Q&A retrieval. No
+ * embeddings/pgvector; see search_documents() in the DB for the query.
+ */
+export async function searchDocuments(userId: string, query: string, limitCount = 20): Promise<Document[]> {
+  const safeQuery = query.trim();
   if (!safeQuery) return [];
-  const { data, error } = await client()
-    .from("documents")
-    .select("*")
-    .eq("user_id", userId)
-    .or(`name.ilike.%${safeQuery}%,summary.ilike.%${safeQuery}%`)
-    .order("created_at", { ascending: false })
-    .limit(5);
+  const { data, error } = await client().rpc("search_documents", { p_user_id: userId, p_query: safeQuery, p_limit: limitCount });
   if (error) throw error;
   return (data as DocumentRow[]).map(documentFromRow);
+}
+
+export async function insertDocumentRow(userId: string, doc: NewDocumentInput): Promise<Document> {
+  const { data, error } = await client()
+    .from("documents")
+    .insert({
+      user_id: userId,
+      name: doc.name,
+      storage_path: doc.storagePath,
+      mime_type: doc.mimeType,
+      size_bytes: doc.sizeBytes,
+      processing_status: doc.processingStatus ?? "analyzing",
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return documentFromRow(data as DocumentRow);
+}
+
+export async function updateDocumentRow(id: string, patch: Partial<Document>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.summary !== undefined) row.summary = patch.summary;
+  if (patch.category !== undefined) row.category = patch.category;
+  if (patch.tags !== undefined) row.tags = patch.tags;
+  if (patch.starred !== undefined) row.starred = patch.starred;
+  if (patch.collectionId !== undefined) row.collection_id = patch.collectionId;
+  if (patch.processingStatus !== undefined) row.processing_status = patch.processingStatus;
+  if (patch.processingError !== undefined) row.processing_error = patch.processingError;
+  if (patch.extractedText !== undefined) row.extracted_text = patch.extractedText;
+  if (patch.linkedGoalId !== undefined) row.linked_goal_id = patch.linkedGoalId;
+  if (patch.lastOpenedAt !== undefined) row.last_opened_at = patch.lastOpenedAt;
+  if (patch.documentType !== undefined) row.document_type = patch.documentType;
+  if (patch.people !== undefined) row.people = patch.people;
+  if (patch.organizations !== undefined) row.organizations = patch.organizations;
+  if (patch.amounts !== undefined) row.amounts = patch.amounts;
+  if (patch.locations !== undefined) row.locations = patch.locations;
+  if (patch.keyTopics !== undefined) row.key_topics = patch.keyTopics;
+  if (patch.suggestedCategory !== undefined) row.suggested_category = patch.suggestedCategory;
+  const { error } = await client().from("documents").update(row).eq("id", id);
+  if (error) throw error;
 }
 
 export async function deleteDocumentRow(id: string, storagePath: string): Promise<void> {
   await client().storage.from("documents").remove([storagePath]);
   const { error } = await client().from("documents").delete().eq("id", id);
   if (error) throw error;
+}
+
+/** Short-lived signed URL for previewing/downloading a stored document — fetch per page-view, never persist. */
+export async function getDocumentSignedUrl(storagePath: string, expiresInSeconds = 3 * 60 * 60): Promise<string | null> {
+  const { data, error } = await client().storage.from("documents").createSignedUrl(storagePath, expiresInSeconds);
+  if (error) throw error;
+  return data?.signedUrl ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// document collections (flat — no nested folders)
+// ---------------------------------------------------------------------------
+
+interface DocumentCollectionRow {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+function documentCollectionFromRow(r: DocumentCollectionRow): DocumentCollection {
+  return { id: r.id, name: r.name, createdAt: r.created_at };
+}
+
+export async function fetchDocumentCollections(userId: string): Promise<DocumentCollection[]> {
+  const { data, error } = await client().from("document_collections").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as DocumentCollectionRow[]).map(documentCollectionFromRow);
+}
+
+export async function insertDocumentCollection(userId: string, name: string): Promise<DocumentCollection> {
+  const { data, error } = await client().from("document_collections").insert({ user_id: userId, name }).select("*").single();
+  if (error) throw error;
+  return documentCollectionFromRow(data as DocumentCollectionRow);
+}
+
+export async function deleteDocumentCollectionRow(id: string): Promise<void> {
+  const { error } = await client().from("document_collections").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// document dates / document tasks (extracted at analysis time — real child
+// rows so each item can later get its own mutable back-reference)
+// ---------------------------------------------------------------------------
+
+interface DocumentDateRow {
+  id: string;
+  document_id: string;
+  label: string;
+  date: string;
+  kind: DocumentDateKind;
+  description: string;
+  added_to_calendar_event_id: string | null;
+  created_at: string;
+}
+
+function documentDateFromRow(r: DocumentDateRow): DocumentDate {
+  return {
+    id: r.id,
+    documentId: r.document_id,
+    label: r.label,
+    date: r.date,
+    kind: r.kind,
+    description: r.description,
+    addedToCalendarEventId: r.added_to_calendar_event_id ?? undefined,
+    createdAt: r.created_at,
+  };
+}
+
+export async function fetchDocumentDates(userId: string): Promise<DocumentDate[]> {
+  const { data, error } = await client().from("document_dates").select("*").eq("user_id", userId).order("date", { ascending: true });
+  if (error) throw error;
+  return (data as DocumentDateRow[]).map(documentDateFromRow);
+}
+
+export async function insertDocumentDateRow(
+  userId: string,
+  date: { documentId: string; label: string; date: string; kind?: DocumentDateKind; description?: string }
+): Promise<DocumentDate> {
+  const { data, error } = await client()
+    .from("document_dates")
+    .insert({ user_id: userId, document_id: date.documentId, label: date.label, date: date.date, kind: date.kind ?? "other", description: date.description ?? "" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return documentDateFromRow(data as DocumentDateRow);
+}
+
+export async function updateDocumentDateRow(id: string, patch: { addedToCalendarEventId?: string }): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.addedToCalendarEventId !== undefined) row.added_to_calendar_event_id = patch.addedToCalendarEventId;
+  const { error } = await client().from("document_dates").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteDocumentDateRow(id: string): Promise<void> {
+  const { error } = await client().from("document_dates").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface DocumentTaskRow {
+  id: string;
+  document_id: string;
+  title: string;
+  description: string;
+  created_task_id: string | null;
+  created_at: string;
+}
+
+function documentTaskFromRow(r: DocumentTaskRow): DocumentTask {
+  return { id: r.id, documentId: r.document_id, title: r.title, description: r.description, createdTaskId: r.created_task_id ?? undefined, createdAt: r.created_at };
+}
+
+export async function fetchDocumentTasks(userId: string): Promise<DocumentTask[]> {
+  const { data, error } = await client().from("document_tasks").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as DocumentTaskRow[]).map(documentTaskFromRow);
+}
+
+export async function insertDocumentTaskRow(userId: string, task: { documentId: string; title: string; description?: string }): Promise<DocumentTask> {
+  const { data, error } = await client()
+    .from("document_tasks")
+    .insert({ user_id: userId, document_id: task.documentId, title: task.title, description: task.description ?? "" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return documentTaskFromRow(data as DocumentTaskRow);
+}
+
+export async function updateDocumentTaskRow(id: string, patch: { createdTaskId?: string }): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.createdTaskId !== undefined) row.created_task_id = patch.createdTaskId;
+  const { error } = await client().from("document_tasks").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteDocumentTaskRow(id: string): Promise<void> {
+  const { error } = await client().from("document_tasks").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// document activity (purpose-built feed — mirrors goal_activity)
+// ---------------------------------------------------------------------------
+
+interface DocumentActivityRow {
+  id: string;
+  document_id: string;
+  kind: string;
+  description: string;
+  created_at: string;
+}
+
+function documentActivityFromRow(r: DocumentActivityRow): DocumentActivityEntry {
+  return { id: r.id, documentId: r.document_id, kind: r.kind, description: r.description, createdAt: r.created_at };
+}
+
+export async function fetchDocumentActivity(userId: string, documentId: string, limitCount = 30): Promise<DocumentActivityEntry[]> {
+  const { data, error } = await client()
+    .from("document_activity")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("document_id", documentId)
+    .order("created_at", { ascending: false })
+    .limit(limitCount);
+  if (error) throw error;
+  return (data as DocumentActivityRow[]).map(documentActivityFromRow);
+}
+
+export async function insertDocumentActivityRow(userId: string, documentId: string, kind: string, description: string): Promise<void> {
+  const { error } = await client().from("document_activity").insert({ user_id: userId, document_id: documentId, kind, description });
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// document chat messages (per-document Q&A history — write support in Phase B2)
+// ---------------------------------------------------------------------------
+
+interface DocumentChatMessageRow {
+  id: string;
+  document_id: string;
+  role: DocumentChatMessage["role"];
+  content: string;
+  source_page: number | null;
+  created_at: string;
+}
+
+function documentChatMessageFromRow(r: DocumentChatMessageRow): DocumentChatMessage {
+  return { id: r.id, documentId: r.document_id, role: r.role, content: r.content, sourcePage: r.source_page ?? undefined, createdAt: r.created_at };
+}
+
+export async function fetchDocumentChatMessages(userId: string, documentId: string): Promise<DocumentChatMessage[]> {
+  const { data, error } = await client()
+    .from("document_chat_messages")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("document_id", documentId)
+    .order("created_at", { ascending: true })
+    .limit(100);
+  if (error) throw error;
+  return (data as DocumentChatMessageRow[]).map(documentChatMessageFromRow);
 }
 
 // ---------------------------------------------------------------------------
@@ -1228,6 +1515,9 @@ export async function exportAllUserData(userId: string) {
     routines,
     routineSteps,
     documents,
+    documentCollections,
+    documentDates,
+    documentTasks,
     studyNotes,
   ] = await Promise.all([
     fetchProfile(userId),
@@ -1242,6 +1532,9 @@ export async function exportAllUserData(userId: string) {
     fetchRoutines(userId),
     fetchRoutineSteps(userId),
     fetchDocuments(userId),
+    fetchDocumentCollections(userId),
+    fetchDocumentDates(userId),
+    fetchDocumentTasks(userId),
     fetchStudyNotes(userId),
   ]);
   return {
@@ -1257,6 +1550,9 @@ export async function exportAllUserData(userId: string) {
     routines,
     routineSteps,
     documents,
+    documentCollections,
+    documentDates,
+    documentTasks,
     studyNotes,
   };
 }
@@ -1288,7 +1584,12 @@ export async function deleteAllUserContent(userId: string): Promise<void> {
     "routine_steps",
     "routines",
     "weekly_reviews",
+    "document_dates",
+    "document_tasks",
+    "document_activity",
+    "document_chat_messages",
     "documents",
+    "document_collections",
     "study_notes",
   ];
   const { data: storedFiles } = await c.storage.from("documents").list(userId);

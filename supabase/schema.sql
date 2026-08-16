@@ -60,6 +60,7 @@ create table if not exists public.tasks (
   category text not null default 'personal',
   project text,
   goal_id uuid,
+  document_id uuid,
   recurring text not null default 'none' check (recurring in ('daily', 'weekly', 'none')),
   subtasks jsonb not null default '[]',
   ai_context text,
@@ -86,6 +87,7 @@ create table if not exists public.events (
   recurrence_until date,
   linked_task_id uuid,
   linked_goal_id uuid,
+  linked_document_id uuid,
   ai_generated boolean not null default false,
   movable boolean not null default true,
   source text not null default 'alxioum' check (source in ('alxioum', 'google')),
@@ -409,6 +411,13 @@ create policy "documents_storage_delete_own" on storage.objects
   for delete to authenticated
   using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
 
+create table if not exists public.document_collections (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  name text not null,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.documents (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -417,9 +426,125 @@ create table if not exists public.documents (
   mime_type text not null,
   size_bytes int not null default 0,
   summary text not null default '',
-  extracted_dates jsonb not null default '[]',
+  created_at timestamptz not null default now(),
+  category text,
+  tags text[] not null default '{}',
+  starred boolean not null default false,
+  collection_id uuid references public.document_collections (id) on delete set null,
+  processing_status text not null default 'ready'
+    check (processing_status in ('uploading', 'processing', 'analyzing', 'ready', 'needs_review', 'error')),
+  processing_error text,
+  extracted_text text,
+  linked_goal_id uuid references public.goals (id) on delete set null,
+  last_opened_at timestamptz,
+  document_type text,
+  people text[] not null default '{}',
+  organizations text[] not null default '{}',
+  amounts jsonb not null default '[]',
+  locations text[] not null default '{}',
+  key_topics text[] not null default '{}',
+  suggested_category text,
+  -- Kept in sync by documents_search_vector_trigger below — to_tsvector()
+  -- isn't IMMUTABLE per Postgres's categorization even with an explicit
+  -- config, so this can't be a GENERATED column.
+  search_vector tsvector
+);
+
+create or replace function public.documents_search_vector_update() returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  new.search_vector :=
+    to_tsvector(
+      'english',
+      coalesce(new.name, '') || ' ' ||
+      coalesce(new.summary, '') || ' ' ||
+      coalesce(new.extracted_text, '') || ' ' ||
+      coalesce(array_to_string(new.tags, ' '), '') || ' ' ||
+      coalesce(new.category, '')
+    );
+  return new;
+end;
+$$;
+
+drop trigger if exists documents_search_vector_trigger on public.documents;
+create trigger documents_search_vector_trigger
+  before insert or update on public.documents
+  for each row execute function public.documents_search_vector_update();
+
+create index if not exists documents_search_vector_idx on public.documents using gin (search_vector);
+
+-- Single shared full-text ranking function — used by the Head Agent's
+-- documents_search tool, the Command Palette's document search, and (Phase
+-- D) cross-document Q&A retrieval. SECURITY INVOKER + explicit user_id
+-- filter, so RLS on the caller's own session still applies.
+create or replace function public.search_documents(p_user_id uuid, p_query text, p_limit int default 20)
+returns setof public.documents
+language sql
+security invoker
+set search_path = public, pg_temp
+stable
+as $$
+  select *
+  from public.documents
+  where user_id = p_user_id
+    and search_vector @@ websearch_to_tsquery('english', p_query)
+  order by ts_rank(search_vector, websearch_to_tsquery('english', p_query)) desc, created_at desc
+  limit p_limit;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- document_dates / document_tasks (extracted at analysis time — real child
+-- rows, not a jsonb array, because each item later gets its own mutable
+-- back-reference — added_to_calendar_event_id / created_task_id — written
+-- asynchronously by a confirm action distinct from the one that created it)
+-- ---------------------------------------------------------------------------
+create table if not exists public.document_dates (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  document_id uuid not null references public.documents (id) on delete cascade,
+  label text not null,
+  date date not null,
+  kind text not null default 'other' check (kind in ('deadline', 'event', 'other')),
+  description text not null default '',
+  added_to_calendar_event_id uuid,
   created_at timestamptz not null default now()
 );
+
+create table if not exists public.document_tasks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  document_id uuid not null references public.documents (id) on delete cascade,
+  title text not null,
+  description text not null default '',
+  created_task_id uuid,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.document_activity (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  document_id uuid not null references public.documents (id) on delete cascade,
+  kind text not null,
+  description text not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.document_chat_messages (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  document_id uuid not null references public.documents (id) on delete cascade,
+  role text not null check (role in ('user', 'assistant')),
+  content text not null,
+  source_page int,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists document_dates_document_id_idx on public.document_dates (document_id);
+create index if not exists document_tasks_document_id_idx on public.document_tasks (document_id);
+create index if not exists document_activity_document_id_idx on public.document_activity (document_id);
+create index if not exists document_chat_messages_document_id_idx on public.document_chat_messages (document_id);
 
 -- ---------------------------------------------------------------------------
 -- waitlist (public marketing site sign-ups, pre-auth)
@@ -444,7 +569,9 @@ begin
       'subjects', 'focus_sessions', 'student_profiles', 'calendar_connections', 'waitlist',
       'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
       'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes',
-      'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages'
+      'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages',
+      'document_collections', 'document_dates', 'document_tasks',
+      'document_activity', 'document_chat_messages'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -514,7 +641,9 @@ begin
       'pending_actions', 'agent_actions', 'notifications',
       'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
       'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes',
-      'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages'
+      'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages',
+      'document_collections', 'document_dates', 'document_tasks',
+      'document_activity', 'document_chat_messages'
     ])
   loop
     execute format('drop policy if exists "%s_owner" on public.%I;', t, t);
