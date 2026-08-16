@@ -10,6 +10,7 @@ interface MemoryRow {
 
 export const memoryList: ToolSpec<{ activeOnly?: boolean }> = {
   name: "memory_list",
+  statusLabel: "Checking memory…",
   description: "List what Alxioum currently remembers about the user. Use this to answer 'what do you remember about me' or before deleting a memory.",
   inputSchema: { type: "object", properties: { activeOnly: { type: "boolean" } } },
   consequential: false,
@@ -25,6 +26,7 @@ export const memoryList: ToolSpec<{ activeOnly?: boolean }> = {
 
 export const memoryCreate: ToolSpec<{ category?: (typeof CATEGORIES)[number]; content: string; reason: string }> = {
   name: "memory_create",
+  statusLabel: "Saving to memory…",
   description:
     "Propose saving a new memory about the user. Only call this when the user explicitly asks you to remember something — never infer and silently save personal facts from casual conversation.",
   inputSchema: {
@@ -52,6 +54,7 @@ export const memoryCreate: ToolSpec<{ category?: (typeof CATEGORIES)[number]; co
 
 export const memoryDelete: ToolSpec<{ memoryId: string }> = {
   name: "memory_delete",
+  statusLabel: "Updating memory…",
   description: "Propose forgetting (deleting) a stored memory. Requires the exact memoryId from memory_list.",
   inputSchema: { type: "object", properties: { memoryId: { type: "string" } }, required: ["memoryId"] },
   consequential: true,

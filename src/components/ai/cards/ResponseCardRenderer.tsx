@@ -4,6 +4,7 @@ import { TaskListCard } from "./TaskListCard";
 import { GoalProgressCard } from "./GoalProgressCard";
 import { DocumentCard } from "./DocumentCard";
 import { ShoppingListCard } from "./ShoppingListCard";
+import { DailyBriefingCard } from "./DailyBriefingCard";
 
 export function ResponseCardRenderer({ card }: { card: ResponseCard }) {
   switch (card.type) {
@@ -17,6 +18,8 @@ export function ResponseCardRenderer({ card }: { card: ResponseCard }) {
       return <DocumentCard documents={card.documents} />;
     case "shoppingList":
       return <ShoppingListCard items={card.items} heading={card.heading} />;
+    case "dailyBriefing":
+      return <DailyBriefingCard briefing={card.briefing} />;
     default:
       return null;
   }

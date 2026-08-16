@@ -22,6 +22,7 @@ interface PlanEventInput {
 
 export const planOrganizeDay: ToolSpec<{ tasks?: PlanTaskInput[]; events?: PlanEventInput[] }> = {
   name: "plan_organize_day",
+  statusLabel: "Preparing your plan…",
   description:
     "Propose a combined plan that creates multiple tasks and/or schedules multiple calendar blocks in ONE confirmation — use this instead of calling tasks_create / calendar_create separately several times when the user is asking you to organize their day/week from a messy multi-part request (e.g. 'I have tennis at 6, need groceries, need to study, and my project is due Friday'). Before proposing this, gather real context first: call tasks_search, calendar_search, goals_search, and/or shopping_search as relevant, and pick event times that don't overlap what's already on the calendar.",
   inputSchema: {

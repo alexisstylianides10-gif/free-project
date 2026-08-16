@@ -46,6 +46,7 @@ function goalLabel(g: GoalRow): string {
 
 export const goalsSearch: ToolSpec<{ query?: string; completed?: boolean }> = {
   name: "goals_search",
+  statusLabel: "Checking your goals…",
   description: "Search the user's goals and their milestones. ALWAYS call this before goals_update_progress, goals_complete_milestone, or goals_delete to resolve exact ids.",
   inputSchema: {
     type: "object",
@@ -142,6 +143,7 @@ export const goalsCreate: ToolSpec<{
   measurementTarget?: number;
 }> = {
   name: "goals_create",
+  statusLabel: "Setting up your goal…",
   description:
     "Propose creating a new goal. When the goal is broad or long-term (e.g. 'learn Spanish', 'save €500'), break it into 3-6 concrete, sequential milestones and pass them in the milestones array — don't leave milestones empty for a vague goal. This is a fallback path — the primary way users create goals is the Goals tab's own guided flow, so only use this when the user is explicitly asking via chat.",
   inputSchema: {
@@ -203,6 +205,7 @@ export const goalsCreate: ToolSpec<{
 
 export const goalsUpdateProgress: ToolSpec<{ goalId: string; progress: number }> = {
   name: "goals_update_progress",
+  statusLabel: "Updating your goal…",
   description:
     "Propose updating a goal's progress percentage (0-100). Only use this when the user explicitly states their progress, or when it can be computed exactly from their completed milestones — never invent or guess a progress number.",
   inputSchema: {
@@ -236,6 +239,7 @@ export const goalsUpdateProgress: ToolSpec<{ goalId: string; progress: number }>
 
 export const goalsCompleteMilestone: ToolSpec<{ milestoneId: string }> = {
   name: "goals_complete_milestone",
+  statusLabel: "Updating your goal…",
   description: "Propose marking a goal milestone as done. Requires the exact milestoneId from goals_search.",
   inputSchema: { type: "object", properties: { milestoneId: { type: "string" } }, required: ["milestoneId"] },
   consequential: true,
@@ -277,6 +281,7 @@ export const goalsCompleteMilestone: ToolSpec<{ milestoneId: string }> = {
 
 export const goalsDelete: ToolSpec<{ goalId: string }> = {
   name: "goals_delete",
+  statusLabel: "Updating your goals…",
   description: "Propose deleting a goal and all its milestones. Requires the exact goalId from goals_search.",
   inputSchema: { type: "object", properties: { goalId: { type: "string" } }, required: ["goalId"] },
   consequential: true,

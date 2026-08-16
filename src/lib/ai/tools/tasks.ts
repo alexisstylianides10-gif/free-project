@@ -19,6 +19,7 @@ function taskLabel(t: TaskRow): string {
 
 export const tasksSearch: ToolSpec<{ query?: string; done?: boolean; dueBefore?: string; limit?: number }> = {
   name: "tasks_search",
+  statusLabel: "Checking your tasks…",
   description: "Search the user's tasks. ALWAYS call this before tasks_update, tasks_complete, or tasks_delete to resolve the exact taskId — never guess one.",
   inputSchema: {
     type: "object",
@@ -52,6 +53,7 @@ export const tasksCreate: ToolSpec<{
   description?: string;
 }> = {
   name: "tasks_create",
+  statusLabel: "Adding a task…",
   description: "Propose creating a new task.",
   inputSchema: {
     type: "object",
@@ -94,6 +96,7 @@ export const tasksCreate: ToolSpec<{
 
 export const tasksUpdate: ToolSpec<{ taskId: string; title?: string; dueDate?: string; priority?: (typeof PRIORITIES)[number] }> = {
   name: "tasks_update",
+  statusLabel: "Updating your tasks…",
   description: "Propose updating a task. Requires the exact taskId from tasks_search.",
   inputSchema: {
     type: "object",
@@ -127,6 +130,7 @@ export const tasksUpdate: ToolSpec<{ taskId: string; title?: string; dueDate?: s
 
 export const tasksComplete: ToolSpec<{ taskId: string }> = {
   name: "tasks_complete",
+  statusLabel: "Updating your tasks…",
   description: "Propose marking a task complete. Requires the exact taskId from tasks_search.",
   inputSchema: { type: "object", properties: { taskId: { type: "string" } }, required: ["taskId"] },
   consequential: true,
@@ -154,6 +158,7 @@ export const tasksComplete: ToolSpec<{ taskId: string }> = {
 
 export const tasksDelete: ToolSpec<{ taskId: string }> = {
   name: "tasks_delete",
+  statusLabel: "Updating your tasks…",
   description: "Propose deleting a task. Requires the exact taskId from tasks_search. There is no bulk-delete tool.",
   inputSchema: { type: "object", properties: { taskId: { type: "string" } }, required: ["taskId"] },
   consequential: true,

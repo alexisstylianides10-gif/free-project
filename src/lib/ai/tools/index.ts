@@ -10,6 +10,7 @@ import { focusTools } from "./focus";
 import { weeklyReviewTools } from "./weeklyReview";
 import { documentTools } from "./documents";
 import { planTools } from "./plan";
+import { chatTools } from "./chat";
 import type { ToolSpec } from "./types";
 
 /**
@@ -30,6 +31,7 @@ export const allTools: ToolSpec<Record<string, unknown>>[] = [
   ...weeklyReviewTools,
   ...documentTools,
   ...planTools,
+  ...chatTools,
 ] as ToolSpec<Record<string, unknown>>[];
 
 const byName = new Map(allTools.map((t) => [t.name, t]));

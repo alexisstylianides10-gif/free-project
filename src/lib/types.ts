@@ -122,6 +122,8 @@ export interface ChatMessage {
   resolvedAction?: ResolvedActionCard | null;
   /** Structured rendering data (event/task/goal/document/shopping cards) alongside the prose reply. */
   cards?: import("./ai/cards").ResponseCard[];
+  /** Clickable disambiguation options from chat_present_choices — clicking one sends its value as the next user message. Not persisted; only present on the just-returned turn. */
+  choices?: { label: string; value: string }[] | null;
   createdAt: string;
   /** Client-only, not persisted: local preview of an image attached to this message. */
   imagePreviewUrl?: string;

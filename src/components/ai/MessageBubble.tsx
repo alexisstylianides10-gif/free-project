@@ -15,16 +15,29 @@ const toolLabel: Record<string, string> = {
 
 // Tools whose results render as a dedicated card below — their pill badge
 // would just be redundant clutter above the same information.
-const CARD_MAPPED_TOOLS = new Set(["calendar_search", "calendar_create", "calendar_update", "tasks_search", "tasks_create", "goals_search", "documents_search", "documents_read", "shopping_search"]);
+const CARD_MAPPED_TOOLS = new Set([
+  "calendar_search",
+  "calendar_create",
+  "calendar_update",
+  "tasks_search",
+  "tasks_create",
+  "goals_search",
+  "documents_search",
+  "documents_read",
+  "shopping_search",
+  "daily_briefing_get",
+]);
 
 export function MessageBubble({
   message,
   onDecide,
   onUndo,
+  onChoiceSelect,
 }: {
   message: ChatMessage;
   onDecide: (messageId: string, pendingActionId: string, decision: "confirm" | "cancel") => Promise<void>;
   onUndo: (messageId: string) => Promise<void>;
+  onChoiceSelect: (value: string) => void;
 }) {
   const isUser = message.role === "user";
   const time = new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -64,6 +77,19 @@ export function MessageBubble({
         </div>
         {!isUser &&
           message.cards?.map((card, i) => <ResponseCardRenderer key={i} card={card} />)}
+        {!isUser && message.choices && message.choices.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {message.choices.map((c) => (
+              <button
+                key={c.value}
+                onClick={() => onChoiceSelect(c.value)}
+                className="rounded-full border border-accent/40 bg-accent-soft px-3 py-1.5 text-[12.5px] font-medium text-accent transition-colors hover:bg-accent/20"
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        )}
         {message.pendingAction && (
           <ConfirmationCard
             action={message.pendingAction}

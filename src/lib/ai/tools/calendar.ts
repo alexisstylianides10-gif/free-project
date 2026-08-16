@@ -44,6 +44,7 @@ function syncToGoogle(ctx: ToolContext, action: "create" | "update" | "delete", 
 
 export const calendarSearch: ToolSpec<{ query?: string; from?: string; to?: string; limit?: number }> = {
   name: "calendar_search",
+  statusLabel: "Checking your calendar…",
   description:
     "Search the user's calendar events by free-text query and/or date range. ALWAYS call this before calendar_update or calendar_delete to resolve which event(s) the user means — never guess an event id. Returns each match's id, which you must use for update/delete.",
   inputSchema: {
@@ -87,6 +88,7 @@ export const calendarCreate: ToolSpec<{
   recurrenceUntil?: string;
 }> = {
   name: "calendar_create",
+  statusLabel: "Adding to your calendar…",
   description: "Propose creating a new calendar event. Requires an explicit title, date (ISO), start time and end time (HH:mm, 24h) — ask the user for anything missing rather than guessing.",
   inputSchema: {
     type: "object",
@@ -151,6 +153,7 @@ export const calendarUpdate: ToolSpec<{
   notes?: string;
 }> = {
   name: "calendar_update",
+  statusLabel: "Updating your calendar…",
   description: "Propose updating an existing calendar event (e.g. moving its time). Requires the exact eventId from calendar_search — never invent one.",
   inputSchema: {
     type: "object",
@@ -194,6 +197,7 @@ export const calendarUpdate: ToolSpec<{
 
 export const calendarDelete: ToolSpec<{ eventId: string }> = {
   name: "calendar_delete",
+  statusLabel: "Updating your calendar…",
   description: "Propose deleting a calendar event. Requires the exact eventId from calendar_search. There is no bulk-delete tool — each event must be deleted individually and confirmed individually.",
   inputSchema: { type: "object", properties: { eventId: { type: "string" } }, required: ["eventId"] },
   consequential: true,

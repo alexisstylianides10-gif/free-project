@@ -41,6 +41,7 @@ async function findOrCreateList(ctx: { supabase: import("@supabase/supabase-js")
 
 export const shoppingSearch: ToolSpec<{ listName?: string; done?: boolean }> = {
   name: "shopping_search",
+  statusLabel: "Checking your shopping list…",
   description:
     "List the user's shopping lists and items, optionally filtered by list name or done state. Use this to answer 'what do I still need to buy' (done: false) and ALWAYS call it before shopping_complete_item or shopping_remove_item to resolve the exact itemId.",
   inputSchema: {
@@ -80,6 +81,7 @@ export const shoppingAddItem: ToolSpec<{
   listKind?: "grocery" | "general" | "wishlist";
 }> = {
   name: "shopping_add_item",
+  statusLabel: "Adding to your shopping list…",
   description:
     "Propose adding one or more items to a shopping list. If listName isn't given or doesn't match an existing list, a new list is created (e.g. 'grocery list for tacos'). Always infer a sensible category for each item when the user doesn't give one (e.g. Dairy, Produce, Meat, Bakery, Household, Other) so the list groups naturally.",
   inputSchema: {
@@ -129,6 +131,7 @@ export const shoppingAddItem: ToolSpec<{
 
 export const shoppingCompleteItem: ToolSpec<{ itemId: string }> = {
   name: "shopping_complete_item",
+  statusLabel: "Updating your shopping list…",
   description: "Propose marking a shopping item as bought/done. Requires the exact itemId from shopping_search.",
   inputSchema: { type: "object", properties: { itemId: { type: "string" } }, required: ["itemId"] },
   consequential: true,
@@ -150,6 +153,7 @@ export const shoppingCompleteItem: ToolSpec<{ itemId: string }> = {
 
 export const shoppingRemoveItem: ToolSpec<{ itemId: string }> = {
   name: "shopping_remove_item",
+  statusLabel: "Updating your shopping list…",
   description: "Propose removing an item from a shopping list. Requires the exact itemId from shopping_search.",
   inputSchema: { type: "object", properties: { itemId: { type: "string" } }, required: ["itemId"] },
   consequential: true,

@@ -103,6 +103,21 @@ export function buildCardsForTool(toolName: string, result: unknown): ResponseCa
       return [{ type: "shoppingList", items: openItems }];
     }
 
+    case "daily_briefing_get": {
+      return [
+        {
+          type: "dailyBriefing",
+          briefing: {
+            eventsCount: (r.eventsCount as number) ?? 0,
+            tasksRemaining: (r.tasksRemaining as number) ?? 0,
+            goalsPriorityCount: (r.goalsPriorityCount as number) ?? 0,
+            deadlinesUpcoming: (r.deadlinesUpcoming as number) ?? 0,
+            recommendedFocus: (r.recommendedFocus as string | null) ?? null,
+          },
+        },
+      ];
+    }
+
     default:
       return [];
   }

@@ -14,11 +14,17 @@ export interface ProposedAction {
   summary: string;
 }
 
+export interface Choice {
+  label: string;
+  value: string;
+}
+
 export interface HeadAgentResult {
   content: string;
   toolCalls: { tool: string; status: "success" | "failed" }[];
   proposedAction: ProposedAction | null;
   cards: ResponseCard[];
+  choices: Choice[] | null;
   usage: { inputTokens: number; outputTokens: number };
 }
 
@@ -31,8 +37,10 @@ export async function runHeadAgent(params: {
   userText: string;
   image?: { mediaType: "image/jpeg" | "image/png" | "image/webp" | "image/gif"; data: string };
   maxTokens: number;
+  /** Fired with a short present-tense status ("Checking your calendar…") as the agent progresses — purely for UI feedback, never awaited/blocking. */
+  onStatus?: (label: string) => void;
 }): Promise<HeadAgentResult> {
-  const { provider, ctx, history, userText, image, maxTokens } = params;
+  const { provider, ctx, history, userText, image, maxTokens, onStatus } = params;
 
   const contextSummary = await buildContextSummary(ctx);
   const system = buildSystemPrompt(contextSummary);
@@ -51,6 +59,8 @@ export async function runHeadAgent(params: {
   const toolCalls: HeadAgentResult["toolCalls"] = [];
   const cards: ResponseCard[] = [];
 
+  onStatus?.("Thinking…");
+
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const response = await provider.createMessage({ system, messages, tools: toolDefs, maxTokens });
     usage.inputTokens += response.usage.inputTokens;
@@ -60,7 +70,7 @@ export async function runHeadAgent(params: {
     const toolUses = response.content.filter((b): b is Extract<ContentBlock, { type: "tool_use" }> => b.type === "tool_use");
 
     if (toolUses.length === 0) {
-      return { content: textParts || "I'm not sure how to help with that yet — could you rephrase?", toolCalls, proposedAction: null, cards, usage };
+      return { content: textParts || "I'm not sure how to help with that yet — could you rephrase?", toolCalls, proposedAction: null, cards, choices: null, usage };
     }
 
     messages.push({ role: "assistant", content: response.content });
@@ -75,7 +85,18 @@ export async function runHeadAgent(params: {
         continue;
       }
 
+      if (spec.name === "chat_present_choices") {
+        const result = await spec.execute(ctx, call.input);
+        if (result.ok) {
+          const input = result.result as { question: string; options: Choice[] };
+          return { content: input.question, toolCalls, proposedAction: null, cards, choices: input.options, usage };
+        }
+        toolResults.push({ type: "tool_result", toolUseId: call.id, content: result.error, isError: true });
+        continue;
+      }
+
       if (!spec.consequential) {
+        onStatus?.(spec.statusLabel ?? "Thinking…");
         const result = await spec.execute(ctx, call.input);
         toolCalls.push({ tool: spec.name, status: result.ok ? "success" : "failed" });
         if (result.ok) cards.push(...buildCardsForTool(spec.name, result.result));
@@ -98,6 +119,7 @@ export async function runHeadAgent(params: {
         continue;
       }
 
+      onStatus?.(spec.statusLabel ?? "Preparing that…");
       const described = spec.describe ? await spec.describe(ctx, call.input) : { summary: `${spec.name} ${JSON.stringify(call.input)}` };
       if ("error" in described) {
         toolResults.push({ type: "tool_result", toolUseId: call.id, content: described.error, isError: true });
@@ -112,7 +134,7 @@ export async function runHeadAgent(params: {
     if (proposedAction) {
       const lead = textParts.trim();
       const content = lead && lead !== proposedAction.summary ? `${lead}\n\n${proposedAction.summary}` : proposedAction.summary;
-      return { content, toolCalls, proposedAction, cards, usage };
+      return { content, toolCalls, proposedAction, cards, choices: null, usage };
     }
 
     messages.push({ role: "user", content: toolResults });
@@ -123,6 +145,7 @@ export async function runHeadAgent(params: {
     toolCalls,
     proposedAction: null,
     cards,
+    choices: null,
     usage,
   };
 }

@@ -20,6 +20,8 @@ export interface ToolSpec<TInput = Record<string, unknown>> {
   /** Read-only tools execute immediately in the same turn. */
   consequential: boolean;
   action?: ToolAction;
+  /** Short present-tense status shown to the user while this tool is running, e.g. "Checking your calendar…". Falls back to a generic "Thinking…" when unset. */
+  statusLabel?: string;
   /**
    * For consequential tools: builds the human-readable confirmation summary
    * shown before execution. Has DB access so it can do things like conflict

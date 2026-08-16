@@ -43,9 +43,18 @@ export interface ShoppingItemCardData {
   done: boolean;
 }
 
+export interface DailyBriefingCardData {
+  eventsCount: number;
+  tasksRemaining: number;
+  goalsPriorityCount: number;
+  deadlinesUpcoming: number;
+  recommendedFocus: string | null;
+}
+
 export type ResponseCard =
   | { type: "event"; heading?: string; events: EventCardData[] }
   | { type: "taskList"; heading?: string; tasks: TaskCardData[] }
   | { type: "goalProgress"; goals: GoalProgressCardData[] }
   | { type: "document"; documents: DocumentCardData[] }
-  | { type: "shoppingList"; heading?: string; items: ShoppingItemCardData[] };
+  | { type: "shoppingList"; heading?: string; items: ShoppingItemCardData[] }
+  | { type: "dailyBriefing"; briefing: DailyBriefingCardData };

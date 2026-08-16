@@ -28,6 +28,7 @@ export default function ChatPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [attachedImage, setAttachedImage] = useState<{ dataUrl: string } | null>(null);
@@ -121,6 +122,7 @@ export default function ChatPage() {
     setAttachedImage(null);
     setError(null);
     setSending(true);
+    setStatus("Thinking…");
 
     const optimisticId = `optimistic_${Date.now()}`;
     setMessages((m) => [
@@ -142,7 +144,7 @@ export default function ChatPage() {
       const token = await getAccessToken();
       if (!token) throw new Error("Your session expired. Please sign in again.");
       const imagePayload = image ? { base64: image.dataUrl.split(",")[1], mediaType: "image/jpeg" } : undefined;
-      const { userMessage, assistantMessage } = await sendChatMessage(token, activeId, messageText, imagePayload);
+      const { userMessage, assistantMessage } = await sendChatMessage(token, activeId, messageText, imagePayload, setStatus);
       setMessages((m) => [...m.filter((x) => x.id !== optimisticId), { ...userMessage, imagePreviewUrl: image?.dataUrl }, assistantMessage]);
 
       const aiRenamed = assistantMessage.toolCalls.some((t) => t.tool === "conversation_rename" && t.status === "success");
@@ -170,7 +172,12 @@ export default function ChatPage() {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setSending(false);
+      setStatus(null);
     }
+  }
+
+  async function handleChoice(value: string) {
+    await send(value);
   }
 
   async function handleDecide(messageId: string, pendingActionId: string, decision: "confirm" | "cancel") {
@@ -291,11 +298,11 @@ export default function ChatPage() {
           ) : messages.length === 0 ? (
             <EmptyState icon={MessageCircle} title="Tell Alxioum what you need." body={'Try "What’s on my calendar tomorrow?" or "Remind me to call the dentist."'} />
           ) : (
-            messages.map((m) => <MessageBubble key={m.id} message={m} onDecide={handleDecide} onUndo={handleUndo} />)
+            messages.map((m) => <MessageBubble key={m.id} message={m} onDecide={handleDecide} onUndo={handleUndo} onChoiceSelect={handleChoice} />)
           )}
           {sending && (
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-1 py-2.5">
+            <div className="flex items-center gap-2 py-2.5">
+              <div className="flex items-center gap-1">
                 {[0, 1, 2].map((i) => (
                   <motion.span
                     key={i}
@@ -305,6 +312,20 @@ export default function ChatPage() {
                   />
                 ))}
               </div>
+              <AnimatePresence mode="wait">
+                {status && (
+                  <motion.span
+                    key={status}
+                    initial={{ opacity: 0, y: 2 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="text-[12.5px] text-muted-foreground"
+                  >
+                    {status}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>
