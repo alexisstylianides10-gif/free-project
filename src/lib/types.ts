@@ -230,6 +230,8 @@ export type GoalMeasurementType = "numeric" | "distance" | "count" | "streak" | 
 /** Always computed (src/lib/goals/status.ts), never stored as truth — see Goal.paused for the one persisted state. */
 export type GoalStatus = "on_track" | "at_risk" | "behind" | "completed" | "paused";
 
+export type GoalKind = "personal" | "business";
+
 export interface Goal {
   id: string;
   name: string;
@@ -247,6 +249,7 @@ export interface Goal {
   measurementUnit: string;
   measurementTarget?: number;
   measurementCurrent: number;
+  kind: GoalKind;
 }
 
 export interface GoalMilestone {
@@ -292,6 +295,169 @@ export interface GoalCoachMessage {
   role: "user" | "assistant";
   content: string;
   proposedAdjustment?: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Business Builder — specialized data for goals with kind: "business"
+// ---------------------------------------------------------------------------
+
+export type BusinessStage = "idea" | "validation" | "business_model" | "build" | "launch" | "first_customers" | "grow" | "scale";
+export type BusinessStatus = "building" | "paused" | "archived";
+export type BusinessRevenueModel = "one_time" | "subscription" | "usage" | "commission" | "marketplace" | "freemium" | "service" | "other";
+
+export interface Business {
+  id: string;
+  goalId: string;
+  name: string;
+  ideaSummary: string;
+  problem: string;
+  solution: string;
+  targetCustomer: string;
+  valueProposition: string;
+  pricingNotes: string;
+  distributionNotes: string;
+  marketingNotes: string;
+  operationsNotes: string;
+  costsNotes: string;
+  stage: BusinessStage;
+  status: BusinessStatus;
+  revenueModel?: BusinessRevenueModel;
+  price?: number;
+  pricePeriod?: string;
+  targetCustomerCount?: number;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BusinessMilestone {
+  id: string;
+  businessId: string;
+  stage: BusinessStage;
+  title: string;
+  description: string;
+  done: boolean;
+  sortOrder: number;
+  targetDate?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface BusinessMetricEntry {
+  id: string;
+  businessId: string;
+  recordedAt: string;
+  revenue?: number;
+  expenses?: number;
+  customers?: number;
+  mrr?: number;
+  orders?: number;
+  conversionRate?: number;
+  visitors?: number;
+  leads?: number;
+  trials?: number;
+  note: string;
+  createdAt: string;
+}
+
+export type BusinessExperimentStatus = "planned" | "running" | "completed";
+
+export interface BusinessExperiment {
+  id: string;
+  businessId: string;
+  question: string;
+  hypothesis: string;
+  testDescription: string;
+  status: BusinessExperimentStatus;
+  result: string;
+  conclusion: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export type BusinessCustomerStage = "lead" | "interviewed" | "trial" | "customer" | "churned";
+
+export interface BusinessCustomer {
+  id: string;
+  businessId: string;
+  name: string;
+  stage: BusinessCustomerStage;
+  notes: string;
+  createdAt: string;
+}
+
+export type BusinessFeedbackKind = "pain_point" | "feature_request" | "objection" | "praise" | "other";
+
+export interface BusinessFeedback {
+  id: string;
+  businessId: string;
+  customerId?: string;
+  kind: BusinessFeedbackKind;
+  content: string;
+  createdAt: string;
+}
+
+export type BusinessInsightKind = "decision" | "risk" | "opportunity";
+export type BusinessInsightStatus = "open" | "accepted" | "ignored" | "resolved";
+
+export interface BusinessInsight {
+  id: string;
+  businessId: string;
+  kind: BusinessInsightKind;
+  title: string;
+  rationale: string;
+  evidence: string;
+  suggestedAction: string;
+  status: BusinessInsightStatus;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export type BusinessMissionStatus = "pending" | "started" | "completed" | "skipped";
+
+export interface BusinessMission {
+  id: string;
+  businessId: string;
+  title: string;
+  missionDate: string;
+  status: BusinessMissionStatus;
+  linkedTaskId?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export type BusinessContentStatus = "idea" | "draft" | "published";
+
+export interface BusinessContentIdea {
+  id: string;
+  businessId: string;
+  idea: string;
+  platform: string;
+  status: BusinessContentStatus;
+  result: string;
+  createdAt: string;
+}
+
+export interface BusinessCompetitor {
+  id: string;
+  businessId: string;
+  name: string;
+  product: string;
+  targetCustomer: string;
+  pricing: string;
+  strengths: string;
+  weaknesses: string;
+  positioning: string;
+  source: "ai_research" | "manual";
+  createdAt: string;
+}
+
+export interface BusinessActivityEntry {
+  id: string;
+  businessId: string;
+  kind: string;
+  description: string;
   createdAt: string;
 }
 

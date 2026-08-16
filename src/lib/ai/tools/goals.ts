@@ -30,6 +30,7 @@ interface GoalRow {
   measurement_target: number | null;
   measurement_current: number;
   created_at: string;
+  kind: "personal" | "business";
 }
 
 interface MilestoneRow {
@@ -102,6 +103,7 @@ export const goalsSearch: ToolSpec<{ query?: string; completed?: boolean }> = {
             measurementUnit: g.measurement_unit,
             measurementTarget: g.measurement_target ?? undefined,
             measurementCurrent: g.measurement_current,
+            kind: g.kind ?? "personal",
           };
           return {
             id: g.id,

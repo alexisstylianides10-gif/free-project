@@ -291,7 +291,8 @@ create table if not exists public.goals (
   measurement_type text not null default 'checklist' check (measurement_type in ('numeric', 'distance', 'count', 'streak', 'time', 'checklist')),
   measurement_unit text not null default '',
   measurement_target numeric,
-  measurement_current numeric not null default 0
+  measurement_current numeric not null default 0,
+  kind text not null default 'personal' check (kind in ('personal', 'business'))
 );
 
 create table if not exists public.goal_milestones (
@@ -345,6 +346,173 @@ create table if not exists public.goal_coach_messages (
   proposed_adjustment jsonb,
   created_at timestamptz not null default now()
 );
+
+-- ---------------------------------------------------------------------------
+-- businesses (Business Builder — specialized "Business Goal" data, one per goal)
+-- ---------------------------------------------------------------------------
+create table if not exists public.businesses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  goal_id uuid not null references public.goals (id) on delete cascade,
+  name text not null,
+  idea_summary text not null default '',
+  problem text not null default '',
+  solution text not null default '',
+  target_customer text not null default '',
+  value_proposition text not null default '',
+  pricing_notes text not null default '',
+  distribution_notes text not null default '',
+  marketing_notes text not null default '',
+  operations_notes text not null default '',
+  costs_notes text not null default '',
+  stage text not null default 'idea' check (stage in ('idea', 'validation', 'business_model', 'build', 'launch', 'first_customers', 'grow', 'scale')),
+  status text not null default 'building' check (status in ('building', 'paused', 'archived')),
+  revenue_model text check (revenue_model in ('one_time', 'subscription', 'usage', 'commission', 'marketplace', 'freemium', 'service', 'other')),
+  price numeric,
+  price_period text,
+  target_customer_count int,
+  currency text not null default 'USD',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create unique index if not exists businesses_goal_id_idx on public.businesses (goal_id);
+
+create table if not exists public.business_milestones (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  stage text not null,
+  title text not null,
+  description text not null default '',
+  done boolean not null default false,
+  sort_order int not null default 0,
+  target_date date,
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+create index if not exists business_milestones_business_id_idx on public.business_milestones (business_id);
+
+create table if not exists public.business_metrics (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  recorded_at timestamptz not null default now(),
+  revenue numeric,
+  expenses numeric,
+  customers int,
+  mrr numeric,
+  orders int,
+  conversion_rate numeric,
+  visitors int,
+  leads int,
+  trials int,
+  note text not null default '',
+  created_at timestamptz not null default now()
+);
+create index if not exists business_metrics_business_id_idx on public.business_metrics (business_id);
+
+create table if not exists public.business_experiments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  question text not null,
+  hypothesis text not null default '',
+  test_description text not null default '',
+  status text not null default 'planned' check (status in ('planned', 'running', 'completed')),
+  result text not null default '',
+  conclusion text not null default '',
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+create index if not exists business_experiments_business_id_idx on public.business_experiments (business_id);
+
+create table if not exists public.business_customers (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  name text not null,
+  stage text not null default 'lead' check (stage in ('lead', 'interviewed', 'trial', 'customer', 'churned')),
+  notes text not null default '',
+  created_at timestamptz not null default now()
+);
+create index if not exists business_customers_business_id_idx on public.business_customers (business_id);
+
+create table if not exists public.business_feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  customer_id uuid references public.business_customers (id) on delete set null,
+  kind text not null check (kind in ('pain_point', 'feature_request', 'objection', 'praise', 'other')),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists business_feedback_business_id_idx on public.business_feedback (business_id);
+
+create table if not exists public.business_insights (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  kind text not null check (kind in ('decision', 'risk', 'opportunity')),
+  title text not null,
+  rationale text not null default '',
+  evidence text not null default '',
+  suggested_action text not null default '',
+  status text not null default 'open' check (status in ('open', 'accepted', 'ignored', 'resolved')),
+  created_at timestamptz not null default now(),
+  resolved_at timestamptz
+);
+create index if not exists business_insights_business_id_idx on public.business_insights (business_id);
+
+create table if not exists public.business_missions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  title text not null,
+  mission_date date not null default current_date,
+  status text not null default 'pending' check (status in ('pending', 'started', 'completed', 'skipped')),
+  linked_task_id uuid references public.tasks (id) on delete set null,
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+create index if not exists business_missions_business_id_idx on public.business_missions (business_id);
+
+create table if not exists public.business_content (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  idea text not null,
+  platform text not null default '',
+  status text not null default 'idea' check (status in ('idea', 'draft', 'published')),
+  result text not null default '',
+  created_at timestamptz not null default now()
+);
+create index if not exists business_content_business_id_idx on public.business_content (business_id);
+
+create table if not exists public.business_competitors (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  name text not null,
+  product text not null default '',
+  target_customer text not null default '',
+  pricing text not null default '',
+  strengths text not null default '',
+  weaknesses text not null default '',
+  positioning text not null default '',
+  source text not null default 'ai_research' check (source in ('ai_research', 'manual')),
+  created_at timestamptz not null default now()
+);
+create index if not exists business_competitors_business_id_idx on public.business_competitors (business_id);
+
+create table if not exists public.business_activity (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  business_id uuid not null references public.businesses (id) on delete cascade,
+  kind text not null,
+  description text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists business_activity_business_id_idx on public.business_activity (business_id);
 
 -- ---------------------------------------------------------------------------
 -- study_notes (AI-generated study notes, Student plan)
@@ -572,7 +740,10 @@ begin
       'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes',
       'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages',
       'document_collections', 'document_dates', 'document_tasks',
-      'document_activity', 'document_chat_messages'
+      'document_activity', 'document_chat_messages',
+      'businesses', 'business_milestones', 'business_metrics', 'business_experiments',
+      'business_customers', 'business_feedback', 'business_insights', 'business_missions',
+      'business_content', 'business_competitors', 'business_activity'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -644,7 +815,10 @@ begin
       'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes',
       'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages',
       'document_collections', 'document_dates', 'document_tasks',
-      'document_activity', 'document_chat_messages'
+      'document_activity', 'document_chat_messages',
+      'businesses', 'business_milestones', 'business_metrics', 'business_experiments',
+      'business_customers', 'business_feedback', 'business_insights', 'business_missions',
+      'business_content', 'business_competitors', 'business_activity'
     ])
   loop
     execute format('drop policy if exists "%s_owner" on public.%I;', t, t);

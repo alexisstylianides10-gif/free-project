@@ -9,6 +9,8 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { CreateGoalModal } from "@/components/domain/CreateGoalModal";
+import { GoalTypeChooser } from "@/components/domain/GoalTypeChooser";
+import { BusinessIntakeModal } from "@/components/domain/BusinessIntakeModal";
 import { useAlxioum } from "@/lib/store";
 import { formatDayLabel, daysBetween, todayISO } from "@/lib/utils";
 import { computeGoalStatus, computeProgressPct } from "@/lib/goals/status";
@@ -37,6 +39,8 @@ export default function GoalsPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createPrefill, setCreatePrefill] = useState<string | undefined>(undefined);
+  const [typeChooserOpen, setTypeChooserOpen] = useState(false);
+  const [businessIntakeOpen, setBusinessIntakeOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<GoalStatus | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<string | "all">("all");
   const [query, setQuery] = useState("");
@@ -97,6 +101,12 @@ export default function GoalsPage() {
     setCreateOpen(true);
   }
 
+  function handleTypeChoice(kind: "personal" | "business") {
+    setTypeChooserOpen(false);
+    if (kind === "personal") openCreate();
+    else setBusinessIntakeOpen(true);
+  }
+
   const visible = filtered.filter((e) => e.goal.id !== focusGoal?.goal.id || statusFilter !== "all" || categoryFilter !== "all" || query.trim());
 
   return (
@@ -106,7 +116,7 @@ export default function GoalsPage() {
           <h1 className="font-serif text-[24px] font-medium tracking-tight text-foreground">Goals</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">{counts.active ? `${counts.active} in progress` : "Nothing set yet"}</p>
         </div>
-        <Button onClick={() => openCreate()}>
+        <Button onClick={() => setTypeChooserOpen(true)}>
           <Plus className="h-4 w-4" /> New goal
         </Button>
       </div>
@@ -213,6 +223,8 @@ export default function GoalsPage() {
       )}
 
       <CreateGoalModal open={createOpen} onOpenChange={setCreateOpen} initialInput={createPrefill} />
+      <GoalTypeChooser open={typeChooserOpen} onOpenChange={setTypeChooserOpen} onChoose={handleTypeChoice} />
+      <BusinessIntakeModal open={businessIntakeOpen} onOpenChange={setBusinessIntakeOpen} />
     </div>
   );
 }

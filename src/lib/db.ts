@@ -18,6 +18,17 @@ import {
   GoalActionLog,
   GoalActivityEntry,
   GoalCoachMessage,
+  Business,
+  BusinessMilestone,
+  BusinessMetricEntry,
+  BusinessExperiment,
+  BusinessCustomer,
+  BusinessFeedback,
+  BusinessInsight,
+  BusinessMission,
+  BusinessContentIdea,
+  BusinessCompetitor,
+  BusinessActivityEntry,
   MemoryItem,
   Profile,
   Routine,
@@ -710,6 +721,7 @@ interface GoalRow {
   measurement_unit: string;
   measurement_target: number | null;
   measurement_current: number;
+  kind: Goal["kind"];
 }
 
 function goalFromRow(r: GoalRow): Goal {
@@ -730,6 +742,7 @@ function goalFromRow(r: GoalRow): Goal {
     measurementUnit: r.measurement_unit ?? "",
     measurementTarget: r.measurement_target ?? undefined,
     measurementCurrent: r.measurement_current ?? 0,
+    kind: r.kind ?? "personal",
   };
 }
 
@@ -744,6 +757,7 @@ export interface NewGoalInput {
   measurementType?: Goal["measurementType"];
   measurementUnit?: string;
   measurementTarget?: number;
+  kind?: Goal["kind"];
 }
 
 export async function fetchGoals(userId: string): Promise<Goal[]> {
@@ -767,6 +781,7 @@ export async function insertGoal(userId: string, goal: NewGoalInput): Promise<Go
       measurement_type: goal.measurementType ?? "checklist",
       measurement_unit: goal.measurementUnit ?? "",
       measurement_target: goal.measurementTarget ?? null,
+      kind: goal.kind ?? "personal",
     })
     .select("*")
     .single();
@@ -1002,6 +1017,652 @@ export async function fetchGoalCoachMessages(userId: string, goalId: string): Pr
     .limit(100);
   if (error) throw error;
   return (data as GoalCoachMessageRow[]).map(goalCoachMessageFromRow);
+}
+
+// ---------------------------------------------------------------------------
+// Business Builder — specialized data for goals with kind: "business"
+// ---------------------------------------------------------------------------
+
+interface BusinessRow {
+  id: string;
+  goal_id: string;
+  name: string;
+  idea_summary: string;
+  problem: string;
+  solution: string;
+  target_customer: string;
+  value_proposition: string;
+  pricing_notes: string;
+  distribution_notes: string;
+  marketing_notes: string;
+  operations_notes: string;
+  costs_notes: string;
+  stage: Business["stage"];
+  status: Business["status"];
+  revenue_model: Business["revenueModel"] | null;
+  price: number | null;
+  price_period: string | null;
+  target_customer_count: number | null;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+}
+
+function businessFromRow(r: BusinessRow): Business {
+  return {
+    id: r.id,
+    goalId: r.goal_id,
+    name: r.name,
+    ideaSummary: r.idea_summary ?? "",
+    problem: r.problem ?? "",
+    solution: r.solution ?? "",
+    targetCustomer: r.target_customer ?? "",
+    valueProposition: r.value_proposition ?? "",
+    pricingNotes: r.pricing_notes ?? "",
+    distributionNotes: r.distribution_notes ?? "",
+    marketingNotes: r.marketing_notes ?? "",
+    operationsNotes: r.operations_notes ?? "",
+    costsNotes: r.costs_notes ?? "",
+    stage: r.stage ?? "idea",
+    status: r.status ?? "building",
+    revenueModel: r.revenue_model ?? undefined,
+    price: r.price ?? undefined,
+    pricePeriod: r.price_period ?? undefined,
+    targetCustomerCount: r.target_customer_count ?? undefined,
+    currency: r.currency ?? "USD",
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+export interface NewBusinessInput {
+  goalId: string;
+  name: string;
+  ideaSummary?: string;
+  problem?: string;
+  solution?: string;
+  targetCustomer?: string;
+  valueProposition?: string;
+  revenueModel?: Business["revenueModel"];
+  price?: number;
+  pricePeriod?: string;
+  targetCustomerCount?: number;
+  currency?: string;
+}
+
+export async function fetchBusinesses(userId: string): Promise<Business[]> {
+  const { data, error } = await client().from("businesses").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as BusinessRow[]).map(businessFromRow);
+}
+
+export async function insertBusiness(userId: string, input: NewBusinessInput): Promise<Business> {
+  const { data, error } = await client()
+    .from("businesses")
+    .insert({
+      user_id: userId,
+      goal_id: input.goalId,
+      name: input.name,
+      idea_summary: input.ideaSummary ?? "",
+      problem: input.problem ?? "",
+      solution: input.solution ?? "",
+      target_customer: input.targetCustomer ?? "",
+      value_proposition: input.valueProposition ?? "",
+      revenue_model: input.revenueModel ?? null,
+      price: input.price ?? null,
+      price_period: input.pricePeriod ?? null,
+      target_customer_count: input.targetCustomerCount ?? null,
+      currency: input.currency ?? "USD",
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessFromRow(data as BusinessRow);
+}
+
+export async function updateBusinessRow(id: string, patch: Partial<Business>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.name !== undefined) row.name = patch.name;
+  if (patch.ideaSummary !== undefined) row.idea_summary = patch.ideaSummary;
+  if (patch.problem !== undefined) row.problem = patch.problem;
+  if (patch.solution !== undefined) row.solution = patch.solution;
+  if (patch.targetCustomer !== undefined) row.target_customer = patch.targetCustomer;
+  if (patch.valueProposition !== undefined) row.value_proposition = patch.valueProposition;
+  if (patch.pricingNotes !== undefined) row.pricing_notes = patch.pricingNotes;
+  if (patch.distributionNotes !== undefined) row.distribution_notes = patch.distributionNotes;
+  if (patch.marketingNotes !== undefined) row.marketing_notes = patch.marketingNotes;
+  if (patch.operationsNotes !== undefined) row.operations_notes = patch.operationsNotes;
+  if (patch.costsNotes !== undefined) row.costs_notes = patch.costsNotes;
+  if (patch.stage !== undefined) row.stage = patch.stage;
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.revenueModel !== undefined) row.revenue_model = patch.revenueModel;
+  if (patch.price !== undefined) row.price = patch.price;
+  if (patch.pricePeriod !== undefined) row.price_period = patch.pricePeriod;
+  if (patch.targetCustomerCount !== undefined) row.target_customer_count = patch.targetCustomerCount;
+  if (patch.currency !== undefined) row.currency = patch.currency;
+  row.updated_at = new Date().toISOString();
+  const { error } = await client().from("businesses").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteBusinessRow(id: string): Promise<void> {
+  const { error } = await client().from("businesses").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface BusinessMilestoneRow {
+  id: string;
+  business_id: string;
+  stage: BusinessMilestone["stage"];
+  title: string;
+  description: string;
+  done: boolean;
+  sort_order: number;
+  target_date: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+function businessMilestoneFromRow(r: BusinessMilestoneRow): BusinessMilestone {
+  return {
+    id: r.id,
+    businessId: r.business_id,
+    stage: r.stage,
+    title: r.title,
+    description: r.description ?? "",
+    done: r.done,
+    sortOrder: r.sort_order,
+    targetDate: r.target_date ?? undefined,
+    createdAt: r.created_at,
+    completedAt: r.completed_at ?? undefined,
+  };
+}
+
+export async function fetchBusinessMilestones(userId: string): Promise<BusinessMilestone[]> {
+  const { data, error } = await client().from("business_milestones").select("*").eq("user_id", userId).order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data as BusinessMilestoneRow[]).map(businessMilestoneFromRow);
+}
+
+export async function insertBusinessMilestone(
+  userId: string,
+  m: { businessId: string; stage: BusinessMilestone["stage"]; title: string; description?: string; sortOrder?: number; targetDate?: string }
+): Promise<BusinessMilestone> {
+  const { data, error } = await client()
+    .from("business_milestones")
+    .insert({ user_id: userId, business_id: m.businessId, stage: m.stage, title: m.title, description: m.description ?? "", sort_order: m.sortOrder ?? 0, target_date: m.targetDate ?? null })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessMilestoneFromRow(data as BusinessMilestoneRow);
+}
+
+export async function updateBusinessMilestoneRow(id: string, patch: Partial<BusinessMilestone>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.done !== undefined) row.done = patch.done;
+  if (patch.title !== undefined) row.title = patch.title;
+  if (patch.description !== undefined) row.description = patch.description;
+  if (patch.sortOrder !== undefined) row.sort_order = patch.sortOrder;
+  if (patch.targetDate !== undefined) row.target_date = patch.targetDate;
+  if (patch.completedAt !== undefined) row.completed_at = patch.completedAt;
+  const { error } = await client().from("business_milestones").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteBusinessMilestoneRow(id: string): Promise<void> {
+  const { error } = await client().from("business_milestones").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface BusinessMetricRow {
+  id: string;
+  business_id: string;
+  recorded_at: string;
+  revenue: number | null;
+  expenses: number | null;
+  customers: number | null;
+  mrr: number | null;
+  orders: number | null;
+  conversion_rate: number | null;
+  visitors: number | null;
+  leads: number | null;
+  trials: number | null;
+  note: string;
+  created_at: string;
+}
+
+function businessMetricFromRow(r: BusinessMetricRow): BusinessMetricEntry {
+  return {
+    id: r.id,
+    businessId: r.business_id,
+    recordedAt: r.recorded_at,
+    revenue: r.revenue ?? undefined,
+    expenses: r.expenses ?? undefined,
+    customers: r.customers ?? undefined,
+    mrr: r.mrr ?? undefined,
+    orders: r.orders ?? undefined,
+    conversionRate: r.conversion_rate ?? undefined,
+    visitors: r.visitors ?? undefined,
+    leads: r.leads ?? undefined,
+    trials: r.trials ?? undefined,
+    note: r.note ?? "",
+    createdAt: r.created_at,
+  };
+}
+
+export async function fetchBusinessMetrics(userId: string): Promise<BusinessMetricEntry[]> {
+  const { data, error } = await client().from("business_metrics").select("*").eq("user_id", userId).order("recorded_at", { ascending: false }).limit(500);
+  if (error) throw error;
+  return (data as BusinessMetricRow[]).map(businessMetricFromRow);
+}
+
+export async function insertBusinessMetric(
+  userId: string,
+  m: {
+    businessId: string;
+    revenue?: number;
+    expenses?: number;
+    customers?: number;
+    mrr?: number;
+    orders?: number;
+    conversionRate?: number;
+    visitors?: number;
+    leads?: number;
+    trials?: number;
+    note?: string;
+  }
+): Promise<BusinessMetricEntry> {
+  const { data, error } = await client()
+    .from("business_metrics")
+    .insert({
+      user_id: userId,
+      business_id: m.businessId,
+      revenue: m.revenue ?? null,
+      expenses: m.expenses ?? null,
+      customers: m.customers ?? null,
+      mrr: m.mrr ?? null,
+      orders: m.orders ?? null,
+      conversion_rate: m.conversionRate ?? null,
+      visitors: m.visitors ?? null,
+      leads: m.leads ?? null,
+      trials: m.trials ?? null,
+      note: m.note ?? "",
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessMetricFromRow(data as BusinessMetricRow);
+}
+
+interface BusinessExperimentRow {
+  id: string;
+  business_id: string;
+  question: string;
+  hypothesis: string;
+  test_description: string;
+  status: BusinessExperiment["status"];
+  result: string;
+  conclusion: string;
+  created_at: string;
+  completed_at: string | null;
+}
+
+function businessExperimentFromRow(r: BusinessExperimentRow): BusinessExperiment {
+  return {
+    id: r.id,
+    businessId: r.business_id,
+    question: r.question,
+    hypothesis: r.hypothesis ?? "",
+    testDescription: r.test_description ?? "",
+    status: r.status ?? "planned",
+    result: r.result ?? "",
+    conclusion: r.conclusion ?? "",
+    createdAt: r.created_at,
+    completedAt: r.completed_at ?? undefined,
+  };
+}
+
+export async function fetchBusinessExperiments(userId: string): Promise<BusinessExperiment[]> {
+  const { data, error } = await client().from("business_experiments").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as BusinessExperimentRow[]).map(businessExperimentFromRow);
+}
+
+export async function insertBusinessExperiment(
+  userId: string,
+  e: { businessId: string; question: string; hypothesis?: string; testDescription?: string }
+): Promise<BusinessExperiment> {
+  const { data, error } = await client()
+    .from("business_experiments")
+    .insert({ user_id: userId, business_id: e.businessId, question: e.question, hypothesis: e.hypothesis ?? "", test_description: e.testDescription ?? "" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessExperimentFromRow(data as BusinessExperimentRow);
+}
+
+export async function updateBusinessExperimentRow(id: string, patch: Partial<BusinessExperiment>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.result !== undefined) row.result = patch.result;
+  if (patch.conclusion !== undefined) row.conclusion = patch.conclusion;
+  if (patch.completedAt !== undefined) row.completed_at = patch.completedAt;
+  const { error } = await client().from("business_experiments").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+interface BusinessCustomerRow {
+  id: string;
+  business_id: string;
+  name: string;
+  stage: BusinessCustomer["stage"];
+  notes: string;
+  created_at: string;
+}
+
+function businessCustomerFromRow(r: BusinessCustomerRow): BusinessCustomer {
+  return { id: r.id, businessId: r.business_id, name: r.name, stage: r.stage ?? "lead", notes: r.notes ?? "", createdAt: r.created_at };
+}
+
+export async function fetchBusinessCustomers(userId: string): Promise<BusinessCustomer[]> {
+  const { data, error } = await client().from("business_customers").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as BusinessCustomerRow[]).map(businessCustomerFromRow);
+}
+
+export async function insertBusinessCustomer(userId: string, c: { businessId: string; name: string; stage?: BusinessCustomer["stage"]; notes?: string }): Promise<BusinessCustomer> {
+  const { data, error } = await client()
+    .from("business_customers")
+    .insert({ user_id: userId, business_id: c.businessId, name: c.name, stage: c.stage ?? "lead", notes: c.notes ?? "" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessCustomerFromRow(data as BusinessCustomerRow);
+}
+
+export async function updateBusinessCustomerRow(id: string, patch: Partial<BusinessCustomer>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.stage !== undefined) row.stage = patch.stage;
+  if (patch.notes !== undefined) row.notes = patch.notes;
+  const { error } = await client().from("business_customers").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+interface BusinessFeedbackRow {
+  id: string;
+  business_id: string;
+  customer_id: string | null;
+  kind: BusinessFeedback["kind"];
+  content: string;
+  created_at: string;
+}
+
+function businessFeedbackFromRow(r: BusinessFeedbackRow): BusinessFeedback {
+  return { id: r.id, businessId: r.business_id, customerId: r.customer_id ?? undefined, kind: r.kind, content: r.content, createdAt: r.created_at };
+}
+
+export async function fetchBusinessFeedback(userId: string): Promise<BusinessFeedback[]> {
+  const { data, error } = await client().from("business_feedback").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as BusinessFeedbackRow[]).map(businessFeedbackFromRow);
+}
+
+export async function insertBusinessFeedback(userId: string, f: { businessId: string; customerId?: string; kind: BusinessFeedback["kind"]; content: string }): Promise<BusinessFeedback> {
+  const { data, error } = await client()
+    .from("business_feedback")
+    .insert({ user_id: userId, business_id: f.businessId, customer_id: f.customerId ?? null, kind: f.kind, content: f.content })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessFeedbackFromRow(data as BusinessFeedbackRow);
+}
+
+interface BusinessInsightRow {
+  id: string;
+  business_id: string;
+  kind: BusinessInsight["kind"];
+  title: string;
+  rationale: string;
+  evidence: string;
+  suggested_action: string;
+  status: BusinessInsight["status"];
+  created_at: string;
+  resolved_at: string | null;
+}
+
+function businessInsightFromRow(r: BusinessInsightRow): BusinessInsight {
+  return {
+    id: r.id,
+    businessId: r.business_id,
+    kind: r.kind,
+    title: r.title,
+    rationale: r.rationale ?? "",
+    evidence: r.evidence ?? "",
+    suggestedAction: r.suggested_action ?? "",
+    status: r.status ?? "open",
+    createdAt: r.created_at,
+    resolvedAt: r.resolved_at ?? undefined,
+  };
+}
+
+export async function fetchBusinessInsights(userId: string): Promise<BusinessInsight[]> {
+  const { data, error } = await client().from("business_insights").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as BusinessInsightRow[]).map(businessInsightFromRow);
+}
+
+export async function insertBusinessInsight(
+  userId: string,
+  i: { businessId: string; kind: BusinessInsight["kind"]; title: string; rationale?: string; evidence?: string; suggestedAction?: string }
+): Promise<BusinessInsight> {
+  const { data, error } = await client()
+    .from("business_insights")
+    .insert({
+      user_id: userId,
+      business_id: i.businessId,
+      kind: i.kind,
+      title: i.title,
+      rationale: i.rationale ?? "",
+      evidence: i.evidence ?? "",
+      suggested_action: i.suggestedAction ?? "",
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessInsightFromRow(data as BusinessInsightRow);
+}
+
+export async function updateBusinessInsightRow(id: string, patch: Partial<BusinessInsight>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.resolvedAt !== undefined) row.resolved_at = patch.resolvedAt;
+  const { error } = await client().from("business_insights").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+interface BusinessMissionRow {
+  id: string;
+  business_id: string;
+  title: string;
+  mission_date: string;
+  status: BusinessMission["status"];
+  linked_task_id: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+function businessMissionFromRow(r: BusinessMissionRow): BusinessMission {
+  return {
+    id: r.id,
+    businessId: r.business_id,
+    title: r.title,
+    missionDate: r.mission_date,
+    status: r.status ?? "pending",
+    linkedTaskId: r.linked_task_id ?? undefined,
+    createdAt: r.created_at,
+    completedAt: r.completed_at ?? undefined,
+  };
+}
+
+export async function fetchBusinessMissions(userId: string): Promise<BusinessMission[]> {
+  const { data, error } = await client().from("business_missions").select("*").eq("user_id", userId).order("mission_date", { ascending: false });
+  if (error) throw error;
+  return (data as BusinessMissionRow[]).map(businessMissionFromRow);
+}
+
+export async function insertBusinessMission(userId: string, m: { businessId: string; title: string; missionDate?: string; linkedTaskId?: string }): Promise<BusinessMission> {
+  const { data, error } = await client()
+    .from("business_missions")
+    .insert({ user_id: userId, business_id: m.businessId, title: m.title, mission_date: m.missionDate ?? new Date().toISOString().slice(0, 10), linked_task_id: m.linkedTaskId ?? null })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessMissionFromRow(data as BusinessMissionRow);
+}
+
+export async function updateBusinessMissionRow(id: string, patch: Partial<BusinessMission>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.completedAt !== undefined) row.completed_at = patch.completedAt;
+  const { error } = await client().from("business_missions").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+interface BusinessContentRow {
+  id: string;
+  business_id: string;
+  idea: string;
+  platform: string;
+  status: BusinessContentIdea["status"];
+  result: string;
+  created_at: string;
+}
+
+function businessContentFromRow(r: BusinessContentRow): BusinessContentIdea {
+  return { id: r.id, businessId: r.business_id, idea: r.idea, platform: r.platform ?? "", status: r.status ?? "idea", result: r.result ?? "", createdAt: r.created_at };
+}
+
+export async function fetchBusinessContent(userId: string): Promise<BusinessContentIdea[]> {
+  const { data, error } = await client().from("business_content").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as BusinessContentRow[]).map(businessContentFromRow);
+}
+
+export async function insertBusinessContent(userId: string, c: { businessId: string; idea: string; platform?: string }): Promise<BusinessContentIdea> {
+  const { data, error } = await client()
+    .from("business_content")
+    .insert({ user_id: userId, business_id: c.businessId, idea: c.idea, platform: c.platform ?? "" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessContentFromRow(data as BusinessContentRow);
+}
+
+export async function updateBusinessContentRow(id: string, patch: Partial<BusinessContentIdea>): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.result !== undefined) row.result = patch.result;
+  const { error } = await client().from("business_content").update(row).eq("id", id);
+  if (error) throw error;
+}
+
+interface BusinessCompetitorRow {
+  id: string;
+  business_id: string;
+  name: string;
+  product: string;
+  target_customer: string;
+  pricing: string;
+  strengths: string;
+  weaknesses: string;
+  positioning: string;
+  source: BusinessCompetitor["source"];
+  created_at: string;
+}
+
+function businessCompetitorFromRow(r: BusinessCompetitorRow): BusinessCompetitor {
+  return {
+    id: r.id,
+    businessId: r.business_id,
+    name: r.name,
+    product: r.product ?? "",
+    targetCustomer: r.target_customer ?? "",
+    pricing: r.pricing ?? "",
+    strengths: r.strengths ?? "",
+    weaknesses: r.weaknesses ?? "",
+    positioning: r.positioning ?? "",
+    source: r.source ?? "ai_research",
+    createdAt: r.created_at,
+  };
+}
+
+export async function fetchBusinessCompetitors(userId: string): Promise<BusinessCompetitor[]> {
+  const { data, error } = await client().from("business_competitors").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as BusinessCompetitorRow[]).map(businessCompetitorFromRow);
+}
+
+export async function insertBusinessCompetitor(
+  userId: string,
+  c: {
+    businessId: string;
+    name: string;
+    product?: string;
+    targetCustomer?: string;
+    pricing?: string;
+    strengths?: string;
+    weaknesses?: string;
+    positioning?: string;
+    source?: BusinessCompetitor["source"];
+  }
+): Promise<BusinessCompetitor> {
+  const { data, error } = await client()
+    .from("business_competitors")
+    .insert({
+      user_id: userId,
+      business_id: c.businessId,
+      name: c.name,
+      product: c.product ?? "",
+      target_customer: c.targetCustomer ?? "",
+      pricing: c.pricing ?? "",
+      strengths: c.strengths ?? "",
+      weaknesses: c.weaknesses ?? "",
+      positioning: c.positioning ?? "",
+      source: c.source ?? "ai_research",
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return businessCompetitorFromRow(data as BusinessCompetitorRow);
+}
+
+interface BusinessActivityRow {
+  id: string;
+  business_id: string;
+  kind: string;
+  description: string;
+  created_at: string;
+}
+
+function businessActivityFromRow(r: BusinessActivityRow): BusinessActivityEntry {
+  return { id: r.id, businessId: r.business_id, kind: r.kind, description: r.description, createdAt: r.created_at };
+}
+
+export async function fetchBusinessActivity(userId: string, businessId: string, limitCount = 30): Promise<BusinessActivityEntry[]> {
+  const { data, error } = await client()
+    .from("business_activity")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: false })
+    .limit(limitCount);
+  if (error) throw error;
+  return (data as BusinessActivityRow[]).map(businessActivityFromRow);
+}
+
+export async function insertBusinessActivityRow(userId: string, businessId: string, kind: string, description: string): Promise<void> {
+  const { error } = await client().from("business_activity").insert({ user_id: userId, business_id: businessId, kind, description });
+  if (error) throw error;
 }
 
 // ---------------------------------------------------------------------------
@@ -1552,6 +2213,16 @@ export async function exportAllUserData(userId: string) {
     documentDates,
     documentTasks,
     studyNotes,
+    businesses,
+    businessMilestones,
+    businessMetrics,
+    businessExperiments,
+    businessCustomers,
+    businessFeedback,
+    businessInsights,
+    businessMissions,
+    businessContent,
+    businessCompetitors,
   ] = await Promise.all([
     fetchProfile(userId),
     fetchTasks(userId),
@@ -1569,6 +2240,16 @@ export async function exportAllUserData(userId: string) {
     fetchDocumentDates(userId),
     fetchDocumentTasks(userId),
     fetchStudyNotes(userId),
+    fetchBusinesses(userId),
+    fetchBusinessMilestones(userId),
+    fetchBusinessMetrics(userId),
+    fetchBusinessExperiments(userId),
+    fetchBusinessCustomers(userId),
+    fetchBusinessFeedback(userId),
+    fetchBusinessInsights(userId),
+    fetchBusinessMissions(userId),
+    fetchBusinessContent(userId),
+    fetchBusinessCompetitors(userId),
   ]);
   return {
     profile,
@@ -1587,6 +2268,16 @@ export async function exportAllUserData(userId: string) {
     documentDates,
     documentTasks,
     studyNotes,
+    businesses,
+    businessMilestones,
+    businessMetrics,
+    businessExperiments,
+    businessCustomers,
+    businessFeedback,
+    businessInsights,
+    businessMissions,
+    businessContent,
+    businessCompetitors,
   };
 }
 
@@ -1613,6 +2304,17 @@ export async function deleteAllUserContent(userId: string): Promise<void> {
     "goal_activity",
     "goal_coach_messages",
     "goal_milestones",
+    "business_activity",
+    "business_competitors",
+    "business_content",
+    "business_missions",
+    "business_insights",
+    "business_feedback",
+    "business_customers",
+    "business_experiments",
+    "business_metrics",
+    "business_milestones",
+    "businesses",
     "goals",
     "routine_steps",
     "routines",

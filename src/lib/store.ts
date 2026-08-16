@@ -1,11 +1,42 @@
 "use client";
 
 import { create } from "zustand";
-import { AppNotification, CalendarEvent, Document, DocumentCollection, DocumentDate, DocumentTask, FocusSession, Goal, GoalAction, GoalActionLog, GoalMilestone, Profile, Routine, RoutineStep, ShoppingItem, ShoppingList, StudentProfile, Subject, Task } from "./types";
+import {
+  AppNotification,
+  CalendarEvent,
+  Document,
+  DocumentCollection,
+  DocumentDate,
+  DocumentTask,
+  FocusSession,
+  Goal,
+  GoalAction,
+  GoalActionLog,
+  GoalMilestone,
+  Business,
+  BusinessMilestone,
+  BusinessMetricEntry,
+  BusinessExperiment,
+  BusinessCustomer,
+  BusinessFeedback,
+  BusinessInsight,
+  BusinessMission,
+  BusinessContentIdea,
+  BusinessCompetitor,
+  Profile,
+  Routine,
+  RoutineStep,
+  ShoppingItem,
+  ShoppingList,
+  StudentProfile,
+  Subject,
+  Task,
+} from "./types";
 import { newId } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
 import { pushEventToGoogleClient } from "./googleCalendarClient";
+import { SEED_MILESTONES } from "./business/journeyStages";
 
 export type AuthStatus = "checking" | "signed_out" | "signed_in";
 
@@ -28,6 +59,16 @@ interface AlxioumState {
   goalMilestones: GoalMilestone[];
   goalActions: GoalAction[];
   goalActionLogs: GoalActionLog[];
+  businesses: Business[];
+  businessMilestones: BusinessMilestone[];
+  businessMetrics: BusinessMetricEntry[];
+  businessExperiments: BusinessExperiment[];
+  businessCustomers: BusinessCustomer[];
+  businessFeedback: BusinessFeedback[];
+  businessInsights: BusinessInsight[];
+  businessMissions: BusinessMission[];
+  businessContent: BusinessContentIdea[];
+  businessCompetitors: BusinessCompetitor[];
   routines: Routine[];
   routineSteps: RoutineStep[];
   documents: Document[];
@@ -91,6 +132,61 @@ interface AlxioumState {
   deleteGoalAction: (id: string) => void;
   toggleGoalActionLog: (goalActionId: string, logDate: string) => void;
 
+  createBusinessGoal: (input: {
+    name: string;
+    ideaSummary?: string;
+    problem?: string;
+    solution?: string;
+    targetCustomer?: string;
+    valueProposition?: string;
+    measurementTarget?: number;
+    measurementUnit?: string;
+    targetDate?: string;
+    revenueModel?: Business["revenueModel"];
+    price?: number;
+    pricePeriod?: string;
+    targetCustomerCount?: number;
+  }) => Promise<Business | null>;
+  updateBusiness: (id: string, patch: Partial<Business>) => void;
+  deleteBusiness: (id: string) => void;
+  addBusinessMilestone: (m: { businessId: string; stage: BusinessMilestone["stage"]; title: string; description?: string; sortOrder?: number; targetDate?: string }) => Promise<BusinessMilestone | null>;
+  toggleBusinessMilestone: (id: string) => void;
+  addBusinessMetric: (m: {
+    businessId: string;
+    revenue?: number;
+    expenses?: number;
+    customers?: number;
+    mrr?: number;
+    orders?: number;
+    conversionRate?: number;
+    visitors?: number;
+    leads?: number;
+    trials?: number;
+    note?: string;
+  }) => Promise<BusinessMetricEntry | null>;
+  addBusinessExperiment: (e: { businessId: string; question: string; hypothesis?: string; testDescription?: string }) => Promise<BusinessExperiment | null>;
+  updateBusinessExperiment: (id: string, patch: Partial<BusinessExperiment>) => void;
+  addBusinessCustomer: (c: { businessId: string; name: string; stage?: BusinessCustomer["stage"]; notes?: string }) => Promise<BusinessCustomer | null>;
+  updateBusinessCustomer: (id: string, patch: Partial<BusinessCustomer>) => void;
+  addBusinessFeedback: (f: { businessId: string; customerId?: string; kind: BusinessFeedback["kind"]; content: string }) => Promise<BusinessFeedback | null>;
+  addBusinessInsight: (i: { businessId: string; kind: BusinessInsight["kind"]; title: string; rationale?: string; evidence?: string; suggestedAction?: string }) => Promise<BusinessInsight | null>;
+  updateBusinessInsight: (id: string, patch: Partial<BusinessInsight>) => void;
+  addBusinessMission: (m: { businessId: string; title: string; missionDate?: string; linkedTaskId?: string }) => Promise<BusinessMission | null>;
+  updateBusinessMission: (id: string, patch: Partial<BusinessMission>) => void;
+  addBusinessContent: (c: { businessId: string; idea: string; platform?: string }) => Promise<BusinessContentIdea | null>;
+  updateBusinessContent: (id: string, patch: Partial<BusinessContentIdea>) => void;
+  addBusinessCompetitor: (c: {
+    businessId: string;
+    name: string;
+    product?: string;
+    targetCustomer?: string;
+    pricing?: string;
+    strengths?: string;
+    weaknesses?: string;
+    positioning?: string;
+    source?: BusinessCompetitor["source"];
+  }) => Promise<BusinessCompetitor | null>;
+
   addRoutine: (routine: { name: string; frequency?: string }) => Promise<Routine | null>;
   deleteRoutine: (id: string) => void;
   addRoutineStep: (step: { routineId: string; title: string; timeLabel?: string; sortOrder?: number }) => Promise<RoutineStep | null>;
@@ -127,6 +223,11 @@ function logDocumentActivity(userId: string, documentId: string, kind: string, d
   db.insertDocumentActivityRow(userId, documentId, kind, description).catch((e) => reportSyncError("log document activity", e));
 }
 
+/** Best-effort — mirrors logGoalActivity, feeds the Business Builder timeline. */
+function logBusinessActivity(userId: string, businessId: string, kind: string, description: string) {
+  db.insertBusinessActivityRow(userId, businessId, kind, description).catch((e) => reportSyncError("log business activity", e));
+}
+
 export const useAlxioum = create<AlxioumState>((set, get) => {
   function synced(): string | null {
     const s = get();
@@ -150,6 +251,16 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         goalMilestones,
         goalActions,
         goalActionLogs,
+        businesses,
+        businessMilestones,
+        businessMetrics,
+        businessExperiments,
+        businessCustomers,
+        businessFeedback,
+        businessInsights,
+        businessMissions,
+        businessContent,
+        businessCompetitors,
         routines,
         routineSteps,
         documents,
@@ -170,6 +281,16 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         db.fetchGoalMilestones(userId),
         db.fetchGoalActions(userId),
         db.fetchGoalActionLogs(userId),
+        db.fetchBusinesses(userId),
+        db.fetchBusinessMilestones(userId),
+        db.fetchBusinessMetrics(userId),
+        db.fetchBusinessExperiments(userId),
+        db.fetchBusinessCustomers(userId),
+        db.fetchBusinessFeedback(userId),
+        db.fetchBusinessInsights(userId),
+        db.fetchBusinessMissions(userId),
+        db.fetchBusinessContent(userId),
+        db.fetchBusinessCompetitors(userId),
         db.fetchRoutines(userId),
         db.fetchRoutineSteps(userId),
         db.fetchDocuments(userId),
@@ -207,6 +328,16 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         goalMilestones,
         goalActions,
         goalActionLogs,
+        businesses,
+        businessMilestones,
+        businessMetrics,
+        businessExperiments,
+        businessCustomers,
+        businessFeedback,
+        businessInsights,
+        businessMissions,
+        businessContent,
+        businessCompetitors,
         routines,
         routineSteps,
         documents,
@@ -237,6 +368,16 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     goalMilestones: [],
     goalActions: [],
     goalActionLogs: [],
+    businesses: [],
+    businessMilestones: [],
+    businessMetrics: [],
+    businessExperiments: [],
+    businessCustomers: [],
+    businessFeedback: [],
+    businessInsights: [],
+    businessMissions: [],
+    businessContent: [],
+    businessCompetitors: [],
     routines: [],
     routineSteps: [],
     documents: [],
@@ -290,6 +431,16 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
             goalMilestones: [],
             goalActions: [],
             goalActionLogs: [],
+            businesses: [],
+            businessMilestones: [],
+            businessMetrics: [],
+            businessExperiments: [],
+            businessCustomers: [],
+            businessFeedback: [],
+            businessInsights: [],
+            businessMissions: [],
+            businessContent: [],
+            businessCompetitors: [],
             routines: [],
             routineSteps: [],
             documents: [],
@@ -357,6 +508,16 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         goalMilestones: [],
         goalActions: [],
         goalActionLogs: [],
+        businesses: [],
+        businessMilestones: [],
+        businessMetrics: [],
+        businessExperiments: [],
+        businessCustomers: [],
+        businessFeedback: [],
+        businessInsights: [],
+        businessMissions: [],
+        businessContent: [],
+        businessCompetitors: [],
         routines: [],
         routineSteps: [],
         documents: [],
@@ -672,6 +833,264 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
           .then((created) => set((s) => ({ goalActionLogs: s.goalActionLogs.map((l) => (l.id === optimistic.id ? created : l)) })))
           .catch((e) => reportSyncError("add goal action log", e));
         if (action) logGoalActivity(userId, action.goalId, "action_logged", `Marked "${action.title}" done for ${logDate}`);
+      }
+    },
+
+    createBusinessGoal: async (input) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const goal = await db.insertGoal(userId, {
+          name: input.name,
+          description: input.ideaSummary ?? "",
+          targetDate: input.targetDate,
+          icon: "🚀",
+          category: "Business",
+          priority: "high",
+          difficulty: "ambitious",
+          measurementType: "numeric",
+          measurementUnit: input.measurementUnit ?? "revenue/month",
+          measurementTarget: input.measurementTarget,
+          kind: "business",
+        });
+        set((s) => ({ goals: [...s.goals, goal] }));
+        const business = await db.insertBusiness(userId, {
+          goalId: goal.id,
+          name: input.name,
+          ideaSummary: input.ideaSummary,
+          problem: input.problem,
+          solution: input.solution,
+          targetCustomer: input.targetCustomer,
+          valueProposition: input.valueProposition,
+          revenueModel: input.revenueModel,
+          price: input.price,
+          pricePeriod: input.pricePeriod,
+          targetCustomerCount: input.targetCustomerCount,
+        });
+        set((s) => ({ businesses: [...s.businesses, business] }));
+        const createdMilestones = await Promise.all(
+          SEED_MILESTONES.map((m, i) => db.insertBusinessMilestone(userId, { businessId: business.id, stage: m.stage, title: m.title, sortOrder: i }))
+        );
+        set((s) => ({ businessMilestones: [...s.businessMilestones, ...createdMilestones] }));
+        logGoalActivity(userId, goal.id, "goal_created", `Created business goal "${goal.name}"`);
+        logBusinessActivity(userId, business.id, "created", `Started building "${business.name}"`);
+        return business;
+      } catch (e) {
+        reportSyncError("create business goal", e);
+        return null;
+      }
+    },
+
+    updateBusiness: (id, patch) => {
+      const existing = get().businesses.find((b) => b.id === id);
+      set((s) => ({ businesses: s.businesses.map((b) => (b.id === id ? { ...b, ...patch } : b)) }));
+      const userId = synced();
+      if (userId) db.updateBusinessRow(id, patch).catch((e) => reportSyncError("update business", e));
+      if (userId && existing && patch.stage !== undefined && patch.stage !== existing.stage) {
+        logBusinessActivity(userId, id, "stage_changed", `Moved to ${patch.stage.replace(/_/g, " ")}`);
+      }
+    },
+
+    deleteBusiness: (id) => {
+      const business = get().businesses.find((b) => b.id === id);
+      if (!business) return;
+      set((s) => ({
+        businesses: s.businesses.filter((b) => b.id !== id),
+        businessMilestones: s.businessMilestones.filter((m) => m.businessId !== id),
+        businessMetrics: s.businessMetrics.filter((m) => m.businessId !== id),
+        businessExperiments: s.businessExperiments.filter((e) => e.businessId !== id),
+        businessCustomers: s.businessCustomers.filter((c) => c.businessId !== id),
+        businessFeedback: s.businessFeedback.filter((f) => f.businessId !== id),
+        businessInsights: s.businessInsights.filter((i) => i.businessId !== id),
+        businessMissions: s.businessMissions.filter((m) => m.businessId !== id),
+        businessContent: s.businessContent.filter((c) => c.businessId !== id),
+        businessCompetitors: s.businessCompetitors.filter((c) => c.businessId !== id),
+        goals: s.goals.filter((g) => g.id !== business.goalId),
+      }));
+      // Deleting the linked goal cascades (FK on delete cascade) through the
+      // business row and every business_* child table server-side — one
+      // delete covers the whole business, matching the "delete everything"
+      // requirement without a second cascading code path here.
+      if (synced()) db.deleteGoalRow(business.goalId).catch((e) => reportSyncError("delete business", e));
+    },
+
+    addBusinessMilestone: async (m) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessMilestone(userId, m);
+        set((s) => ({ businessMilestones: [...s.businessMilestones, created] }));
+        logBusinessActivity(userId, m.businessId, "milestone_added", `Added milestone "${created.title}"`);
+        return created;
+      } catch (e) {
+        reportSyncError("add business milestone", e);
+        return null;
+      }
+    },
+
+    toggleBusinessMilestone: (id) => {
+      const existing = get().businessMilestones.find((m) => m.id === id);
+      if (!existing) return;
+      const done = !existing.done;
+      const completedAt = done ? new Date().toISOString() : undefined;
+      set((s) => ({ businessMilestones: s.businessMilestones.map((m) => (m.id === id ? { ...m, done, completedAt } : m)) }));
+      const userId = synced();
+      if (userId) {
+        db.updateBusinessMilestoneRow(id, { done, completedAt: completedAt ?? null } as Partial<BusinessMilestone>).catch((e) => reportSyncError("toggle business milestone", e));
+        logBusinessActivity(userId, existing.businessId, done ? "milestone_completed" : "milestone_reopened", `${done ? "Completed" : "Reopened"} milestone "${existing.title}"`);
+      }
+    },
+
+    addBusinessMetric: async (m) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessMetric(userId, m);
+        set((s) => ({ businessMetrics: [...s.businessMetrics, created] }));
+        logBusinessActivity(userId, m.businessId, "metrics_recorded", "Recorded updated business metrics");
+        return created;
+      } catch (e) {
+        reportSyncError("add business metric", e);
+        return null;
+      }
+    },
+
+    addBusinessExperiment: async (e) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessExperiment(userId, e);
+        set((s) => ({ businessExperiments: [...s.businessExperiments, created] }));
+        logBusinessActivity(userId, e.businessId, "experiment_created", `Started experiment: "${created.question}"`);
+        return created;
+      } catch (err) {
+        reportSyncError("add business experiment", err);
+        return null;
+      }
+    },
+
+    updateBusinessExperiment: (id, patch) => {
+      const existing = get().businessExperiments.find((e) => e.id === id);
+      set((s) => ({ businessExperiments: s.businessExperiments.map((e) => (e.id === id ? { ...e, ...patch } : e)) }));
+      const userId = synced();
+      if (userId) db.updateBusinessExperimentRow(id, patch).catch((e) => reportSyncError("update business experiment", e));
+      if (userId && existing && patch.status === "completed" && existing.status !== "completed") {
+        logBusinessActivity(userId, existing.businessId, "experiment_completed", `Completed experiment: "${existing.question}"`);
+      }
+    },
+
+    addBusinessCustomer: async (c) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessCustomer(userId, c);
+        set((s) => ({ businessCustomers: [...s.businessCustomers, created] }));
+        logBusinessActivity(userId, c.businessId, "customer_added", `Added ${created.stage}: "${created.name}"`);
+        return created;
+      } catch (e) {
+        reportSyncError("add business customer", e);
+        return null;
+      }
+    },
+
+    updateBusinessCustomer: (id, patch) => {
+      set((s) => ({ businessCustomers: s.businessCustomers.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
+      if (synced()) db.updateBusinessCustomerRow(id, patch).catch((e) => reportSyncError("update business customer", e));
+    },
+
+    addBusinessFeedback: async (f) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessFeedback(userId, f);
+        set((s) => ({ businessFeedback: [...s.businessFeedback, created] }));
+        logBusinessActivity(userId, f.businessId, "feedback_recorded", `Recorded ${created.kind.replace(/_/g, " ")}`);
+        return created;
+      } catch (e) {
+        reportSyncError("add business feedback", e);
+        return null;
+      }
+    },
+
+    addBusinessInsight: async (i) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessInsight(userId, i);
+        set((s) => ({ businessInsights: [...s.businessInsights, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add business insight", e);
+        return null;
+      }
+    },
+
+    updateBusinessInsight: (id, patch) => {
+      const existing = get().businessInsights.find((i) => i.id === id);
+      set((s) => ({ businessInsights: s.businessInsights.map((i) => (i.id === id ? { ...i, ...patch } : i)) }));
+      const userId = synced();
+      if (userId) db.updateBusinessInsightRow(id, patch).catch((e) => reportSyncError("update business insight", e));
+      if (userId && existing && patch.status !== undefined && patch.status !== existing.status) {
+        logBusinessActivity(userId, existing.businessId, `${existing.kind}_${patch.status}`, `${patch.status === "accepted" ? "Accepted" : patch.status === "ignored" ? "Ignored" : "Resolved"} ${existing.kind}: "${existing.title}"`);
+      }
+    },
+
+    addBusinessMission: async (m) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessMission(userId, m);
+        set((s) => ({ businessMissions: [...s.businessMissions, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add business mission", e);
+        return null;
+      }
+    },
+
+    updateBusinessMission: (id, patch) => {
+      const existing = get().businessMissions.find((m) => m.id === id);
+      set((s) => ({ businessMissions: s.businessMissions.map((m) => (m.id === id ? { ...m, ...patch } : m)) }));
+      const userId = synced();
+      if (userId) db.updateBusinessMissionRow(id, patch).catch((e) => reportSyncError("update business mission", e));
+      if (userId && existing && patch.status === "completed" && existing.status !== "completed") {
+        logBusinessActivity(userId, existing.businessId, "mission_completed", `Completed mission: "${existing.title}"`);
+      }
+    },
+
+    addBusinessContent: async (c) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessContent(userId, c);
+        set((s) => ({ businessContent: [...s.businessContent, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add business content", e);
+        return null;
+      }
+    },
+
+    updateBusinessContent: (id, patch) => {
+      const existing = get().businessContent.find((c) => c.id === id);
+      set((s) => ({ businessContent: s.businessContent.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
+      const userId = synced();
+      if (userId) db.updateBusinessContentRow(id, patch).catch((e) => reportSyncError("update business content", e));
+      if (userId && existing && patch.status === "published" && existing.status !== "published") {
+        logBusinessActivity(userId, existing.businessId, "content_published", `Published: "${existing.idea}"`);
+      }
+    },
+
+    addBusinessCompetitor: async (c) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertBusinessCompetitor(userId, c);
+        set((s) => ({ businessCompetitors: [...s.businessCompetitors, created] }));
+        return created;
+      } catch (e) {
+        reportSyncError("add business competitor", e);
+        return null;
       }
     },
 
