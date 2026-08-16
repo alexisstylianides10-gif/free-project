@@ -279,7 +279,16 @@ create table if not exists public.goals (
   target_date date,
   progress int not null default 0 check (progress between 0 and 100),
   completed boolean not null default false,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  icon text not null default '🎯',
+  category text,
+  priority text not null default 'medium' check (priority in ('low', 'medium', 'high')),
+  difficulty text not null default 'moderate' check (difficulty in ('easy', 'moderate', 'challenging', 'ambitious')),
+  paused boolean not null default false,
+  measurement_type text not null default 'checklist' check (measurement_type in ('numeric', 'distance', 'count', 'streak', 'time', 'checklist')),
+  measurement_unit text not null default '',
+  measurement_target numeric,
+  measurement_current numeric not null default 0
 );
 
 create table if not exists public.goal_milestones (
@@ -289,6 +298,48 @@ create table if not exists public.goal_milestones (
   title text not null,
   done boolean not null default false,
   sort_order int not null default 0,
+  created_at timestamptz not null default now(),
+  description text not null default '',
+  target_date date,
+  measurement_target numeric,
+  measurement_current numeric
+);
+
+create table if not exists public.goal_actions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  goal_id uuid not null references public.goals (id) on delete cascade,
+  title text not null,
+  frequency_per_week int not null default 3,
+  duration_minutes int,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.goal_action_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  goal_action_id uuid not null references public.goal_actions (id) on delete cascade,
+  log_date date not null,
+  created_at timestamptz not null default now(),
+  unique (goal_action_id, log_date)
+);
+
+create table if not exists public.goal_activity (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  goal_id uuid not null references public.goals (id) on delete cascade,
+  kind text not null,
+  description text not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.goal_coach_messages (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  goal_id uuid not null references public.goals (id) on delete cascade,
+  role text not null check (role in ('user', 'assistant')),
+  content text not null,
+  proposed_adjustment jsonb,
   created_at timestamptz not null default now()
 );
 
@@ -392,7 +443,8 @@ begin
       'pending_actions', 'agent_actions', 'notifications', 'push_subscriptions',
       'subjects', 'focus_sessions', 'student_profiles', 'calendar_connections', 'waitlist',
       'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
-      'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes'
+      'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes',
+      'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -461,7 +513,8 @@ begin
       'tasks', 'events', 'memory', 'conversations', 'messages',
       'pending_actions', 'agent_actions', 'notifications',
       'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
-      'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes'
+      'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes',
+      'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages'
     ])
   loop
     execute format('drop policy if exists "%s_owner" on public.%I;', t, t);

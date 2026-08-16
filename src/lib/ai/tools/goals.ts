@@ -7,6 +7,15 @@ interface GoalRow {
   target_date: string | null;
   progress: number;
   completed: boolean;
+  icon: string;
+  category: string | null;
+  priority: "low" | "medium" | "high";
+  difficulty: "easy" | "moderate" | "challenging" | "ambitious";
+  paused: boolean;
+  measurement_type: "numeric" | "distance" | "count" | "streak" | "time" | "checklist";
+  measurement_unit: string;
+  measurement_target: number | null;
+  measurement_current: number;
 }
 
 interface MilestoneRow {
@@ -54,6 +63,14 @@ export const goalsSearch: ToolSpec<{ query?: string; completed?: boolean }> = {
           targetDate: g.target_date,
           progress: g.progress,
           completed: g.completed,
+          category: g.category,
+          priority: g.priority,
+          difficulty: g.difficulty,
+          paused: g.paused,
+          measurementType: g.measurement_type,
+          measurementUnit: g.measurement_unit,
+          measurementTarget: g.measurement_target,
+          measurementCurrent: g.measurement_current,
           milestones: milestoneRows.filter((m) => m.goal_id === g.id).map((m) => ({ id: m.id, title: m.title, done: m.done })),
         })),
       },
@@ -66,10 +83,17 @@ export const goalsCreate: ToolSpec<{
   description?: string;
   targetDate?: string;
   milestones?: string[];
+  icon?: string;
+  category?: string;
+  priority?: "low" | "medium" | "high";
+  difficulty?: "easy" | "moderate" | "challenging" | "ambitious";
+  measurementType?: "numeric" | "distance" | "count" | "streak" | "time" | "checklist";
+  measurementUnit?: string;
+  measurementTarget?: number;
 }> = {
   name: "goals_create",
   description:
-    "Propose creating a new goal. When the goal is broad or long-term (e.g. 'learn Spanish', 'save €500'), break it into 3-6 concrete, sequential milestones and pass them in the milestones array — don't leave milestones empty for a vague goal.",
+    "Propose creating a new goal. When the goal is broad or long-term (e.g. 'learn Spanish', 'save €500'), break it into 3-6 concrete, sequential milestones and pass them in the milestones array — don't leave milestones empty for a vague goal. This is a fallback path — the primary way users create goals is the Goals tab's own guided flow, so only use this when the user is explicitly asking via chat.",
   inputSchema: {
     type: "object",
     properties: {
@@ -77,6 +101,13 @@ export const goalsCreate: ToolSpec<{
       description: { type: "string" },
       targetDate: { type: "string", description: "ISO date." },
       milestones: { type: "array", items: { type: "string" } },
+      icon: { type: "string", description: "A single emoji representing the goal." },
+      category: { type: "string" },
+      priority: { type: "string", enum: ["low", "medium", "high"] },
+      difficulty: { type: "string", enum: ["easy", "moderate", "challenging", "ambitious"] },
+      measurementType: { type: "string", enum: ["numeric", "distance", "count", "streak", "time", "checklist"], description: "How progress is tracked. Default 'checklist' derives progress from milestones." },
+      measurementUnit: { type: "string", description: "e.g. 'km', 'books', 'kg' — only for non-checklist measurement types." },
+      measurementTarget: { type: "number", description: "The target number for non-checklist measurement types." },
     },
     required: ["name"],
   },
@@ -90,7 +121,19 @@ export const goalsCreate: ToolSpec<{
   execute: async (ctx, input) => {
     const { data: goal, error } = await ctx.supabase
       .from("goals")
-      .insert({ user_id: ctx.userId, name: input.name, description: input.description ?? "", target_date: input.targetDate ?? null })
+      .insert({
+        user_id: ctx.userId,
+        name: input.name,
+        description: input.description ?? "",
+        target_date: input.targetDate ?? null,
+        icon: input.icon ?? "🎯",
+        category: input.category ?? null,
+        priority: input.priority ?? "medium",
+        difficulty: input.difficulty ?? "moderate",
+        measurement_type: input.measurementType ?? "checklist",
+        measurement_unit: input.measurementUnit ?? "",
+        measurement_target: input.measurementTarget ?? null,
+      })
       .select("*")
       .single();
     if (error) return { ok: false, error: error.message };

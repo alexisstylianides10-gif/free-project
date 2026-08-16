@@ -23,6 +23,8 @@ export interface Task {
   aiContext?: string;
   createdAt: string;
   completedAt?: string;
+  /** Set when this task was created from a goal's Quick Actions (Add task). */
+  goalId?: string;
 }
 
 export type EventType = "school" | "health" | "social" | "study" | "work" | "personal" | "travel";
@@ -46,6 +48,8 @@ export interface CalendarEvent {
   source: "alxioum" | "google";
   /** Set when this event is linked to a Google Calendar event (either pulled in, or pushed out from Alxioum). */
   googleEventId?: string;
+  /** Set when this event was scheduled from a goal's Quick Actions (Schedule time). */
+  linkedGoalId?: string;
 }
 
 export interface CalendarConnection {
@@ -202,6 +206,12 @@ export interface ShoppingItem {
   createdAt: string;
 }
 
+export type GoalPriority = "low" | "medium" | "high";
+export type GoalDifficulty = "easy" | "moderate" | "challenging" | "ambitious";
+export type GoalMeasurementType = "numeric" | "distance" | "count" | "streak" | "time" | "checklist";
+/** Always computed (src/lib/goals/status.ts), never stored as truth — see Goal.paused for the one persisted state. */
+export type GoalStatus = "on_track" | "at_risk" | "behind" | "completed" | "paused";
+
 export interface Goal {
   id: string;
   name: string;
@@ -210,6 +220,15 @@ export interface Goal {
   progress: number;
   completed: boolean;
   createdAt: string;
+  icon: string;
+  category?: string;
+  priority: GoalPriority;
+  difficulty: GoalDifficulty;
+  paused: boolean;
+  measurementType: GoalMeasurementType;
+  measurementUnit: string;
+  measurementTarget?: number;
+  measurementCurrent: number;
 }
 
 export interface GoalMilestone {
@@ -218,6 +237,43 @@ export interface GoalMilestone {
   title: string;
   done: boolean;
   sortOrder: number;
+  createdAt: string;
+  description: string;
+  targetDate?: string;
+  measurementTarget?: number;
+  measurementCurrent?: number;
+}
+
+export interface GoalAction {
+  id: string;
+  goalId: string;
+  title: string;
+  frequencyPerWeek: number;
+  durationMinutes?: number;
+  createdAt: string;
+}
+
+export interface GoalActionLog {
+  id: string;
+  goalActionId: string;
+  logDate: string;
+  createdAt: string;
+}
+
+export interface GoalActivityEntry {
+  id: string;
+  goalId: string;
+  kind: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface GoalCoachMessage {
+  id: string;
+  goalId: string;
+  role: "user" | "assistant";
+  content: string;
+  proposedAdjustment?: Record<string, unknown> | null;
   createdAt: string;
 }
 

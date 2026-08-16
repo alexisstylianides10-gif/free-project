@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { AppNotification, CalendarEvent, FocusSession, Goal, GoalMilestone, Profile, Routine, RoutineStep, ShoppingItem, ShoppingList, StudentProfile, Subject, Task } from "./types";
+import { AppNotification, CalendarEvent, FocusSession, Goal, GoalAction, GoalActionLog, GoalMilestone, Profile, Routine, RoutineStep, ShoppingItem, ShoppingList, StudentProfile, Subject, Task } from "./types";
 import { newId } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
@@ -26,6 +26,8 @@ interface AlxioumState {
   shoppingItems: ShoppingItem[];
   goals: Goal[];
   goalMilestones: GoalMilestone[];
+  goalActions: GoalAction[];
+  goalActionLogs: GoalActionLog[];
   routines: Routine[];
   routineSteps: RoutineStep[];
   commandOpen: boolean;
@@ -76,11 +78,14 @@ interface AlxioumState {
   toggleShoppingItem: (id: string) => void;
   deleteShoppingItem: (id: string) => void;
 
-  addGoal: (goal: { name: string; description?: string; targetDate?: string }) => Promise<Goal | null>;
+  addGoal: (goal: db.NewGoalInput) => Promise<Goal | null>;
   updateGoal: (id: string, patch: Partial<Goal>) => void;
   deleteGoal: (id: string) => void;
-  addMilestone: (milestone: { goalId: string; title: string; sortOrder?: number }) => Promise<GoalMilestone | null>;
+  addMilestone: (milestone: { goalId: string; title: string; sortOrder?: number; description?: string; targetDate?: string; measurementTarget?: number }) => Promise<GoalMilestone | null>;
   toggleMilestone: (id: string) => void;
+  addGoalAction: (action: { goalId: string; title: string; frequencyPerWeek?: number; durationMinutes?: number }) => Promise<GoalAction | null>;
+  deleteGoalAction: (id: string) => void;
+  toggleGoalActionLog: (goalActionId: string, logDate: string) => void;
 
   addRoutine: (routine: { name: string; frequency?: string }) => Promise<Routine | null>;
   deleteRoutine: (id: string) => void;
@@ -92,6 +97,11 @@ interface AlxioumState {
 
 function reportSyncError(context: string, err: unknown) {
   console.error(`[Alxioum sync] ${context} failed:`, err);
+}
+
+/** Best-effort — a missed activity row must never block the mutation itself. */
+function logGoalActivity(userId: string, goalId: string, kind: string, description: string) {
+  db.insertGoalActivityRow(userId, goalId, kind, description).catch((e) => reportSyncError("log goal activity", e));
 }
 
 export const useAlxioum = create<AlxioumState>((set, get) => {
@@ -115,6 +125,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         shoppingItems,
         goals,
         goalMilestones,
+        goalActions,
+        goalActionLogs,
         routines,
         routineSteps,
       ] = await Promise.all([
@@ -129,6 +141,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         db.fetchShoppingItems(userId),
         db.fetchGoals(userId),
         db.fetchGoalMilestones(userId),
+        db.fetchGoalActions(userId),
+        db.fetchGoalActionLogs(userId),
         db.fetchRoutines(userId),
         db.fetchRoutineSteps(userId),
       ]);
@@ -160,6 +174,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         shoppingItems,
         goals,
         goalMilestones,
+        goalActions,
+        goalActionLogs,
         routines,
         routineSteps,
         dataLoading: false,
@@ -184,6 +200,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     shoppingItems: [],
     goals: [],
     goalMilestones: [],
+    goalActions: [],
+    goalActionLogs: [],
     routines: [],
     routineSteps: [],
     commandOpen: false,
@@ -231,6 +249,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
             shoppingItems: [],
             goals: [],
             goalMilestones: [],
+            goalActions: [],
+            goalActionLogs: [],
             routines: [],
             routineSteps: [],
           });
@@ -292,6 +312,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
         shoppingItems: [],
         goals: [],
         goalMilestones: [],
+        goalActions: [],
+        goalActionLogs: [],
         routines: [],
         routineSteps: [],
       });
@@ -487,6 +509,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       try {
         const created = await db.insertGoal(userId, goal);
         set((s) => ({ goals: [...s.goals, created] }));
+        logGoalActivity(userId, created.id, "goal_created", `Created goal "${created.name}"`);
         return created;
       } catch (e) {
         reportSyncError("add goal", e);
@@ -495,14 +518,25 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     },
 
     updateGoal: (id, patch) => {
+      const existing = get().goals.find((g) => g.id === id);
       set((s) => ({ goals: s.goals.map((g) => (g.id === id ? { ...g, ...patch } : g)) }));
-      if (synced()) db.updateGoalRow(id, patch).catch((e) => reportSyncError("update goal", e));
+      const userId = synced();
+      if (userId) db.updateGoalRow(id, patch).catch((e) => reportSyncError("update goal", e));
+      if (userId && existing) {
+        if (patch.paused === true && !existing.paused) logGoalActivity(userId, id, "paused", `Paused "${existing.name}"`);
+        else if (patch.paused === false && existing.paused) logGoalActivity(userId, id, "resumed", `Resumed "${existing.name}"`);
+        if (patch.completed === true && !existing.completed) logGoalActivity(userId, id, "completed", `Completed "${existing.name}"`);
+        if (patch.measurementCurrent !== undefined && patch.measurementCurrent !== existing.measurementCurrent) {
+          logGoalActivity(userId, id, "progress_updated", `Updated progress to ${patch.measurementCurrent}${existing.measurementUnit ? ` ${existing.measurementUnit}` : ""}`);
+        }
+      }
     },
 
     deleteGoal: (id) => {
       set((s) => ({
         goals: s.goals.filter((g) => g.id !== id),
         goalMilestones: s.goalMilestones.filter((m) => m.goalId !== id),
+        goalActions: s.goalActions.filter((a) => a.goalId !== id),
       }));
       if (synced()) db.deleteGoalRow(id).catch((e) => reportSyncError("delete goal", e));
     },
@@ -513,6 +547,7 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       try {
         const created = await db.insertGoalMilestone(userId, milestone);
         set((s) => ({ goalMilestones: [...s.goalMilestones, created] }));
+        logGoalActivity(userId, milestone.goalId, "milestone_added", `Added milestone "${created.title}"`);
         return created;
       } catch (e) {
         reportSyncError("add milestone", e);
@@ -524,20 +559,72 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
       const existing = get().goalMilestones.find((m) => m.id === id);
       if (!existing) return;
       const done = !existing.done;
+      const goal = get().goals.find((g) => g.id === existing.goalId);
       // Recompute the parent goal's progress from real milestone completion —
       // mirrors goals_complete_milestone's server-side logic so the progress
       // bar stays correct whether a milestone is toggled from chat or the UI.
+      // Only checklist-type goals derive progress from milestones; other
+      // measurement types track progress via measurementCurrent instead.
       let progress: number | null = null;
       set((s) => {
         const goalMilestones = s.goalMilestones.map((m) => (m.id === id ? { ...m, done } : m));
+        if (!goal || goal.measurementType !== "checklist") return { goalMilestones };
         const siblings = goalMilestones.filter((m) => m.goalId === existing.goalId);
         progress = siblings.length > 0 ? Math.round((siblings.filter((m) => m.done).length / siblings.length) * 100) : null;
         const goals = progress !== null ? s.goals.map((g) => (g.id === existing.goalId ? { ...g, progress: progress!, completed: progress! >= 100 } : g)) : s.goals;
         return { goalMilestones, goals };
       });
-      if (synced()) {
+      const userId = synced();
+      if (userId) {
         db.updateGoalMilestoneRow(id, { done }).catch((e) => reportSyncError("toggle milestone", e));
         if (progress !== null) db.updateGoalRow(existing.goalId, { progress, completed: progress >= 100 }).catch((e) => reportSyncError("update goal progress", e));
+        logGoalActivity(userId, existing.goalId, done ? "milestone_completed" : "milestone_reopened", `${done ? "Completed" : "Reopened"} milestone "${existing.title}"`);
+      }
+    },
+
+    addGoalAction: async (action) => {
+      const userId = synced();
+      if (!userId) return null;
+      try {
+        const created = await db.insertGoalAction(userId, action);
+        set((s) => ({ goalActions: [...s.goalActions, created] }));
+        logGoalActivity(userId, action.goalId, "action_added", `Added recurring action "${created.title}"`);
+        return created;
+      } catch (e) {
+        reportSyncError("add goal action", e);
+        return null;
+      }
+    },
+
+    deleteGoalAction: (id) => {
+      const existing = get().goalActions.find((a) => a.id === id);
+      set((s) => ({
+        goalActions: s.goalActions.filter((a) => a.id !== id),
+        goalActionLogs: s.goalActionLogs.filter((l) => l.goalActionId !== id),
+      }));
+      const userId = synced();
+      if (userId) {
+        db.deleteGoalActionRow(id).catch((e) => reportSyncError("delete goal action", e));
+        if (existing) logGoalActivity(userId, existing.goalId, "action_removed", `Removed recurring action "${existing.title}"`);
+      }
+    },
+
+    toggleGoalActionLog: (goalActionId, logDate) => {
+      const userId = synced();
+      if (!userId) return;
+      const action = get().goalActions.find((a) => a.id === goalActionId);
+      const existingLog = get().goalActionLogs.find((l) => l.goalActionId === goalActionId && l.logDate === logDate);
+      if (existingLog) {
+        set((s) => ({ goalActionLogs: s.goalActionLogs.filter((l) => l.id !== existingLog.id) }));
+        db.removeGoalActionLogRow(goalActionId, logDate).catch((e) => reportSyncError("remove goal action log", e));
+        if (action) logGoalActivity(userId, action.goalId, "action_unlogged", `Unmarked "${action.title}" for ${logDate}`);
+      } else {
+        const optimistic: GoalActionLog = { id: newId(), goalActionId, logDate, createdAt: new Date().toISOString() };
+        set((s) => ({ goalActionLogs: [...s.goalActionLogs, optimistic] }));
+        db.addGoalActionLogRow(userId, goalActionId, logDate)
+          .then((created) => set((s) => ({ goalActionLogs: s.goalActionLogs.map((l) => (l.id === optimistic.id ? created : l)) })))
+          .catch((e) => reportSyncError("add goal action log", e));
+        if (action) logGoalActivity(userId, action.goalId, "action_logged", `Marked "${action.title}" done for ${logDate}`);
       }
     },
 

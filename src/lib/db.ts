@@ -9,6 +9,10 @@ import {
   ExtractedDate,
   Goal,
   GoalMilestone,
+  GoalAction,
+  GoalActionLog,
+  GoalActivityEntry,
+  GoalCoachMessage,
   MemoryItem,
   Profile,
   Routine,
@@ -121,6 +125,7 @@ interface TaskRow {
   ai_context: string | null;
   created_at: string;
   completed_at: string | null;
+  goal_id: string | null;
 }
 
 function taskFromRow(r: TaskRow): Task {
@@ -139,6 +144,7 @@ function taskFromRow(r: TaskRow): Task {
     aiContext: r.ai_context ?? undefined,
     createdAt: r.created_at,
     completedAt: r.completed_at ?? undefined,
+    goalId: r.goal_id ?? undefined,
   };
 }
 
@@ -156,6 +162,7 @@ function taskToRow(userId: string, t: Partial<Task> & { title: string }): Record
     recurring: t.recurring ?? "none",
     subtasks: t.subtasks ?? [],
     ai_context: t.aiContext ?? null,
+    goal_id: t.goalId ?? null,
   };
 }
 
@@ -184,6 +191,7 @@ export async function updateTaskRow(taskId: string, patch: Partial<Task>): Promi
   if (patch.recurring !== undefined) row.recurring = patch.recurring;
   if (patch.subtasks !== undefined) row.subtasks = patch.subtasks;
   if (patch.completedAt !== undefined) row.completed_at = patch.completedAt;
+  if (patch.goalId !== undefined) row.goal_id = patch.goalId;
   const { error } = await client().from("tasks").update(row).eq("id", taskId);
   if (error) throw error;
 }
@@ -214,6 +222,7 @@ interface EventRow {
   movable: boolean;
   source: CalendarEvent["source"];
   google_event_id: string | null;
+  linked_goal_id: string | null;
 }
 
 function eventFromRow(r: EventRow): CalendarEvent {
@@ -234,6 +243,7 @@ function eventFromRow(r: EventRow): CalendarEvent {
     movable: r.movable,
     source: r.source ?? "alxioum",
     googleEventId: r.google_event_id ?? undefined,
+    linkedGoalId: r.linked_goal_id ?? undefined,
   };
 }
 
@@ -253,6 +263,7 @@ function eventToRow(userId: string, e: Partial<CalendarEvent> & { title: string;
     linked_task_id: e.linkedTaskId ?? null,
     ai_generated: e.aiGenerated ?? false,
     movable: e.movable ?? true,
+    linked_goal_id: e.linkedGoalId ?? null,
   };
 }
 
@@ -669,6 +680,15 @@ interface GoalRow {
   progress: number;
   completed: boolean;
   created_at: string;
+  icon: string;
+  category: string | null;
+  priority: Goal["priority"];
+  difficulty: Goal["difficulty"];
+  paused: boolean;
+  measurement_type: Goal["measurementType"];
+  measurement_unit: string;
+  measurement_target: number | null;
+  measurement_current: number;
 }
 
 function goalFromRow(r: GoalRow): Goal {
@@ -680,7 +700,29 @@ function goalFromRow(r: GoalRow): Goal {
     progress: r.progress,
     completed: r.completed,
     createdAt: r.created_at,
+    icon: r.icon || "🎯",
+    category: r.category ?? undefined,
+    priority: r.priority ?? "medium",
+    difficulty: r.difficulty ?? "moderate",
+    paused: r.paused ?? false,
+    measurementType: r.measurement_type ?? "checklist",
+    measurementUnit: r.measurement_unit ?? "",
+    measurementTarget: r.measurement_target ?? undefined,
+    measurementCurrent: r.measurement_current ?? 0,
   };
+}
+
+export interface NewGoalInput {
+  name: string;
+  description?: string;
+  targetDate?: string;
+  icon?: string;
+  category?: string;
+  priority?: Goal["priority"];
+  difficulty?: Goal["difficulty"];
+  measurementType?: Goal["measurementType"];
+  measurementUnit?: string;
+  measurementTarget?: number;
 }
 
 export async function fetchGoals(userId: string): Promise<Goal[]> {
@@ -689,10 +731,22 @@ export async function fetchGoals(userId: string): Promise<Goal[]> {
   return (data as GoalRow[]).map(goalFromRow);
 }
 
-export async function insertGoal(userId: string, goal: { name: string; description?: string; targetDate?: string }): Promise<Goal> {
+export async function insertGoal(userId: string, goal: NewGoalInput): Promise<Goal> {
   const { data, error } = await client()
     .from("goals")
-    .insert({ user_id: userId, name: goal.name, description: goal.description ?? "", target_date: goal.targetDate ?? null })
+    .insert({
+      user_id: userId,
+      name: goal.name,
+      description: goal.description ?? "",
+      target_date: goal.targetDate ?? null,
+      icon: goal.icon ?? "🎯",
+      category: goal.category ?? null,
+      priority: goal.priority ?? "medium",
+      difficulty: goal.difficulty ?? "moderate",
+      measurement_type: goal.measurementType ?? "checklist",
+      measurement_unit: goal.measurementUnit ?? "",
+      measurement_target: goal.measurementTarget ?? null,
+    })
     .select("*")
     .single();
   if (error) throw error;
@@ -706,6 +760,15 @@ export async function updateGoalRow(id: string, patch: Partial<Goal>): Promise<v
   if (patch.targetDate !== undefined) row.target_date = patch.targetDate;
   if (patch.progress !== undefined) row.progress = patch.progress;
   if (patch.completed !== undefined) row.completed = patch.completed;
+  if (patch.icon !== undefined) row.icon = patch.icon;
+  if (patch.category !== undefined) row.category = patch.category;
+  if (patch.priority !== undefined) row.priority = patch.priority;
+  if (patch.difficulty !== undefined) row.difficulty = patch.difficulty;
+  if (patch.paused !== undefined) row.paused = patch.paused;
+  if (patch.measurementType !== undefined) row.measurement_type = patch.measurementType;
+  if (patch.measurementUnit !== undefined) row.measurement_unit = patch.measurementUnit;
+  if (patch.measurementTarget !== undefined) row.measurement_target = patch.measurementTarget;
+  if (patch.measurementCurrent !== undefined) row.measurement_current = patch.measurementCurrent;
   const { error } = await client().from("goals").update(row).eq("id", id);
   if (error) throw error;
 }
@@ -722,10 +785,25 @@ interface GoalMilestoneRow {
   done: boolean;
   sort_order: number;
   created_at: string;
+  description: string;
+  target_date: string | null;
+  measurement_target: number | null;
+  measurement_current: number | null;
 }
 
 function goalMilestoneFromRow(r: GoalMilestoneRow): GoalMilestone {
-  return { id: r.id, goalId: r.goal_id, title: r.title, done: r.done, sortOrder: r.sort_order, createdAt: r.created_at };
+  return {
+    id: r.id,
+    goalId: r.goal_id,
+    title: r.title,
+    done: r.done,
+    sortOrder: r.sort_order,
+    createdAt: r.created_at,
+    description: r.description ?? "",
+    targetDate: r.target_date ?? undefined,
+    measurementTarget: r.measurement_target ?? undefined,
+    measurementCurrent: r.measurement_current ?? undefined,
+  };
 }
 
 export async function fetchGoalMilestones(userId: string): Promise<GoalMilestone[]> {
@@ -734,10 +812,21 @@ export async function fetchGoalMilestones(userId: string): Promise<GoalMilestone
   return (data as GoalMilestoneRow[]).map(goalMilestoneFromRow);
 }
 
-export async function insertGoalMilestone(userId: string, milestone: { goalId: string; title: string; sortOrder?: number }): Promise<GoalMilestone> {
+export async function insertGoalMilestone(
+  userId: string,
+  milestone: { goalId: string; title: string; sortOrder?: number; description?: string; targetDate?: string; measurementTarget?: number }
+): Promise<GoalMilestone> {
   const { data, error } = await client()
     .from("goal_milestones")
-    .insert({ user_id: userId, goal_id: milestone.goalId, title: milestone.title, sort_order: milestone.sortOrder ?? 0 })
+    .insert({
+      user_id: userId,
+      goal_id: milestone.goalId,
+      title: milestone.title,
+      sort_order: milestone.sortOrder ?? 0,
+      description: milestone.description ?? "",
+      target_date: milestone.targetDate ?? null,
+      measurement_target: milestone.measurementTarget ?? null,
+    })
     .select("*")
     .single();
   if (error) throw error;
@@ -749,6 +838,10 @@ export async function updateGoalMilestoneRow(id: string, patch: Partial<GoalMile
   if (patch.done !== undefined) row.done = patch.done;
   if (patch.title !== undefined) row.title = patch.title;
   if (patch.sortOrder !== undefined) row.sort_order = patch.sortOrder;
+  if (patch.description !== undefined) row.description = patch.description;
+  if (patch.targetDate !== undefined) row.target_date = patch.targetDate;
+  if (patch.measurementTarget !== undefined) row.measurement_target = patch.measurementTarget;
+  if (patch.measurementCurrent !== undefined) row.measurement_current = patch.measurementCurrent;
   const { error } = await client().from("goal_milestones").update(row).eq("id", id);
   if (error) throw error;
 }
@@ -756,6 +849,138 @@ export async function updateGoalMilestoneRow(id: string, patch: Partial<GoalMile
 export async function deleteGoalMilestoneRow(id: string): Promise<void> {
   const { error } = await client().from("goal_milestones").delete().eq("id", id);
   if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// goal actions (recurring weekly commitments) + logs
+// ---------------------------------------------------------------------------
+
+interface GoalActionRow {
+  id: string;
+  goal_id: string;
+  title: string;
+  frequency_per_week: number;
+  duration_minutes: number | null;
+  created_at: string;
+}
+
+function goalActionFromRow(r: GoalActionRow): GoalAction {
+  return { id: r.id, goalId: r.goal_id, title: r.title, frequencyPerWeek: r.frequency_per_week, durationMinutes: r.duration_minutes ?? undefined, createdAt: r.created_at };
+}
+
+export async function fetchGoalActions(userId: string): Promise<GoalAction[]> {
+  const { data, error } = await client().from("goal_actions").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as GoalActionRow[]).map(goalActionFromRow);
+}
+
+export async function insertGoalAction(userId: string, action: { goalId: string; title: string; frequencyPerWeek?: number; durationMinutes?: number }): Promise<GoalAction> {
+  const { data, error } = await client()
+    .from("goal_actions")
+    .insert({ user_id: userId, goal_id: action.goalId, title: action.title, frequency_per_week: action.frequencyPerWeek ?? 3, duration_minutes: action.durationMinutes ?? null })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return goalActionFromRow(data as GoalActionRow);
+}
+
+export async function deleteGoalActionRow(id: string): Promise<void> {
+  const { error } = await client().from("goal_actions").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface GoalActionLogRow {
+  id: string;
+  goal_action_id: string;
+  log_date: string;
+  created_at: string;
+}
+
+function goalActionLogFromRow(r: GoalActionLogRow): GoalActionLog {
+  return { id: r.id, goalActionId: r.goal_action_id, logDate: r.log_date, createdAt: r.created_at };
+}
+
+export async function fetchGoalActionLogs(userId: string): Promise<GoalActionLog[]> {
+  const { data, error } = await client().from("goal_action_logs").select("*").eq("user_id", userId).order("log_date", { ascending: false }).limit(500);
+  if (error) throw error;
+  return (data as GoalActionLogRow[]).map(goalActionLogFromRow);
+}
+
+export async function addGoalActionLogRow(userId: string, goalActionId: string, logDate: string): Promise<GoalActionLog> {
+  const { data, error } = await client()
+    .from("goal_action_logs")
+    .upsert({ user_id: userId, goal_action_id: goalActionId, log_date: logDate }, { onConflict: "goal_action_id,log_date" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return goalActionLogFromRow(data as GoalActionLogRow);
+}
+
+export async function removeGoalActionLogRow(goalActionId: string, logDate: string): Promise<void> {
+  const { error } = await client().from("goal_action_logs").delete().eq("goal_action_id", goalActionId).eq("log_date", logDate);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// goal activity (purpose-built feed — captures UI actions too, not just AI tool calls)
+// ---------------------------------------------------------------------------
+
+interface GoalActivityRow {
+  id: string;
+  goal_id: string;
+  kind: string;
+  description: string;
+  created_at: string;
+}
+
+function goalActivityFromRow(r: GoalActivityRow): GoalActivityEntry {
+  return { id: r.id, goalId: r.goal_id, kind: r.kind, description: r.description, createdAt: r.created_at };
+}
+
+export async function fetchGoalActivity(userId: string, goalId: string, limitCount = 30): Promise<GoalActivityEntry[]> {
+  const { data, error } = await client()
+    .from("goal_activity")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("goal_id", goalId)
+    .order("created_at", { ascending: false })
+    .limit(limitCount);
+  if (error) throw error;
+  return (data as GoalActivityRow[]).map(goalActivityFromRow);
+}
+
+export async function insertGoalActivityRow(userId: string, goalId: string, kind: string, description: string): Promise<void> {
+  const { error } = await client().from("goal_activity").insert({ user_id: userId, goal_id: goalId, kind, description });
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// goal coach messages
+// ---------------------------------------------------------------------------
+
+interface GoalCoachMessageRow {
+  id: string;
+  goal_id: string;
+  role: GoalCoachMessage["role"];
+  content: string;
+  proposed_adjustment: Record<string, unknown> | null;
+  created_at: string;
+}
+
+function goalCoachMessageFromRow(r: GoalCoachMessageRow): GoalCoachMessage {
+  return { id: r.id, goalId: r.goal_id, role: r.role, content: r.content, proposedAdjustment: r.proposed_adjustment, createdAt: r.created_at };
+}
+
+export async function fetchGoalCoachMessages(userId: string, goalId: string): Promise<GoalCoachMessage[]> {
+  const { data, error } = await client()
+    .from("goal_coach_messages")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("goal_id", goalId)
+    .order("created_at", { ascending: true })
+    .limit(100);
+  if (error) throw error;
+  return (data as GoalCoachMessageRow[]).map(goalCoachMessageFromRow);
 }
 
 // ---------------------------------------------------------------------------
@@ -1054,6 +1279,10 @@ export async function deleteAllUserContent(userId: string): Promise<void> {
     "calendar_connections",
     "shopping_items",
     "shopping_lists",
+    "goal_action_logs",
+    "goal_actions",
+    "goal_activity",
+    "goal_coach_messages",
     "goal_milestones",
     "goals",
     "routine_steps",
