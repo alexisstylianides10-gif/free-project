@@ -107,3 +107,57 @@ export function buildCardsForTool(toolName: string, result: unknown): ResponseCa
       return [];
   }
 }
+
+/**
+ * Builds a preview card from a PROPOSED action's args (before anything is
+ * created) — a different shape from a tool's execute() result, since
+ * nothing has an id yet. Only covers tools whose args already carry
+ * everything needed for an honest preview (calendar_create/update,
+ * tasks_create, and plan_organize_day's bundle); other consequential tools
+ * keep relying on their existing describe() text summary, which already
+ * names what's involved.
+ */
+export function buildPreviewCards(toolName: string, args: unknown): ResponseCard[] {
+  if (!args || typeof args !== "object") return [];
+  const a = args as Record<string, unknown>;
+
+  switch (toolName) {
+    case "calendar_create":
+    case "calendar_update": {
+      if (!a.title && !a.date) return [];
+      return [
+        {
+          type: "event",
+          events: [
+            {
+              id: "preview",
+              title: (a.title as string) ?? "Untitled event",
+              date: (a.date as string) ?? "",
+              startTime: (a.startTime as string) ?? "",
+              endTime: (a.endTime as string) ?? "",
+              location: (a.location as string | null) ?? null,
+            },
+          ],
+        },
+      ];
+    }
+    case "tasks_create": {
+      if (!a.title) return [];
+      return [{ type: "taskList", tasks: [{ id: "preview", title: a.title as string, dueDate: (a.dueDate as string | null) ?? null, priority: a.priority as string | undefined, done: false }] }];
+    }
+    case "plan_organize_day": {
+      const cards: ResponseCard[] = [];
+      const events = Array.isArray(a.events) ? (a.events as { title: string; date: string; startTime: string; endTime: string; location?: string | null }[]) : [];
+      const tasks = Array.isArray(a.tasks) ? (a.tasks as { title: string; dueDate?: string; priority?: string }[]) : [];
+      if (events.length) {
+        cards.push({ type: "event", events: events.map((e, i) => ({ id: `preview-e${i}`, title: e.title, date: e.date, startTime: e.startTime, endTime: e.endTime, location: e.location ?? null })) });
+      }
+      if (tasks.length) {
+        cards.push({ type: "taskList", tasks: tasks.map((t, i) => ({ id: `preview-t${i}`, title: t.title, dueDate: t.dueDate ?? null, priority: t.priority, done: false })) });
+      }
+      return cards;
+    }
+    default:
+      return [];
+  }
+}

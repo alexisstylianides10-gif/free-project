@@ -12,7 +12,7 @@ import { ListeningAurora } from "@/components/ai/ListeningAurora";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
 import { ChatMessage, Conversation } from "@/lib/types";
-import { confirmPendingAction, sendChatMessage } from "@/lib/ai/chatClient";
+import { confirmPendingAction, sendChatMessage, undoResolvedAction } from "@/lib/ai/chatClient";
 import { useVoiceInput } from "@/lib/useVoiceInput";
 import { fileToCompressedDataUrl } from "@/lib/image";
 import { cn } from "@/lib/utils";
@@ -185,6 +185,18 @@ export default function ChatPage() {
     }
   }
 
+  async function handleUndo(messageId: string) {
+    try {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Session expired.");
+      const { resolvedAction } = await undoResolvedAction(token, messageId);
+      setMessages((m) => m.map((msg) => (msg.id === messageId ? { ...msg, resolvedAction } : msg)));
+      refreshAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't undo that.");
+    }
+  }
+
   const activeTitle = conversations.find((c) => c.id === activeId)?.title ?? "Chat";
 
   return (
@@ -279,7 +291,7 @@ export default function ChatPage() {
           ) : messages.length === 0 ? (
             <EmptyState icon={MessageCircle} title="Tell Alxioum what you need." body={'Try "What’s on my calendar tomorrow?" or "Remind me to call the dentist."'} />
           ) : (
-            messages.map((m) => <MessageBubble key={m.id} message={m} onDecide={handleDecide} />)
+            messages.map((m) => <MessageBubble key={m.id} message={m} onDecide={handleDecide} onUndo={handleUndo} />)
           )}
           {sending && (
             <div className="flex items-center gap-2.5">

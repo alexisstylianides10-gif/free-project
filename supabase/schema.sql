@@ -146,7 +146,7 @@ create table if not exists public.pending_actions (
   action text not null check (action in ('create', 'update', 'delete', 'complete')),
   args jsonb not null default '{}',
   summary text not null,
-  status text not null default 'pending' check (status in ('pending', 'confirmed', 'cancelled', 'expired')),
+  status text not null default 'pending' check (status in ('pending', 'confirmed', 'cancelled', 'expired', 'superseded')),
   created_at timestamptz not null default now(),
   resolved_at timestamptz,
   expires_at timestamptz not null default (now() + interval '30 minutes')
@@ -160,7 +160,7 @@ create table if not exists public.agent_actions (
   user_id uuid not null references auth.users (id) on delete cascade,
   tool text not null,
   action text not null,
-  status text not null check (status in ('success', 'failed')),
+  status text not null check (status in ('success', 'failed', 'cancelled')),
   metadata jsonb not null default '{}',
   event_id uuid,
   created_at timestamptz not null default now()

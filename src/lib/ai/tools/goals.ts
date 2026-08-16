@@ -1,6 +1,17 @@
-import type { ToolSpec } from "./types";
+import type { ToolSpec, ToolContext } from "./types";
 import { computeProgressPct, computeGoalStatus } from "@/lib/goals/status";
 import type { Goal, GoalMilestone, GoalAction, GoalActionLog } from "@/lib/types";
+
+/**
+ * Chat-driven mutations run server-side and can't reach store.ts's
+ * client-only logGoalActivity — without this, a goal created via chat
+ * would never show up in that goal's own activity timeline the way a
+ * UI-created one does. Mirrors the existing awaited document_activity
+ * inserts in tools/documents.ts.
+ */
+async function logGoalActivity(ctx: ToolContext, goalId: string, kind: string, description: string) {
+  await ctx.supabase.from("goal_activity").insert({ user_id: ctx.userId, goal_id: goalId, kind, description });
+}
 
 interface GoalRow {
   id: string;
@@ -185,6 +196,7 @@ export const goalsCreate: ToolSpec<{
       if (msError) return { ok: false, error: msError.message };
       milestones = msData ?? [];
     }
+    await logGoalActivity(ctx, goal.id, "created", `Created goal "${goal.name}" via chat`);
     return { ok: true, result: { goal, milestones } };
   },
 };
@@ -217,6 +229,7 @@ export const goalsUpdateProgress: ToolSpec<{ goalId: string; progress: number }>
       .maybeSingle();
     if (error) return { ok: false, error: error.message };
     if (!data) return { ok: false, error: "Goal no longer exists." };
+    await logGoalActivity(ctx, input.goalId, "progress_updated", `Updated progress to ${input.progress}% via chat`);
     return { ok: true, result: { goal: data } };
   },
 };
@@ -257,6 +270,7 @@ export const goalsCompleteMilestone: ToolSpec<{ milestoneId: string }> = {
         .eq("id", (milestone as MilestoneRow).goal_id)
         .eq("user_id", ctx.userId);
     }
+    await logGoalActivity(ctx, (milestone as MilestoneRow).goal_id, "milestone_completed", `Marked milestone "${(milestone as MilestoneRow).title}" done via chat`);
     return { ok: true, result: { milestone } };
   },
 };

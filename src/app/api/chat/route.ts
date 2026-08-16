@@ -133,6 +133,28 @@ export async function POST(req: NextRequest) {
   let pendingActionCard = null as null | { id: string; tool: string; action: string; summary: string; args: Record<string, unknown>; status: string };
 
   if (agentResult.proposedAction) {
+    // A correction to a still-unconfirmed proposal ("actually Saturday")
+    // supersedes it rather than leaving two live-looking cards — the old
+    // one collapses, the new one is the one the user actually confirms.
+    const { data: stalePending } = await client.from("pending_actions").select("id, message_id, tool, action, summary, args").eq("conversation_id", conversationId).eq("status", "pending");
+    if (stalePending?.length) {
+      const staleIds = stalePending.map((p) => p.id);
+      await client.from("pending_actions").update({ status: "superseded", resolved_at: new Date().toISOString() }).in("id", staleIds);
+      for (const stale of stalePending) {
+        if (!stale.message_id) continue;
+        const supersededAction = {
+          id: stale.id,
+          tool: stale.tool,
+          action: stale.action,
+          summary: stale.summary,
+          args: stale.args,
+          status: "superseded",
+          resultSummary: "Updated below.",
+        };
+        await client.from("messages").update({ resolved_action: supersededAction }).eq("id", stale.message_id);
+      }
+    }
+
     const { data: pendingRow, error: pendingError } = await client
       .from("pending_actions")
       .insert({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { getTool } from "@/lib/ai/tools";
 import { todayISOInTimezone } from "@/lib/utils";
+import { buildCardsForTool } from "@/lib/ai/cardBuilders";
 
 export const runtime = "nodejs";
 
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   if (body.decision === "cancel") {
     await client.from("pending_actions").update({ status: "cancelled", resolved_at: new Date().toISOString() }).eq("id", pending.id);
-    await client.from("agent_actions").insert({ user_id: user.id, tool: pending.tool, action: pending.action, status: "CANCELLED", metadata: { summary: pending.summary } });
+    await client.from("agent_actions").insert({ user_id: user.id, tool: pending.tool, action: pending.action, status: "cancelled", metadata: { summary: pending.summary } });
     const resolvedAction = { id: pending.id, tool: pending.tool, action: pending.action, summary: pending.summary, args: pending.args, status: "cancelled", resultSummary: "Cancelled — no changes made." };
     if (pending.message_id) await client.from("messages").update({ resolved_action: resolvedAction }).eq("id", pending.message_id);
     return NextResponse.json({ resolvedAction });
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
     user_id: user.id,
     tool: pending.tool,
     action: pending.action,
-    status: result.ok ? "SUCCESS" : "FAILED",
+    status: result.ok ? "success" : "failed",
     metadata: result.ok ? { summary: pending.summary, result: result.result } : { summary: pending.summary, error: result.error },
   });
 
@@ -86,6 +87,9 @@ export async function POST(req: NextRequest) {
     args: pending.args,
     status: result.ok ? "confirmed" : "failed",
     resultSummary,
+    result: result.ok ? result.result : undefined,
+    cards: result.ok ? buildCardsForTool(pending.tool, result.result) : undefined,
+    undone: false,
   };
   if (pending.message_id) await client.from("messages").update({ resolved_action: resolvedAction }).eq("id", pending.message_id);
 

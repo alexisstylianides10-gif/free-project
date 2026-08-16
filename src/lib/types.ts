@@ -99,7 +99,17 @@ export interface PendingActionCard {
   action: ToolAction;
   summary: string;
   args: Record<string, unknown>;
-  status: "pending" | "confirmed" | "cancelled" | "expired" | "failed";
+  status: "pending" | "confirmed" | "cancelled" | "expired" | "failed" | "superseded";
+}
+
+export interface ResolvedActionCard extends PendingActionCard {
+  resultSummary: string;
+  /** The tool's raw execute() result — only kept server-side/round-tripped for Undo to locate the created entity's id; not required for display. */
+  result?: unknown;
+  /** The created entity rendered the same way a normal response card would be, e.g. the new event/task. */
+  cards?: import("./ai/cards").ResponseCard[];
+  /** True once the user has pressed Undo on this resolved action. */
+  undone?: boolean;
 }
 
 export interface ChatMessage {
@@ -109,7 +119,7 @@ export interface ChatMessage {
   content: string;
   toolCalls: { tool: string; status: "success" | "failed" }[];
   pendingAction?: PendingActionCard | null;
-  resolvedAction?: (PendingActionCard & { resultSummary: string }) | null;
+  resolvedAction?: ResolvedActionCard | null;
   /** Structured rendering data (event/task/goal/document/shopping cards) alongside the prose reply. */
   cards?: import("./ai/cards").ResponseCard[];
   createdAt: string;

@@ -349,6 +349,7 @@ export const documentsConnectGoal: ToolSpec<{ documentId: string; goalId: string
   execute: async (ctx, input) => {
     const { error } = await ctx.supabase.from("documents").update({ linked_goal_id: input.goalId }).eq("id", input.documentId).eq("user_id", ctx.userId);
     if (error) return { ok: false, error: error.message };
+    await ctx.supabase.from("document_activity").insert({ user_id: ctx.userId, document_id: input.documentId, kind: "connected_to_goal", description: "Connected to a goal via chat" });
     return { ok: true, result: { documentId: input.documentId, goalId: input.goalId } };
   },
 };

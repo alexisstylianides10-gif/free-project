@@ -38,3 +38,14 @@ export async function confirmPendingAction(token: string, pendingActionId: strin
   if (!res.ok) throw new Error((body as ApiError).error ?? "Couldn't complete that.");
   return body as { resolvedAction: NonNullable<ChatMessage["resolvedAction"]>; ok?: boolean };
 }
+
+export async function undoResolvedAction(token: string, messageId: string) {
+  const res = await fetch("/api/chat/undo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ messageId }),
+  });
+  const body = await res.json();
+  if (!res.ok) throw new Error((body as ApiError).error ?? "Couldn't undo that.");
+  return body as { resolvedAction: NonNullable<ChatMessage["resolvedAction"]> };
+}

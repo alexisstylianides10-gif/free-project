@@ -429,7 +429,7 @@ interface MessageRow {
   content: string;
   tool_calls: { tool: string; status: "success" | "failed" }[];
   pending_action: import("./types").PendingActionCard | null;
-  resolved_action: (import("./types").PendingActionCard & { resultSummary: string }) | null;
+  resolved_action: import("./types").ResolvedActionCard | null;
   response_cards: import("./ai/cards").ResponseCard[] | null;
   created_at: string;
 }

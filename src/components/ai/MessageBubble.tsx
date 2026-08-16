@@ -20,9 +20,11 @@ const CARD_MAPPED_TOOLS = new Set(["calendar_search", "calendar_create", "calend
 export function MessageBubble({
   message,
   onDecide,
+  onUndo,
 }: {
   message: ChatMessage;
   onDecide: (messageId: string, pendingActionId: string, decision: "confirm" | "cancel") => Promise<void>;
+  onUndo: (messageId: string) => Promise<void>;
 }) {
   const isUser = message.role === "user";
   const time = new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -65,9 +67,9 @@ export function MessageBubble({
         {message.pendingAction && (
           <ConfirmationCard
             action={message.pendingAction}
-            resolvedSummary={message.resolvedAction?.resultSummary}
-            resolvedStatus={message.resolvedAction?.status}
+            resolvedAction={message.resolvedAction}
             onDecide={(decision) => onDecide(message.id, message.pendingAction!.id, decision)}
+            onUndo={() => onUndo(message.id)}
           />
         )}
         <span className="mt-1 text-[11px] text-muted-foreground/70">{time}</span>
