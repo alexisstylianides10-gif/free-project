@@ -44,7 +44,7 @@ export async function buildContextSummary(ctx: ToolContext): Promise<string> {
     ...(soonDocDates ?? []).map((d: { document_id: string }) => d.document_id),
   ]).size;
 
-  return [
+  const lines = [
     `Today is ${ctx.today} (user timezone: ${ctx.timezone}).`,
     `Today's events on the calendar: ${eventsLine}.`,
     `Tasks due within 7 days: ${upcomingTaskCount ?? 0}.`,
@@ -53,5 +53,20 @@ export async function buildContextSummary(ctx: ToolContext): Promise<string> {
     `Active goals: ${goalsActiveCount ?? 0}.`,
     `Routines set up: ${routinesCount ?? 0}.`,
     `Documents stored: ${documentsCount ?? 0}${documentsNeedsAttentionCount ? ` (${documentsNeedsAttentionCount} need attention)` : ""}.`,
-  ].join("\n");
+  ];
+
+  // Only when this turn is inside a Business Coach chat (a conversation
+  // tagged with a business_id) — one short line, not the business's full
+  // knowledge base. Everything deeper is retrieved on demand via business_get.
+  if (ctx.conversationId) {
+    const { data: conversation } = await ctx.supabase.from("conversations").select("business_id").eq("id", ctx.conversationId).eq("user_id", ctx.userId).maybeSingle();
+    if (conversation?.business_id) {
+      const { data: business } = await ctx.supabase.from("businesses").select("name,stage").eq("id", conversation.business_id).eq("user_id", ctx.userId).maybeSingle();
+      if (business) {
+        lines.push(`This conversation is the Business Coach chat for "${business.name}" (stage: ${String(business.stage).replace(/_/g, " ")}, id: ${conversation.business_id}). Call business_get with this id for full detail before answering business questions.`);
+      }
+    }
+  }
+
+  return lines.join("\n");
 }

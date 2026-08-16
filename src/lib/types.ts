@@ -134,6 +134,8 @@ export interface Conversation {
   title: string;
   createdAt: string;
   updatedAt: string;
+  /** Set when this conversation is a Business Coach chat scoped to one business. */
+  businessId?: string;
 }
 
 export interface AppNotification {

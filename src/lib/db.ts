@@ -405,10 +405,11 @@ interface ConversationRow {
   title: string;
   created_at: string;
   updated_at: string;
+  business_id: string | null;
 }
 
 function conversationFromRow(r: ConversationRow): Conversation {
-  return { id: r.id, title: r.title, createdAt: r.created_at, updatedAt: r.updated_at };
+  return { id: r.id, title: r.title, createdAt: r.created_at, updatedAt: r.updated_at, businessId: r.business_id ?? undefined };
 }
 
 export async function fetchConversations(userId: string): Promise<Conversation[]> {
@@ -421,6 +422,33 @@ export async function createConversation(userId: string, title = "New chat"): Pr
   const { data, error } = await client().from("conversations").insert({ user_id: userId, title }).select("*").single();
   if (error) throw error;
   return conversationFromRow(data as ConversationRow);
+}
+
+/**
+ * The Business Coach chat is one persistent conversation per business,
+ * reusing the exact same conversations/messages pipeline as regular Chat
+ * (streaming, tools, cards) rather than a parallel chat system — this just
+ * finds or creates the one conversation tagged for this business.
+ */
+export async function getOrCreateBusinessConversation(userId: string, businessId: string, businessName: string): Promise<Conversation> {
+  const { data: existing, error: findError } = await client()
+    .from("conversations")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (findError) throw findError;
+  if (existing) return conversationFromRow(existing as ConversationRow);
+
+  const { data: created, error: createError } = await client()
+    .from("conversations")
+    .insert({ user_id: userId, title: `${businessName} — Coach`, business_id: businessId })
+    .select("*")
+    .single();
+  if (createError) throw createError;
+  return conversationFromRow(created as ConversationRow);
 }
 
 export async function renameConversation(id: string, title: string): Promise<void> {

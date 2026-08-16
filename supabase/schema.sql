@@ -514,6 +514,13 @@ create table if not exists public.business_activity (
 );
 create index if not exists business_activity_business_id_idx on public.business_activity (business_id);
 
+-- Business Coach chat: a conversation scoped to one business (added after
+-- businesses exists — conversations itself is defined much earlier in this
+-- file, before businesses, so this stays a separate alter rather than an
+-- inline column to avoid a forward reference in this snapshot).
+alter table public.conversations add column if not exists business_id uuid references public.businesses (id) on delete cascade;
+create index if not exists conversations_business_id_idx on public.conversations (business_id);
+
 -- ---------------------------------------------------------------------------
 -- study_notes (AI-generated study notes, Student plan)
 -- ---------------------------------------------------------------------------

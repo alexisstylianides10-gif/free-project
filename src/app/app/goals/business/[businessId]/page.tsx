@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, TrendingUp } from "lucide-react";
+import { ArrowLeft, Check, MessageCircle, Sparkles, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useAlxioum } from "@/lib/store";
-import { formatDayLabel, daysBetween, todayISO } from "@/lib/utils";
+import { daysBetween, todayISO } from "@/lib/utils";
 import { JOURNEY_STAGES, stageIndex } from "@/lib/business/journeyStages";
 import { computeBusinessHealth, HEALTH_DIMENSION_LABEL, HEALTH_STATUS_LABEL, HealthDimensionStatus } from "@/lib/business/health";
+import { BusinessCoachChat, BusinessCoachChatHandle } from "@/components/domain/business/BusinessCoachChat";
 
 const HEALTH_TONE: Record<HealthDimensionStatus, "success" | "accent" | "warning" | "danger" | "neutral"> = {
   good: "success",
@@ -32,6 +34,8 @@ export default function BusinessDetailPage() {
   const businessExperiments = useAlxioum((s) => s.businessExperiments);
   const businessCustomers = useAlxioum((s) => s.businessCustomers);
   const toggleBusinessMilestone = useAlxioum((s) => s.toggleBusinessMilestone);
+
+  const coachRef = useRef<BusinessCoachChatHandle>(null);
 
   const business = businesses.find((b) => b.id === businessId);
   const goal = business ? goals.find((g) => g.id === business.goalId) : undefined;
@@ -76,6 +80,16 @@ export default function BusinessDetailPage() {
           <Badge tone={business.status === "building" ? "success" : "neutral"}>{business.status === "building" ? "Building" : business.status === "paused" ? "Paused" : "Archived"}</Badge>
         </div>
       </div>
+
+      <Button
+        onClick={() => {
+          document.getElementById("business-coach")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          coachRef.current?.send("What should I do next?");
+        }}
+        className="w-full justify-center sm:w-auto"
+      >
+        <Sparkles className="h-4 w-4" /> What should I do next?
+      </Button>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <SnapshotStat label="Customers" value={String(customers.length)} />
@@ -166,6 +180,14 @@ export default function BusinessDetailPage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Business Coach */}
+      <div id="business-coach">
+        <p className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
+          <MessageCircle className="h-4 w-4 text-accent" /> Business Coach
+        </p>
+        <BusinessCoachChat ref={coachRef} businessId={business.id} businessName={business.name} />
       </div>
     </div>
   );
