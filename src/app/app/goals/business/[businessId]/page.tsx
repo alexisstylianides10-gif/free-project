@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, MessageCircle, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowLeft, Check, FileText, MessageCircle, Sparkles, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +18,10 @@ import { CustomersTab } from "@/components/domain/business/CustomersTab";
 import { CompetitorsTab } from "@/components/domain/business/CompetitorsTab";
 import { ExperimentsTab } from "@/components/domain/business/ExperimentsTab";
 import { InsightsTab } from "@/components/domain/business/InsightsTab";
+import { ContentTab } from "@/components/domain/business/ContentTab";
+import { TodaysMissionsCard } from "@/components/domain/business/TodaysMissionsCard";
+import { WeeklyReviewCard } from "@/components/domain/business/WeeklyReviewCard";
+import type { BusinessMission } from "@/lib/types";
 
 const HEALTH_TONE: Record<HealthDimensionStatus, "success" | "accent" | "warning" | "danger" | "neutral"> = {
   good: "success",
@@ -27,7 +31,7 @@ const HEALTH_TONE: Record<HealthDimensionStatus, "success" | "accent" | "warning
   unknown: "neutral",
 };
 
-const TABS = ["Overview", "Money", "Customers", "Competitors", "Experiments", "Insights", "Coach"] as const;
+const TABS = ["Overview", "Money", "Customers", "Competitors", "Experiments", "Insights", "Content", "Coach"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function BusinessDetailPage() {
@@ -41,6 +45,7 @@ export default function BusinessDetailPage() {
   const businessInsights = useAlxioum((s) => s.businessInsights);
   const businessExperiments = useAlxioum((s) => s.businessExperiments);
   const businessCustomers = useAlxioum((s) => s.businessCustomers);
+  const documents = useAlxioum((s) => s.documents);
   const toggleBusinessMilestone = useAlxioum((s) => s.toggleBusinessMilestone);
 
   const coachRef = useRef<BusinessCoachChatHandle>(null);
@@ -53,6 +58,7 @@ export default function BusinessDetailPage() {
   const insights = useMemo(() => businessInsights.filter((i) => i.businessId === businessId), [businessInsights, businessId]);
   const experiments = useMemo(() => businessExperiments.filter((e) => e.businessId === businessId), [businessExperiments, businessId]);
   const customers = useMemo(() => businessCustomers.filter((c) => c.businessId === businessId), [businessCustomers, businessId]);
+  const linkedDocuments = useMemo(() => documents.filter((d) => d.linkedGoalId === business?.goalId), [documents, business?.goalId]);
 
   if (!business) {
     return (
@@ -63,6 +69,16 @@ export default function BusinessDetailPage() {
         <p className="text-sm text-muted-foreground">This business couldn&apos;t be found — it may have been deleted.</p>
       </div>
     );
+  }
+
+  function askAIAboutMission(mission: BusinessMission) {
+    setActiveTab("Coach");
+    coachRef.current?.send(`Help me with today's mission: "${mission.title}"`);
+  }
+
+  function planNextWeek() {
+    setActiveTab("Coach");
+    coachRef.current?.send("Based on this week's review, help me plan next week for this business.");
   }
 
   const overallProgress = milestones.length > 0 ? Math.round((milestones.filter((m) => m.done).length / milestones.length) * 100) : 0;
@@ -127,6 +143,8 @@ export default function BusinessDetailPage() {
 
       {activeTab === "Overview" && (
         <div className="space-y-5">
+          <TodaysMissionsCard businessId={business.id} onAskAI={askAIAboutMission} />
+
           {/* Overall progress */}
           <Card>
             <CardContent className="p-5">
@@ -207,6 +225,27 @@ export default function BusinessDetailPage() {
               })}
             </div>
           </div>
+
+          {/* Business Documents — reuses the real Documents pipeline, just filtered to this business's goal */}
+          <div>
+            <p className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
+              <FileText className="h-4 w-4 text-accent" /> Documents
+            </p>
+            {linkedDocuments.length === 0 ? (
+              <p className="text-[12.5px] text-muted-foreground">No documents connected to this business yet — connect one from Documents.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {linkedDocuments.map((d) => (
+                  <Link key={d.id} href={`/app/documents/${d.id}`} className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 hover:bg-muted/60">
+                    <span className="truncate text-[13px] text-foreground">{d.name}</span>
+                    {d.category && <Badge tone="neutral">{d.category}</Badge>}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <WeeklyReviewCard businessId={business.id} onPlanNextWeek={planNextWeek} />
         </div>
       )}
 
@@ -215,6 +254,7 @@ export default function BusinessDetailPage() {
       {activeTab === "Competitors" && <CompetitorsTab businessId={business.id} />}
       {activeTab === "Experiments" && <ExperimentsTab businessId={business.id} />}
       {activeTab === "Insights" && <InsightsTab businessId={business.id} />}
+      {activeTab === "Content" && <ContentTab businessId={business.id} />}
 
       {/* Always mounted (not gated behind the tab check like the others) so the
           "What should I do next?" button can send into it the instant it

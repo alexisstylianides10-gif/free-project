@@ -3,6 +3,9 @@ import type { BusinessStage } from "@/lib/types";
 import { JOURNEY_STAGES, stageIndex } from "@/lib/business/journeyStages";
 import { generateMarketingIdeas } from "@/lib/business/strategy";
 import { researchCompetitors } from "@/lib/business/competitors";
+import { formatDayLabel, formatTime12, timeOverlap } from "@/lib/utils";
+import { pushEventToGoogle } from "@/lib/google/calendar";
+import { getWeeklyReview } from "@/lib/business/weeklyReview";
 
 async function logBusinessActivity(ctx: ToolContext, businessId: string, kind: string, description: string) {
   await ctx.supabase.from("business_activity").insert({ user_id: ctx.userId, business_id: businessId, kind, description });
@@ -11,6 +14,29 @@ async function logBusinessActivity(ctx: ToolContext, businessId: string, kind: s
 async function loadBusiness(ctx: ToolContext, businessId: string) {
   const { data } = await ctx.supabase.from("businesses").select("*").eq("id", businessId).eq("user_id", ctx.userId).maybeSingle();
   return data as Record<string, unknown> | null;
+}
+
+function toMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function toHHMM(mins: number): string {
+  const h = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+/** First open gap of at least durationMinutes within the working day, scanning past sorted busy blocks. */
+function findGap(busy: { start: number; end: number }[], durationMinutes: number, dayStart = 8 * 60, dayEnd = 21 * 60): { start: number; end: number } | null {
+  const sorted = [...busy].sort((a, b) => a.start - b.start);
+  let cursor = dayStart;
+  for (const b of sorted) {
+    if (b.start - cursor >= durationMinutes) return { start: cursor, end: cursor + durationMinutes };
+    cursor = Math.max(cursor, b.end);
+  }
+  if (dayEnd - cursor >= durationMinutes) return { start: cursor, end: cursor + durationMinutes };
+  return null;
 }
 
 export const businessSearch: ToolSpec<{ query?: string }> = {
@@ -535,6 +561,213 @@ export const businessInsightResolve: ToolSpec<{ insightId: string; status: strin
   },
 };
 
+export const businessFindFreeTime: ToolSpec<{ durationMinutes?: number; fromDate?: string; daysAhead?: number }> = {
+  name: "business_find_free_time",
+  statusLabel: "Checking your calendar for open time…",
+  description:
+    "Find open slots on the user's calendar over the next several days, for scheduling dedicated business work. Read-only — creates nothing. Call this before business_schedule_block to pick a real, conflict-free time rather than guessing.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      durationMinutes: { type: "number", description: "Length of the block needed, in minutes. Default 30." },
+      fromDate: { type: "string", description: "ISO date to start scanning from. Defaults to today." },
+      daysAhead: { type: "number", description: "How many days to scan ahead. Default 5, max 14." },
+    },
+  },
+  consequential: false,
+  execute: async (ctx, input) => {
+    const duration = input.durationMinutes ?? 30;
+    const days = Math.min(Math.max(input.daysAhead ?? 5, 1), 14);
+    const startDate = new Date(`${input.fromDate ?? ctx.today}T00:00:00`);
+    const dates: string[] = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      dates.push(d.toISOString().slice(0, 10));
+    }
+    const { data, error } = await ctx.supabase.from("events").select("date,start_time,end_time").eq("user_id", ctx.userId).in("date", dates);
+    if (error) return { ok: false, error: error.message };
+    const byDate = new Map<string, { start: number; end: number }[]>();
+    for (const e of data ?? []) {
+      const list = byDate.get(e.date as string) ?? [];
+      list.push({ start: toMinutes(e.start_time as string), end: toMinutes(e.end_time as string) });
+      byDate.set(e.date as string, list);
+    }
+    const slots: { date: string; startTime: string; endTime: string }[] = [];
+    for (const date of dates) {
+      const gap = findGap(byDate.get(date) ?? [], duration);
+      if (gap) slots.push({ date, startTime: toHHMM(gap.start), endTime: toHHMM(gap.end) });
+      if (slots.length >= 3) break;
+    }
+    return { ok: true, result: { slots } };
+  },
+};
+
+export const businessScheduleBlock: ToolSpec<{ businessId: string; title: string; date: string; startTime: string; endTime: string; notes?: string }> = {
+  name: "business_schedule_block",
+  statusLabel: "Scheduling business time…",
+  description:
+    "Propose a calendar block of dedicated business work, linked to this business's goal. Requires exact businessId. Call business_find_free_time first to pick a real open slot rather than guessing.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      businessId: { type: "string" },
+      title: { type: "string" },
+      date: { type: "string", description: "ISO date" },
+      startTime: { type: "string", description: "HH:mm 24h" },
+      endTime: { type: "string", description: "HH:mm 24h" },
+      notes: { type: "string" },
+    },
+    required: ["businessId", "title", "date", "startTime", "endTime"],
+  },
+  consequential: true,
+  action: "create",
+  describe: async (ctx, input) => {
+    if (input.endTime <= input.startTime) return { error: "End time must be after start time." };
+    const business = await loadBusiness(ctx, input.businessId);
+    if (!business) return { error: "I couldn't find that business." };
+    const { data, error } = await ctx.supabase.from("events").select("id,title,start_time,end_time").eq("user_id", ctx.userId).eq("date", input.date);
+    if (error) return { error: error.message };
+    const conflict = (data ?? []).find((e) => timeOverlap(input.startTime, input.endTime, e.start_time as string, e.end_time as string));
+    const when = `${formatDayLabel(input.date)}, ${formatTime12(input.startTime)}–${formatTime12(input.endTime)}`;
+    const conflictNote = conflict ? `\n\n⚠️ This overlaps with "${conflict.title}" (${formatTime12(conflict.start_time as string)}–${formatTime12(conflict.end_time as string)}).` : "";
+    return { summary: `Schedule "${input.title}" for "${business.name}" — ${when}?${conflictNote}` };
+  },
+  execute: async (ctx, input) => {
+    const business = await loadBusiness(ctx, input.businessId);
+    if (!business) return { ok: false, error: "I couldn't find that business." };
+    const { data, error } = await ctx.supabase
+      .from("events")
+      .insert({
+        user_id: ctx.userId,
+        title: input.title,
+        date: input.date,
+        start_time: input.startTime,
+        end_time: input.endTime,
+        type: "work",
+        notes: input.notes ?? null,
+        recurrence: "none",
+        timezone: ctx.timezone,
+        ai_generated: true,
+        linked_goal_id: business.goal_id,
+      })
+      .select("*")
+      .single();
+    if (error) return { ok: false, error: error.message };
+    pushEventToGoogle(ctx.supabase, ctx.userId, "create", {
+      id: data.id,
+      title: data.title,
+      date: data.date,
+      startTime: data.start_time,
+      endTime: data.end_time,
+      notes: data.notes ?? undefined,
+      timezone: data.timezone ?? ctx.timezone,
+      recurrence: "none",
+      source: "alxioum",
+    }).catch((err) => console.error("[business_schedule_block] google sync failed:", err));
+    await logBusinessActivity(ctx, input.businessId, "time_scheduled", `Scheduled "${input.title}" for ${formatDayLabel(input.date)}`);
+    return { ok: true, result: { event: data } };
+  },
+};
+
+export const businessBootstrap: ToolSpec<{
+  businessId: string;
+  milestones?: { stage: string; title: string }[];
+  missions?: { title: string; missionDate?: string }[];
+}> = {
+  name: "business_bootstrap",
+  statusLabel: "Setting up your business plan…",
+  description:
+    "'Build With Me' — propose creating several milestones and/or daily missions for a business in ONE confirmation, instead of calling business_create_mission repeatedly. Use when the user wants Alxioum to lay out a starting plan for them. Requires exact businessId.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      businessId: { type: "string" },
+      milestones: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { stage: { type: "string", enum: JOURNEY_STAGES.map((s) => s.key) }, title: { type: "string" } },
+          required: ["stage", "title"],
+        },
+      },
+      missions: {
+        type: "array",
+        items: { type: "object", properties: { title: { type: "string" }, missionDate: { type: "string" } }, required: ["title"] },
+      },
+    },
+    required: ["businessId"],
+  },
+  consequential: true,
+  action: "create",
+  describe: async (ctx, input) => {
+    const business = await loadBusiness(ctx, input.businessId);
+    if (!business) return { error: "I couldn't find that business." };
+    const milestones = input.milestones ?? [];
+    const missions = input.missions ?? [];
+    if (milestones.length === 0 && missions.length === 0) return { error: "Nothing to set up — include at least one milestone or mission." };
+    const parts: string[] = [];
+    if (milestones.length) parts.push(`${milestones.length} milestone${milestones.length > 1 ? "s" : ""} (${milestones.map((m) => m.title).join(", ")})`);
+    if (missions.length) parts.push(`${missions.length} mission${missions.length > 1 ? "s" : ""} (${missions.map((m) => m.title).join(", ")})`);
+    return { summary: `Set up "${business.name}" with ${parts.join(" and ")}?` };
+  },
+  execute: async (ctx, input) => {
+    const createdMilestones: unknown[] = [];
+    const createdMissions: unknown[] = [];
+    const failures: string[] = [];
+
+    const { data: existing } = await ctx.supabase.from("business_milestones").select("sort_order").eq("business_id", input.businessId).order("sort_order", { ascending: false }).limit(1);
+    let nextSort = (existing?.[0]?.sort_order ?? -1) + 1;
+
+    for (const m of input.milestones ?? []) {
+      const { data, error } = await ctx.supabase
+        .from("business_milestones")
+        .insert({ user_id: ctx.userId, business_id: input.businessId, stage: m.stage, title: m.title, sort_order: nextSort })
+        .select("*")
+        .single();
+      if (error) {
+        failures.push(`Milestone "${m.title}": ${error.message}`);
+        continue;
+      }
+      nextSort += 1;
+      createdMilestones.push(data);
+    }
+
+    for (const m of input.missions ?? []) {
+      const { data, error } = await ctx.supabase
+        .from("business_missions")
+        .insert({ user_id: ctx.userId, business_id: input.businessId, title: m.title, mission_date: m.missionDate ?? ctx.today })
+        .select("*")
+        .single();
+      if (error) {
+        failures.push(`Mission "${m.title}": ${error.message}`);
+        continue;
+      }
+      createdMissions.push(data);
+    }
+
+    if (createdMilestones.length === 0 && createdMissions.length === 0 && failures.length > 0) {
+      return { ok: false, error: failures.join("; ") };
+    }
+    await logBusinessActivity(ctx, input.businessId, "bootstrapped", `Set up ${createdMilestones.length} milestone(s) and ${createdMissions.length} mission(s)`);
+    return { ok: true, result: { milestones: createdMilestones, missions: createdMissions, failures } };
+  },
+};
+
+export const businessWeeklyReviewGet: ToolSpec<{ businessId: string }> = {
+  name: "business_weekly_review_get",
+  statusLabel: "Pulling together this week…",
+  description:
+    "Aggregate the last 7 days of real activity for a business — new customers, revenue change, experiments started/completed, missions completed — for a weekly review. Never invents numbers; reports zero where nothing happened. Requires exact businessId.",
+  inputSchema: { type: "object", properties: { businessId: { type: "string" } }, required: ["businessId"] },
+  consequential: false,
+  execute: async (ctx, input) => {
+    const outcome = await getWeeklyReview(ctx.supabase, ctx.userId, input.businessId);
+    if (!outcome.ok) return { ok: false, error: outcome.error };
+    return { ok: true, result: outcome.review };
+  },
+};
+
 export const businessTools = [
   businessSearch,
   businessGet,
@@ -552,4 +785,8 @@ export const businessTools = [
   businessGetNextAction,
   businessCreateInsight,
   businessInsightResolve,
+  businessFindFreeTime,
+  businessScheduleBlock,
+  businessBootstrap,
+  businessWeeklyReviewGet,
 ];
