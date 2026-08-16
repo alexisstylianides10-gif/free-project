@@ -422,6 +422,20 @@ export async function deleteConversation(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function searchConversations(userId: string, query: string): Promise<Conversation[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const { data, error } = await client()
+    .from("conversations")
+    .select("*")
+    .eq("user_id", userId)
+    .ilike("title", `%${trimmed}%`)
+    .order("updated_at", { ascending: false })
+    .limit(30);
+  if (error) throw error;
+  return (data as ConversationRow[]).map(conversationFromRow);
+}
+
 interface MessageRow {
   id: string;
   conversation_id: string;

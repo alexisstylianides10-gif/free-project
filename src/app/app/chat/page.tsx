@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, Send, Trash2, Loader2, AlertCircle, ImagePlus, X, PanelLeft, CalendarPlus, ListChecks, Target, FileUp } from "lucide-react";
+import { Plus, Send, Loader2, AlertCircle, ImagePlus, X, PanelLeft, CalendarPlus, ListChecks, Target, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/layout/Logo";
 import { MessageBubble } from "@/components/ai/MessageBubble";
+import { ConversationSidebar } from "@/components/ai/ConversationSidebar";
 import { VoiceButton } from "@/components/ai/VoiceButton";
 import { ListeningAurora } from "@/components/ai/ListeningAurora";
 import { useAlxioum } from "@/lib/store";
@@ -16,7 +17,6 @@ import { attachDocumentToChat, confirmPendingAction, sendChatMessage, undoResolv
 import { useVoiceInput } from "@/lib/useVoiceInput";
 import { fileToCompressedDataUrl } from "@/lib/image";
 import { ALLOWED_TYPES } from "@/lib/documents/constants";
-import { cn } from "@/lib/utils";
 
 const SUGGESTIONS = [
   "What's on my calendar tomorrow?",
@@ -112,6 +112,11 @@ export default function ChatPage() {
       if (remaining.length > 0) setActiveId(remaining[0].id);
       else newConversation();
     }
+  }
+
+  async function renameConversationTitle(id: string, title: string) {
+    setConversations((c) => c.map((x) => (x.id === id ? { ...x, title } : x)));
+    await db.renameConversation(id, title);
   }
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -258,7 +263,21 @@ export default function ChatPage() {
   const activeTitle = conversations.find((c) => c.id === activeId)?.title ?? "Chat";
 
   return (
-    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-surface">
+    <div className="relative flex h-full min-h-0 flex-1 overflow-hidden bg-surface">
+      <aside className="hidden shrink-0 flex-col border-r border-border/70 p-3 md:flex md:w-64">
+        {authUserId && (
+          <ConversationSidebar
+            userId={authUserId}
+            conversations={conversations}
+            activeId={activeId}
+            onSelect={setActiveId}
+            onNew={newConversation}
+            onDelete={deleteConversation}
+            onRename={renameConversationTitle}
+          />
+        )}
+      </aside>
+
       <AnimatePresence>
         {historyOpen && (
           <>
@@ -269,7 +288,7 @@ export default function ChatPage() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
               onClick={() => setHistoryOpen(false)}
-              className="absolute inset-0 z-30 bg-black/30 backdrop-blur-[2px]"
+              className="absolute inset-0 z-30 bg-black/30 backdrop-blur-[2px] md:hidden"
             />
             <motion.aside
               key="history-panel"
@@ -277,7 +296,7 @@ export default function ChatPage() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 420, damping: 38 }}
-              className="absolute inset-y-0 left-0 z-40 flex w-72 max-w-[85vw] flex-col border-r border-border bg-surface p-3 shadow-pop"
+              className="absolute inset-y-0 left-0 z-40 flex w-72 max-w-[85vw] flex-col border-r border-border bg-surface p-3 shadow-pop md:hidden"
             >
               <div className="mb-2 flex items-center justify-between px-1">
                 <p className="text-[13px] font-semibold text-foreground">Chats</p>
@@ -285,34 +304,20 @@ export default function ChatPage() {
                   <PanelLeft className="h-4 w-4" />
                 </button>
               </div>
-              <Button size="sm" variant="outline" className="mb-2 w-full justify-start" onClick={newConversation}>
-                <Plus className="h-3.5 w-3.5" /> New chat
-              </Button>
-              <div className="flex-1 space-y-0.5 overflow-y-auto">
-                {conversations.map((c) => (
-                  <div key={c.id} className="group relative">
-                    <button
-                      onClick={() => {
-                        setActiveId(c.id);
-                        setHistoryOpen(false);
-                      }}
-                      className={cn(
-                        "w-full truncate rounded-lg py-2 pl-2.5 pr-8 text-left text-[13px] font-medium transition-colors",
-                        c.id === activeId ? "bg-accent-soft text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      )}
-                    >
-                      {c.title}
-                    </button>
-                    <button
-                      onClick={() => deleteConversation(c.id)}
-                      className="absolute right-1.5 top-1.5 rounded p-1 text-muted-foreground opacity-0 hover:bg-muted group-hover:opacity-100"
-                      aria-label="Delete conversation"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              {authUserId && (
+                <ConversationSidebar
+                  userId={authUserId}
+                  conversations={conversations}
+                  activeId={activeId}
+                  onSelect={(id) => {
+                    setActiveId(id);
+                    setHistoryOpen(false);
+                  }}
+                  onNew={newConversation}
+                  onDelete={deleteConversation}
+                  onRename={renameConversationTitle}
+                />
+              )}
             </motion.aside>
           </>
         )}
@@ -321,7 +326,7 @@ export default function ChatPage() {
       <div className="relative z-0 flex min-w-0 flex-1 flex-col overflow-hidden">
         <ListeningAurora active={listening} />
         <div className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5">
-          <button onClick={() => setHistoryOpen(true)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted" aria-label="Chat history">
+          <button onClick={() => setHistoryOpen(true)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted md:hidden" aria-label="Chat history">
             <PanelLeft className="h-[18px] w-[18px]" />
           </button>
           <AnimatePresence mode="wait" initial={false}>
@@ -336,7 +341,7 @@ export default function ChatPage() {
               {activeTitle}
             </motion.span>
           </AnimatePresence>
-          <button onClick={newConversation} className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="New chat">
+          <button onClick={newConversation} className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted md:hidden" aria-label="New chat">
             <Plus className="h-[18px] w-[18px]" />
           </button>
         </div>
