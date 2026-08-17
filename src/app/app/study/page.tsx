@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { startOfWeek } from "date-fns";
-import { AlertTriangle, CalendarClock, Flame, ListChecks, Star, Timer, TrendingDown, TrendingUp } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Flame, ListChecks, Star, Target, Timer, TrendingDown, TrendingUp } from "lucide-react";
 import { useAlxioum } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/Card";
 import { FadeIn } from "@/components/ui/FadeIn";
@@ -59,6 +59,17 @@ export default function StudyOverviewPage() {
     candidates.sort((a, b) => a.date.localeCompare(b.date));
     return candidates[0] ?? null;
   }, [tasks, goals, today]);
+
+  const tasksCompletedThisWeek = useMemo(
+    () => tasks.filter((t) => t.done && t.completedAt && new Date(t.completedAt) >= weekStart).length,
+    [tasks, weekStart]
+  );
+  const assignmentsCompletedThisWeek = useMemo(
+    () => tasks.filter((t) => t.done && t.category === "school" && t.completedAt && new Date(t.completedAt) >= weekStart).length,
+    [tasks, weekStart]
+  );
+  const goalsProgressing = useMemo(() => goals.filter((g) => !g.completed && !g.paused && g.progress > 0).length, [goals]);
+  const consistentDays = useMemo(() => daily.filter((m) => m > 0).length, [daily]);
 
   return (
     <div className="space-y-5">
@@ -125,8 +136,49 @@ export default function StudyOverviewPage() {
         </Card>
       </FadeIn>
 
+      <FadeIn index={1}>
+        <Card>
+          <CardContent className="space-y-3 p-5">
+            <p className="text-[13px] font-semibold text-foreground">Progress this week</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="text-[16px] font-semibold text-foreground">{tasksCompletedThisWeek}</p>
+                  <p className="text-[11px] text-muted-foreground">tasks completed</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Timer className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="text-[16px] font-semibold text-foreground">
+                    {hours}h {mins}m
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">study time</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Target className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="text-[16px] font-semibold text-foreground">{goalsProgressing}</p>
+                  <p className="text-[11px] text-muted-foreground">goals progressing</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <ListChecks className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="text-[16px] font-semibold text-foreground">{assignmentsCompletedThisWeek}</p>
+                  <p className="text-[11px] text-muted-foreground">assignments done</p>
+                </div>
+              </div>
+            </div>
+            <p className="text-[12px] text-muted-foreground">Studied on {consistentDays} of 7 days this week.</p>
+          </CardContent>
+        </Card>
+      </FadeIn>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <FadeIn index={1}>
+        <FadeIn index={2}>
         <Card className="border-accent/20 bg-accent-soft/40">
           <CardContent className="space-y-1 p-5">
             <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
@@ -145,7 +197,7 @@ export default function StudyOverviewPage() {
         </Card>
         </FadeIn>
 
-        <FadeIn index={2}>
+        <FadeIn index={3}>
         <Card className="border-accent/20 bg-accent-soft/40">
           <CardContent className="space-y-1 p-5">
             <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
@@ -158,7 +210,7 @@ export default function StudyOverviewPage() {
         </FadeIn>
       </div>
 
-      <FadeIn index={3}>
+      <FadeIn index={4}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold text-foreground">Focus hours this week</p>
@@ -179,7 +231,7 @@ export default function StudyOverviewPage() {
       </Card>
       </FadeIn>
 
-      <FadeIn index={4}>
+      <FadeIn index={5}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold text-foreground">Subject distribution — this week</p>
@@ -201,7 +253,7 @@ export default function StudyOverviewPage() {
       </FadeIn>
 
       {openSchoolTasks.length > 0 && (
-        <FadeIn index={5}>
+        <FadeIn index={6}>
         <Card>
           <CardContent className="space-y-2.5 p-5">
             <div className="flex items-center justify-between">
