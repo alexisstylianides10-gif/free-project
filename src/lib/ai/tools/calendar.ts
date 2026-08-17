@@ -21,9 +21,9 @@ interface EventRow {
   google_event_id?: string | null;
 }
 
-function eventLabel(e: EventRow): string {
+function eventLabel(e: EventRow, today: string): string {
   const loc = e.location ? ` @ ${e.location}` : "";
-  return `"${e.title}" — ${formatDayLabel(e.date)} ${formatTime12(e.start_time)}–${formatTime12(e.end_time)}${loc} (id: ${e.id})`;
+  return `"${e.title}" — ${formatDayLabel(e.date, today)} ${formatTime12(e.start_time)}–${formatTime12(e.end_time)}${loc} (id: ${e.id})`;
 }
 
 /** Fire-and-forget push of an AI-driven calendar change out to the user's connected Google Calendar, if any. */
@@ -143,7 +143,7 @@ export const calendarCreate: ToolSpec<{
     } catch {
       // Conflict detection is best-effort — a lookup failure shouldn't block proposing the event.
     }
-    const when = `${formatDayLabel(input.date)}, ${formatTime12(input.startTime)}–${formatTime12(input.endTime)}`;
+    const when = `${formatDayLabel(input.date, ctx.today)}, ${formatTime12(input.startTime)}–${formatTime12(input.endTime)}`;
     const conflictNote = conflict ? `\n\n⚠️ This overlaps with "${conflict.title}" (${formatTime12(conflict.startTime)}–${formatTime12(conflict.endTime)}).` : "";
     return { summary: `Create "${input.title}" — ${when}${input.location ? ` at ${input.location}` : ""}?${conflictNote}` };
   },
@@ -203,9 +203,9 @@ export const calendarUpdate: ToolSpec<{
     const { data, error } = await ctx.supabase.from("events").select("*").eq("id", input.eventId).eq("user_id", ctx.userId).maybeSingle();
     if (error) return { error: error.message };
     if (!data) return { error: "I couldn't find that event — it may have already been deleted." };
-    const before = eventLabel(data as EventRow);
+    const before = eventLabel(data as EventRow, ctx.today);
     const after = { ...(data as EventRow), title: input.title ?? data.title, date: input.date ?? data.date, start_time: input.startTime ?? data.start_time, end_time: input.endTime ?? data.end_time, location: input.location ?? data.location };
-    const afterLabel = eventLabel(after as EventRow);
+    const afterLabel = eventLabel(after as EventRow, ctx.today);
     return { summary: `Update ${before}\n→ ${afterLabel.replace(/ \(id: .+\)$/, "")}?` };
   },
   execute: async (ctx, input) => {
@@ -235,7 +235,7 @@ export const calendarDelete: ToolSpec<{ eventId: string }> = {
     const { data, error } = await ctx.supabase.from("events").select("*").eq("id", input.eventId).eq("user_id", ctx.userId).maybeSingle();
     if (error) return { error: error.message };
     if (!data) return { error: "I couldn't find that event — it may have already been deleted." };
-    return { summary: `Delete ${eventLabel(data as EventRow)}?` };
+    return { summary: `Delete ${eventLabel(data as EventRow, ctx.today)}?` };
   },
   execute: async (ctx, input) => {
     const { data, error } = await ctx.supabase.from("events").delete().eq("id", input.eventId).eq("user_id", ctx.userId).select("*").maybeSingle();

@@ -60,7 +60,7 @@ export const planOrganizeDay: ToolSpec<{ tasks?: PlanTaskInput[]; events?: PlanE
   },
   consequential: true,
   action: "create",
-  describe: async (_ctx, input) => {
+  describe: async (ctx, input) => {
     const tasks = input.tasks ?? [];
     const events = input.events ?? [];
     if (tasks.length === 0 && events.length === 0) return { error: "Nothing to plan — include at least one task or event." };
@@ -69,7 +69,7 @@ export const planOrganizeDay: ToolSpec<{ tasks?: PlanTaskInput[]; events?: PlanE
     if (events.length) {
       parts.push(
         `${events.length} calendar block${events.length > 1 ? "s" : ""} (${events
-          .map((e) => `${e.title} — ${formatDayLabel(e.date)} ${formatTime12(e.startTime)}–${formatTime12(e.endTime)}`)
+          .map((e) => `${e.title} — ${formatDayLabel(e.date, ctx.today)} ${formatTime12(e.startTime)}–${formatTime12(e.endTime)}`)
           .join(", ")})`
       );
     }

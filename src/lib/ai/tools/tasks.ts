@@ -12,8 +12,8 @@ interface TaskRow {
   done: boolean;
 }
 
-function taskLabel(t: TaskRow): string {
-  const due = t.due_date ? `, due ${formatDayLabel(t.due_date)}` : "";
+function taskLabel(t: TaskRow, today: string): string {
+  const due = t.due_date ? `, due ${formatDayLabel(t.due_date, today)}` : "";
   return `"${t.title}" (${t.priority}${due}) (id: ${t.id})`;
 }
 
@@ -69,8 +69,8 @@ export const tasksCreate: ToolSpec<{
   },
   consequential: true,
   action: "create",
-  describe: async (_ctx, input) => {
-    const due = input.dueDate ? ` — due ${formatDayLabel(input.dueDate)}` : "";
+  describe: async (ctx, input) => {
+    const due = input.dueDate ? ` — due ${formatDayLabel(input.dueDate, ctx.today)}` : "";
     const prio = input.priority && input.priority !== "medium" ? ` (${input.priority} priority)` : "";
     return { summary: `Create task "${input.title}"${due}${prio}?` };
   },
@@ -114,7 +114,7 @@ export const tasksUpdate: ToolSpec<{ taskId: string; title?: string; dueDate?: s
     const { data, error } = await ctx.supabase.from("tasks").select("*").eq("id", input.taskId).eq("user_id", ctx.userId).maybeSingle();
     if (error) return { error: error.message };
     if (!data) return { error: "I couldn't find that task — it may have already been deleted." };
-    return { summary: `Update ${taskLabel(data as TaskRow)}?` };
+    return { summary: `Update ${taskLabel(data as TaskRow, ctx.today)}?` };
   },
   execute: async (ctx, input) => {
     const row: Record<string, unknown> = {};
@@ -140,7 +140,7 @@ export const tasksComplete: ToolSpec<{ taskId: string }> = {
     if (error) return { error: error.message };
     if (!data) return { error: "I couldn't find that task." };
     if ((data as TaskRow).done) return { error: "That task is already complete." };
-    return { summary: `Mark ${taskLabel(data as TaskRow)} complete?` };
+    return { summary: `Mark ${taskLabel(data as TaskRow, ctx.today)} complete?` };
   },
   execute: async (ctx, input) => {
     const { data, error } = await ctx.supabase
@@ -167,7 +167,7 @@ export const tasksDelete: ToolSpec<{ taskId: string }> = {
     const { data, error } = await ctx.supabase.from("tasks").select("*").eq("id", input.taskId).eq("user_id", ctx.userId).maybeSingle();
     if (error) return { error: error.message };
     if (!data) return { error: "I couldn't find that task — it may have already been deleted." };
-    return { summary: `Delete ${taskLabel(data as TaskRow)}?` };
+    return { summary: `Delete ${taskLabel(data as TaskRow, ctx.today)}?` };
   },
   execute: async (ctx, input) => {
     const { data, error } = await ctx.supabase.from("tasks").delete().eq("id", input.taskId).eq("user_id", ctx.userId).select("id,title").maybeSingle();

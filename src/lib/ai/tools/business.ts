@@ -638,7 +638,7 @@ export const businessScheduleBlock: ToolSpec<{ businessId: string; title: string
     } catch {
       // Conflict detection is best-effort — a lookup failure shouldn't block proposing the block.
     }
-    const when = `${formatDayLabel(input.date)}, ${formatTime12(input.startTime)}–${formatTime12(input.endTime)}`;
+    const when = `${formatDayLabel(input.date, ctx.today)}, ${formatTime12(input.startTime)}–${formatTime12(input.endTime)}`;
     const conflictNote = conflict ? `\n\n⚠️ This overlaps with "${conflict.title}" (${formatTime12(conflict.startTime)}–${formatTime12(conflict.endTime)}).` : "";
     return { summary: `Schedule "${input.title}" for "${business.name}" — ${when}?${conflictNote}` };
   },
@@ -674,7 +674,7 @@ export const businessScheduleBlock: ToolSpec<{ businessId: string; title: string
       recurrence: "none",
       source: "alxioum",
     }).catch((err) => console.error("[business_schedule_block] google sync failed:", err));
-    await logBusinessActivity(ctx, input.businessId, "time_scheduled", `Scheduled "${input.title}" for ${formatDayLabel(input.date)}`);
+    await logBusinessActivity(ctx, input.businessId, "time_scheduled", `Scheduled "${input.title}" for ${formatDayLabel(input.date, ctx.today)}`);
     return { ok: true, result: { event: data } };
   },
 };

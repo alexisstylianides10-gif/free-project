@@ -234,9 +234,9 @@ export const studyPlanCreate: ToolSpec<{
     const conflicts = input.sessions.filter((s) =>
       (existingEvents ?? []).some((e) => e.date === s.date && timeOverlap(s.startTime, s.endTime, e.start_time as string, e.end_time as string))
     );
-    const goalPart = input.goalId ? "" : `an exam goal for "${input.examSubject}" (${formatDayLabel(input.targetDate)}), `;
+    const goalPart = input.goalId ? "" : `an exam goal for "${input.examSubject}" (${formatDayLabel(input.targetDate, ctx.today)}), `;
     const sessionsList = input.sessions
-      .map((s) => `${formatDayLabel(s.date)} ${formatTime12(s.startTime)}–${formatTime12(s.endTime)}: ${s.topic}`)
+      .map((s) => `${formatDayLabel(s.date, ctx.today)} ${formatTime12(s.startTime)}–${formatTime12(s.endTime)}: ${s.topic}`)
       .join("; ");
     const tasksPart = input.tasks?.length ? ` and ${input.tasks.length} prep task${input.tasks.length > 1 ? "s" : ""} (${input.tasks.map((t) => t.title).join(", ")})` : "";
     const conflictNote = conflicts.length ? `\n\n⚠️ ${conflicts.length} of these overlap something already on your calendar — you can still confirm, or ask me to adjust.` : "";

@@ -55,8 +55,17 @@ export function daysBetween(fromISO: string, toISO: string): number {
   return Math.round((b - a) / (1000 * 60 * 60 * 24));
 }
 
-export function formatDayLabel(iso: string): string {
-  const diff = daysBetween(todayISO(), iso);
+/**
+ * `referenceTodayISO` defaults to the browser's own local date, which is
+ * correct for every client-rendered call site (the browser's local time IS
+ * the user's local time). Server code has no such luck — the Node process
+ * runs in its own timezone (UTC on Railway), which can be a different
+ * calendar day than the user's right now — so every AI-tool call site
+ * (calendar/business/study/tasks descriptions the model reads or shows the
+ * user) MUST pass ctx.today explicitly rather than relying on the default.
+ */
+export function formatDayLabel(iso: string, referenceTodayISO: string = todayISO()): string {
+  const diff = daysBetween(referenceTodayISO, iso);
   if (diff === 0) return "Today";
   if (diff === 1) return "Tomorrow";
   if (diff === -1) return "Yesterday";
