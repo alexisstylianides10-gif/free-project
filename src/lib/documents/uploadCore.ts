@@ -27,6 +27,7 @@ interface AnalyzedAmount {
   currency?: string;
 }
 interface AnalysisResult {
+  suggestedName: string;
   documentType: string;
   summary: string;
   dates: AnalyzedDate[];
@@ -46,6 +47,11 @@ const ANALYSIS_TOOL: Anthropic.Messages.Tool = {
   input_schema: {
     type: "object",
     properties: {
+      suggestedName: {
+        type: "string",
+        description:
+          "A short, human-readable file name (no extension) derived from what the document actually is, e.g. 'Electricity Bill - March 2026', 'Rental Agreement - 123 Main St', 'Chemistry Lab Report - Titration'. Write it in English regardless of the document's own language, but keep real proper nouns (names, places, organizations) as written. Empty string only if the document is blank, unreadable, or gives you nothing to name it from — the upload will fall back to the original filename in that case.",
+      },
       documentType: { type: "string", description: "A short label for what kind of document this is, e.g. 'School assignment', 'Invoice', 'Travel itinerary'. Empty string if unclear." },
       summary: { type: "string", description: "A concise summary, under 100 words, of what the document contains." },
       dates: {
@@ -87,7 +93,7 @@ const ANALYSIS_TOOL: Anthropic.Messages.Tool = {
       detectedText: { type: "string", description: "For an image/screenshot: the readable text you can actually see in it, transcribed as-is. Empty string if the image has no readable text or isn't legible." },
       suggestedCategory: { type: "string", description: "One suggested category if one clearly fits: School, Work, Personal, Finance, Travel, Legal, Receipts, Projects, Other. Empty string if nothing fits well." },
     },
-    required: ["documentType", "summary", "dates", "tasks", "people", "organizations", "amounts", "locations", "keyTopics", "detectedText", "suggestedCategory"],
+    required: ["suggestedName", "documentType", "summary", "dates", "tasks", "people", "organizations", "amounts", "locations", "keyTopics", "detectedText", "suggestedCategory"],
   },
 };
 
@@ -116,7 +122,7 @@ async function analyzeDocument(mimeType: string, base64: string, fileName: strin
     model: process.env.ALXIOUM_MODEL || "claude-sonnet-4-5-20250929",
     max_tokens: 1200,
     system:
-      "You are analyzing a document a user uploaded to their personal assistant. Be thorough but strictly grounded — only report what the document actually contains. Never invent dates, amounts, or requirements that aren't explicitly present.",
+      "You are analyzing a document a user uploaded to their personal assistant. Be thorough but strictly grounded — only report what the document actually contains. Never invent dates, amounts, or requirements that aren't explicitly present. The document may be written in any language or script (including non-Latin scripts and mixed-language documents) and may be handwritten — read and understand it accurately regardless of language before analyzing it. Write every field in English for consistency in the app, except real proper nouns (people, places, organizations, titles) which should stay as written in the source.",
     tools: [ANALYSIS_TOOL],
     tool_choice: { type: "tool", name: "record_document_analysis" },
     messages: [{ role: "user", content }],
@@ -125,6 +131,7 @@ async function analyzeDocument(mimeType: string, base64: string, fileName: strin
   const toolUse = response.content.find((b) => b.type === "tool_use");
   const input = (toolUse && "input" in toolUse ? (toolUse.input as Partial<AnalysisResult>) : undefined) ?? {};
   return {
+    suggestedName: input.suggestedName ?? "",
     documentType: input.documentType ?? "",
     summary: input.summary ?? "",
     dates: input.dates ?? [],
@@ -202,10 +209,12 @@ export async function analyzeAndStoreDocument(supabase: SupabaseClient, userId: 
   }
 
   const extractedText = docxText || (file.type === "text/plain" || file.type === "text/markdown" ? Buffer.from(base64, "base64").toString("utf-8").slice(0, 20000) : analysis?.detectedText || null);
+  const finalName = analysis?.suggestedName?.trim().slice(0, 150) || file.name;
 
   const { error: updateError } = await supabase
     .from("documents")
     .update({
+      name: finalName,
       processing_status: processingStatus,
       processing_error: processingError,
       summary: analysis?.summary ?? "",
@@ -247,7 +256,7 @@ export async function analyzeAndStoreDocument(supabase: SupabaseClient, userId: 
     ok: true,
     document: {
       id: docRow.id,
-      name: docRow.name,
+      name: finalName,
       storagePath: docRow.storage_path,
       mimeType: docRow.mime_type,
       sizeBytes: docRow.size_bytes,
