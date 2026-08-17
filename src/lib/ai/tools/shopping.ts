@@ -22,13 +22,15 @@ function itemLabel(i: ShoppingItemRow): string {
 
 async function findOrCreateList(ctx: { supabase: import("@supabase/supabase-js").SupabaseClient; userId: string }, listName?: string) {
   if (listName) {
-    const { data: existing } = await ctx.supabase
-      .from("shopping_lists")
-      .select("id,name,kind")
-      .eq("user_id", ctx.userId)
-      .ilike("name", listName)
-      .maybeSingle();
-    if (existing) return existing as ShoppingListRow;
+    const { data: exact } = await ctx.supabase.from("shopping_lists").select("id,name,kind").eq("user_id", ctx.userId).ilike("name", listName).maybeSingle();
+    if (exact) return exact as ShoppingListRow;
+
+    // No exact match — try a partial match (e.g. "groceries" should still
+    // find an existing "Grocery List"), but only auto-select it when it's
+    // unambiguous. With 2+ partial matches, don't guess which one the user
+    // meant — fall through to creating a new list instead.
+    const { data: partial } = await ctx.supabase.from("shopping_lists").select("id,name,kind").eq("user_id", ctx.userId).ilike("name", `%${listName}%`);
+    if (partial?.length === 1) return partial[0] as ShoppingListRow;
   }
   const { data: created, error } = await ctx.supabase
     .from("shopping_lists")

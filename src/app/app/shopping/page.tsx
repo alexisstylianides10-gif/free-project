@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FadeIn } from "@/components/ui/FadeIn";
+import { Modal } from "@/components/ui/Modal";
 import { useAlxioum } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export default function ShoppingPage() {
   const [itemName, setItemName] = useState("");
   const [newListName, setNewListName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [deleteListOpen, setDeleteListOpen] = useState(false);
 
   const currentListId = activeListId ?? shoppingLists[0]?.id ?? null;
   const currentList = shoppingLists.find((l) => l.id === currentListId) ?? null;
@@ -166,18 +168,36 @@ export default function ShoppingPage() {
           )}
 
           {currentList && (
-            <button
-              onClick={() => {
-                deleteShoppingList(currentList.id);
-                setActiveListId(null);
-              }}
-              className="text-[12px] text-muted-foreground hover:text-danger"
-            >
+            <button onClick={() => setDeleteListOpen(true)} className="text-[12px] text-muted-foreground hover:text-danger">
               Delete &ldquo;{currentList.name}&rdquo;
             </button>
           )}
         </>
       )}
+
+      <Modal
+        open={deleteListOpen}
+        onOpenChange={setDeleteListOpen}
+        title={`Delete "${currentList?.name ?? ""}"?`}
+        description={`This permanently deletes the list and all ${items.length} item${items.length === 1 ? "" : "s"} in it. This cannot be undone.`}
+      >
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setDeleteListOpen(false)} className="flex-1 justify-center">
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => {
+              if (currentList) deleteShoppingList(currentList.id);
+              setActiveListId(null);
+              setDeleteListOpen(false);
+            }}
+            className="flex-1 justify-center"
+          >
+            Delete
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

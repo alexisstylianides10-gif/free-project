@@ -59,6 +59,10 @@ export function TaskRow({ task }: { task: Task }) {
     }
   }
 
+  function toggleSubtask(subtaskId: string) {
+    updateTask(task.id, { subtasks: task.subtasks.map((st) => (st.id === subtaskId ? { ...st, done: !st.done } : st)) });
+  }
+
   function removeProposed(index: number) {
     setProposedSubtasks((s) => (s ? s.filter((_, i) => i !== index) : s));
   }
@@ -138,12 +142,12 @@ export function TaskRow({ task }: { task: Task }) {
           {task.subtasks.length > 0 && (
             <div className="space-y-1">
               {task.subtasks.map((st) => (
-                <div key={st.id} className="flex items-center gap-2 text-[13px]">
-                  <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border", st.done ? "border-success bg-success" : "border-border-strong")}>
+                <button key={st.id} onClick={() => toggleSubtask(st.id)} className="flex w-full items-center gap-2 text-left text-[13px]">
+                  <span className={cn("flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border", st.done ? "border-success bg-success" : "border-border-strong")}>
                     {st.done && <Check className="h-2 w-2 text-white" />}
                   </span>
                   <span className={cn("text-foreground", st.done && "text-muted-foreground line-through")}>{st.title}</span>
-                </div>
+                </button>
               ))}
             </div>
           )}

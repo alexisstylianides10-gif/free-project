@@ -307,7 +307,7 @@ function ToggleRow({ label, checked, onChange }: { label: string; checked: boole
 }
 
 function PushNotificationRow() {
-  const { supported, subscribed, busy, error, subscribe, unsubscribe, sendTest } = usePushNotifications();
+  const { supported, configured, subscribed, busy, error, subscribe, unsubscribe, sendTest } = usePushNotifications();
 
   if (!supported) {
     return (
@@ -319,6 +319,18 @@ function PushNotificationRow() {
         <p className="mt-1 text-[11.5px] text-muted-foreground">
           On iPhone/iPad, add Alxioum to your Home Screen first (Safari doesn&apos;t allow push in a regular browser tab).
         </p>
+      </div>
+    );
+  }
+
+  if (!configured) {
+    return (
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="text-[13.5px] text-muted-foreground">Push notifications on this device</span>
+          <span className="text-[12px] text-muted-foreground">Not set up yet</span>
+        </div>
+        <p className="mt-1 text-[11.5px] text-muted-foreground">This browser supports push, but Alxioum hasn&apos;t enabled it on the server yet.</p>
       </div>
     );
   }

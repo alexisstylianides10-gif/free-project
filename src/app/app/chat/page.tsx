@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Send, Loader2, AlertCircle, ImagePlus, X, PanelLeft, CalendarPlus, ListChecks, Target, FileUp } from "lucide-react";
@@ -38,6 +39,8 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [conversationsError, setConversationsError] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [attachedImage, setAttachedImage] = useState<{ dataUrl: string } | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -61,9 +64,10 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
+  async function loadConversations() {
     if (!authUserId) return;
-    (async () => {
+    setConversationsError(null);
+    try {
       const list = await db.fetchConversations(authUserId);
       if (list.length === 0) {
         const created = await db.createConversation(authUserId);
@@ -73,7 +77,14 @@ export default function ChatPage() {
         setConversations(list);
         setActiveId(list[0].id);
       }
-    })();
+    } catch (err) {
+      setConversationsError(err instanceof Error ? err.message : "Couldn't load your conversations.");
+    }
+  }
+
+  useEffect(() => {
+    loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUserId]);
 
   useEffect(() => {
@@ -177,6 +188,7 @@ export default function ChatPage() {
     setInput("");
     setAttachedImage(null);
     setError(null);
+    setErrorCode(null);
     setSending(true);
     setStatus("Thinking…");
 
@@ -226,6 +238,7 @@ export default function ChatPage() {
       setInput(messageText);
       setAttachedImage(image);
       setError(err instanceof Error ? err.message : "Something went wrong.");
+      setErrorCode((err as { code?: string })?.code ?? null);
     } finally {
       setSending(false);
       setStatus(null);
@@ -403,12 +416,34 @@ export default function ChatPage() {
           )}
         </div>
 
-        {error && (
+        {error && errorCode === "USAGE_LIMIT_REACHED" && (
+          <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-warning-soft px-3 py-2 text-[12.5px] text-warning">
+            <span className="flex items-center gap-1.5">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
+            </span>
+            <Link href="/app/settings" className="shrink-0 font-semibold underline underline-offset-2">
+              Upgrade
+            </Link>
+          </div>
+        )}
+
+        {error && errorCode !== "USAGE_LIMIT_REACHED" && (
           <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-danger-soft px-3 py-2 text-[12.5px] text-danger">
             <span className="flex items-center gap-1.5">
               <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
             </span>
             <button onClick={() => send(input)} className="shrink-0 font-semibold underline underline-offset-2">
+              Retry
+            </button>
+          </div>
+        )}
+
+        {conversationsError && (
+          <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-danger-soft px-3 py-2 text-[12.5px] text-danger">
+            <span className="flex items-center gap-1.5">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" /> Couldn&apos;t load your conversations — {conversationsError}
+            </span>
+            <button onClick={loadConversations} className="shrink-0 font-semibold underline underline-offset-2">
               Retry
             </button>
           </div>

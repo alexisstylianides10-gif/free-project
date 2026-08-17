@@ -13,13 +13,15 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 export function usePushNotifications() {
   const getAccessToken = useAlxioum((s) => s.getAccessToken);
   const [supported, setSupported] = useState(false);
+  const [configured, setConfigured] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const ok = typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window && Notification.permission !== "denied";
-    setSupported(ok && !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
+    setSupported(ok);
+    setConfigured(!!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
     if (!ok) return;
     navigator.serviceWorker.ready.then(async (reg) => {
       const existing = await reg.pushManager.getSubscription();
@@ -97,5 +99,5 @@ export function usePushNotifications() {
     }
   }, [getAccessToken]);
 
-  return { supported, subscribed, busy, error, subscribe, unsubscribe, sendTest };
+  return { supported, configured, subscribed, busy, error, subscribe, unsubscribe, sendTest };
 }
