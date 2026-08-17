@@ -683,16 +683,20 @@ create or replace function public.documents_search_vector_update() returns trigg
 language plpgsql
 set search_path = public, pg_temp
 as $$
+declare
+  combined_text text := coalesce(new.name, '') || ' ' ||
+    coalesce(new.summary, '') || ' ' ||
+    coalesce(new.extracted_text, '') || ' ' ||
+    coalesce(array_to_string(new.tags, ' '), '') || ' ' ||
+    coalesce(new.category, '');
 begin
+  -- Documents can be in any language, but Postgres has no single stemmer
+  -- config that covers every one. English + Greek are combined here (both
+  -- stemmed forms coexist in the same vector) so plural/case variants match
+  -- in either language; other languages still match on exact word forms via
+  -- the english config's language-agnostic tokenization, same as before.
   new.search_vector :=
-    to_tsvector(
-      'english',
-      coalesce(new.name, '') || ' ' ||
-      coalesce(new.summary, '') || ' ' ||
-      coalesce(new.extracted_text, '') || ' ' ||
-      coalesce(array_to_string(new.tags, ' '), '') || ' ' ||
-      coalesce(new.category, '')
-    );
+    to_tsvector('english', combined_text) || to_tsvector('greek', combined_text);
   return new;
 end;
 $$;
@@ -718,8 +722,8 @@ as $$
   select *
   from public.documents
   where user_id = p_user_id
-    and search_vector @@ websearch_to_tsquery('english', p_query)
-  order by ts_rank(search_vector, websearch_to_tsquery('english', p_query)) desc, created_at desc
+    and search_vector @@ (websearch_to_tsquery('english', p_query) || websearch_to_tsquery('greek', p_query))
+  order by ts_rank(search_vector, websearch_to_tsquery('english', p_query) || websearch_to_tsquery('greek', p_query)) desc, created_at desc
   limit p_limit;
 $$;
 
