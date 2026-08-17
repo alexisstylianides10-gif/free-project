@@ -15,6 +15,7 @@ const TABS = [
   { label: "Schedule", href: "/app/study/schedule" },
   { label: "Planner", href: "/app/study/planner" },
   { label: "Notes", href: "/app/study/notes" },
+  { label: "Study Mode", href: "/app/study/mode" },
   { label: "Homework Help", href: "/app/study/homework" },
 ];
 

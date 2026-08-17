@@ -37,6 +37,9 @@ import {
   ShoppingList,
   StudentProfile,
   StudyNote,
+  FlashcardDeck,
+  StudyQuiz,
+  QuizAttempt,
   Subject,
   Task,
   WeeklyReview,
@@ -2196,6 +2199,91 @@ export async function deleteStudyNoteRow(id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Study Mode: flashcard decks, quizzes, quiz attempts (Student plan).
+// Generation happens server-side (API routes insert directly, same pattern
+// as study_notes above); these are fetch/delete only, page-local state —
+// not in the Zustand store, since nothing else in the app needs cross-page
+// access to them (same reasoning as study_notes and chat conversations).
+// ---------------------------------------------------------------------------
+
+interface FlashcardDeckRow {
+  id: string;
+  subject_id: string | null;
+  source_note_id: string | null;
+  title: string;
+  cards: { front: string; back: string }[];
+  created_at: string;
+}
+
+function flashcardDeckFromRow(r: FlashcardDeckRow): FlashcardDeck {
+  return { id: r.id, subjectId: r.subject_id ?? undefined, sourceNoteId: r.source_note_id ?? undefined, title: r.title, cards: r.cards ?? [], createdAt: r.created_at };
+}
+
+export async function fetchFlashcardDecks(userId: string): Promise<FlashcardDeck[]> {
+  const { data, error } = await client().from("study_flashcard_decks").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as FlashcardDeckRow[]).map(flashcardDeckFromRow);
+}
+
+export async function deleteFlashcardDeckRow(id: string): Promise<void> {
+  const { error } = await client().from("study_flashcard_decks").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface StudyQuizRow {
+  id: string;
+  subject_id: string | null;
+  source_note_id: string | null;
+  title: string;
+  questions: StudyQuiz["questions"];
+  created_at: string;
+}
+
+function studyQuizFromRow(r: StudyQuizRow): StudyQuiz {
+  return { id: r.id, subjectId: r.subject_id ?? undefined, sourceNoteId: r.source_note_id ?? undefined, title: r.title, questions: r.questions ?? [], createdAt: r.created_at };
+}
+
+export async function fetchStudyQuizzes(userId: string): Promise<StudyQuiz[]> {
+  const { data, error } = await client().from("study_quizzes").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as StudyQuizRow[]).map(studyQuizFromRow);
+}
+
+export async function deleteStudyQuizRow(id: string): Promise<void> {
+  const { error } = await client().from("study_quizzes").delete().eq("id", id);
+  if (error) throw error;
+}
+
+interface QuizAttemptRow {
+  id: string;
+  quiz_id: string;
+  answers: QuizAttempt["answers"];
+  score: number;
+  weak_topics: string[];
+  completed_at: string;
+}
+
+function quizAttemptFromRow(r: QuizAttemptRow): QuizAttempt {
+  return { id: r.id, quizId: r.quiz_id, answers: r.answers ?? [], score: r.score, weakTopics: r.weak_topics ?? [], completedAt: r.completed_at };
+}
+
+export async function fetchQuizAttempts(userId: string): Promise<QuizAttempt[]> {
+  const { data, error } = await client().from("study_quiz_attempts").select("*").eq("user_id", userId).order("completed_at", { ascending: false });
+  if (error) throw error;
+  return (data as QuizAttemptRow[]).map(quizAttemptFromRow);
+}
+
+export async function insertQuizAttempt(userId: string, attempt: { quizId: string; answers: QuizAttempt["answers"]; score: number; weakTopics: string[] }): Promise<QuizAttempt> {
+  const { data, error } = await client()
+    .from("study_quiz_attempts")
+    .insert({ user_id: userId, quiz_id: attempt.quizId, answers: attempt.answers, score: attempt.score, weak_topics: attempt.weakTopics })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return quizAttemptFromRow(data as QuizAttemptRow);
+}
+
+// ---------------------------------------------------------------------------
 // activity (agent_actions) — the audit trail
 // ---------------------------------------------------------------------------
 
@@ -2241,6 +2329,9 @@ export async function exportAllUserData(userId: string) {
     documentDates,
     documentTasks,
     studyNotes,
+    flashcardDecks,
+    studyQuizzes,
+    quizAttempts,
     businesses,
     businessMilestones,
     businessMetrics,
@@ -2268,6 +2359,9 @@ export async function exportAllUserData(userId: string) {
     fetchDocumentDates(userId),
     fetchDocumentTasks(userId),
     fetchStudyNotes(userId),
+    fetchFlashcardDecks(userId),
+    fetchStudyQuizzes(userId),
+    fetchQuizAttempts(userId),
     fetchBusinesses(userId),
     fetchBusinessMilestones(userId),
     fetchBusinessMetrics(userId),
@@ -2296,6 +2390,9 @@ export async function exportAllUserData(userId: string) {
     documentDates,
     documentTasks,
     studyNotes,
+    flashcardDecks,
+    studyQuizzes,
+    quizAttempts,
     businesses,
     businessMilestones,
     businessMetrics,
@@ -2354,6 +2451,9 @@ export async function deleteAllUserContent(userId: string): Promise<void> {
     "documents",
     "document_collections",
     "study_notes",
+    "study_quiz_attempts",
+    "study_quizzes",
+    "study_flashcard_decks",
   ];
   const { data: storedFiles } = await c.storage.from("documents").list(userId);
   if (storedFiles?.length) {

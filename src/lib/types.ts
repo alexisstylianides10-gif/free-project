@@ -570,6 +570,53 @@ export interface StudyNote {
   createdAt: string;
 }
 
+export interface Flashcard {
+  front: string;
+  back: string;
+}
+
+export interface FlashcardDeck {
+  id: string;
+  subjectId?: string;
+  sourceNoteId?: string;
+  title: string;
+  cards: Flashcard[];
+  createdAt: string;
+}
+
+export interface QuizQuestion {
+  question: string;
+  options?: string[];
+  correctAnswer: string;
+  explanation: string;
+  topic?: string;
+}
+
+export interface StudyQuiz {
+  id: string;
+  subjectId?: string;
+  sourceNoteId?: string;
+  title: string;
+  questions: QuizQuestion[];
+  createdAt: string;
+}
+
+export interface QuizAnswer {
+  question: string;
+  givenAnswer: string;
+  correct: boolean;
+  topic?: string;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quizId: string;
+  answers: QuizAnswer[];
+  score: number;
+  weakTopics: string[];
+  completedAt: string;
+}
+
 export interface StudentProfile {
   schoolName: string;
   country: string;

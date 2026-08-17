@@ -535,6 +535,46 @@ create table if not exists public.study_notes (
 );
 
 -- ---------------------------------------------------------------------------
+-- Study Mode: AI-generated flashcards/quizzes from a note, document, or
+-- pasted text, plus quiz attempts for deterministic weak-topic tracking.
+-- Stored as one row per deck/quiz with a jsonb array of cards/questions —
+-- no per-card spaced-repetition state yet (deliberately deferred).
+-- ---------------------------------------------------------------------------
+create table if not exists public.study_flashcard_decks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid references public.subjects (id) on delete set null,
+  source_note_id uuid references public.study_notes (id) on delete set null,
+  title text not null,
+  cards jsonb not null default '[]',
+  created_at timestamptz not null default now()
+);
+create index if not exists study_flashcard_decks_user_id_idx on public.study_flashcard_decks (user_id);
+
+create table if not exists public.study_quizzes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid references public.subjects (id) on delete set null,
+  source_note_id uuid references public.study_notes (id) on delete set null,
+  title text not null,
+  questions jsonb not null default '[]',
+  created_at timestamptz not null default now()
+);
+create index if not exists study_quizzes_user_id_idx on public.study_quizzes (user_id);
+
+create table if not exists public.study_quiz_attempts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  quiz_id uuid not null references public.study_quizzes (id) on delete cascade,
+  answers jsonb not null default '[]',
+  score int not null default 0,
+  weak_topics text[] not null default '{}',
+  completed_at timestamptz not null default now()
+);
+create index if not exists study_quiz_attempts_quiz_id_idx on public.study_quiz_attempts (quiz_id);
+create index if not exists study_quiz_attempts_user_id_idx on public.study_quiz_attempts (user_id);
+
+-- ---------------------------------------------------------------------------
 -- student_profiles (one row per Student-plan user)
 -- ---------------------------------------------------------------------------
 create table if not exists public.student_profiles (
@@ -750,7 +790,8 @@ begin
       'document_activity', 'document_chat_messages',
       'businesses', 'business_milestones', 'business_metrics', 'business_experiments',
       'business_customers', 'business_feedback', 'business_insights', 'business_missions',
-      'business_content', 'business_competitors', 'business_activity'
+      'business_content', 'business_competitors', 'business_activity',
+      'study_flashcard_decks', 'study_quizzes', 'study_quiz_attempts'
     ])
   loop
     execute format('alter table public.%I enable row level security;', t);
@@ -825,7 +866,8 @@ begin
       'document_activity', 'document_chat_messages',
       'businesses', 'business_milestones', 'business_metrics', 'business_experiments',
       'business_customers', 'business_feedback', 'business_insights', 'business_missions',
-      'business_content', 'business_competitors', 'business_activity'
+      'business_content', 'business_competitors', 'business_activity',
+      'study_flashcard_decks', 'study_quizzes', 'study_quiz_attempts'
     ])
   loop
     execute format('drop policy if exists "%s_owner" on public.%I;', t, t);

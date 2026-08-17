@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { NotebookPen, Trash2, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import Link from "next/link";
+import { NotebookPen, Trash2, Sparkles, ChevronDown, ChevronUp, Layers, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -25,6 +26,8 @@ export default function StudyNotesPage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [making, setMaking] = useState<string | null>(null);
+  const [made, setMade] = useState<Record<string, "flashcards" | "quiz">>({});
 
   useEffect(() => {
     if (!authUserId) return;
@@ -64,6 +67,27 @@ export default function StudyNotesPage() {
     } catch {
       setNotes(previous);
       setError("Couldn't delete that note — try again.");
+    }
+  }
+
+  async function makeFrom(note: StudyNote, kind: "flashcards" | "quiz") {
+    setMaking(`${note.id}:${kind}`);
+    setError(null);
+    try {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Your session expired. Please sign in again.");
+      const res = await fetch(`/api/study/${kind === "flashcards" ? "flashcards" : "quizzes"}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ source: "note", noteId: note.id, subjectId: note.subjectId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Couldn't make ${kind}.`);
+      setMade((m) => ({ ...m, [note.id]: kind }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Couldn't make ${kind}.`);
+    } finally {
+      setMaking(null);
     }
   }
 
@@ -131,9 +155,33 @@ export default function StudyNotesPage() {
                     {isOpen && (
                       <>
                         <p className="mt-3 whitespace-pre-wrap text-[13px] leading-relaxed text-foreground">{note.content}</p>
-                        <button onClick={() => remove(note)} className="mt-3 flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-danger">
-                          <Trash2 className="h-3.5 w-3.5" /> Delete
-                        </button>
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <button
+                            onClick={() => makeFrom(note, "flashcards")}
+                            disabled={making === `${note.id}:flashcards`}
+                            className="flex items-center gap-1.5 text-[12px] font-medium text-accent hover:opacity-80 disabled:opacity-60"
+                          >
+                            <Layers className="h-3.5 w-3.5" /> {making === `${note.id}:flashcards` ? "Making flashcards…" : "Make flashcards"}
+                          </button>
+                          <button
+                            onClick={() => makeFrom(note, "quiz")}
+                            disabled={making === `${note.id}:quiz`}
+                            className="flex items-center gap-1.5 text-[12px] font-medium text-accent hover:opacity-80 disabled:opacity-60"
+                          >
+                            <ListChecks className="h-3.5 w-3.5" /> {making === `${note.id}:quiz` ? "Making quiz…" : "Make quiz"}
+                          </button>
+                          <button onClick={() => remove(note)} className="flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-danger">
+                            <Trash2 className="h-3.5 w-3.5" /> Delete
+                          </button>
+                        </div>
+                        {made[note.id] && (
+                          <p className="mt-2 text-[12px] text-success">
+                            {made[note.id] === "flashcards" ? "Flashcards" : "Quiz"} ready —{" "}
+                            <Link href="/app/study/mode" className="font-medium underline">
+                              open Study Mode
+                            </Link>
+                          </p>
+                        )}
                       </>
                     )}
                   </CardContent>
