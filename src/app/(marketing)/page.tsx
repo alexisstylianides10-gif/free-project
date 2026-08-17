@@ -6,7 +6,7 @@ import { FAQAccordion } from "@/components/marketing/FAQAccordion";
 import { MyDayMockup } from "@/components/marketing/MyDayMockup";
 import { AgentDiagram } from "@/components/marketing/AgentDiagram";
 import Link from "next/link";
-import { Check, MessageSquare, Brain, ShieldCheck, Zap, CircleCheck } from "lucide-react";
+import { Check, MessageSquare, Brain, ShieldCheck, Zap, CircleCheck, Calendar, CheckSquare, Target, FileText, Briefcase, GraduationCap } from "lucide-react";
 import { PLANS } from "@/lib/billing/plans";
 
 const EXAMPLES = [
@@ -26,6 +26,16 @@ const TRUST_PRINCIPLES = [
   { icon: Check, title: "Delete your data.", body: "Remove one item or everything, permanently, whenever you want." },
   { icon: Zap, title: "Minimum necessary context.", body: "Alxioum retrieves only what's relevant to your request — never your whole database." },
   { icon: MessageSquare, title: "Your data isn't dumped into every AI request.", body: "The model sees a short summary plus what it explicitly looks up, nothing more." },
+];
+
+const FEATURES = [
+  { icon: MessageSquare, title: "AI Chat", body: "Ask for anything in plain language. Alxioum proposes the real action and waits for your confirm." },
+  { icon: Calendar, title: "Calendar", body: "Full scheduling with two-way Google Calendar sync — nothing invented, nothing out of sync." },
+  { icon: CheckSquare, title: "Tasks", body: "Create, prioritize, and let Alxioum break a big assignment into concrete steps for you." },
+  { icon: Target, title: "Goals", body: "Set a goal and Alxioum works out real milestones — then tracks your actual progress." },
+  { icon: FileText, title: "Documents", body: "Upload a PDF, photo, or worksheet. Alxioum reads it, answers questions, and extracts real deadlines." },
+  { icon: Briefcase, title: "Business Builder", body: "Take an idea from strategy to launch — missions, competitor research, financials, weekly reviews." },
+  { icon: GraduationCap, title: "Study Mode", body: "Flashcards, quizzes, exam plans, and weak-topic tracking generated from your own material. Student plan." },
 ];
 
 const FLOW_STEPS = [
@@ -125,6 +135,26 @@ export default function LandingPage() {
         </section>
       </ScrollReveal>
 
+      {/* Features */}
+      <ScrollReveal>
+        <section className="mx-auto max-w-5xl px-5 py-20">
+          <div className="text-center">
+            <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">Features</p>
+            <h2 className="mt-2 text-[26px] font-serif font-normal tracking-tight text-foreground">Everything Alxioum can do.</h2>
+            <p className="mx-auto mt-2 max-w-lg text-[15px] text-muted-foreground">One assistant, real tools underneath — each one already live.</p>
+          </div>
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="rounded-xl border border-border bg-surface p-5 shadow-subtle">
+                <f.icon className="h-5 w-5 text-accent" />
+                <p className="mt-3 text-[14.5px] font-semibold text-foreground">{f.title}</p>
+                <p className="mt-1 text-[13px] text-muted-foreground">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </ScrollReveal>
+
       {/* Privacy / trust */}
       <ScrollReveal>
         <section className="border-y border-border/60 bg-muted/20 py-20">
@@ -155,7 +185,8 @@ export default function LandingPage() {
             <p className="text-[12.5px] font-semibold uppercase tracking-wide text-accent">Architecture</p>
             <h2 className="mt-2 text-[26px] font-serif font-normal tracking-tight text-foreground">One brain. Many capabilities.</h2>
             <p className="mx-auto mt-2 max-w-lg text-[15px] text-muted-foreground">
-              A single Head Agent routes requests to specialized agents. Calendar, Tasks, and Memory are live today — more are on the way.
+              A single Head Agent routes requests to specialized agents. Calendar, Tasks, Goals, Documents, Business Builder,
+              Study Mode, Focus, Shopping, and Memory are all live today — Email is next.
             </p>
           </div>
           <AgentDiagram />
@@ -168,8 +199,9 @@ export default function LandingPage() {
           <div className="mx-auto max-w-3xl px-5 text-center">
             <h2 className="text-[24px] font-serif font-normal tracking-tight text-foreground">Built to grow with you.</h2>
             <p className="mt-3 text-[15px] text-muted-foreground">
-              Alxioum starts as a focused calendar-and-tasks AI assistant. The Head Agent and tool architecture behind it are
-              built to expand — new agents get added by registering their tools, not rewriting the product.
+              Alxioum already spans Calendar, Tasks, Goals, Documents, Business Builder, and Study Mode. The Head Agent and
+              tool architecture behind it are built to expand — new agents get added by registering their tools, not
+              rewriting the product.
             </p>
           </div>
         </section>

@@ -1,17 +1,18 @@
-import { Calendar, CheckSquare, BrainCircuit, Mail, Wallet, Plane, ShoppingCart } from "lucide-react";
+import { Calendar, CheckSquare, BrainCircuit, Mail, Target, FileText, Briefcase, GraduationCap, ShoppingCart, Timer } from "lucide-react";
 
 const ACTIVE = [
   { icon: Calendar, label: "Calendar" },
   { icon: CheckSquare, label: "Tasks" },
+  { icon: Target, label: "Goals" },
+  { icon: FileText, label: "Documents" },
+  { icon: Briefcase, label: "Business" },
+  { icon: GraduationCap, label: "Study" },
+  { icon: Timer, label: "Focus" },
+  { icon: ShoppingCart, label: "Shopping" },
   { icon: BrainCircuit, label: "Memory" },
 ];
 
-const SOON = [
-  { icon: Mail, label: "Email" },
-  { icon: Wallet, label: "Finance" },
-  { icon: Plane, label: "Travel" },
-  { icon: ShoppingCart, label: "Shopping" },
-];
+const SOON = [{ icon: Mail, label: "Email" }];
 
 export function AgentDiagram() {
   return (
