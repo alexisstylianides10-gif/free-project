@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarDays, Check, Loader2, RefreshCw, Unlink } from "lucide-react";
+import { CalendarDays, Check, Loader2, RefreshCw, TriangleAlert, Unlink } from "lucide-react";
 import { useAlxioum } from "@/lib/store";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -11,6 +11,7 @@ interface Status {
   configured: boolean;
   connectedAt?: string;
   lastSyncedAt?: string;
+  needsReconnect?: boolean;
 }
 
 export function CalendarConnectionCard() {
@@ -93,6 +94,27 @@ export function CalendarConnectionCard() {
           <p className="text-[12.5px] text-muted-foreground">
             Google Calendar sync isn&apos;t set up on the server yet — this shows up once it is.
           </p>
+        ) : status.connected && status.needsReconnect ? (
+          <>
+            <div className="flex items-center gap-2 text-[13.5px] text-foreground">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-warning-soft text-warning">
+                <TriangleAlert className="h-3 w-3" />
+              </span>
+              Needs reconnecting
+            </div>
+            <p className="text-[12.5px] text-muted-foreground">
+              Google stopped accepting Alxioum&apos;s access — most often because access was revoked from your Google Account. Nothing is syncing until you reconnect.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={connect} disabled={connecting}>
+                {connecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CalendarDays className="h-3.5 w-3.5" />}
+                Reconnect Google Calendar
+              </Button>
+              <Button size="sm" variant="ghost" className="text-danger hover:bg-danger-soft" onClick={disconnectCalendar} disabled={disconnecting}>
+                <Unlink className="h-3.5 w-3.5" /> Disconnect
+              </Button>
+            </div>
+          </>
         ) : status.connected ? (
           <>
             <div className="flex items-center gap-2 text-[13.5px] text-foreground">

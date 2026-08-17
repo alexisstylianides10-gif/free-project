@@ -476,6 +476,8 @@ export interface RoutineStep {
   title: string;
   timeLabel?: string;
   done: boolean;
+  /** The date `done` was last set true — a step only reads as "done today" when this equals today. */
+  lastCompletedDate?: string;
   sortOrder: number;
   createdAt: string;
 }

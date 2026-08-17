@@ -32,7 +32,7 @@ import {
   Subject,
   Task,
 } from "./types";
-import { newId } from "./utils";
+import { isStepDoneToday, newId, todayISO } from "./utils";
 import { isSupabaseConfigured, supabase } from "./supabase/client";
 import * as db from "./db";
 import { pushEventToGoogleClient } from "./googleCalendarClient";
@@ -1131,9 +1131,14 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
     toggleRoutineStep: (id) => {
       const existing = get().routineSteps.find((s) => s.id === id);
       if (!existing) return;
-      const done = !existing.done;
-      set((s) => ({ routineSteps: s.routineSteps.map((step) => (step.id === id ? { ...step, done } : step)) }));
-      if (synced()) db.updateRoutineStepRow(id, { done }).catch((e) => reportSyncError("toggle routine step", e));
+      const today = todayISO();
+      // Toggling flips "done today", not the raw persisted `done` — a step
+      // completed on a previous day reads as unchecked, so clicking it marks
+      // it done *today* rather than un-completing yesterday's completion.
+      const doneToday = isStepDoneToday(existing, today);
+      const patch = doneToday ? { done: false, lastCompletedDate: existing.lastCompletedDate } : { done: true, lastCompletedDate: today };
+      set((s) => ({ routineSteps: s.routineSteps.map((step) => (step.id === id ? { ...step, ...patch } : step)) }));
+      if (synced()) db.updateRoutineStepRow(id, patch).catch((e) => reportSyncError("toggle routine step", e));
     },
 
     deleteRoutineStep: (id) => {

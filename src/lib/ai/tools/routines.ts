@@ -1,4 +1,5 @@
 import type { ToolSpec } from "./types";
+import { isStepDoneToday } from "@/lib/utils";
 
 interface RoutineRow {
   id: string;
@@ -12,6 +13,7 @@ interface RoutineStepRow {
   title: string;
   time_label: string;
   done: boolean;
+  last_completed_date: string | null;
 }
 
 export const routinesSearch: ToolSpec<{ query?: string }> = {
@@ -40,7 +42,9 @@ export const routinesSearch: ToolSpec<{ query?: string }> = {
           id: r.id,
           name: r.name,
           frequency: r.frequency,
-          steps: stepRows.filter((s) => s.routine_id === r.id).map((s) => ({ id: s.id, title: s.title, timeLabel: s.time_label, done: s.done })),
+          steps: stepRows
+            .filter((s) => s.routine_id === r.id)
+            .map((s) => ({ id: s.id, title: s.title, timeLabel: s.time_label, done: isStepDoneToday({ done: s.done, lastCompletedDate: s.last_completed_date ?? undefined }, ctx.today) })),
         })),
       },
     };
@@ -106,7 +110,13 @@ export const routinesCompleteStep: ToolSpec<{ stepId: string }> = {
     return { summary: `Mark "${(data as RoutineStepRow).title}" done?` };
   },
   execute: async (ctx, input) => {
-    const { data, error } = await ctx.supabase.from("routine_steps").update({ done: true }).eq("id", input.stepId).eq("user_id", ctx.userId).select("*").maybeSingle();
+    const { data, error } = await ctx.supabase
+      .from("routine_steps")
+      .update({ done: true, last_completed_date: ctx.today })
+      .eq("id", input.stepId)
+      .eq("user_id", ctx.userId)
+      .select("*")
+      .maybeSingle();
     if (error) return { ok: false, error: error.message };
     if (!data) return { ok: false, error: "Step no longer exists." };
     return { ok: true, result: { step: data } };

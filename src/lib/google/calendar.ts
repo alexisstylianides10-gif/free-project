@@ -93,6 +93,7 @@ interface ConnectionRow {
   access_token: string;
   refresh_token: string;
   token_expires_at: string;
+  needs_reconnect: boolean;
   sync_token: string | null;
   connected_at: string;
   last_synced_at: string | null;
@@ -104,7 +105,13 @@ async function getConnection(supabase: SupabaseClient, userId: string): Promise<
   return data as ConnectionRow | null;
 }
 
-/** Returns a valid access token for the user's connection, refreshing (and persisting the refresh) if it's expired. Returns null if not connected. */
+/**
+ * Returns a valid access token for the user's connection, refreshing (and
+ * persisting the refresh) if it's expired. Returns null if not connected.
+ * Throws — and flags the connection needs_reconnect — if the refresh itself
+ * fails (e.g. the user revoked access from their Google Account), so
+ * callers can't mistake a dead connection for a working one.
+ */
 async function getValidAccessToken(supabase: SupabaseClient, userId: string): Promise<{ accessToken: string; calendarId: string } | null> {
   const connection = await getConnection(supabase, userId);
   if (!connection) return null;
@@ -112,9 +119,18 @@ async function getValidAccessToken(supabase: SupabaseClient, userId: string): Pr
   if (expiresInMs > 60_000) {
     return { accessToken: connection.access_token, calendarId: connection.google_calendar_id };
   }
-  const refreshed = await refreshAccessToken(connection.refresh_token);
-  await supabase.from("calendar_connections").update({ access_token: refreshed.accessToken, token_expires_at: refreshed.expiresAt }).eq("user_id", userId);
-  return { accessToken: refreshed.accessToken, calendarId: connection.google_calendar_id };
+  try {
+    const refreshed = await refreshAccessToken(connection.refresh_token);
+    await supabase.from("calendar_connections").update({ access_token: refreshed.accessToken, token_expires_at: refreshed.expiresAt, needs_reconnect: false }).eq("user_id", userId);
+    return { accessToken: refreshed.accessToken, calendarId: connection.google_calendar_id };
+  } catch (err) {
+    try {
+      await supabase.from("calendar_connections").update({ needs_reconnect: true }).eq("user_id", userId);
+    } catch {
+      // best-effort flag — the rethrow below is what actually matters
+    }
+    throw new Error("Your Google Calendar connection needs to be reconnected.", { cause: err });
+  }
 }
 
 export async function getConnectionStatus(supabase: SupabaseClient, userId: string) {
@@ -125,6 +141,7 @@ export async function getConnectionStatus(supabase: SupabaseClient, userId: stri
     googleCalendarId: connection.google_calendar_id,
     connectedAt: connection.connected_at,
     lastSyncedAt: connection.last_synced_at ?? undefined,
+    needsReconnect: connection.needs_reconnect,
   };
 }
 
@@ -135,6 +152,7 @@ export async function saveConnection(supabase: SupabaseClient, userId: string, t
     access_token: tokens.accessToken,
     refresh_token: tokens.refreshToken,
     token_expires_at: tokens.expiresAt,
+    needs_reconnect: false,
     connected_at: new Date().toISOString(),
   });
   if (error) throw error;
@@ -202,37 +220,44 @@ function fromGoogleEvent(g: GoogleEvent): (Pick<CalendarEvent, "title" | "date" 
   };
 }
 
-/** Pushes a single Alxioum-native event change out to Google. Silently returns on events we don't sync (recurring, or no connection) — best-effort, never throws into the caller's write path. */
+/**
+ * Pushes a single Alxioum-native event change out to Google. Returns
+ * normally (a legitimate no-op) on events we don't sync (recurring, no
+ * connection, already came from Google) — but THROWS on a genuine failure
+ * (API error, revoked/expired connection) so callers can react. Every
+ * existing caller already either awaits this inside its own try/catch (the
+ * push route) or fires it with `.catch(err => console.error(...))`
+ * (every AI-tool call site) — both patterns already assume rejection
+ * signals failure, so this doesn't require touching those call sites.
+ */
 export async function pushEventToGoogle(
   supabase: SupabaseClient,
   userId: string,
   action: "create" | "update" | "delete",
   event: Pick<CalendarEvent, "id" | "title" | "date" | "startTime" | "endTime" | "location" | "notes" | "timezone" | "recurrence" | "source" | "googleEventId">
 ): Promise<void> {
-  try {
-    if (event.source === "google" && action === "create") return; // already came from Google
-    if (event.recurrence !== "none") return; // recurring events aren't synced in this MVP
-    const conn = await getValidAccessToken(supabase, userId);
-    if (!conn) return;
-    const headers = { Authorization: `Bearer ${conn.accessToken}`, "Content-Type": "application/json" };
+  if (event.source === "google" && action === "create") return; // already came from Google
+  if (event.recurrence !== "none") return; // recurring events aren't synced in this MVP
+  const conn = await getValidAccessToken(supabase, userId);
+  if (!conn) return; // not connected — legitimate no-op
+  const headers = { Authorization: `Bearer ${conn.accessToken}`, "Content-Type": "application/json" };
 
-    if (action === "delete") {
-      if (!event.googleEventId) return;
-      await fetch(`${API_BASE}/calendars/${encodeURIComponent(conn.calendarId)}/events/${event.googleEventId}`, { method: "DELETE", headers });
-      return;
-    }
+  if (action === "delete") {
+    if (!event.googleEventId) return;
+    const res = await fetch(`${API_BASE}/calendars/${encodeURIComponent(conn.calendarId)}/events/${event.googleEventId}`, { method: "DELETE", headers });
+    if (!res.ok && res.status !== 404 && res.status !== 410) throw new Error(`Google Calendar delete failed (${res.status}).`);
+    return;
+  }
 
-    const body = JSON.stringify(toGoogleEventBody(event));
-    if (action === "create" || !event.googleEventId) {
-      const res = await fetch(`${API_BASE}/calendars/${encodeURIComponent(conn.calendarId)}/events`, { method: "POST", headers, body });
-      if (!res.ok) return;
-      const created = (await res.json()) as GoogleEvent;
-      await supabase.from("events").update({ google_event_id: created.id }).eq("id", event.id).eq("user_id", userId);
-    } else {
-      await fetch(`${API_BASE}/calendars/${encodeURIComponent(conn.calendarId)}/events/${event.googleEventId}`, { method: "PATCH", headers, body });
-    }
-  } catch (err) {
-    console.error("[google calendar] push failed:", err);
+  const body = JSON.stringify(toGoogleEventBody(event));
+  if (action === "create" || !event.googleEventId) {
+    const res = await fetch(`${API_BASE}/calendars/${encodeURIComponent(conn.calendarId)}/events`, { method: "POST", headers, body });
+    if (!res.ok) throw new Error(`Google Calendar create failed (${res.status}).`);
+    const created = (await res.json()) as GoogleEvent;
+    await supabase.from("events").update({ google_event_id: created.id }).eq("id", event.id).eq("user_id", userId);
+  } else {
+    const res = await fetch(`${API_BASE}/calendars/${encodeURIComponent(conn.calendarId)}/events/${event.googleEventId}`, { method: "PATCH", headers, body });
+    if (!res.ok) throw new Error(`Google Calendar update failed (${res.status}).`);
   }
 }
 

@@ -109,3 +109,12 @@ export function eventOccursOn(event: { date: string; recurrence: "none" | "daily
 export function timeOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
   return aStart < bEnd && bStart < aEnd;
 }
+
+/**
+ * A routine step reads as "done" only for the day it was actually
+ * completed — otherwise it would stay checked forever. There's no reset
+ * job; this is purely computed from the persisted done + lastCompletedDate.
+ */
+export function isStepDoneToday(step: { done: boolean; lastCompletedDate?: string }, today: string): boolean {
+  return step.done && step.lastCompletedDate === today;
+}

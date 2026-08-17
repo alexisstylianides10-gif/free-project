@@ -234,6 +234,10 @@ create table if not exists public.routine_steps (
   title text not null,
   time_label text not null default '',
   done boolean not null default false,
+  -- The date `done` was last set true. A step reads as "done today" only
+  -- when done = true AND this equals today — so it naturally shows as
+  -- unchecked the next day without any reset job.
+  last_completed_date date,
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
@@ -598,6 +602,10 @@ create table if not exists public.calendar_connections (
   access_token text not null,
   refresh_token text not null,
   token_expires_at timestamptz not null,
+  -- Set true when a token refresh fails (e.g. the user revoked access from
+  -- their Google Account) so the UI can prompt reconnect instead of
+  -- silently claiming "Connected" forever.
+  needs_reconnect boolean not null default false,
   sync_token text,
   connected_at timestamptz not null default now(),
   last_synced_at timestamptz

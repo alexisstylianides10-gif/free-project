@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
+import { isStepDoneToday, todayISO } from "@/lib/utils";
 
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
@@ -28,6 +29,7 @@ export default function RoutinesPage() {
   const [frequency, setFrequency] = useState("daily");
   const [busy, setBusy] = useState(false);
   const [stepDrafts, setStepDrafts] = useState<Record<string, string>>({});
+  const today = todayISO();
 
   async function submitRoutine(e: React.FormEvent) {
     e.preventDefault();
@@ -88,16 +90,18 @@ export default function RoutinesPage() {
                     </div>
 
                     <div className="mt-3 space-y-1.5">
-                      {steps.map((step, si) => (
+                      {steps.map((step, si) => {
+                        const doneToday = isStepDoneToday(step, today);
+                        return (
                         <div key={step.id} className="flex items-center gap-2 rounded-md px-1 py-1">
                           <button
                             onClick={() => toggleRoutineStep(step.id)}
-                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${step.done ? "border-accent bg-accent text-accent-foreground" : "border-border"}`}
+                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${doneToday ? "border-accent bg-accent text-accent-foreground" : "border-border"}`}
                           >
-                            {step.done && <Check className="h-3 w-3" />}
+                            {doneToday && <Check className="h-3 w-3" />}
                           </button>
                           {step.timeLabel && <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{step.timeLabel}</span>}
-                          <span className={`min-w-0 flex-1 text-[13px] ${step.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{step.title}</span>
+                          <span className={`min-w-0 flex-1 text-[13px] ${doneToday ? "text-muted-foreground line-through" : "text-foreground"}`}>{step.title}</span>
                           <button onClick={() => moveRoutineStep(step.id, "up")} disabled={si === 0} className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30">
                             <ChevronUp className="h-3.5 w-3.5" />
                           </button>
@@ -108,7 +112,8 @@ export default function RoutinesPage() {
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     <form

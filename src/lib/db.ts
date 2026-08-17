@@ -1738,12 +1738,22 @@ interface RoutineStepRow {
   title: string;
   time_label: string;
   done: boolean;
+  last_completed_date: string | null;
   sort_order: number;
   created_at: string;
 }
 
 function routineStepFromRow(r: RoutineStepRow): RoutineStep {
-  return { id: r.id, routineId: r.routine_id, title: r.title, timeLabel: r.time_label || undefined, done: r.done, sortOrder: r.sort_order, createdAt: r.created_at };
+  return {
+    id: r.id,
+    routineId: r.routine_id,
+    title: r.title,
+    timeLabel: r.time_label || undefined,
+    done: r.done,
+    lastCompletedDate: r.last_completed_date ?? undefined,
+    sortOrder: r.sort_order,
+    createdAt: r.created_at,
+  };
 }
 
 export async function fetchRoutineSteps(userId: string): Promise<RoutineStep[]> {
@@ -1765,6 +1775,7 @@ export async function insertRoutineStep(userId: string, step: { routineId: strin
 export async function updateRoutineStepRow(id: string, patch: Partial<RoutineStep>): Promise<void> {
   const row: Record<string, unknown> = {};
   if (patch.done !== undefined) row.done = patch.done;
+  if (patch.lastCompletedDate !== undefined) row.last_completed_date = patch.lastCompletedDate;
   if (patch.title !== undefined) row.title = patch.title;
   if (patch.timeLabel !== undefined) row.time_label = patch.timeLabel;
   if (patch.sortOrder !== undefined) row.sort_order = patch.sortOrder;
