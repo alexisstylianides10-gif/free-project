@@ -11,7 +11,7 @@ import { MonthGrid } from "@/components/domain/MonthGrid";
 import { EventEditModal } from "@/components/domain/EventEditModal";
 import { useAlxioum } from "@/lib/store";
 import { CalendarEvent } from "@/lib/types";
-import { addDaysISO, formatDayLabel, todayISO } from "@/lib/utils";
+import { addDaysISO, eventOccursOn, formatDayLabel, todayISO } from "@/lib/utils";
 
 const SYNC_THROTTLE_MS = 5 * 60 * 1000;
 
@@ -55,7 +55,7 @@ export default function CalendarPage() {
   const [defaultDate, setDefaultDate] = useState<string | undefined>(undefined);
 
   const weekStart = useMemo(() => startOfWeekISO(anchor), [anchor]);
-  const dayEvents = useMemo(() => events.filter((e) => e.date === anchor).sort((a, b) => a.startTime.localeCompare(b.startTime)), [events, anchor]);
+  const dayEvents = useMemo(() => events.filter((e) => eventOccursOn(e, anchor)).sort((a, b) => a.startTime.localeCompare(b.startTime)), [events, anchor]);
 
   function shift(delta: number) {
     if (view === "day") setAnchor(addDaysISO(anchor, delta));

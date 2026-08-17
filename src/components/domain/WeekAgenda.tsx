@@ -2,7 +2,7 @@
 
 import { CalendarEvent } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
-import { addDaysISO, cn, formatTime12, todayISO } from "@/lib/utils";
+import { addDaysISO, cn, eventOccursOn, formatTime12, todayISO } from "@/lib/utils";
 import { Plus } from "lucide-react";
 
 export function WeekAgenda({
@@ -22,7 +22,7 @@ export function WeekAgenda({
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
       {days.map((date) => {
-        const dayEvents = events.filter((e) => e.date === date).sort((a, b) => a.startTime.localeCompare(b.startTime));
+        const dayEvents = events.filter((e) => eventOccursOn(e, date)).sort((a, b) => a.startTime.localeCompare(b.startTime));
         const d = new Date(date + "T00:00:00");
         const isToday = date === today;
         return (

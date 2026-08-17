@@ -90,6 +90,22 @@ export function nextWeekday(fromISO: string, targetDay: number, includeToday = f
   return addDaysISO(fromISO, delta);
 }
 
+/**
+ * Whether a (possibly recurring) event occurs on the given date — the seed
+ * date itself, or a matching daily/weekly repeat within recurrenceUntil.
+ * Views that list events for a specific date must use this instead of a
+ * literal `date === ` check, or recurring events only ever show up on the
+ * one day they were created on.
+ */
+export function eventOccursOn(event: { date: string; recurrence: "none" | "daily" | "weekly"; recurrenceUntil?: string }, dateISO: string): boolean {
+  if (event.date === dateISO) return true;
+  if (event.recurrence === "none") return false;
+  if (dateISO < event.date) return false;
+  if (event.recurrenceUntil && dateISO > event.recurrenceUntil) return false;
+  if (event.recurrence === "daily") return true;
+  return new Date(dateISO + "T00:00:00").getDay() === new Date(event.date + "T00:00:00").getDay();
+}
+
 export function timeOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
   return aStart < bEnd && bStart < aEnd;
 }

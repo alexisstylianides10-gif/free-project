@@ -12,6 +12,7 @@ const TABS = [
   { label: "Overview", href: "/app/study" },
   { label: "Focus", href: "/app/study/focus" },
   { label: "Subjects", href: "/app/study/subjects" },
+  { label: "Schedule", href: "/app/study/schedule" },
   { label: "Planner", href: "/app/study/planner" },
   { label: "Notes", href: "/app/study/notes" },
   { label: "Homework Help", href: "/app/study/homework" },

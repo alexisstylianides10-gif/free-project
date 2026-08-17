@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarEvent } from "@/lib/types";
-import { addDaysISO, cn, todayISO } from "@/lib/utils";
+import { addDaysISO, cn, eventOccursOn, todayISO } from "@/lib/utils";
 
 function startOfMonthISO(monthISO: string): string {
   return monthISO.slice(0, 8) + "01";
@@ -34,11 +34,6 @@ export function MonthGrid({
   while (cells.length % 7 !== 0) cells.push(null);
 
   const today = todayISO();
-  const eventsByDate = new Map<string, CalendarEvent[]>();
-  for (const e of events) {
-    if (!eventsByDate.has(e.date)) eventsByDate.set(e.date, []);
-    eventsByDate.get(e.date)!.push(e);
-  }
 
   return (
     <div className="overflow-hidden rounded-xl border border-border">
@@ -52,7 +47,7 @@ export function MonthGrid({
       <div className="grid grid-cols-7">
         {cells.map((date, i) => {
           if (!date) return <div key={i} className="min-h-[92px] border-b border-r border-border bg-muted/10 last:border-r-0" />;
-          const dayEvents = (eventsByDate.get(date) ?? []).sort((a, b) => a.startTime.localeCompare(b.startTime));
+          const dayEvents = events.filter((e) => eventOccursOn(e, date)).sort((a, b) => a.startTime.localeCompare(b.startTime));
           const isToday = date === today;
           const dayNum = Number(date.slice(8, 10));
           return (

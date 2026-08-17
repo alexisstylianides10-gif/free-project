@@ -9,7 +9,7 @@ import { FadeIn } from "@/components/ui/FadeIn";
 import { useAlxioum } from "@/lib/store";
 import { useGreeting } from "@/lib/useGreeting";
 import { findFreeSlots, nowMinutes } from "@/lib/schedule";
-import { daysBetween, formatDayLabel, formatTime12, todayISO } from "@/lib/utils";
+import { daysBetween, eventOccursOn, formatDayLabel, formatTime12, todayISO } from "@/lib/utils";
 
 export default function TodayPage() {
   const profile = useAlxioum((s) => s.profile);
@@ -18,7 +18,7 @@ export default function TodayPage() {
   const greeting = useGreeting();
 
   const today = todayISO();
-  const todaysEvents = useMemo(() => events.filter((e) => e.date === today).sort((a, b) => a.startTime.localeCompare(b.startTime)), [events, today]);
+  const todaysEvents = useMemo(() => events.filter((e) => eventOccursOn(e, today)).sort((a, b) => a.startTime.localeCompare(b.startTime)), [events, today]);
   const now = nowMinutes();
   const nowHHMM = `${String(Math.floor(now / 60)).padStart(2, "0")}:${String(now % 60).padStart(2, "0")}`;
   const remaining = todaysEvents.filter((e) => e.endTime > nowHHMM);
@@ -31,11 +31,12 @@ export default function TodayPage() {
     .filter((t) => t.dueDate && daysBetween(today, t.dueDate) > 0 && daysBetween(today, t.dueDate) <= 3)
     .sort((a, b) => (a.dueDate! < b.dueDate! ? -1 : 1));
 
-  const tomorrow = events.filter((e) => e.date === (() => {
+  const tomorrowISO = (() => {
     const d = new Date(today + "T00:00:00");
     d.setDate(d.getDate() + 1);
     return d.toISOString().slice(0, 10);
-  })());
+  })();
+  const tomorrow = events.filter((e) => eventOccursOn(e, tomorrowISO));
 
   const isClear = todaysEvents.length === 0 && dueToday.length === 0 && overdue.length === 0;
 
