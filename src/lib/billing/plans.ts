@@ -95,6 +95,13 @@ export function planLimits(plan: Plan): PlanDefinition {
   return PLANS[plan] ?? PLANS.Free;
 }
 
+// Billing isn't live yet, so this dev-only panel lets the developer freely
+// switch their own account between plans to test the app — gated to this
+// email both client-side (hides the UI) and server-side (the /api/dev/set-plan
+// route re-checks it before writing). Will be removed once real payments
+// make plan changes exclusively Stripe-driven.
+export const PLAN_SWITCHER_EMAILS = ["alexis.stylianides10@gmail.com"];
+
 export interface CreditPack {
   id: string;
   name: string;

@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { z } from "zod";
+import { requireUser, supabaseServiceRole } from "@/lib/supabase/server";
 import { isStripeConfigured, stripeClient } from "@/lib/stripe/client";
 import { isPaidPlan, stripePriceId, stripeCreditsPriceId, type BillingCycle } from "@/lib/stripe/plans";
 import { CREDIT_PACKS } from "@/lib/billing/plans";
+
+const checkoutBodySchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("subscription"), plan: z.string().min(1), cycle: z.enum(["monthly", "yearly"]) }),
+  z.object({ kind: z.literal("credits"), packId: z.string().min(1) }),
+]);
 
 export const runtime = "nodejs";
 
@@ -13,12 +19,15 @@ export async function POST(req: NextRequest) {
   const { client, user, error } = await requireUser(req);
   if (!client || !user) return NextResponse.json({ error: error ?? "Unauthorized." }, { status: 401 });
 
-  let body: CheckoutBody;
+  let rawBody: unknown;
   try {
-    body = await req.json();
+    rawBody = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
+  const parsed = checkoutBodySchema.safeParse(rawBody);
+  if (!parsed.success) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  const body: CheckoutBody = parsed.data;
 
   const stripe = stripeClient();
   const site = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
@@ -34,7 +43,12 @@ export async function POST(req: NextRequest) {
       metadata: { supabaseUserId: user.id },
     });
     customerId = customer.id;
-    await client.from("profiles").update({ stripe_customer_id: customerId }).eq("id", user.id);
+    // profiles.stripe_customer_id is locked to service-role writes only (see
+    // the column-privilege migration) — the user's own JWT-scoped client
+    // can no longer write it, so this uses the service-role client instead,
+    // safe here because we've already verified the user's identity above.
+    const serviceRole = supabaseServiceRole();
+    if (serviceRole) await serviceRole.from("profiles").update({ stripe_customer_id: customerId }).eq("id", user.id);
   }
 
   if (body.kind === "credits") {

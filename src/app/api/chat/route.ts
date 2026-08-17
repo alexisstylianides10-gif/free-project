@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser, supabaseServiceRole } from "@/lib/supabase/server";
 import { ClaudeProvider } from "@/lib/ai/claudeProvider";
 import { runHeadAgent } from "@/lib/ai/headAgent";
 import { isRateLimited } from "@/lib/ai/rateLimit";
@@ -221,15 +221,20 @@ export async function POST(req: NextRequest) {
           await client.from("pending_actions").update({ message_id: assistantRow.id }).eq("id", pendingActionCard.id);
         }
 
-        await client
-          .from("profiles")
-          .update({
-            ai_messages_used: messagesUsed + 1,
-            ai_tokens_used: periodExpired ? totalTokens : (profileRow.ai_tokens_used as number) + totalTokens,
-            usage_period_start: periodExpired ? today : profileRow.usage_period_start,
-            credits_balance: usingCredit ? creditsBalance - 1 : creditsBalance,
-          })
-          .eq("id", user.id);
+        // Usage/credit columns are locked to service-role writes only — see
+        // the profiles column-privilege migration.
+        const serviceRole = supabaseServiceRole();
+        if (serviceRole) {
+          await serviceRole
+            .from("profiles")
+            .update({
+              ai_messages_used: messagesUsed + 1,
+              ai_tokens_used: periodExpired ? totalTokens : (profileRow.ai_tokens_used as number) + totalTokens,
+              usage_period_start: periodExpired ? today : profileRow.usage_period_start,
+              credits_balance: usingCredit ? creditsBalance - 1 : creditsBalance,
+            })
+            .eq("id", user.id);
+        }
 
         await client.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 

@@ -56,12 +56,18 @@ export async function requireUserFromToken(token: string | null) {
 }
 
 /**
- * A privileged client that bypasses Row Level Security entirely. Reserved
- * for the Stripe webhook handler: Stripe calls our server directly with no
- * user session at all, so there's no JWT to scope an RLS-bound client to —
- * but by the time this is used, `stripe.webhooks.constructEvent()` has
- * already cryptographically verified the request really came from Stripe.
- * Never use this outside that one call site.
+ * A privileged client that bypasses Row Level Security (and the profiles
+ * column-privilege lock — see supabase/schema.sql) entirely. Reserved for a
+ * short, explicit list of server-side writes to profiles' billing/usage
+ * columns (plan, credits_balance, stripe_*, trial_*, ai_*_used), which are
+ * no longer writable by the user-scoped `authenticated` role at all:
+ * the Stripe webhook handler (no user session — verified instead via
+ * `stripe.webhooks.constructEvent()`'s signature check), the checkout/cancel
+ * routes' profile writes, chat's usage-counter increment, and the dev-only
+ * plan switcher's route — each of these has already verified the calling
+ * user's identity via their JWT before reaching for this client. Never use
+ * this for anything else, and never let it touch a column a user should be
+ * able to self-edit (those stay on the normal per-request client).
  */
 export function supabaseServiceRole(): SupabaseClient | null {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CalendarEvent } from "@/lib/types";
+import { encryptToken, decryptToken } from "@/lib/crypto/tokenCipher";
 
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -102,7 +103,9 @@ interface ConnectionRow {
 async function getConnection(supabase: SupabaseClient, userId: string): Promise<ConnectionRow | null> {
   const { data, error } = await supabase.from("calendar_connections").select("*").eq("user_id", userId).maybeSingle();
   if (error) throw error;
-  return data as ConnectionRow | null;
+  if (!data) return null;
+  const row = data as ConnectionRow;
+  return { ...row, access_token: decryptToken(row.access_token), refresh_token: decryptToken(row.refresh_token) };
 }
 
 /**
@@ -121,7 +124,7 @@ async function getValidAccessToken(supabase: SupabaseClient, userId: string): Pr
   }
   try {
     const refreshed = await refreshAccessToken(connection.refresh_token);
-    await supabase.from("calendar_connections").update({ access_token: refreshed.accessToken, token_expires_at: refreshed.expiresAt, needs_reconnect: false }).eq("user_id", userId);
+    await supabase.from("calendar_connections").update({ access_token: encryptToken(refreshed.accessToken), token_expires_at: refreshed.expiresAt, needs_reconnect: false }).eq("user_id", userId);
     return { accessToken: refreshed.accessToken, calendarId: connection.google_calendar_id };
   } catch (err) {
     try {
@@ -149,8 +152,8 @@ export async function saveConnection(supabase: SupabaseClient, userId: string, t
   const { error } = await supabase.from("calendar_connections").upsert({
     user_id: userId,
     google_calendar_id: "primary",
-    access_token: tokens.accessToken,
-    refresh_token: tokens.refreshToken,
+    access_token: encryptToken(tokens.accessToken),
+    refresh_token: encryptToken(tokens.refreshToken),
     token_expires_at: tokens.expiresAt,
     needs_reconnect: false,
     connected_at: new Date().toISOString(),

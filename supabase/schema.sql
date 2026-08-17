@@ -820,6 +820,28 @@ drop policy if exists "profiles_owner" on public.profiles;
 create policy "profiles_owner" on public.profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
 
+-- profiles_owner above is a blanket, column-agnostic RLS policy — it alone
+-- would let any authenticated user write plan/credits_balance/stripe_*/
+-- trial_*/ai_*_used directly via the public anon key + their own JWT.
+-- Column-level privileges close that: only the columns a user is meant to
+-- self-edit stay grantable to `authenticated`; billing/usage/plan columns
+-- become writable only by the service_role (used by the Stripe webhook and
+-- the handful of server routes that write those fields after verifying the
+-- user via JWT — see src/lib/supabase/server.ts's supabaseServiceRole()).
+revoke update on public.profiles from authenticated;
+grant update (
+  name,
+  timezone,
+  location,
+  avatar_initials,
+  theme,
+  memory_enabled,
+  notification_prefs,
+  onboarded,
+  pro_interest_at,
+  credits_interest_at
+) on public.profiles to authenticated;
+
 -- calendar_connections / student_profiles: primary key IS user_id
 drop policy if exists "calendar_connections_owner" on public.calendar_connections;
 create policy "calendar_connections_owner" on public.calendar_connections

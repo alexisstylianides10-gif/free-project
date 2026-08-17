@@ -1,6 +1,6 @@
 export const metadata = { title: "Privacy Policy" };
 
-const updated = "August 12, 2026";
+const updated = "August 17, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -19,8 +19,11 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-[17px] font-semibold">What we collect</h2>
           <ul className="mt-2 list-disc space-y-1.5 pl-5">
-            <li><strong>Account data</strong>: your email and password (handled by Supabase Auth; we never see or store your raw password).</li>
-            <li><strong>Content you create</strong>: calendar events, tasks, memories, and chat messages — only what you enter or ask Alxioum to save.</li>
+            <li><strong>Account data</strong>: your email address and name, from signing in with Google. We never see or store a password — there isn&apos;t one; sign-in is handled entirely by Google and Supabase Auth.</li>
+            <li><strong>Content you create</strong>: calendar events, tasks, goals, memories, chat messages, shopping lists, routines, documents/files you upload, Business Builder data, and Study Mode content (notes, flashcards, quizzes) — only what you enter or ask Alxioum to save.</li>
+            <li><strong>Uploaded files</strong>: documents/images you upload are stored securely and analyzed by Anthropic to extract dates, tasks, and a summary — only for the file you uploaded, never combined with anyone else&apos;s.</li>
+            <li><strong>Google Calendar access</strong>: if you connect Google Calendar, we store the OAuth tokens needed to sync your events, encrypted at rest, used only for that syncing.</li>
+            <li><strong>Billing data</strong>: for paid plans, Stripe handles your payment details directly — we never see or store your card number. We keep your subscription status and billing dates to run the product.</li>
             <li><strong>Activity history</strong>: a log of actions Alxioum has taken on your behalf (what, when, success or failure), so you have an audit trail.</li>
             <li><strong>Usage counters</strong>: how many AI actions you&apos;ve used this billing period, to enforce plan limits. We do not log the content of your conversations for analytics purposes beyond what&apos;s needed to make the product work.</li>
           </ul>
@@ -61,8 +64,9 @@ export default function PrivacyPage() {
           <h2 className="text-[17px] font-semibold">Security</h2>
           <p className="mt-2">
             Your data is stored in a Postgres database (Supabase) with row-level security, meaning every query is scoped to your
-            authenticated account at the database level — not just in application code. Our AI provider API key is stored
-            server-side only and is never exposed to your browser.
+            authenticated account at the database level — not just in application code. Sensitive account fields (billing status,
+            subscription state) can only be changed by our servers, never directly by a client. Google Calendar access tokens are
+            encrypted before storage. Our AI provider API key is stored server-side only and is never exposed to your browser.
           </p>
         </section>
 

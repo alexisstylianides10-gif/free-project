@@ -146,6 +146,26 @@ async function analyzeDocument(mimeType: string, base64: string, fileName: strin
   };
 }
 
+// A client can lie about a file's Content-Type; check the bytes it actually
+// sent for the binary types instead of trusting file.type blindly. No
+// reliable magic-byte signature exists for text/plain or text/markdown, so
+// those aren't checked here.
+const MAGIC_BYTE_CHECKS: Partial<Record<string, (buf: Buffer) => boolean>> = {
+  "application/pdf": (buf) => buf.subarray(0, 5).toString("latin1") === "%PDF-",
+  "image/jpeg": (buf) => buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff,
+  "image/png": (buf) => buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+  "image/webp": (buf) => buf.subarray(0, 4).toString("latin1") === "RIFF" && buf.subarray(8, 12).toString("latin1") === "WEBP",
+  "image/gif": (buf) => buf.subarray(0, 4).toString("latin1") === "GIF8",
+  // DOCX is a zip container — this confirms it's at least a valid zip, not
+  // specifically a docx, which is the practical limit of a magic-byte check.
+  [DOCX_MIME_TYPE]: (buf) => buf.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x03, 0x04])),
+};
+
+function matchesClaimedType(buffer: Buffer, mimeType: string): boolean {
+  const check = MAGIC_BYTE_CHECKS[mimeType];
+  return check ? check(buffer) : true;
+}
+
 export type UploadCoreOutcome =
   | {
       ok: true;
@@ -169,6 +189,9 @@ export async function analyzeAndStoreDocument(supabase: SupabaseClient, userId: 
   if (file.size > MAX_SIZE_BYTES) return { ok: false, error: "The document is too large to process (15MB max).", status: 400 };
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  if (!matchesClaimedType(buffer, file.type)) {
+    return { ok: false, error: "That file doesn't look like the type it claims to be — try re-exporting or re-saving it.", status: 400 };
+  }
   const base64 = buffer.toString("base64");
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100) || "upload";
   const storagePath = `${userId}/${crypto.randomUUID()}-${safeName}`;

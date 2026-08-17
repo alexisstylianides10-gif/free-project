@@ -13,20 +13,11 @@ import { BillingActions } from "@/components/settings/BillingActions";
 import { CreditsPurchaseButtons } from "@/components/settings/CreditsPurchaseButtons";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
-import { planLimits, PLANS } from "@/lib/billing/plans";
+import { planLimits, PLANS, PLAN_SWITCHER_EMAILS } from "@/lib/billing/plans";
 import { usePushNotifications } from "@/lib/push/usePushNotifications";
 import type { Plan } from "@/lib/types";
 
 const ALL_PLANS: Plan[] = ["Free", "Student", "Pro", "Max"];
-
-// Billing isn't live yet, so plan changes still go through a direct,
-// RLS-permitted profile update — there's no server-side gate that can tell
-// "clicked this button" apart from "called the Supabase API directly" for
-// that column. Hiding the switcher from everyone except the developer
-// account at least stops an ordinary new signup from finding a free
-// self-upgrade button; it is not a substitute for the real fix, which is
-// routing plan changes through a service-role-only path once Stripe lands.
-const PLAN_SWITCHER_EMAILS = ["alexis.stylianides10@gmail.com"];
 
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
@@ -39,6 +30,7 @@ export default function SettingsPage() {
   const updateProfile = useAlxioum((s) => s.updateProfile);
   const signOut = useAlxioum((s) => s.signOut);
   const refreshAll = useAlxioum((s) => s.refreshAll);
+  const getAccessToken = useAlxioum((s) => s.getAccessToken);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -46,7 +38,20 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState(profile?.timezone ?? "UTC");
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [switchingPlan, setSwitchingPlan] = useState(false);
   const [calendarBanner, setCalendarBanner] = useState<{ kind: "connected" | "error"; message?: string } | null>(null);
+
+  async function setDevPlan(p: Plan) {
+    setSwitchingPlan(true);
+    try {
+      const token = await getAccessToken();
+      if (!token) return;
+      await fetch("/api/dev/set-plan", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ plan: p }) });
+      await refreshAll();
+    } finally {
+      setSwitchingPlan(false);
+    }
+  }
 
   useEffect(() => {
     setName(profile?.name ?? "");
@@ -248,8 +253,9 @@ export default function SettingsPage() {
               {ALL_PLANS.map((p) => (
                 <button
                   key={p}
-                  onClick={() => updateProfile({ plan: p })}
-                  className={`rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                  onClick={() => setDevPlan(p)}
+                  disabled={switchingPlan}
+                  className={`rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors disabled:opacity-50 ${
                     profile.plan === p ? "border-accent bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:bg-muted"
                   }`}
                 >

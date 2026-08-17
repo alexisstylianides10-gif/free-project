@@ -134,7 +134,9 @@ export async function updateProfileRow(userId: string, patch: Partial<Profile>):
   if (patch.onboarded !== undefined) row.onboarded = patch.onboarded;
   if (patch.proInterestAt !== undefined) row.pro_interest_at = patch.proInterestAt;
   if (patch.creditsInterestAt !== undefined) row.credits_interest_at = patch.creditsInterestAt;
-  if (patch.plan !== undefined) row.plan = patch.plan;
+  // plan is intentionally not writable here — it's locked to service-role
+  // writes only (see the profiles column-privilege migration); the dev-only
+  // plan switcher goes through /api/dev/set-plan instead.
   const { error } = await client().from("profiles").upsert(row);
   if (error) throw error;
 }

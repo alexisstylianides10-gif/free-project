@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser, supabaseServiceRole } from "@/lib/supabase/server";
 import { isStripeConfigured, stripeClient } from "@/lib/stripe/client";
 
 export const runtime = "nodejs";
@@ -19,7 +19,10 @@ export async function POST(req: NextRequest) {
 
   const periodEnd = subscription.items.data[0]?.current_period_end;
   const currentPeriodEnd = new Date((periodEnd ?? Math.floor(Date.now() / 1000)) * 1000).toISOString();
-  await client.from("profiles").update({ cancel_at_period_end: true, current_period_end: currentPeriodEnd }).eq("id", user.id);
+  // cancel_at_period_end/current_period_end are locked to service-role
+  // writes only — see the profiles column-privilege migration.
+  const serviceRole = supabaseServiceRole();
+  if (serviceRole) await serviceRole.from("profiles").update({ cancel_at_period_end: true, current_period_end: currentPeriodEnd }).eq("id", user.id);
 
   return NextResponse.json({ ok: true, currentPeriodEnd });
 }
