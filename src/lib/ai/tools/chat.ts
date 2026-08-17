@@ -1,4 +1,5 @@
 import type { ToolSpec } from "./types";
+import { fetchOccurrencesOnDate } from "@/lib/ai/eventOccurrences";
 
 export const chatPresentChoices: ToolSpec<{ question: string; options: { label: string; value: string }[] }> = {
   name: "chat_present_choices",
@@ -57,8 +58,8 @@ export const dailyBriefingGet: ToolSpec<Record<string, never>> = {
     in7.setDate(in7.getDate() + 7);
     const in7ISO = in7.toISOString().slice(0, 10);
 
-    const [{ count: eventsCount }, { data: openTasks }, { data: priorityGoals }, { data: soonDocDates }] = await Promise.all([
-      ctx.supabase.from("events").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("date", ctx.today),
+    const [todaysEvents, { data: openTasks }, { data: priorityGoals }, { data: soonDocDates }] = await Promise.all([
+      fetchOccurrencesOnDate(ctx.supabase, ctx.userId, ctx.today).catch(() => []),
       ctx.supabase.from("tasks").select("id,title,due_date").eq("user_id", ctx.userId).eq("done", false).lte("due_date", in7ISO).order("due_date", { ascending: true, nullsFirst: false }),
       ctx.supabase.from("goals").select("id,name,icon").eq("user_id", ctx.userId).eq("completed", false).eq("paused", false).eq("priority", "high"),
       ctx.supabase.from("document_dates").select("label,date,document_id").eq("user_id", ctx.userId).lte("date", in7ISO).gte("date", ctx.today),
@@ -83,7 +84,7 @@ export const dailyBriefingGet: ToolSpec<Record<string, never>> = {
     return {
       ok: true,
       result: {
-        eventsCount: eventsCount ?? 0,
+        eventsCount: todaysEvents.length,
         tasksRemaining: tasks.length,
         goalsPriorityCount: goals.length,
         deadlinesUpcoming: docDates.length,

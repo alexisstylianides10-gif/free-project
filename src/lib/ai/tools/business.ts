@@ -6,6 +6,7 @@ import { researchCompetitors } from "@/lib/business/competitors";
 import { formatDayLabel, formatTime12, timeOverlap } from "@/lib/utils";
 import { pushEventToGoogle } from "@/lib/google/calendar";
 import { getWeeklyReview } from "@/lib/business/weeklyReview";
+import { fetchOccurrencesInRange, fetchOccurrencesOnDate } from "@/lib/ai/eventOccurrences";
 
 async function logBusinessActivity(ctx: ToolContext, businessId: string, kind: string, description: string) {
   await ctx.supabase.from("business_activity").insert({ user_id: ctx.userId, business_id: businessId, kind, description });
@@ -585,13 +586,17 @@ export const businessFindFreeTime: ToolSpec<{ durationMinutes?: number; fromDate
       d.setDate(d.getDate() + i);
       dates.push(d.toISOString().slice(0, 10));
     }
-    const { data, error } = await ctx.supabase.from("events").select("date,start_time,end_time").eq("user_id", ctx.userId).in("date", dates);
-    if (error) return { ok: false, error: error.message };
+    let occurrences: { date: string; startTime: string; endTime: string }[];
+    try {
+      occurrences = await fetchOccurrencesInRange(ctx.supabase, ctx.userId, dates[0], dates[dates.length - 1]);
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : "Couldn't load your calendar just now." };
+    }
     const byDate = new Map<string, { start: number; end: number }[]>();
-    for (const e of data ?? []) {
-      const list = byDate.get(e.date as string) ?? [];
-      list.push({ start: toMinutes(e.start_time as string), end: toMinutes(e.end_time as string) });
-      byDate.set(e.date as string, list);
+    for (const e of occurrences) {
+      const list = byDate.get(e.date) ?? [];
+      list.push({ start: toMinutes(e.startTime), end: toMinutes(e.endTime) });
+      byDate.set(e.date, list);
     }
     const slots: { date: string; startTime: string; endTime: string }[] = [];
     for (const date of dates) {
@@ -626,11 +631,15 @@ export const businessScheduleBlock: ToolSpec<{ businessId: string; title: string
     if (input.endTime <= input.startTime) return { error: "End time must be after start time." };
     const business = await loadBusiness(ctx, input.businessId);
     if (!business) return { error: "I couldn't find that business." };
-    const { data, error } = await ctx.supabase.from("events").select("id,title,start_time,end_time").eq("user_id", ctx.userId).eq("date", input.date);
-    if (error) return { error: error.message };
-    const conflict = (data ?? []).find((e) => timeOverlap(input.startTime, input.endTime, e.start_time as string, e.end_time as string));
+    let conflict: { title: string; startTime: string; endTime: string } | undefined;
+    try {
+      const occurrences = await fetchOccurrencesOnDate(ctx.supabase, ctx.userId, input.date);
+      conflict = occurrences.find((e) => timeOverlap(input.startTime, input.endTime, e.startTime, e.endTime));
+    } catch {
+      // Conflict detection is best-effort — a lookup failure shouldn't block proposing the block.
+    }
     const when = `${formatDayLabel(input.date)}, ${formatTime12(input.startTime)}–${formatTime12(input.endTime)}`;
-    const conflictNote = conflict ? `\n\n⚠️ This overlaps with "${conflict.title}" (${formatTime12(conflict.start_time as string)}–${formatTime12(conflict.end_time as string)}).` : "";
+    const conflictNote = conflict ? `\n\n⚠️ This overlaps with "${conflict.title}" (${formatTime12(conflict.startTime)}–${formatTime12(conflict.endTime)}).` : "";
     return { summary: `Schedule "${input.title}" for "${business.name}" — ${when}?${conflictNote}` };
   },
   execute: async (ctx, input) => {

@@ -1,4 +1,5 @@
 import type { ToolSpec } from "./types";
+import { fetchOccurrencesInRange } from "@/lib/ai/eventOccurrences";
 
 function addDays(iso: string, days: number): string {
   const d = new Date(iso + "T00:00:00Z");
@@ -15,8 +16,8 @@ export const weeklyReviewGenerate: ToolSpec<Record<string, never>> = {
     const weekStart = addDays(ctx.today, -6);
     const nextWeekEnd = addDays(ctx.today, 7);
 
-    const [{ data: events }, { data: completedTasks }, { data: remainingTasks }, { data: upcomingTasks }, { data: goals }] = await Promise.all([
-      ctx.supabase.from("events").select("id").eq("user_id", ctx.userId).gte("date", weekStart).lte("date", ctx.today),
+    const [events, { data: completedTasks }, { data: remainingTasks }, { data: upcomingTasks }, { data: goals }] = await Promise.all([
+      fetchOccurrencesInRange(ctx.supabase, ctx.userId, weekStart, ctx.today).catch(() => []),
       ctx.supabase.from("tasks").select("id").eq("user_id", ctx.userId).eq("done", true).gte("completed_at", weekStart),
       ctx.supabase.from("tasks").select("id").eq("user_id", ctx.userId).eq("done", false).gte("due_date", weekStart).lte("due_date", ctx.today),
       ctx.supabase
@@ -32,7 +33,7 @@ export const weeklyReviewGenerate: ToolSpec<Record<string, never>> = {
     ]);
 
     const stats = {
-      eventsThisWeek: events?.length ?? 0,
+      eventsThisWeek: events.length,
       tasksCompleted: completedTasks?.length ?? 0,
       tasksRemaining: remainingTasks?.length ?? 0,
       upcomingDeadlines: (upcomingTasks ?? []).map((t) => ({ id: t.id, title: t.title, dueDate: t.due_date, priority: t.priority })),

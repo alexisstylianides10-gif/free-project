@@ -6,7 +6,7 @@ import { CalendarDays, CheckCircle2, ListTodo, Target, ArrowRight } from "lucide
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useAlxioum } from "@/lib/store";
-import { formatDayLabel, todayISO } from "@/lib/utils";
+import { eventOccursOn, formatDayLabel, todayISO } from "@/lib/utils";
 
 function addDaysISO(iso: string, days: number): string {
   const d = new Date(iso + "T00:00:00");
@@ -24,7 +24,10 @@ export default function WeeklyReviewPage() {
     const weekStart = addDaysISO(today, -6);
     const nextWeekEnd = addDaysISO(today, 7);
 
-    const eventsThisWeek = events.filter((e) => e.date >= weekStart && e.date <= today).length;
+    let eventsThisWeek = 0;
+    for (let d = weekStart; d <= today; d = addDaysISO(d, 1)) {
+      eventsThisWeek += events.filter((e) => eventOccursOn(e, d)).length;
+    }
     const tasksCompleted = tasks.filter((t) => t.done && t.completedAt && t.completedAt.slice(0, 10) >= weekStart).length;
     const tasksRemaining = tasks.filter((t) => !t.done && t.dueDate && t.dueDate >= weekStart && t.dueDate <= today).length;
     const upcomingDeadlines = tasks

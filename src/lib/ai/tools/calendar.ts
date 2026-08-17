@@ -1,5 +1,6 @@
 import { formatDayLabel, formatTime12, timeOverlap } from "@/lib/utils";
 import { pushEventToGoogle } from "@/lib/google/calendar";
+import { fetchOccurrencesInRange, fetchOccurrencesOnDate } from "@/lib/ai/eventOccurrences";
 import type { ToolSpec } from "./types";
 import type { ToolContext } from "./types";
 
@@ -58,11 +59,37 @@ export const calendarSearch: ToolSpec<{ query?: string; from?: string; to?: stri
   },
   consequential: false,
   execute: async (ctx, input) => {
+    const limit = input.limit ?? 15;
+
+    // A bounded date range needs recurrence expansion — a plain literal-date
+    // query would miss a recurring event whose seed date falls outside
+    // [from, to] but which still occurs within it (e.g. "what's on my
+    // calendar next Tuesday" for a weekly class that started months ago).
+    if (input.from && input.to) {
+      try {
+        const occurrences = await fetchOccurrencesInRange(ctx.supabase, ctx.userId, input.from, input.to);
+        const q = input.query?.toLowerCase();
+        const filtered = q
+          ? occurrences.filter((e) => e.title.toLowerCase().includes(q) || (e.location ?? "").toLowerCase().includes(q) || (e.notes ?? "").toLowerCase().includes(q))
+          : occurrences;
+        const rows = filtered.slice(0, limit);
+        return {
+          ok: true,
+          result: {
+            count: rows.length,
+            events: rows.map((e) => ({ id: e.id, title: e.title, date: e.date, startTime: e.startTime, endTime: e.endTime, type: e.type, location: e.location })),
+          },
+        };
+      } catch (err) {
+        return { ok: false, error: err instanceof Error ? err.message : "Couldn't load your calendar just now." };
+      }
+    }
+
     let q = ctx.supabase.from("events").select("*").eq("user_id", ctx.userId);
     if (input.from) q = q.gte("date", input.from);
     if (input.to) q = q.lte("date", input.to);
     if (input.query) q = q.or(`title.ilike.%${input.query}%,location.ilike.%${input.query}%,notes.ilike.%${input.query}%`);
-    q = q.order("date", { ascending: true }).order("start_time", { ascending: true }).limit(input.limit ?? 15);
+    q = q.order("date", { ascending: true }).order("start_time", { ascending: true }).limit(limit);
     const { data, error } = await q;
     if (error) return { ok: false, error: error.message };
     const rows = data as EventRow[];
@@ -109,13 +136,15 @@ export const calendarCreate: ToolSpec<{
   action: "create",
   describe: async (ctx, input) => {
     if (input.endTime <= input.startTime) return { error: "End time must be after start time." };
-    const { data, error } = await ctx.supabase.from("events").select("id,title,start_time,end_time").eq("user_id", ctx.userId).eq("date", input.date);
-    if (error) return { error: error.message };
-    const conflict = (data as { id: string; title: string; start_time: string; end_time: string }[]).find((e) =>
-      timeOverlap(input.startTime, input.endTime, e.start_time, e.end_time)
-    );
+    let conflict: { title: string; startTime: string; endTime: string } | undefined;
+    try {
+      const occurrences = await fetchOccurrencesOnDate(ctx.supabase, ctx.userId, input.date);
+      conflict = occurrences.find((e) => timeOverlap(input.startTime, input.endTime, e.startTime, e.endTime));
+    } catch {
+      // Conflict detection is best-effort — a lookup failure shouldn't block proposing the event.
+    }
     const when = `${formatDayLabel(input.date)}, ${formatTime12(input.startTime)}–${formatTime12(input.endTime)}`;
-    const conflictNote = conflict ? `\n\n⚠️ This overlaps with "${conflict.title}" (${formatTime12(conflict.start_time)}–${formatTime12(conflict.end_time)}).` : "";
+    const conflictNote = conflict ? `\n\n⚠️ This overlaps with "${conflict.title}" (${formatTime12(conflict.startTime)}–${formatTime12(conflict.endTime)}).` : "";
     return { summary: `Create "${input.title}" — ${when}${input.location ? ` at ${input.location}` : ""}?${conflictNote}` };
   },
   execute: async (ctx, input) => {

@@ -1,4 +1,5 @@
 import type { ToolContext } from "./tools/types";
+import { fetchOccurrencesOnDate } from "./eventOccurrences";
 
 /**
  * Minimal, targeted context for the system prompt — counts and a short
@@ -14,7 +15,7 @@ export async function buildContextSummary(ctx: ToolContext): Promise<string> {
   const in3ISO = in3.toISOString().slice(0, 10);
 
   const [
-    { data: todayEvents },
+    todayEvents,
     { count: upcomingTaskCount },
     { count: memoryCount },
     { count: shoppingOpenCount },
@@ -24,7 +25,7 @@ export async function buildContextSummary(ctx: ToolContext): Promise<string> {
     { data: attentionStatusDocs },
     { data: soonDocDates },
   ] = await Promise.all([
-    ctx.supabase.from("events").select("title,start_time,end_time").eq("user_id", ctx.userId).eq("date", ctx.today).order("start_time", { ascending: true }).limit(6),
+    fetchOccurrencesOnDate(ctx.supabase, ctx.userId, ctx.today).catch(() => []),
     ctx.supabase.from("tasks").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("done", false).lte("due_date", in7ISO),
     ctx.supabase.from("memory").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("active", true),
     ctx.supabase.from("shopping_items").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("done", false),
@@ -35,8 +36,8 @@ export async function buildContextSummary(ctx: ToolContext): Promise<string> {
     ctx.supabase.from("document_dates").select("document_id").eq("user_id", ctx.userId).lte("date", in3ISO),
   ]);
 
-  const eventsLine = todayEvents?.length
-    ? todayEvents.map((e: { title: string; start_time: string; end_time: string }) => `${e.start_time}-${e.end_time} ${e.title}`).join("; ")
+  const eventsLine = todayEvents.length
+    ? todayEvents.slice(0, 6).map((e) => `${e.startTime}-${e.endTime} ${e.title}`).join("; ")
     : "none";
 
   const documentsNeedsAttentionCount = new Set([
