@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, Clock, Sparkles } from "lucide-react";
+import { Check, ChevronDown, Clock, ListTree, Loader2, Sparkles, X } from "lucide-react";
 import { Task } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { PriorityDot } from "@/components/ui/PriorityDot";
 import { useAlxioum } from "@/lib/store";
-import { cn, formatDayLabel } from "@/lib/utils";
+import { cn, formatDayLabel, newId } from "@/lib/utils";
 
 const categoryLabel: Record<Task["category"], string> = {
   school: "School",
@@ -25,10 +26,47 @@ export function TaskRow({ task }: { task: Task }) {
   const [open, setOpen] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
   const toggleTask = useAlxioum((s) => s.toggleTask);
+  const updateTask = useAlxioum((s) => s.updateTask);
+  const getAccessToken = useAlxioum((s) => s.getAccessToken);
+
+  const [breaking, setBreaking] = useState(false);
+  const [proposedSubtasks, setProposedSubtasks] = useState<string[] | null>(null);
+  const [breakdownError, setBreakdownError] = useState<string | null>(null);
 
   function handleToggle() {
     if (!task.done) setCelebrate(true);
     toggleTask(task.id);
+  }
+
+  async function breakDown() {
+    setBreaking(true);
+    setBreakdownError(null);
+    try {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Your session expired. Please sign in again.");
+      const res = await fetch("/api/tasks/break-down", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ taskId: task.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Couldn't break that task down.");
+      setProposedSubtasks(json.subtasks as string[]);
+    } catch (err) {
+      setBreakdownError(err instanceof Error ? err.message : "Couldn't break that task down.");
+    } finally {
+      setBreaking(false);
+    }
+  }
+
+  function removeProposed(index: number) {
+    setProposedSubtasks((s) => (s ? s.filter((_, i) => i !== index) : s));
+  }
+
+  function confirmSubtasks() {
+    if (!proposedSubtasks?.length) return;
+    updateTask(task.id, { subtasks: proposedSubtasks.map((title) => ({ id: newId(), title, done: false })) });
+    setProposedSubtasks(null);
   }
 
   return (
@@ -107,6 +145,38 @@ export function TaskRow({ task }: { task: Task }) {
                   <span className={cn("text-foreground", st.done && "text-muted-foreground line-through")}>{st.title}</span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {task.subtasks.length === 0 && !proposedSubtasks && (
+            <button onClick={breakDown} disabled={breaking} className="flex items-center gap-1.5 text-[12px] font-medium text-accent hover:opacity-80 disabled:opacity-60">
+              {breaking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ListTree className="h-3.5 w-3.5" />}
+              {breaking ? "Breaking into steps…" : "Break into steps"}
+            </button>
+          )}
+          {breakdownError && <p className="text-[12px] text-danger">{breakdownError}</p>}
+
+          {proposedSubtasks && (
+            <div className="space-y-2 rounded-lg border border-accent/30 bg-accent-soft/20 p-2.5">
+              <p className="text-[11.5px] font-semibold text-accent">Proposed steps — review before adding</p>
+              <div className="space-y-1">
+                {proposedSubtasks.map((title, i) => (
+                  <div key={i} className="flex items-center justify-between gap-2 text-[12.5px]">
+                    <span className="min-w-0 flex-1 truncate text-foreground">{title}</span>
+                    <button onClick={() => removeProposed(i)} className="shrink-0 text-muted-foreground hover:text-danger" aria-label="Remove">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-1.5">
+                <Button size="sm" variant="outline" onClick={() => setProposedSubtasks(null)} className="flex-1 justify-center">
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={confirmSubtasks} disabled={!proposedSubtasks.length} className="flex-1 justify-center">
+                  Add {proposedSubtasks.length} step{proposedSubtasks.length === 1 ? "" : "s"}
+                </Button>
+              </div>
             </div>
           )}
         </div>

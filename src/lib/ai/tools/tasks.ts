@@ -1,4 +1,4 @@
-import { formatDayLabel } from "@/lib/utils";
+import { formatDayLabel, newId } from "@/lib/utils";
 import type { ToolSpec } from "./types";
 
 const PRIORITIES = ["critical", "high", "medium", "low"] as const;
@@ -177,4 +177,34 @@ export const tasksDelete: ToolSpec<{ taskId: string }> = {
   },
 };
 
-export const taskTools = [tasksSearch, tasksCreate, tasksUpdate, tasksComplete, tasksDelete];
+export const tasksBreakDown: ToolSpec<{ taskId: string; subtasks: string[] }> = {
+  name: "tasks_break_down",
+  statusLabel: "Breaking task into steps…",
+  description:
+    "Propose breaking a task into 3-6 concrete subtasks, grounded only in the task's own title/description — never invent scope it doesn't imply. Requires the exact taskId from tasks_search and a subtasks array you've already worked out.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      taskId: { type: "string" },
+      subtasks: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 8 },
+    },
+    required: ["taskId", "subtasks"],
+  },
+  consequential: true,
+  action: "update",
+  describe: async (ctx, input) => {
+    const { data } = await ctx.supabase.from("tasks").select("title").eq("id", input.taskId).eq("user_id", ctx.userId).maybeSingle();
+    if (!data) return { error: "I couldn't find that task." };
+    if (!input.subtasks.length) return { error: "Nothing to break down into." };
+    return { summary: `Break "${data.title}" into ${input.subtasks.length} steps: ${input.subtasks.join(", ")}?` };
+  },
+  execute: async (ctx, input) => {
+    const subtasks = input.subtasks.map((title) => ({ id: newId(), title, done: false }));
+    const { data, error } = await ctx.supabase.from("tasks").update({ subtasks }).eq("id", input.taskId).eq("user_id", ctx.userId).select("*").maybeSingle();
+    if (error) return { ok: false, error: error.message };
+    if (!data) return { ok: false, error: "Task no longer exists." };
+    return { ok: true, result: { task: data } };
+  },
+};
+
+export const taskTools = [tasksSearch, tasksCreate, tasksUpdate, tasksComplete, tasksDelete, tasksBreakDown];

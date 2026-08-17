@@ -3,13 +3,13 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { startOfWeek } from "date-fns";
-import { Flame, Timer, TrendingDown, TrendingUp } from "lucide-react";
+import { AlertTriangle, CalendarClock, Flame, ListChecks, Star, Timer, TrendingDown, TrendingUp } from "lucide-react";
 import { useAlxioum } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/Card";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { subjectColorway } from "@/lib/study/colors";
 import { dayStreak, subjectDistribution, weeklyDailyMinutes, weekOverWeekChangePct } from "@/lib/study/stats";
-import { todayISO } from "@/lib/utils";
+import { daysBetween, eventOccursOn, formatTime12, priorityWeight, todayISO } from "@/lib/utils";
 import { SchoolCard } from "@/components/study/SchoolCard";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -18,6 +18,8 @@ export default function StudyOverviewPage() {
   const focusSessions = useAlxioum((s) => s.focusSessions);
   const subjects = useAlxioum((s) => s.subjects);
   const tasks = useAlxioum((s) => s.tasks);
+  const events = useAlxioum((s) => s.events);
+  const goals = useAlxioum((s) => s.goals);
 
   const weekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
   const { thisWeek, changePct } = useMemo(() => weekOverWeekChangePct(focusSessions), [focusSessions]);
@@ -32,12 +34,99 @@ export default function StudyOverviewPage() {
   const hours = Math.floor(thisWeek / 60);
   const mins = thisWeek % 60;
 
+  const todaysEvents = useMemo(() => events.filter((e) => eventOccursOn(e, today)).sort((a, b) => a.startTime.localeCompare(b.startTime)), [events, today]);
+  const todaysOpenTasks = useMemo(() => tasks.filter((t) => !t.done && t.dueDate === today), [tasks, today]);
+  const todaysStudyMinutes = useMemo(
+    () => focusSessions.filter((s) => s.completedAt && s.startedAt.slice(0, 10) === today).reduce((sum, s) => sum + s.actualMinutes, 0),
+    [focusSessions, today]
+  );
+  const priorityTask = useMemo(() => {
+    const dueOrOverdue = tasks.filter((t) => !t.done && t.dueDate && t.dueDate <= today);
+    return [...dueOrOverdue].sort((a, b) => priorityWeight(b.priority) - priorityWeight(a.priority) || a.dueDate!.localeCompare(b.dueDate!))[0];
+  }, [tasks, today]);
+  const upcomingDeadline = useMemo(() => {
+    const candidates: { label: string; date: string }[] = [];
+    for (const t of tasks) {
+      if (t.done || !t.dueDate) continue;
+      const days = daysBetween(today, t.dueDate);
+      if (days > 0 && days <= 3) candidates.push({ label: t.title, date: t.dueDate });
+    }
+    for (const g of goals) {
+      if (g.completed || !g.targetDate) continue;
+      const days = daysBetween(today, g.targetDate);
+      if (days >= 0 && days <= 3) candidates.push({ label: g.name, date: g.targetDate });
+    }
+    candidates.sort((a, b) => a.date.localeCompare(b.date));
+    return candidates[0] ?? null;
+  }, [tasks, goals, today]);
+
   return (
     <div className="space-y-5">
       <SchoolCard />
 
+      <FadeIn index={0}>
+        <Card>
+          <CardContent className="space-y-3 p-5">
+            <p className="text-[13px] font-semibold text-foreground">Today</p>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-[20px] font-semibold text-foreground">{todaysEvents.length}</p>
+                <p className="text-[11px] text-muted-foreground">events</p>
+              </div>
+              <div>
+                <p className="text-[20px] font-semibold text-foreground">{todaysOpenTasks.length}</p>
+                <p className="text-[11px] text-muted-foreground">tasks</p>
+              </div>
+              <div>
+                <p className="text-[20px] font-semibold text-foreground">
+                  {Math.floor(todaysStudyMinutes / 60)}h {todaysStudyMinutes % 60}m
+                </p>
+                <p className="text-[11px] text-muted-foreground">study</p>
+              </div>
+            </div>
+
+            {todaysEvents.length > 0 && (
+              <ul className="space-y-1">
+                {todaysEvents.slice(0, 3).map((e) => (
+                  <li key={e.id} className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
+                    <CalendarClock className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate text-foreground">{e.title}</span>
+                    <span className="ml-auto shrink-0">{formatTime12(e.startTime)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {priorityTask && (
+              <div className="flex items-start gap-1.5 rounded-lg border border-accent/30 bg-accent-soft/30 px-3 py-2">
+                <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent">Today&apos;s priority</p>
+                  <p className="truncate text-[13px] text-foreground">{priorityTask.title}</p>
+                </div>
+              </div>
+            )}
+
+            {upcomingDeadline && (
+              <div className="flex items-center gap-1.5 text-[12px] text-warning">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">
+                  {upcomingDeadline.label} — {daysBetween(today, upcomingDeadline.date) === 0 ? "due today" : `due in ${daysBetween(today, upcomingDeadline.date)}d`}
+                </span>
+              </div>
+            )}
+
+            {todaysEvents.length === 0 && todaysOpenTasks.length === 0 && !priorityTask && (
+              <p className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
+                <ListChecks className="h-3.5 w-3.5" /> Nothing scheduled for today.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </FadeIn>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <FadeIn index={0}>
+        <FadeIn index={1}>
         <Card className="border-accent/20 bg-accent-soft/40">
           <CardContent className="space-y-1 p-5">
             <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
@@ -56,7 +145,7 @@ export default function StudyOverviewPage() {
         </Card>
         </FadeIn>
 
-        <FadeIn index={1}>
+        <FadeIn index={2}>
         <Card className="border-accent/20 bg-accent-soft/40">
           <CardContent className="space-y-1 p-5">
             <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
@@ -69,7 +158,7 @@ export default function StudyOverviewPage() {
         </FadeIn>
       </div>
 
-      <FadeIn index={2}>
+      <FadeIn index={3}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold text-foreground">Focus hours this week</p>
@@ -90,7 +179,7 @@ export default function StudyOverviewPage() {
       </Card>
       </FadeIn>
 
-      <FadeIn index={3}>
+      <FadeIn index={4}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold text-foreground">Subject distribution — this week</p>
@@ -112,7 +201,7 @@ export default function StudyOverviewPage() {
       </FadeIn>
 
       {openSchoolTasks.length > 0 && (
-        <FadeIn index={4}>
+        <FadeIn index={5}>
         <Card>
           <CardContent className="space-y-2.5 p-5">
             <div className="flex items-center justify-between">
