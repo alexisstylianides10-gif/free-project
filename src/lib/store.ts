@@ -315,6 +315,8 @@ export const useAlxioum = create<AlxioumState>((set, get) => {
             aiTokensUsed: 0,
             usagePeriodStart: new Date().toISOString().slice(0, 10),
             creditsBalance: 0,
+            trialStatus: "none",
+            cancelAtPeriodEnd: false,
           },
         tasks,
         events,

@@ -205,6 +205,11 @@ export interface Profile {
   stripeCustomerId?: string | null;
   stripeSubscriptionStatus?: string | null;
   creditsBalance: number;
+  trialStart?: string | null;
+  trialEnd?: string | null;
+  trialStatus: "none" | "active" | "converted" | "expired" | "canceled";
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd?: string | null;
 }
 
 export type ShoppingListKind = "grocery" | "general" | "wishlist";

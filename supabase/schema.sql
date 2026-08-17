@@ -42,7 +42,12 @@ create table if not exists public.profiles (
   stripe_customer_id text,
   stripe_subscription_id text,
   stripe_subscription_status text,
-  credits_balance int not null default 0
+  credits_balance int not null default 0,
+  trial_start timestamptz,
+  trial_end timestamptz,
+  trial_status text not null default 'none' check (trial_status in ('none', 'active', 'converted', 'expired', 'canceled')),
+  cancel_at_period_end boolean not null default false,
+  current_period_end timestamptz
 );
 
 -- ---------------------------------------------------------------------------

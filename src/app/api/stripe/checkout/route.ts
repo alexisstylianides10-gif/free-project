@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const stripe = stripeClient();
   const site = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
 
-  const { data: profile, error: profileError } = await client.from("profiles").select("email, name, stripe_customer_id").eq("id", user.id).maybeSingle();
+  const { data: profile, error: profileError } = await client.from("profiles").select("email, name, stripe_customer_id, trial_status").eq("id", user.id).maybeSingle();
   if (profileError || !profile) return NextResponse.json({ error: "Couldn't load your profile." }, { status: 500 });
 
   let customerId = profile.stripe_customer_id as string | null;
@@ -62,12 +62,26 @@ export async function POST(req: NextRequest) {
   const priceId = stripePriceId(body.plan, body.cycle);
   if (!priceId) return NextResponse.json({ error: "That plan isn't available for purchase yet." }, { status: 501 });
 
+  // A 3-day trial, once per customer — real apps don't let the same person
+  // reset their trial by re-subscribing after it ends/converts/gets canceled.
+  const eligibleForTrial = (profile.trial_status ?? "none") === "none";
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
     client_reference_id: user.id,
-    subscription_data: { metadata: { supabaseUserId: user.id, plan: body.plan } },
+    // Checkout collects a real payment method upfront for subscription mode
+    // regardless of trial — this makes that explicit rather than relying on
+    // the default, and cancels automatically if Stripe ever ends up without
+    // one instead of silently granting free access.
+    payment_method_collection: "always",
+    subscription_data: {
+      metadata: { supabaseUserId: user.id, plan: body.plan },
+      ...(eligibleForTrial
+        ? { trial_period_days: 3, trial_settings: { end_behavior: { missing_payment_method: "cancel" } } }
+        : {}),
+    },
     success_url: `${site}/app/settings?billing=success`,
     cancel_url: `${site}/app/settings?billing=cancelled`,
   });

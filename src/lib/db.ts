@@ -73,6 +73,11 @@ interface ProfileRow {
   stripe_customer_id: string | null;
   stripe_subscription_status: string | null;
   credits_balance: number;
+  trial_start: string | null;
+  trial_end: string | null;
+  trial_status: Profile["trialStatus"];
+  cancel_at_period_end: boolean;
+  current_period_end: string | null;
 }
 
 function profileFromRow(r: ProfileRow): Profile {
@@ -99,6 +104,11 @@ function profileFromRow(r: ProfileRow): Profile {
     stripeCustomerId: r.stripe_customer_id,
     stripeSubscriptionStatus: r.stripe_subscription_status,
     creditsBalance: r.credits_balance,
+    trialStart: r.trial_start,
+    trialEnd: r.trial_end,
+    trialStatus: r.trial_status ?? "none",
+    cancelAtPeriodEnd: r.cancel_at_period_end ?? false,
+    currentPeriodEnd: r.current_period_end,
   };
 }
 

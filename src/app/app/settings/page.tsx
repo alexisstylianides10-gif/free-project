@@ -165,6 +165,16 @@ export default function SettingsPage() {
             <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Plan &amp; usage</p>
             <Badge tone={profile.plan === "Free" ? "neutral" : "accent"}>{profile.plan}</Badge>
           </div>
+          {profile.trialStatus === "active" && profile.trialEnd && (
+            <p className="rounded-lg border border-accent/30 bg-accent-soft px-3 py-2 text-[12.5px] text-accent">
+              Free trial — your card will be charged on {new Date(profile.trialEnd).toLocaleDateString(undefined, { month: "long", day: "numeric" })}.
+            </p>
+          )}
+          {profile.cancelAtPeriodEnd && profile.currentPeriodEnd && (
+            <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-[12.5px] text-muted-foreground">
+              Your plan will change to Free on {new Date(profile.currentPeriodEnd).toLocaleDateString(undefined, { month: "long", day: "numeric" })}.
+            </p>
+          )}
           <div>
             <div className="mb-1 flex items-center justify-between text-[12.5px] text-muted-foreground">
               <span>AI actions this month</span>
@@ -191,7 +201,13 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
-          {profile.plan !== "Free" && <BillingActions upgradeTarget={null} hasStripeCustomer={Boolean(profile.stripeCustomerId)} />}
+          {profile.plan !== "Free" && (
+            <BillingActions
+              upgradeTarget={null}
+              hasStripeCustomer={Boolean(profile.stripeCustomerId)}
+              cancelable={(profile.stripeSubscriptionStatus === "active" || profile.stripeSubscriptionStatus === "trialing") && !profile.cancelAtPeriodEnd}
+            />
+          )}
         </CardContent>
       </Card>
       </FadeIn>
