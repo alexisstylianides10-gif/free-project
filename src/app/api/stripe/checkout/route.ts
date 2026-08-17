@@ -5,14 +5,19 @@ import { isStripeConfigured, stripeClient } from "@/lib/stripe/client";
 import { isPaidPlan, stripePriceId, stripeCreditsPriceId, type BillingCycle } from "@/lib/stripe/plans";
 import { CREDIT_PACKS } from "@/lib/billing/plans";
 
+// A leading single slash only — this is interpolated straight into our own
+// site origin below, so a caller-supplied "//evil.com" (browser-parsed as
+// protocol-relative) or an absolute URL must never be accepted here.
+const returnPathSchema = z.string().regex(/^\/(?!\/)/).max(200).optional();
+
 const checkoutBodySchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("subscription"), plan: z.string().min(1), cycle: z.enum(["monthly", "yearly"]) }),
-  z.object({ kind: z.literal("credits"), packId: z.string().min(1) }),
+  z.object({ kind: z.literal("subscription"), plan: z.string().min(1), cycle: z.enum(["monthly", "yearly"]), returnPath: returnPathSchema }),
+  z.object({ kind: z.literal("credits"), packId: z.string().min(1), returnPath: returnPathSchema }),
 ]);
 
 export const runtime = "nodejs";
 
-type CheckoutBody = { kind: "subscription"; plan: string; cycle: BillingCycle } | { kind: "credits"; packId: string };
+type CheckoutBody = { kind: "subscription"; plan: string; cycle: BillingCycle; returnPath?: string } | { kind: "credits"; packId: string; returnPath?: string };
 
 export async function POST(req: NextRequest) {
   if (!isStripeConfigured()) return NextResponse.json({ error: "Billing isn't set up yet." }, { status: 501 });
@@ -31,6 +36,8 @@ export async function POST(req: NextRequest) {
 
   const stripe = stripeClient();
   const site = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  const returnBase = `${site}${body.returnPath ?? "/app/settings"}`;
+  const returnJoiner = returnBase.includes("?") ? "&" : "?";
 
   const { data: profile, error: profileError } = await client.from("profiles").select("email, name, stripe_customer_id, trial_status").eq("id", user.id).maybeSingle();
   if (profileError || !profile) return NextResponse.json({ error: "Couldn't load your profile." }, { status: 500 });
@@ -63,8 +70,8 @@ export async function POST(req: NextRequest) {
       line_items: [{ price: priceId, quantity: 1 }],
       client_reference_id: user.id,
       metadata: { supabaseUserId: user.id, kind: "credits", packId: pack.id, actions: String(pack.actions) },
-      success_url: `${site}/app/settings?billing=success`,
-      cancel_url: `${site}/app/settings?billing=cancelled`,
+      success_url: `${returnBase}${returnJoiner}billing=success`,
+      cancel_url: `${returnBase}${returnJoiner}billing=cancelled`,
     });
     if (!session.url) return NextResponse.json({ error: "Couldn't start checkout." }, { status: 502 });
     return NextResponse.json({ url: session.url });
@@ -96,8 +103,8 @@ export async function POST(req: NextRequest) {
         ? { trial_period_days: 3, trial_settings: { end_behavior: { missing_payment_method: "cancel" } } }
         : {}),
     },
-    success_url: `${site}/app/settings?billing=success`,
-    cancel_url: `${site}/app/settings?billing=cancelled`,
+    success_url: `${returnBase}${returnJoiner}billing=success`,
+    cancel_url: `${returnBase}${returnJoiner}billing=cancelled`,
   });
 
   if (!session.url) return NextResponse.json({ error: "Couldn't start checkout." }, { status: 502 });
