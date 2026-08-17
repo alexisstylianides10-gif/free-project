@@ -45,8 +45,14 @@ export async function buildContextSummary(ctx: ToolContext): Promise<string> {
     ...(soonDocDates ?? []).map((d: { document_id: string }) => d.document_id),
   ]).size;
 
+  // Spell out the weekday explicitly rather than making the model derive it
+  // from the raw date — that's exactly the kind of arithmetic an LLM can get
+  // off by one on, which showed up as "Wednesday" appointments landing on
+  // Thursday.
+  const todayWeekday = new Date(ctx.today + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
+
   const lines = [
-    `Today is ${ctx.today} (user timezone: ${ctx.timezone}).`,
+    `Today is ${todayWeekday}, ${ctx.today} (user timezone: ${ctx.timezone}). When the user names a weekday (e.g. "Wednesday", "next Friday"), count forward from this exact weekday — never compute the weekday from the date yourself.`,
     `Today's events on the calendar: ${eventsLine}.`,
     `Tasks due within 7 days: ${upcomingTaskCount ?? 0}.`,
     `Active memories stored: ${memoryCount ?? 0}.`,
