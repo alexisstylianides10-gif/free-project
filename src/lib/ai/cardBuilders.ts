@@ -172,6 +172,21 @@ export function buildPreviewCards(toolName: string, args: unknown): ResponseCard
       }
       return cards;
     }
+    case "study_plan_create": {
+      const cards: ResponseCard[] = [];
+      const sessions = Array.isArray(a.sessions) ? (a.sessions as { topic: string; date: string; startTime: string; endTime: string }[]) : [];
+      const tasks = Array.isArray(a.tasks) ? (a.tasks as { title: string; dueDate?: string }[]) : [];
+      if (sessions.length) {
+        cards.push({
+          type: "event",
+          events: sessions.map((s, i) => ({ id: `preview-s${i}`, title: `Study: ${s.topic}`, date: s.date, startTime: s.startTime, endTime: s.endTime, location: null })),
+        });
+      }
+      if (tasks.length) {
+        cards.push({ type: "taskList", tasks: tasks.map((t, i) => ({ id: `preview-t${i}`, title: t.title, dueDate: t.dueDate ?? null, priority: undefined, done: false })) });
+      }
+      return cards;
+    }
     default:
       return [];
   }
