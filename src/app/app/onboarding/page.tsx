@@ -242,8 +242,8 @@ function StepInstall({ platform, onFinish, onBack }: { platform: Platform; onFin
       {platform === "desktop" && (
         <div className="space-y-2 text-[13.5px] text-foreground">
           <p>
-            On <b>iPhone or iPad</b>: open <span className="font-mono text-[12.5px]">alxioum-production.up.railway.app</span> in Safari, tap the Share
-            icon <Share className="inline h-3.5 w-3.5 align-text-bottom" />, then <b>Add to Home Screen</b>.
+            On <b>iPhone or iPad</b>: open <span className="font-mono text-[12.5px]">{typeof window !== "undefined" ? window.location.host : "your Alxioum link"}</span> in
+            Safari, tap the Share icon <Share className="inline h-3.5 w-3.5 align-text-bottom" />, then <b>Add to Home Screen</b>.
           </p>
           <p className="text-muted-foreground">
             On Android: tap <Plus className="inline h-3.5 w-3.5 align-text-bottom" /> <b>Install app</b> from Chrome&apos;s menu.

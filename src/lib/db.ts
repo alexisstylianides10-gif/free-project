@@ -119,7 +119,11 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
 }
 
 export async function updateProfileRow(userId: string, patch: Partial<Profile>): Promise<void> {
-  const row: Record<string, unknown> = {};
+  // upsert, not update: if the profiles row is ever missing (e.g. the
+  // handle_new_user trigger didn't fire), a plain .update() silently
+  // affects 0 rows with no error — every write, including onboarding's
+  // finish(), would appear to succeed while doing nothing.
+  const row: Record<string, unknown> = { id: userId };
   if (patch.name !== undefined) row.name = patch.name;
   if (patch.timezone !== undefined) row.timezone = patch.timezone;
   if (patch.location !== undefined) row.location = patch.location;
@@ -131,7 +135,7 @@ export async function updateProfileRow(userId: string, patch: Partial<Profile>):
   if (patch.proInterestAt !== undefined) row.pro_interest_at = patch.proInterestAt;
   if (patch.creditsInterestAt !== undefined) row.credits_interest_at = patch.creditsInterestAt;
   if (patch.plan !== undefined) row.plan = patch.plan;
-  const { error } = await client().from("profiles").update(row).eq("id", userId);
+  const { error } = await client().from("profiles").upsert(row);
   if (error) throw error;
 }
 
@@ -518,6 +522,13 @@ export async function fetchMessages(conversationId: string): Promise<import("./t
   const { data, error } = await client().from("messages").select("*").eq("conversation_id", conversationId).order("created_at", { ascending: true });
   if (error) throw error;
   return (data as MessageRow[]).map(messageFromRow);
+}
+
+/** messages has no user_id column — only reachable via the user's conversations — so export/account-data reads go through this instead of fetchMessages. */
+export async function fetchAllMessagesForUser(userId: string): Promise<import("./types").ChatMessage[]> {
+  const conversations = await fetchConversations(userId);
+  const perConversation = await Promise.all(conversations.map((c) => fetchMessages(c.id)));
+  return perConversation.flat();
 }
 
 // ---------------------------------------------------------------------------
@@ -1825,6 +1836,12 @@ export async function fetchLatestWeeklyReview(userId: string): Promise<WeeklyRev
   return data ? weeklyReviewFromRow(data as WeeklyReviewRow) : null;
 }
 
+export async function fetchWeeklyReviews(userId: string): Promise<WeeklyReview[]> {
+  const { data, error } = await client().from("weekly_reviews").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as WeeklyReviewRow[]).map(weeklyReviewFromRow);
+}
+
 export async function insertWeeklyReview(userId: string, review: { weekStart: string; stats: Record<string, unknown> }): Promise<WeeklyReview> {
   const { data, error } = await client()
     .from("weekly_reviews")
@@ -1967,6 +1984,20 @@ export async function updateDocumentRow(id: string, patch: Partial<Document>): P
   if (error) throw error;
 }
 
+/** Supabase Storage `.list()` defaults to a 100-item page — loop until a page comes back short so a user with >100 files doesn't leave the rest orphaned on delete. */
+async function listAllStorageFiles(c: ReturnType<typeof client>, bucket: string, path: string): Promise<{ name: string }[]> {
+  const pageSize = 100;
+  const all: { name: string }[] = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await c.storage.from(bucket).list(path, { limit: pageSize, offset });
+    if (error) throw error;
+    if (!data?.length) break;
+    all.push(...data);
+    if (data.length < pageSize) break;
+  }
+  return all;
+}
+
 export async function deleteDocumentRow(id: string, storagePath: string): Promise<void> {
   await client().storage.from("documents").remove([storagePath]);
   const { error } = await client().from("documents").delete().eq("id", id);
@@ -1982,8 +2013,8 @@ export async function deleteDocumentRow(id: string, storagePath: string): Promis
  */
 export async function deleteAllDocuments(userId: string): Promise<void> {
   const c = client();
-  const { data: storedFiles } = await c.storage.from("documents").list(userId);
-  if (storedFiles?.length) {
+  const storedFiles = await listAllStorageFiles(c, "documents", userId);
+  if (storedFiles.length) {
     await c.storage.from("documents").remove(storedFiles.map((f) => `${userId}/${f.name}`));
   }
   const { error } = await c.from("documents").delete().eq("user_id", userId);
@@ -2363,6 +2394,13 @@ export async function exportAllUserData(userId: string) {
     businessMissions,
     businessContent,
     businessCompetitors,
+    conversations,
+    messages,
+    notifications,
+    studentProfile,
+    subjects,
+    focusSessions,
+    weeklyReviews,
   ] = await Promise.all([
     fetchProfile(userId),
     fetchTasks(userId),
@@ -2393,6 +2431,13 @@ export async function exportAllUserData(userId: string) {
     fetchBusinessMissions(userId),
     fetchBusinessContent(userId),
     fetchBusinessCompetitors(userId),
+    fetchConversations(userId),
+    fetchAllMessagesForUser(userId),
+    fetchNotifications(userId),
+    fetchStudentProfile(userId),
+    fetchSubjects(userId),
+    fetchFocusSessions(userId),
+    fetchWeeklyReviews(userId),
   ]);
   return {
     profile,
@@ -2424,6 +2469,13 @@ export async function exportAllUserData(userId: string) {
     businessMissions,
     businessContent,
     businessCompetitors,
+    conversations,
+    messages,
+    notifications,
+    studentProfile,
+    subjects,
+    focusSessions,
+    weeklyReviews,
   };
 }
 
@@ -2476,8 +2528,8 @@ export async function deleteAllUserContent(userId: string): Promise<void> {
     "study_quizzes",
     "study_flashcard_decks",
   ];
-  const { data: storedFiles } = await c.storage.from("documents").list(userId);
-  if (storedFiles?.length) {
+  const storedFiles = await listAllStorageFiles(c, "documents", userId);
+  if (storedFiles.length) {
     await c.storage.from("documents").remove(storedFiles.map((f) => `${userId}/${f.name}`));
   }
   for (const t of tables) {
