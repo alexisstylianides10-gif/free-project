@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, Download, FlaskConical, LogOut, ShieldCheck, Sparkles, X, Zap } from "lucide-react";
+import { CheckCircle2, Download, LogOut, ShieldCheck, X, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
@@ -13,11 +13,8 @@ import { BillingActions } from "@/components/settings/BillingActions";
 import { CreditsPurchaseButtons } from "@/components/settings/CreditsPurchaseButtons";
 import { useAlxioum } from "@/lib/store";
 import * as db from "@/lib/db";
-import { planLimits, PLANS, PLAN_SWITCHER_EMAILS } from "@/lib/billing/plans";
+import { planLimits } from "@/lib/billing/plans";
 import { usePushNotifications } from "@/lib/push/usePushNotifications";
-import type { Plan } from "@/lib/types";
-
-const ALL_PLANS: Plan[] = ["Free", "Student", "Pro", "Max"];
 
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
@@ -30,7 +27,6 @@ export default function SettingsPage() {
   const updateProfile = useAlxioum((s) => s.updateProfile);
   const signOut = useAlxioum((s) => s.signOut);
   const refreshAll = useAlxioum((s) => s.refreshAll);
-  const getAccessToken = useAlxioum((s) => s.getAccessToken);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -38,20 +34,7 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState(profile?.timezone ?? "UTC");
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [switchingPlan, setSwitchingPlan] = useState(false);
   const [calendarBanner, setCalendarBanner] = useState<{ kind: "connected" | "error"; message?: string } | null>(null);
-
-  async function setDevPlan(p: Plan) {
-    setSwitchingPlan(true);
-    try {
-      const token = await getAccessToken();
-      if (!token) return;
-      await fetch("/api/dev/set-plan", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ plan: p }) });
-      await refreshAll();
-    } finally {
-      setSwitchingPlan(false);
-    }
-  }
 
   useEffect(() => {
     setName(profile?.name ?? "");
@@ -237,38 +220,7 @@ export default function SettingsPage() {
       </Card>
       </FadeIn>
 
-      {PLAN_SWITCHER_EMAILS.includes(profile.email) && (
-        <FadeIn index={4}>
-        <Card className="border-dashed border-accent/40 bg-accent-soft/20">
-          <CardContent className="space-y-3 p-5">
-            <div className="flex items-center gap-2">
-              <FlaskConical className="h-4 w-4 text-accent" />
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-accent">Testing — plan switcher</p>
-            </div>
-            <p className="text-[12.5px] text-muted-foreground">
-              Billing isn&apos;t live yet, so you can freely switch your own account between plans to test the app. This
-              panel will be removed once Alxioum publishes real payments.
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {ALL_PLANS.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setDevPlan(p)}
-                  disabled={switchingPlan}
-                  className={`rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors disabled:opacity-50 ${
-                    profile.plan === p ? "border-accent bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  {PLANS[p].name}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        </FadeIn>
-      )}
-
-      <FadeIn index={5}>
+      <FadeIn index={4}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Notifications</p>
@@ -293,7 +245,7 @@ export default function SettingsPage() {
       </Card>
       </FadeIn>
 
-      <FadeIn index={6}>
+      <FadeIn index={5}>
       <Card>
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">

@@ -63,9 +63,9 @@ export async function requireUserFromToken(token: string | null) {
  * no longer writable by the user-scoped `authenticated` role at all:
  * the Stripe webhook handler (no user session — verified instead via
  * `stripe.webhooks.constructEvent()`'s signature check), the checkout/cancel
- * routes' profile writes, chat's usage-counter increment, and the dev-only
- * plan switcher's route — each of these has already verified the calling
- * user's identity via their JWT before reaching for this client. Never use
+ * routes' profile writes, and chat's usage-counter increment — each of these
+ * has already verified the calling user's identity via their JWT (or, for
+ * the webhook, Stripe's signature) before reaching for this client. Never use
  * this for anything else, and never let it touch a column a user should be
  * able to self-edit (those stay on the normal per-request client).
  */

@@ -135,8 +135,8 @@ export async function updateProfileRow(userId: string, patch: Partial<Profile>):
   if (patch.proInterestAt !== undefined) row.pro_interest_at = patch.proInterestAt;
   if (patch.creditsInterestAt !== undefined) row.credits_interest_at = patch.creditsInterestAt;
   // plan is intentionally not writable here — it's locked to service-role
-  // writes only (see the profiles column-privilege migration); the dev-only
-  // plan switcher goes through /api/dev/set-plan instead.
+  // writes only (see the profiles column-privilege migration); only Stripe's
+  // webhook and the checkout/cancel routes change it now.
   const { error } = await client().from("profiles").upsert(row);
   if (error) throw error;
 }
