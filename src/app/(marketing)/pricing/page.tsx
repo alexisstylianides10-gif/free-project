@@ -1,5 +1,5 @@
 import { ScrollReveal } from "@/components/marketing/ScrollReveal";
-import { PricingCards } from "@/components/marketing/PricingCards";
+import { PricingGrid } from "@/components/billing/PricingGrid";
 
 export const metadata = { title: "Pricing" };
 
@@ -14,7 +14,7 @@ export default function PricingPage() {
       </ScrollReveal>
 
       <ScrollReveal>
-        <PricingCards />
+        <PricingGrid mode="marketing" />
       </ScrollReveal>
 
       <p className="mt-8 text-center text-[13px] text-muted-foreground">

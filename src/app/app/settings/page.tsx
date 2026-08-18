@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, Download, LogOut, ShieldCheck, X, Zap } from "lucide-react";
+import { CheckCircle2, CreditCard, Download, Loader2, LogOut, ShieldCheck, X, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/FadeIn";
+import { Modal } from "@/components/ui/Modal";
 import { CalendarConnectionCard } from "@/components/settings/CalendarConnectionCard";
-import { BillingActions } from "@/components/settings/BillingActions";
+import { PricingGrid } from "@/components/billing/PricingGrid";
 import { CreditsPurchaseButtons } from "@/components/settings/CreditsPurchaseButtons";
 import { useAlxioum } from "@/lib/store";
+import { useBillingAction } from "@/lib/useBillingAction";
 import * as db from "@/lib/db";
 import { planLimits } from "@/lib/billing/plans";
 import { usePushNotifications } from "@/lib/push/usePushNotifications";
@@ -34,7 +36,9 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState(profile?.timezone ?? "UTC");
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [planModalOpen, setPlanModalOpen] = useState(false);
   const [calendarBanner, setCalendarBanner] = useState<{ kind: "connected" | "error"; message?: string } | null>(null);
+  const { go: goBilling, busyKey: billingBusyKey } = useBillingAction();
 
   useEffect(() => {
     setName(profile?.name ?? "");
@@ -58,11 +62,6 @@ export default function SettingsPage() {
   const plan = planLimits(profile.plan);
   const isUnlimited = !Number.isFinite(plan.aiMessagesPerMonth);
   const usagePct = isUnlimited ? 0 : Math.min(100, Math.round((profile.aiMessagesUsed / plan.aiMessagesPerMonth) * 100));
-  // Student isn't a rung below Max on this ladder — it's Study tools at a
-  // discount, and Max doesn't include Study. So Student users don't get an
-  // "upgrade to Max" prompt; that would read as a step up but actually
-  // drops the thing that plan is for.
-  const upgradeTarget = profile.plan === "Free" ? planLimits("Pro") : profile.plan === "Pro" ? planLimits("Max") : null;
 
   async function exportData() {
     if (!authUserId) return;
@@ -174,31 +173,24 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
-          {upgradeTarget && (
-            <div className="rounded-lg border border-border bg-muted/40 p-3">
-              <p className="text-[13px] font-medium text-foreground">
-                {upgradeTarget.name} — €{upgradeTarget.priceMonthlyEUR}/month
-              </p>
-              <ul className="mt-1.5 space-y-0.5 text-[12.5px] text-muted-foreground">
-                {upgradeTarget.features.map((f) => (
-                  <li key={f}>· {f}</li>
-                ))}
-              </ul>
-              <div className="mt-2">
-                <BillingActions upgradeTarget={upgradeTarget} hasStripeCustomer={false} />
-              </div>
-            </div>
-          )}
-          {profile.plan !== "Free" && (
-            <BillingActions
-              upgradeTarget={null}
-              hasStripeCustomer={Boolean(profile.stripeCustomerId)}
-              cancelable={(profile.stripeSubscriptionStatus === "active" || profile.stripeSubscriptionStatus === "trialing") && !profile.cancelAtPeriodEnd}
-            />
-          )}
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => setPlanModalOpen(true)}>
+              Change plan
+            </Button>
+            {profile.stripeCustomerId && (
+              <Button size="sm" variant="outline" onClick={() => goBilling("/api/stripe/portal", undefined, "portal")} disabled={billingBusyKey !== null}>
+                {billingBusyKey === "portal" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                Manage billing
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
       </FadeIn>
+
+      <Modal open={planModalOpen} onOpenChange={setPlanModalOpen} title="Change plan" description="Pick any plan — switching between paid plans happens through your billing portal so nothing double-charges." className="max-w-4xl">
+        <PricingGrid mode="account" currentPlan={profile.plan} onChanged={() => { refreshAll(); setPlanModalOpen(false); }} />
+      </Modal>
 
       <FadeIn index={2}>
         <CalendarConnectionCard />

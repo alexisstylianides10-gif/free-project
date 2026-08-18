@@ -3,15 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Share, Plus, Smartphone, Bot, Check, X, Loader2, Sparkles } from "lucide-react";
+import { Share, Plus, Smartphone, Bot, Check, X } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { Button } from "@/components/ui/Button";
+import { PricingGrid } from "@/components/billing/PricingGrid";
 import { useAlxioum } from "@/lib/store";
-import { useBillingAction } from "@/lib/useBillingAction";
-import { PLANS } from "@/lib/billing/plans";
-import type { Plan } from "@/lib/types";
-
-const SELECTABLE_PLANS: Plan[] = ["Free", "Student", "Pro", "Max"];
 
 const USE_CASES = ["Stay on top of my schedule", "Manage tasks & deadlines", "Remember things for me", "All of it"];
 
@@ -76,7 +72,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-md">
+      <div className={`w-full ${step === 1 ? "max-w-4xl" : "max-w-md"}`}>
         <div className="mb-6 flex items-center justify-center gap-2">
           <Logo />
           <span className="text-[15px] font-semibold tracking-tight">Alxioum</span>
@@ -113,52 +109,17 @@ function StepWelcome({ name, setName, onNext }: { name: string; setName: (v: str
 }
 
 function StepPlan({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
-  const { go, busyKey, error } = useBillingAction();
-
-  function pick(planId: Plan) {
-    if (planId === "Free") {
-      onNext();
-      return;
-    }
-    go(
-      "/api/stripe/checkout",
-      { kind: "subscription", plan: planId, cycle: "monthly", returnPath: "/app/onboarding?step=2" },
-      planId,
-    );
-  }
-
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
-      <h2 className="text-[16px] font-semibold text-foreground">Choose your plan</h2>
-      <p className="mt-1 text-[13px] text-muted-foreground">Paid plans start with a 3-day free trial — cancel anytime before it ends and you won&apos;t be charged.</p>
-      <div className="mt-4 space-y-2">
-        {SELECTABLE_PLANS.map((p) => {
-          const plan = PLANS[p];
-          const busy = busyKey === p;
-          return (
-            <button
-              key={p}
-              onClick={() => pick(p)}
-              disabled={busyKey !== null}
-              className="w-full rounded-xl border border-border p-3.5 text-left transition-colors hover:border-accent/50 hover:bg-accent-soft/30 disabled:opacity-60"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[14px] font-semibold text-foreground">{plan.name}</span>
-                <span className="flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground">
-                  {plan.priceMonthlyEUR === 0 ? "Free" : `€${plan.priceMonthlyEUR}/mo`}
-                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin text-accent" /> : plan.priceMonthlyEUR > 0 && <Sparkles className="h-3.5 w-3.5 text-accent" />}
-                </span>
-              </div>
-              <p className="mt-0.5 text-[12px] text-muted-foreground">
-                {plan.priceMonthlyEUR === 0 ? `${plan.aiMessagesPerMonth} AI actions / month` : `${plan.aiMessagesPerMonth.toLocaleString()} AI actions / month · 3-day free trial`}
-              </p>
-            </button>
-          );
-        })}
+    <div className="rounded-2xl border border-border bg-surface p-6 shadow-card sm:p-8">
+      <h2 className="text-center text-[18px] font-semibold text-foreground">Choose your plan</h2>
+      <p className="mt-1 text-center text-[13px] text-muted-foreground">
+        Paid plans start with a 3-day free trial — cancel anytime before it ends and you won&apos;t be charged.
+      </p>
+      <div className="mt-6">
+        <PricingGrid mode="onboarding" onFreeSelect={onNext} returnPath="/app/onboarding?step=2" />
       </div>
-      {error && <p className="mt-3 text-[12.5px] text-danger">{error}</p>}
-      <div className="mt-5 flex gap-2">
-        <Button variant="ghost" onClick={onBack} disabled={busyKey !== null}>
+      <div className="mt-5 flex justify-center">
+        <Button variant="ghost" onClick={onBack}>
           Back
         </Button>
       </div>
