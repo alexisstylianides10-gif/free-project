@@ -43,15 +43,24 @@ export default function OnboardingPage() {
     if (profile?.name) setName(profile.name);
   }, [profile?.name]);
 
-  // Returning from Stripe Checkout (success or cancel) — resume where the
-  // plan step left off instead of restarting the whole flow, and pick up
-  // the freshly-set plan/trial state once the webhook has landed.
+  // Returning from Stripe Checkout. A successful payment is itself proof the
+  // account is real and committed — no reason to force someone who just
+  // paid back through tutorial screens (and, critically, back through
+  // "what's your name" every single time they reopen the app if they close
+  // it before finishing those screens, since `onboarded` would otherwise
+  // stay false). Land them straight in the real app instead. A cancelled
+  // checkout just resumes wherever they left off.
   useEffect(() => {
     const billing = searchParams.get("billing");
     const returnStep = searchParams.get("step");
+    if (billing === "success") {
+      updateProfile({ onboarded: true });
+      refreshAll();
+      router.replace("/app/today");
+      return;
+    }
     if (billing) {
       if (returnStep) setStep(Number(returnStep));
-      if (billing === "success") refreshAll();
       router.replace("/app/onboarding");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,7 +72,18 @@ export default function OnboardingPage() {
   }
 
   const steps = [
-    <StepWelcome key="welcome" name={name} setName={setName} onNext={() => setStep(1)} />,
+    <StepWelcome
+      key="welcome"
+      name={name}
+      setName={setName}
+      onNext={() => {
+        // Persisted immediately (not just held in local state) so it
+        // survives a full-page round trip through Stripe Checkout, or the
+        // user simply closing the tab/app mid-flow.
+        if (name.trim()) updateProfile({ name: name.trim() });
+        setStep(1);
+      }}
+    />,
     <StepPlan key="plan" onNext={() => setStep(2)} onBack={() => setStep(0)} />,
     <StepUseCase key="use-case" useCase={useCase} setUseCase={setUseCase} onNext={() => setStep(3)} onBack={() => setStep(1)} />,
     <StepExamples key="examples" onNext={() => setStep(4)} onBack={() => setStep(2)} />,
