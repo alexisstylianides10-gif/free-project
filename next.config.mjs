@@ -11,9 +11,17 @@ const supabaseOrigin = (() => {
 // avatar images are used, no Supabase realtime/websocket calls exist, Stripe
 // checkout redirects via window.location.href (no client-side Stripe.js), and
 // public/sw.js is the one service worker (push notifications).
+// Next.js dev mode's Fast Refresh runtime evaluates code via eval() — without
+// 'unsafe-eval' the browser throws before React ever hydrates, and every
+// page silently renders blank (the DOM is there, but framer-motion's
+// initial opacity:0 never animates in because the client bundle threw).
+// Production output never uses eval, so the stricter policy only applies
+// there.
+const isDev = process.env.NODE_ENV !== "production";
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob:${supabaseOrigin ? ` ${supabaseOrigin}` : ""}`,
   `connect-src 'self'${supabaseOrigin ? ` ${supabaseOrigin}` : ""}`,

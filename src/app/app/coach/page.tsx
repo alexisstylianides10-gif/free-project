@@ -160,6 +160,9 @@ export default function CoachPage() {
           <Send className="h-4 w-4" />
         </button>
       </form>
+      <p className="mt-2 shrink-0 text-center text-[11px] text-muted-foreground">
+        Future Coach is a study &amp; career guide, not a substitute for a teacher, parent, or professional.
+      </p>
     </div>
   );
 }
