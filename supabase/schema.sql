@@ -1,1006 +1,240 @@
--- Alxioum database schema for Supabase (Postgres).
---
--- This file is a snapshot of the LIVE production schema (project "alxioum"),
--- regenerated from the database itself rather than hand-maintained, so it
--- won't drift out of sync again. It exists for onboarding/reference/IaC
--- purposes — the live project was actually built up via a sequence of
--- individual migrations applied through the Supabase MCP, not by running
--- this file top to bottom, but running this file against a fresh project
--- reproduces the same end state.
+-- FutureOS database schema for Supabase (Postgres).
 --
 -- Every table is scoped to auth.uid() via Row Level Security, so each
--- signed-in user can only ever see or modify their own rows.
+-- signed-in student can only ever see or modify their own rows. Reference
+-- content (careers, missions, achievements, skills, roadmap levels) lives
+-- in TypeScript catalogs (src/lib/catalog/*), not in the database — it's
+-- static product content, not per-user data.
 
 create extension if not exists "pgcrypto";
-create extension if not exists "pg_cron" with schema extensions;
-create extension if not exists "pg_net" with schema extensions;
 
 -- ---------------------------------------------------------------------------
 -- profiles
 -- ---------------------------------------------------------------------------
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
-  name text not null default 'You',
-  email text not null default '',
-  timezone text not null default 'UTC',
-  location text not null default '',
-  avatar_initials text not null default 'U',
-  plan text not null default 'Free' check (plan in ('Free', 'Student', 'Pro', 'Max')),
-  proactivity text not null default 'balanced' check (proactivity in ('low', 'balanced', 'high')),
-  theme text not null default 'system' check (theme in ('light', 'dark', 'system')),
-  memory_enabled boolean not null default true,
-  notification_prefs jsonb not null default '{"deadlines": true, "scheduleGaps": true, "dailyBriefing": true}',
-  seeded boolean not null default false,
-  onboarded boolean not null default false,
-  created_at timestamptz not null default now(),
-  ai_messages_used int not null default 0,
-  ai_tokens_used int not null default 0,
-  usage_period_start date not null default current_date,
-  pro_interest_at timestamptz,
-  credits_interest_at timestamptz,
-  last_daily_briefing_sent_at date,
-  stripe_customer_id text,
-  stripe_subscription_id text,
-  stripe_subscription_status text,
-  credits_balance int not null default 0,
-  trial_start timestamptz,
-  trial_end timestamptz,
-  trial_status text not null default 'none' check (trial_status in ('none', 'active', 'converted', 'expired', 'canceled')),
-  cancel_at_period_end boolean not null default false,
-  current_period_end timestamptz
+  full_name text not null default 'Student',
+  year_group text not null default '',
+  country text not null default '',
+  avatar_emoji text not null default '🚀',
+  xp_school int not null default 0,
+  xp_career int not null default 0,
+  xp_skill int not null default 0,
+  xp_project int not null default 0,
+  streak_count int not null default 0,
+  longest_streak int not null default 0,
+  last_active_date date,
+  onboarding_completed boolean not null default false,
+  created_at timestamptz not null default now()
 );
 
+alter table public.profiles enable row level security;
+
+create policy "profiles_select_own" on public.profiles for select to authenticated using (id = auth.uid());
+create policy "profiles_insert_own" on public.profiles for insert to authenticated with check (id = auth.uid());
+create policy "profiles_update_own" on public.profiles for update to authenticated using (id = auth.uid()) with check (id = auth.uid());
+
 -- ---------------------------------------------------------------------------
--- tasks
+-- onboarding_responses
 -- ---------------------------------------------------------------------------
-create table if not exists public.tasks (
+create table if not exists public.onboarding_responses (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  year_group text not null default '',
+  country text not null default '',
+  subjects text[] not null default '{}',
+  interests text[] not null default '{}',
+  strengths text[] not null default '{}',
+  explore_goals text[] not null default '{}',
+  free_time text not null default '',
+  biggest_goal text not null default '',
+  biggest_problem text not null default '',
+  top_matches jsonb not null default '[]',
+  created_at timestamptz not null default now()
+);
+
+alter table public.onboarding_responses enable row level security;
+
+create policy "onboarding_select_own" on public.onboarding_responses for select to authenticated using (user_id = auth.uid());
+create policy "onboarding_upsert_own" on public.onboarding_responses for insert to authenticated with check (user_id = auth.uid());
+create policy "onboarding_update_own" on public.onboarding_responses for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- homework
+-- ---------------------------------------------------------------------------
+create table if not exists public.homework (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
+  subject text not null,
   title text not null,
-  description text,
-  done boolean not null default false,
-  due_date date,
-  priority text not null default 'medium' check (priority in ('critical', 'high', 'medium', 'low')),
-  estimated_minutes int,
-  category text not null default 'personal',
-  project text,
-  goal_id uuid,
-  document_id uuid,
-  recurring text not null default 'none' check (recurring in ('daily', 'weekly', 'none')),
-  subtasks jsonb not null default '[]',
-  ai_context text,
-  created_at timestamptz not null default now(),
+  due_date date not null,
+  priority text not null default 'medium' check (priority in ('high', 'medium', 'low')),
+  status text not null default 'pending' check (status in ('pending', 'completed')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.homework enable row level security;
+create policy "homework_all_own" on public.homework for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- exams
+-- ---------------------------------------------------------------------------
+create table if not exists public.exams (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject text not null,
+  title text not null,
+  exam_date date not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.exams enable row level security;
+create policy "exams_all_own" on public.exams for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- timetable_entries
+-- ---------------------------------------------------------------------------
+create table if not exists public.timetable_entries (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  day_of_week int not null check (day_of_week between 0 and 6),
+  start_time time not null,
+  end_time time not null,
+  subject text not null,
+  room text
+);
+
+alter table public.timetable_entries enable row level security;
+create policy "timetable_all_own" on public.timetable_entries for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- study_sessions (AI-generated weekly study plan)
+-- ---------------------------------------------------------------------------
+create table if not exists public.study_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  week_start date not null,
+  day_of_week int not null check (day_of_week between 0 and 6),
+  subject text not null,
+  duration_min int not null default 30,
+  completed boolean not null default false
+);
+
+alter table public.study_sessions enable row level security;
+create policy "study_sessions_all_own" on public.study_sessions for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- career_paths (careers the student has added from the catalog)
+-- ---------------------------------------------------------------------------
+create table if not exists public.career_paths (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  career_slug text not null,
+  match_percent int not null default 0,
+  is_primary boolean not null default false,
+  added_at timestamptz not null default now(),
+  unique (user_id, career_slug)
+);
+
+alter table public.career_paths enable row level security;
+create policy "career_paths_all_own" on public.career_paths for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- roadmap_progress
+-- ---------------------------------------------------------------------------
+create table if not exists public.roadmap_progress (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  level_number int not null,
+  unlocked boolean not null default false,
   completed_at timestamptz,
-  deadline_reminder_sent boolean not null default false
+  primary key (user_id, level_number)
 );
 
--- ---------------------------------------------------------------------------
--- events (calendar)
--- ---------------------------------------------------------------------------
-create table if not exists public.events (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  title text not null,
-  date date not null,
-  start_time text not null,
-  end_time text not null,
-  type text not null default 'personal',
-  location text,
-  notes text,
-  timezone text not null default 'UTC',
-  recurrence text not null default 'none' check (recurrence in ('none', 'daily', 'weekly')),
-  recurrence_until date,
-  linked_task_id uuid,
-  linked_goal_id uuid,
-  linked_document_id uuid,
-  ai_generated boolean not null default false,
-  movable boolean not null default true,
-  source text not null default 'alxioum' check (source in ('alxioum', 'google')),
-  google_event_id text,
-  created_at timestamptz not null default now()
-);
+alter table public.roadmap_progress enable row level security;
+create policy "roadmap_progress_all_own" on public.roadmap_progress for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- ---------------------------------------------------------------------------
--- memory
+-- user_missions
 -- ---------------------------------------------------------------------------
-create table if not exists public.memory (
+create table if not exists public.user_missions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
-  category text not null,
-  content text not null,
-  reason text not null default '',
-  source text not null default '',
-  active boolean not null default true,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- conversations / messages (chat)
--- ---------------------------------------------------------------------------
-create table if not exists public.conversations (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  title text not null default 'Alxioum',
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.messages (
-  id uuid primary key default gen_random_uuid(),
-  conversation_id uuid not null references public.conversations (id) on delete cascade,
-  user_id uuid not null references auth.users (id) on delete cascade,
-  role text not null check (role in ('user', 'assistant', 'system')),
-  content text not null,
-  tool_calls jsonb not null default '[]',
-  pending_action jsonb,
-  resolved_action jsonb,
-  response_cards jsonb,
-  tokens_used int,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- pending_actions (AI-proposed writes awaiting user confirmation)
--- ---------------------------------------------------------------------------
-create table if not exists public.pending_actions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  conversation_id uuid references public.conversations (id) on delete cascade,
-  message_id uuid references public.messages (id) on delete cascade,
-  tool text not null,
-  action text not null check (action in ('create', 'update', 'delete', 'complete')),
-  args jsonb not null default '{}',
-  summary text not null,
-  status text not null default 'pending' check (status in ('pending', 'confirmed', 'cancelled', 'expired', 'superseded')),
-  created_at timestamptz not null default now(),
-  resolved_at timestamptz,
-  expires_at timestamptz not null default (now() + interval '30 minutes')
-);
-
--- ---------------------------------------------------------------------------
--- agent_actions (activity log of executed tool calls)
--- ---------------------------------------------------------------------------
-create table if not exists public.agent_actions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  tool text not null,
-  action text not null,
-  status text not null check (status in ('success', 'failed', 'cancelled')),
-  metadata jsonb not null default '{}',
-  event_id uuid,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- notifications (in-app notification feed)
--- ---------------------------------------------------------------------------
-create table if not exists public.notifications (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  title text not null,
-  body text not null default '',
-  kind text not null default 'system',
-  read boolean not null default false,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- push_subscriptions (Web Push endpoints, one row per subscribed device)
--- ---------------------------------------------------------------------------
-create table if not exists public.push_subscriptions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  endpoint text not null unique,
-  p256dh text not null,
-  auth text not null,
-  user_agent text,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- subjects / focus_sessions (Study section, Student plan)
--- ---------------------------------------------------------------------------
-create table if not exists public.subjects (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  color text not null default 'violet',
-  icon text not null default '📘',
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.focus_sessions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  subject_id uuid references public.subjects (id) on delete set null,
-  task_id uuid references public.tasks (id) on delete set null,
-  planned_minutes int not null,
-  actual_minutes int not null default 0,
-  started_at timestamptz not null default now(),
+  mission_id text not null,
+  status text not null default 'active' check (status in ('active', 'completed')),
+  xp_awarded int not null default 0,
   completed_at timestamptz,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  unique (user_id, mission_id)
 );
 
+alter table public.user_missions enable row level security;
+create policy "user_missions_all_own" on public.user_missions for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
 -- ---------------------------------------------------------------------------
--- routines / routine_steps
+-- user_skills
 -- ---------------------------------------------------------------------------
-create table if not exists public.routines (
+create table if not exists public.user_skills (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  skill_key text not null,
+  proficiency int not null default 0 check (proficiency between 0 and 100),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, skill_key)
+);
+
+alter table public.user_skills enable row level security;
+create policy "user_skills_all_own" on public.user_skills for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- user_achievements
+-- ---------------------------------------------------------------------------
+create table if not exists public.user_achievements (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  achievement_key text not null,
+  earned_at timestamptz not null default now(),
+  primary key (user_id, achievement_key)
+);
+
+alter table public.user_achievements enable row level security;
+create policy "user_achievements_all_own" on public.user_achievements for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- chat_messages (AI Coach history)
+-- ---------------------------------------------------------------------------
+create table if not exists public.chat_messages (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  frequency text not null default 'daily',
+  role text not null check (role in ('user', 'assistant')),
+  content text not null,
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.routine_steps (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  routine_id uuid not null references public.routines (id) on delete cascade,
-  title text not null,
-  time_label text not null default '',
-  done boolean not null default false,
-  -- The date `done` was last set true. A step reads as "done today" only
-  -- when done = true AND this equals today — so it naturally shows as
-  -- unchecked the next day without any reset job.
-  last_completed_date date,
-  sort_order int not null default 0,
-  created_at timestamptz not null default now()
-);
+alter table public.chat_messages enable row level security;
+create policy "chat_messages_all_own" on public.chat_messages for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- ---------------------------------------------------------------------------
--- weekly_reviews (persisted snapshots; the page itself always computes live)
+-- weekly_reviews
 -- ---------------------------------------------------------------------------
 create table if not exists public.weekly_reviews (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   week_start date not null,
-  stats jsonb not null default '{}',
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- shopping_lists / shopping_items
--- ---------------------------------------------------------------------------
-create table if not exists public.shopping_lists (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  kind text not null default 'general' check (kind in ('grocery', 'general', 'wishlist')),
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.shopping_items (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  list_id uuid not null references public.shopping_lists (id) on delete cascade,
-  name text not null,
-  quantity text not null default '',
-  category text not null default '',
-  done boolean not null default false,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- goals / goal_milestones
--- ---------------------------------------------------------------------------
-create table if not exists public.goals (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  description text not null default '',
-  target_date date,
-  progress int not null default 0 check (progress between 0 and 100),
-  completed boolean not null default false,
+  assignments_completed int not null default 0,
+  study_minutes int not null default 0,
+  missions_completed int not null default 0,
+  consistency_days int not null default 0,
+  skill_deltas jsonb not null default '{}',
+  next_focus text[] not null default '{}',
   created_at timestamptz not null default now(),
-  icon text not null default '🎯',
-  category text,
-  priority text not null default 'medium' check (priority in ('low', 'medium', 'high')),
-  difficulty text not null default 'moderate' check (difficulty in ('easy', 'moderate', 'challenging', 'ambitious')),
-  paused boolean not null default false,
-  measurement_type text not null default 'checklist' check (measurement_type in ('numeric', 'distance', 'count', 'streak', 'time', 'checklist')),
-  measurement_unit text not null default '',
-  measurement_target numeric,
-  measurement_current numeric not null default 0,
-  kind text not null default 'personal' check (kind in ('personal', 'business'))
+  unique (user_id, week_start)
 );
 
-create table if not exists public.goal_milestones (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  goal_id uuid not null references public.goals (id) on delete cascade,
-  title text not null,
-  done boolean not null default false,
-  sort_order int not null default 0,
-  created_at timestamptz not null default now(),
-  description text not null default '',
-  target_date date,
-  measurement_target numeric,
-  measurement_current numeric
-);
-
-create table if not exists public.goal_actions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  goal_id uuid not null references public.goals (id) on delete cascade,
-  title text not null,
-  frequency_per_week int not null default 3,
-  duration_minutes int,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.goal_action_logs (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  goal_action_id uuid not null references public.goal_actions (id) on delete cascade,
-  log_date date not null,
-  created_at timestamptz not null default now(),
-  unique (goal_action_id, log_date)
-);
-
-create table if not exists public.goal_activity (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  goal_id uuid not null references public.goals (id) on delete cascade,
-  kind text not null,
-  description text not null,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.goal_coach_messages (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  goal_id uuid not null references public.goals (id) on delete cascade,
-  role text not null check (role in ('user', 'assistant')),
-  content text not null,
-  proposed_adjustment jsonb,
-  created_at timestamptz not null default now()
-);
+alter table public.weekly_reviews enable row level security;
+create policy "weekly_reviews_all_own" on public.weekly_reviews for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- ---------------------------------------------------------------------------
--- businesses (Business Builder — specialized "Business Goal" data, one per goal)
+-- indexes
 -- ---------------------------------------------------------------------------
-create table if not exists public.businesses (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  goal_id uuid not null references public.goals (id) on delete cascade,
-  name text not null,
-  idea_summary text not null default '',
-  problem text not null default '',
-  solution text not null default '',
-  target_customer text not null default '',
-  value_proposition text not null default '',
-  pricing_notes text not null default '',
-  distribution_notes text not null default '',
-  marketing_notes text not null default '',
-  operations_notes text not null default '',
-  costs_notes text not null default '',
-  stage text not null default 'idea' check (stage in ('idea', 'validation', 'business_model', 'build', 'launch', 'first_customers', 'grow', 'scale')),
-  status text not null default 'building' check (status in ('building', 'paused', 'archived')),
-  revenue_model text check (revenue_model in ('one_time', 'subscription', 'usage', 'commission', 'marketplace', 'freemium', 'service', 'other')),
-  price numeric,
-  price_period text,
-  target_customer_count int,
-  currency text not null default 'USD',
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-create unique index if not exists businesses_goal_id_idx on public.businesses (goal_id);
-
-create table if not exists public.business_milestones (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  stage text not null,
-  title text not null,
-  description text not null default '',
-  done boolean not null default false,
-  sort_order int not null default 0,
-  target_date date,
-  created_at timestamptz not null default now(),
-  completed_at timestamptz
-);
-create index if not exists business_milestones_business_id_idx on public.business_milestones (business_id);
-
-create table if not exists public.business_metrics (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  recorded_at timestamptz not null default now(),
-  revenue numeric,
-  expenses numeric,
-  customers int,
-  mrr numeric,
-  orders int,
-  conversion_rate numeric,
-  visitors int,
-  leads int,
-  trials int,
-  note text not null default '',
-  created_at timestamptz not null default now()
-);
-create index if not exists business_metrics_business_id_idx on public.business_metrics (business_id);
-
-create table if not exists public.business_experiments (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  question text not null,
-  hypothesis text not null default '',
-  test_description text not null default '',
-  status text not null default 'planned' check (status in ('planned', 'running', 'completed')),
-  result text not null default '',
-  conclusion text not null default '',
-  created_at timestamptz not null default now(),
-  completed_at timestamptz
-);
-create index if not exists business_experiments_business_id_idx on public.business_experiments (business_id);
-
-create table if not exists public.business_customers (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  name text not null,
-  stage text not null default 'lead' check (stage in ('lead', 'interviewed', 'trial', 'customer', 'churned')),
-  notes text not null default '',
-  created_at timestamptz not null default now()
-);
-create index if not exists business_customers_business_id_idx on public.business_customers (business_id);
-
-create table if not exists public.business_feedback (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  customer_id uuid references public.business_customers (id) on delete set null,
-  kind text not null check (kind in ('pain_point', 'feature_request', 'objection', 'praise', 'other')),
-  content text not null,
-  created_at timestamptz not null default now()
-);
-create index if not exists business_feedback_business_id_idx on public.business_feedback (business_id);
-
-create table if not exists public.business_insights (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  kind text not null check (kind in ('decision', 'risk', 'opportunity')),
-  title text not null,
-  rationale text not null default '',
-  evidence text not null default '',
-  suggested_action text not null default '',
-  status text not null default 'open' check (status in ('open', 'accepted', 'ignored', 'resolved')),
-  created_at timestamptz not null default now(),
-  resolved_at timestamptz
-);
-create index if not exists business_insights_business_id_idx on public.business_insights (business_id);
-
-create table if not exists public.business_missions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  title text not null,
-  mission_date date not null default current_date,
-  status text not null default 'pending' check (status in ('pending', 'started', 'completed', 'skipped')),
-  linked_task_id uuid references public.tasks (id) on delete set null,
-  created_at timestamptz not null default now(),
-  completed_at timestamptz
-);
-create index if not exists business_missions_business_id_idx on public.business_missions (business_id);
-
-create table if not exists public.business_content (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  idea text not null,
-  platform text not null default '',
-  status text not null default 'idea' check (status in ('idea', 'draft', 'published')),
-  result text not null default '',
-  created_at timestamptz not null default now()
-);
-create index if not exists business_content_business_id_idx on public.business_content (business_id);
-
-create table if not exists public.business_competitors (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  name text not null,
-  product text not null default '',
-  target_customer text not null default '',
-  pricing text not null default '',
-  strengths text not null default '',
-  weaknesses text not null default '',
-  positioning text not null default '',
-  source text not null default 'ai_research' check (source in ('ai_research', 'manual')),
-  created_at timestamptz not null default now()
-);
-create index if not exists business_competitors_business_id_idx on public.business_competitors (business_id);
-
-create table if not exists public.business_activity (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  business_id uuid not null references public.businesses (id) on delete cascade,
-  kind text not null,
-  description text not null,
-  created_at timestamptz not null default now()
-);
-create index if not exists business_activity_business_id_idx on public.business_activity (business_id);
-
--- Business Coach chat: a conversation scoped to one business (added after
--- businesses exists — conversations itself is defined much earlier in this
--- file, before businesses, so this stays a separate alter rather than an
--- inline column to avoid a forward reference in this snapshot).
-alter table public.conversations add column if not exists business_id uuid references public.businesses (id) on delete cascade;
-create index if not exists conversations_business_id_idx on public.conversations (business_id);
-
--- ---------------------------------------------------------------------------
--- study_notes (AI-generated study notes, Student plan)
--- ---------------------------------------------------------------------------
-create table if not exists public.study_notes (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  subject_id uuid references public.subjects (id) on delete set null,
-  title text not null,
-  content text not null,
-  source_input text not null default '',
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- Study Mode: AI-generated flashcards/quizzes from a note, document, or
--- pasted text, plus quiz attempts for deterministic weak-topic tracking.
--- Stored as one row per deck/quiz with a jsonb array of cards/questions —
--- no per-card spaced-repetition state yet (deliberately deferred).
--- ---------------------------------------------------------------------------
-create table if not exists public.study_flashcard_decks (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  subject_id uuid references public.subjects (id) on delete set null,
-  source_note_id uuid references public.study_notes (id) on delete set null,
-  title text not null,
-  cards jsonb not null default '[]',
-  created_at timestamptz not null default now()
-);
-create index if not exists study_flashcard_decks_user_id_idx on public.study_flashcard_decks (user_id);
-
-create table if not exists public.study_quizzes (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  subject_id uuid references public.subjects (id) on delete set null,
-  source_note_id uuid references public.study_notes (id) on delete set null,
-  title text not null,
-  questions jsonb not null default '[]',
-  created_at timestamptz not null default now()
-);
-create index if not exists study_quizzes_user_id_idx on public.study_quizzes (user_id);
-
-create table if not exists public.study_quiz_attempts (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  quiz_id uuid not null references public.study_quizzes (id) on delete cascade,
-  answers jsonb not null default '[]',
-  score int not null default 0,
-  weak_topics text[] not null default '{}',
-  completed_at timestamptz not null default now()
-);
-create index if not exists study_quiz_attempts_quiz_id_idx on public.study_quiz_attempts (quiz_id);
-create index if not exists study_quiz_attempts_user_id_idx on public.study_quiz_attempts (user_id);
-
--- ---------------------------------------------------------------------------
--- student_profiles (one row per Student-plan user)
--- ---------------------------------------------------------------------------
-create table if not exists public.student_profiles (
-  user_id uuid primary key references auth.users (id) on delete cascade,
-  school_name text,
-  country text,
-  education_level text,
-  term_start_date date,
-  research_summary text,
-  researched_at timestamptz,
-  updated_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- calendar_connections (Google Calendar OAuth tokens, one row per user)
--- ---------------------------------------------------------------------------
-create table if not exists public.calendar_connections (
-  user_id uuid primary key references auth.users (id) on delete cascade,
-  provider text not null default 'google' check (provider = 'google'),
-  google_calendar_id text not null default 'primary',
-  access_token text not null,
-  refresh_token text not null,
-  token_expires_at timestamptz not null,
-  -- Set true when a token refresh fails (e.g. the user revoked access from
-  -- their Google Account) so the UI can prompt reconnect instead of
-  -- silently claiming "Connected" forever.
-  needs_reconnect boolean not null default false,
-  sync_token text,
-  connected_at timestamptz not null default now(),
-  last_synced_at timestamptz
-);
-
--- ---------------------------------------------------------------------------
--- documents (Storage-backed uploads: PDFs, images, text)
--- ---------------------------------------------------------------------------
-insert into storage.buckets (id, name, public)
-values ('documents', 'documents', false)
-on conflict (id) do nothing;
-
--- Objects live at `${user_id}/${filename}` — this policy trio is the
--- standard Supabase per-user-folder pattern, scoped to this one bucket.
-drop policy if exists "documents_storage_select_own" on storage.objects;
-create policy "documents_storage_select_own" on storage.objects
-  for select to authenticated
-  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
-
-drop policy if exists "documents_storage_insert_own" on storage.objects;
-create policy "documents_storage_insert_own" on storage.objects
-  for insert to authenticated
-  with check (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
-
-drop policy if exists "documents_storage_delete_own" on storage.objects;
-create policy "documents_storage_delete_own" on storage.objects
-  for delete to authenticated
-  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
-
-create table if not exists public.document_collections (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.documents (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  name text not null,
-  storage_path text not null,
-  mime_type text not null,
-  size_bytes int not null default 0,
-  summary text not null default '',
-  created_at timestamptz not null default now(),
-  category text,
-  tags text[] not null default '{}',
-  starred boolean not null default false,
-  collection_id uuid references public.document_collections (id) on delete set null,
-  processing_status text not null default 'ready'
-    check (processing_status in ('uploading', 'processing', 'analyzing', 'ready', 'needs_review', 'error')),
-  processing_error text,
-  extracted_text text,
-  linked_goal_id uuid references public.goals (id) on delete set null,
-  last_opened_at timestamptz,
-  document_type text,
-  people text[] not null default '{}',
-  organizations text[] not null default '{}',
-  amounts jsonb not null default '[]',
-  locations text[] not null default '{}',
-  key_topics text[] not null default '{}',
-  suggested_category text,
-  -- Kept in sync by documents_search_vector_trigger below — to_tsvector()
-  -- isn't IMMUTABLE per Postgres's categorization even with an explicit
-  -- config, so this can't be a GENERATED column.
-  search_vector tsvector
-);
-
-create or replace function public.documents_search_vector_update() returns trigger
-language plpgsql
-set search_path = public, pg_temp
-as $$
-declare
-  combined_text text := coalesce(new.name, '') || ' ' ||
-    coalesce(new.summary, '') || ' ' ||
-    coalesce(new.extracted_text, '') || ' ' ||
-    coalesce(array_to_string(new.tags, ' '), '') || ' ' ||
-    coalesce(new.category, '');
-begin
-  -- Documents can be in any language, but Postgres has no single stemmer
-  -- config that covers every one. English + Greek are combined here (both
-  -- stemmed forms coexist in the same vector) so plural/case variants match
-  -- in either language; other languages still match on exact word forms via
-  -- the english config's language-agnostic tokenization, same as before.
-  new.search_vector :=
-    to_tsvector('english', combined_text) || to_tsvector('greek', combined_text);
-  return new;
-end;
-$$;
-
-drop trigger if exists documents_search_vector_trigger on public.documents;
-create trigger documents_search_vector_trigger
-  before insert or update on public.documents
-  for each row execute function public.documents_search_vector_update();
-
-create index if not exists documents_search_vector_idx on public.documents using gin (search_vector);
-
--- Single shared full-text ranking function — used by the Head Agent's
--- documents_search tool, the Command Palette's document search, and (Phase
--- D) cross-document Q&A retrieval. SECURITY INVOKER + explicit user_id
--- filter, so RLS on the caller's own session still applies.
-create or replace function public.search_documents(p_user_id uuid, p_query text, p_limit int default 20)
-returns setof public.documents
-language sql
-security invoker
-set search_path = public, pg_temp
-stable
-as $$
-  select *
-  from public.documents
-  where user_id = p_user_id
-    and search_vector @@ (websearch_to_tsquery('english', p_query) || websearch_to_tsquery('greek', p_query))
-  order by ts_rank(search_vector, websearch_to_tsquery('english', p_query) || websearch_to_tsquery('greek', p_query)) desc, created_at desc
-  limit p_limit;
-$$;
-
--- ---------------------------------------------------------------------------
--- document_dates / document_tasks (extracted at analysis time — real child
--- rows, not a jsonb array, because each item later gets its own mutable
--- back-reference — added_to_calendar_event_id / created_task_id — written
--- asynchronously by a confirm action distinct from the one that created it)
--- ---------------------------------------------------------------------------
-create table if not exists public.document_dates (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  document_id uuid not null references public.documents (id) on delete cascade,
-  label text not null,
-  date date not null,
-  kind text not null default 'other' check (kind in ('deadline', 'event', 'other')),
-  description text not null default '',
-  added_to_calendar_event_id uuid,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.document_tasks (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  document_id uuid not null references public.documents (id) on delete cascade,
-  title text not null,
-  description text not null default '',
-  created_task_id uuid,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.document_activity (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  document_id uuid not null references public.documents (id) on delete cascade,
-  kind text not null,
-  description text not null,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.document_chat_messages (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  document_id uuid not null references public.documents (id) on delete cascade,
-  role text not null check (role in ('user', 'assistant')),
-  content text not null,
-  source_page int,
-  created_at timestamptz not null default now()
-);
-
-create index if not exists document_dates_document_id_idx on public.document_dates (document_id);
-create index if not exists document_tasks_document_id_idx on public.document_tasks (document_id);
-create index if not exists document_activity_document_id_idx on public.document_activity (document_id);
-create index if not exists document_chat_messages_document_id_idx on public.document_chat_messages (document_id);
-
--- ---------------------------------------------------------------------------
--- waitlist (public marketing site sign-ups, pre-auth)
--- ---------------------------------------------------------------------------
-create table if not exists public.waitlist (
-  id uuid primary key default gen_random_uuid(),
-  email text not null unique,
-  created_at timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- Row Level Security: every table only visible/writable by its owner.
--- ---------------------------------------------------------------------------
-do $$
-declare
-  t text;
-begin
-  for t in
-    select unnest(array[
-      'profiles', 'tasks', 'events', 'memory', 'conversations', 'messages',
-      'pending_actions', 'agent_actions', 'notifications', 'push_subscriptions',
-      'subjects', 'focus_sessions', 'student_profiles', 'calendar_connections', 'waitlist',
-      'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
-      'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes',
-      'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages',
-      'document_collections', 'document_dates', 'document_tasks',
-      'document_activity', 'document_chat_messages',
-      'businesses', 'business_milestones', 'business_metrics', 'business_experiments',
-      'business_customers', 'business_feedback', 'business_insights', 'business_missions',
-      'business_content', 'business_competitors', 'business_activity',
-      'study_flashcard_decks', 'study_quizzes', 'study_quiz_attempts'
-    ])
-  loop
-    execute format('alter table public.%I enable row level security;', t);
-  end loop;
-end $$;
-
--- profiles: id IS the user id
-drop policy if exists "profiles_owner" on public.profiles;
-create policy "profiles_owner" on public.profiles
-  for all using (auth.uid() = id) with check (auth.uid() = id);
-
--- profiles_owner above is a blanket, column-agnostic RLS policy — it alone
--- would let any authenticated user write plan/credits_balance/stripe_*/
--- trial_*/ai_*_used directly via the public anon key + their own JWT.
--- Column-level privileges close that: only the columns a user is meant to
--- self-edit stay grantable to `authenticated`; billing/usage/plan columns
--- become writable only by the service_role (used by the Stripe webhook and
--- the handful of server routes that write those fields after verifying the
--- user via JWT — see src/lib/supabase/server.ts's supabaseServiceRole()).
-revoke update on public.profiles from authenticated;
-grant update (
-  name,
-  timezone,
-  location,
-  avatar_initials,
-  theme,
-  memory_enabled,
-  notification_prefs,
-  onboarded,
-  pro_interest_at,
-  credits_interest_at
-) on public.profiles to authenticated;
-
--- calendar_connections / student_profiles: primary key IS user_id
-drop policy if exists "calendar_connections_owner" on public.calendar_connections;
-create policy "calendar_connections_owner" on public.calendar_connections
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-drop policy if exists "student_profiles_select_own" on public.student_profiles;
-create policy "student_profiles_select_own" on public.student_profiles
-  for select using (auth.uid() = user_id);
-drop policy if exists "student_profiles_insert_own" on public.student_profiles;
-create policy "student_profiles_insert_own" on public.student_profiles
-  for insert with check (auth.uid() = user_id);
-drop policy if exists "student_profiles_update_own" on public.student_profiles;
-create policy "student_profiles_update_own" on public.student_profiles
-  for update using (auth.uid() = user_id);
-drop policy if exists "student_profiles_delete_own" on public.student_profiles;
-create policy "student_profiles_delete_own" on public.student_profiles
-  for delete using (auth.uid() = user_id);
-
--- subjects / focus_sessions: per-action policies (select/insert/update/delete)
-do $$
-declare
-  t text;
-begin
-  for t in select unnest(array['subjects', 'focus_sessions'])
-  loop
-    execute format('drop policy if exists "%s_select_own" on public.%I;', t, t);
-    execute format('create policy "%s_select_own" on public.%I for select using (auth.uid() = user_id);', t, t);
-    execute format('drop policy if exists "%s_insert_own" on public.%I;', t, t);
-    execute format('create policy "%s_insert_own" on public.%I for insert with check (auth.uid() = user_id);', t, t);
-    execute format('drop policy if exists "%s_update_own" on public.%I;', t, t);
-    execute format('create policy "%s_update_own" on public.%I for update using (auth.uid() = user_id);', t, t);
-    execute format('drop policy if exists "%s_delete_own" on public.%I;', t, t);
-    execute format('create policy "%s_delete_own" on public.%I for delete using (auth.uid() = user_id);', t, t);
-  end loop;
-end $$;
-
--- push_subscriptions: per-action policies, authenticated role only
-do $$
-begin
-  execute 'drop policy if exists "push_subscriptions_select_own" on public.push_subscriptions;';
-  execute 'create policy "push_subscriptions_select_own" on public.push_subscriptions for select to authenticated using (user_id = auth.uid());';
-  execute 'drop policy if exists "push_subscriptions_insert_own" on public.push_subscriptions;';
-  execute 'create policy "push_subscriptions_insert_own" on public.push_subscriptions for insert to authenticated with check (user_id = auth.uid());';
-  execute 'drop policy if exists "push_subscriptions_delete_own" on public.push_subscriptions;';
-  execute 'create policy "push_subscriptions_delete_own" on public.push_subscriptions for delete to authenticated using (user_id = auth.uid());';
-end $$;
-
--- everything else: standard "for all" user_id ownership, authenticated role
-do $$
-declare
-  t text;
-begin
-  for t in
-    select unnest(array[
-      'tasks', 'events', 'memory', 'conversations', 'messages',
-      'pending_actions', 'agent_actions', 'notifications',
-      'shopping_lists', 'shopping_items', 'goals', 'goal_milestones',
-      'routines', 'routine_steps', 'weekly_reviews', 'documents', 'study_notes',
-      'goal_actions', 'goal_action_logs', 'goal_activity', 'goal_coach_messages',
-      'document_collections', 'document_dates', 'document_tasks',
-      'document_activity', 'document_chat_messages',
-      'businesses', 'business_milestones', 'business_metrics', 'business_experiments',
-      'business_customers', 'business_feedback', 'business_insights', 'business_missions',
-      'business_content', 'business_competitors', 'business_activity',
-      'study_flashcard_decks', 'study_quizzes', 'study_quiz_attempts'
-    ])
-  loop
-    execute format('drop policy if exists "%s_owner" on public.%I;', t, t);
-    execute format(
-      'create policy "%s_owner" on public.%I for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);',
-      t, t
-    );
-  end loop;
-end $$;
-
--- waitlist: anyone (signed in or not) can add themselves, nobody can read others'
-drop policy if exists "waitlist_public_insert" on public.waitlist;
-create policy "waitlist_public_insert" on public.waitlist
-  for insert to anon, authenticated with check (true);
-
--- ---------------------------------------------------------------------------
--- Auto-create a profile row whenever a new auth user signs up.
--- ---------------------------------------------------------------------------
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer set search_path = public
-as $$
-begin
-  insert into public.profiles (id, name, email, avatar_initials)
-  values (
-    new.id,
-    coalesce(new.raw_user_meta_data ->> 'name', split_part(new.email, '@', 1)),
-    coalesce(new.email, ''),
-    upper(left(coalesce(new.raw_user_meta_data ->> 'name', split_part(new.email, '@', 1)), 1))
-  )
-  on conflict (id) do nothing;
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
-
--- ---------------------------------------------------------------------------
--- Automatic notifications: a private, RLS-free secrets table + RPC (so the
--- send-notifications Edge Function — see supabase/functions/send-notifications
--- — can read the VAPID keys without them ever being readable from the client),
--- plus a pg_cron job that invokes the function every 15 minutes. The function
--- itself checks each user's local time/timezone and notification_prefs
--- before sending anything, so a 15-minute tick doesn't mean 15-minute spam.
--- ---------------------------------------------------------------------------
-create schema if not exists private;
-
-create table if not exists private.app_secrets (
-  key text primary key,
-  value text not null
-);
--- No RLS policy is added on purpose: this table has RLS enabled with zero
--- policies, so it's unreadable by anon/authenticated roles entirely. Only
--- security-definer functions (like get_app_secrets below) and the service
--- role can read it.
-alter table private.app_secrets enable row level security;
-
--- Populate with your own values after running this file:
---   insert into private.app_secrets (key, value) values
---     ('vapid_public_key', '...'),
---     ('vapid_private_key', '...'),
---     ('vapid_subject', 'mailto:support@alxioum.app')
---   on conflict (key) do update set value = excluded.value;
-
-create or replace function public.get_app_secrets()
-returns table (key text, value text)
-language sql
-security definer set search_path = public, private
-as $$
-  select key, value from private.app_secrets;
-$$;
-
--- Restrict get_app_secrets to the service role only (the Edge Function uses
--- the service-role key) — never grant this to anon/authenticated.
-revoke all on function public.get_app_secrets() from public, anon, authenticated;
-grant execute on function public.get_app_secrets() to service_role;
-
-select cron.schedule(
-  'send-notifications-every-15-min',
-  '*/15 * * * *',
-  $$
-  select net.http_post(
-    url := current_setting('app.settings.supabase_url', true) || '/functions/v1/send-notifications',
-    headers := jsonb_build_object('Authorization', 'Bearer ' || current_setting('app.settings.anon_key', true), 'Content-Type', 'application/json'),
-    body := '{}'::jsonb
-  );
-  $$
-);
--- Note: the live cron job has the project URL and anon key hardcoded into
--- the command text (Postgres GUCs like app.settings.* aren't reliably
--- available inside pg_cron's execution context) — check `select command from
--- cron.job;` on the live project for the exact working command if you need
--- to recreate this by hand instead of running this file fresh.
+create index if not exists homework_user_due_idx on public.homework (user_id, due_date);
+create index if not exists exams_user_date_idx on public.exams (user_id, exam_date);
+create index if not exists timetable_user_day_idx on public.timetable_entries (user_id, day_of_week);
+create index if not exists study_sessions_user_week_idx on public.study_sessions (user_id, week_start);
+create index if not exists chat_messages_user_created_idx on public.chat_messages (user_id, created_at);

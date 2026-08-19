@@ -3,58 +3,41 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto,
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
 
-  --background: 48 30% 97%;
-  --foreground: 30 15% 12%;
-  --surface: 0 0% 100%;
-  --surface-raised: 45 26% 96%;
-  --border: 40 18% 88%;
-  --border-strong: 35 12% 74%;
-  --muted: 42 22% 93.5%;
-  --muted-foreground: 30 8% 45%;
+  /* Dark navy/black foundation — FutureOS has no light mode by design. */
+  --background: 230 32% 6%;
+  --foreground: 220 30% 96%;
+  --surface: 228 26% 10%;
+  --surface-raised: 228 24% 13%;
+  --border: 228 20% 20%;
+  --border-strong: 228 16% 28%;
+  --muted: 228 20% 15%;
+  --muted-foreground: 222 14% 62%;
 
-  --accent: 18 55% 50%;
-  --accent-end: 32 60% 55%;
-  --accent-foreground: 0 0% 100%;
-  --accent-soft: 18 55% 94%;
+  /* Primary gradient: indigo/purple -> cyan */
+  --accent: 252 92% 68%;
+  --accent-end: 186 84% 58%;
+  --accent-foreground: 230 32% 8%;
+  --accent-soft: 252 60% 20%;
 
-  --success: 152 40% 32%;
-  --success-soft: 140 30% 92%;
-  --warning: 38 75% 42%;
-  --warning-soft: 42 60% 92%;
-  --danger: 6 55% 46%;
-  --danger-soft: 6 55% 94%;
+  /* Mission / reward gradient: coral -> pink -> purple */
+  --mission-from: 14 92% 62%;
+  --mission-via: 336 82% 62%;
+  --mission-to: 262 78% 62%;
 
-  --shadow-color: 30 20% 20%;
+  --success: 158 64% 48%;
+  --success-soft: 158 40% 16%;
+  --warning: 38 92% 58%;
+  --warning-soft: 38 55% 18%;
+  --danger: 356 78% 62%;
+  --danger-soft: 356 50% 18%;
 
-  color-scheme: light;
-}
+  --school: 206 90% 60%;
+  --future: 28 92% 60%;
 
-:root.dark {
-  --background: 30 10% 8%;
-  --foreground: 40 20% 94%;
-  --surface: 28 9% 12%;
-  --surface-raised: 28 9% 15%;
-  --border: 30 9% 20%;
-  --border-strong: 30 8% 29%;
-  --muted: 28 9% 15%;
-  --muted-foreground: 35 8% 63%;
-
-  --accent: 20 65% 58%;
-  --accent-end: 34 65% 60%;
-  --accent-foreground: 0 0% 100%;
-  --accent-soft: 20 40% 20%;
-
-  --success: 152 35% 45%;
-  --success-soft: 152 25% 15%;
-  --warning: 40 70% 55%;
-  --warning-soft: 38 45% 16%;
-  --danger: 6 60% 58%;
-  --danger-soft: 6 40% 17%;
-
-  --shadow-color: 30 30% 2%;
+  --shadow-color: 230 60% 2%;
 
   color-scheme: dark;
 }
@@ -66,6 +49,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  color-scheme: dark;
 }
 
 body {
@@ -76,6 +60,7 @@ body {
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
   width: 100%;
+  min-height: 100dvh;
 }
 
 ::selection {
@@ -112,15 +97,39 @@ body {
   display: none;
 }
 
-.bg-gradient-accent {
-  background-image: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-end)));
+/* Glass card: subtle translucent surface over the navy background, used
+   for nearly every card in the design so the app never feels flat. */
+.glass {
+  background: linear-gradient(180deg, hsl(220 30% 100% / 0.05), hsl(220 30% 100% / 0.02));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsl(220 30% 100% / 0.08);
 }
-.text-gradient-accent {
+
+.text-gradient-brand {
   background-image: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-end)));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-.shadow-glow-accent {
-  box-shadow: 0 10px 28px -8px hsl(var(--accent) / 0.45);
+
+.text-gradient-mission {
+  background-image: linear-gradient(135deg, hsl(var(--mission-from)), hsl(var(--mission-via)), hsl(var(--mission-to)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft ambient glow behind hero/header content, matching the onboarding
+   mockups' faint radial bloom near the top of the screen. */
+.bg-ambient-glow {
+  position: relative;
+}
+.bg-ambient-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(55% 45% at 50% 0%, hsl(var(--accent) / 0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
