@@ -32,3 +32,41 @@ export function buildAIRecommendation(input: { exams: Exam[]; homework: Homework
 
   return "School's under control right now — a great time to explore a career direction with today's Future Mission.";
 }
+
+export interface RecommendationChip {
+  icon: string;
+  label: string;
+  minutes: number;
+}
+
+/** The two-chip "Today's Recommendation" split shown on the AI Coach tab —
+ * a school block and a future/career block, sized so school always gets
+ * the bigger (or only) share of time when a deadline is close. */
+export function buildRecommendationChips(input: {
+  exams: Exam[];
+  homework: Homework[];
+  primaryCareer?: Career;
+}): RecommendationChip[] {
+  const today = todayISO();
+  const soonExam = input.exams
+    .filter((e) => daysBetween(today, e.exam_date) >= 0 && daysBetween(today, e.exam_date) <= 7)
+    .sort((a, b) => a.exam_date.localeCompare(b.exam_date))[0];
+  const highPriorityHomework = input.homework.find((h) => h.status === "pending" && h.priority === "high");
+
+  const chips: RecommendationChip[] = [];
+
+  if (soonExam) {
+    chips.push({ icon: "📚", label: soonExam.subject, minutes: 45 });
+    if (input.primaryCareer) chips.push({ icon: "🚀", label: input.primaryCareer.name.split(" ")[0], minutes: 20 });
+  } else if (highPriorityHomework) {
+    chips.push({ icon: "📚", label: highPriorityHomework.subject, minutes: 30 });
+    if (input.primaryCareer) chips.push({ icon: "🚀", label: input.primaryCareer.name.split(" ")[0], minutes: 30 });
+  } else if (input.primaryCareer) {
+    chips.push({ icon: "🚀", label: input.primaryCareer.name, minutes: 30 });
+    chips.push({ icon: "🧠", label: "Skill building", minutes: 20 });
+  } else {
+    chips.push({ icon: "🧭", label: "Explore a career", minutes: 20 });
+  }
+
+  return chips;
+}
