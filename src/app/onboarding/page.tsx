@@ -19,6 +19,7 @@ import {
 import { CAREERS } from "@/lib/catalog/careers";
 import { computeCareerMatches } from "@/lib/matching";
 import { savePendingOnboarding, type FullOnboardingAnswers } from "@/lib/onboarding/completeOnboarding";
+import { personalizedContext } from "@/lib/onboarding/personalize";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
 type Answers = FullOnboardingAnswers;
@@ -133,13 +134,13 @@ export default function OnboardingPage() {
       )}
 
       {step === 1 && (
-        <Question title="What country do you study in?" className="flex-1 overflow-hidden">
+        <Question title="What country do you study in?" context={personalizedContext(1, answers)} className="flex-1 overflow-hidden">
           <CountrySelect value={answers.country} onChange={(country) => setAnswers({ ...answers, country })} />
         </Question>
       )}
 
       {step === 2 && (
-        <Question title="What subjects do you enjoy most?" subtitle="Select as many as you like">
+        <Question title="What subjects do you enjoy most?" subtitle="Select as many as you like" context={personalizedContext(2, answers)}>
           <OptionGrid
             options={SUBJECT_OPTIONS}
             selected={answers.subjects}
@@ -149,7 +150,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 3 && (
-        <Question title="What are you naturally interested in?" subtitle="Select as many as you like">
+        <Question title="What are you naturally interested in?" subtitle="Select as many as you like" context={personalizedContext(3, answers)}>
           <OptionGrid
             options={INTEREST_OPTIONS}
             selected={answers.interests}
@@ -160,7 +161,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 4 && (
-        <Question title="What are you already good at?" subtitle="Select as many as you like">
+        <Question title="What are you already good at?" subtitle="Select as many as you like" context={personalizedContext(4, answers)}>
           <OptionGrid
             options={STRENGTH_OPTIONS}
             selected={answers.strengths}
@@ -170,7 +171,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 5 && (
-        <Question title="What would you like to explore?" subtitle="Select as many as you like">
+        <Question title="What would you like to explore?" subtitle="Select as many as you like" context={personalizedContext(5, answers)}>
           <OptionGrid
             options={EXPLORE_OPTIONS}
             selected={answers.exploreGoals}
@@ -180,7 +181,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 6 && (
-        <Question title="How much free time do you realistically have after school?">
+        <Question title="How much free time do you realistically have after school?" context={personalizedContext(6, answers)}>
           <div className="space-y-2.5">
             {FREE_TIME_OPTIONS.map((o) => (
               <SelectableCard
@@ -195,7 +196,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 7 && (
-        <Question title="What is your biggest goal right now?">
+        <Question title="What is your biggest goal right now?" context={personalizedContext(7, answers)}>
           <div className="space-y-2.5">
             {GOAL_OPTIONS.map((o) => (
               <SelectableCard
@@ -210,7 +211,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 8 && (
-        <Question title="What is your biggest problem?">
+        <Question title="What is your biggest problem?" context={personalizedContext(8, answers)}>
           <div className="space-y-2.5">
             {PROBLEM_OPTIONS.map((o) => (
               <SelectableCard
@@ -230,16 +231,19 @@ export default function OnboardingPage() {
 function Question({
   title,
   subtitle,
+  context,
   children,
   className,
 }: {
   title: string;
   subtitle?: string;
+  context?: string | null;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
     <div className={`flex h-full flex-col ${className ?? ""}`}>
+      {context && <p className="mb-2 text-sm font-medium italic text-accent">{context}</p>}
       <h2 className="text-[22px] font-bold leading-snug tracking-tight text-foreground">{title}</h2>
       {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
       <div className="mt-6 scrollbar-none flex-1 overflow-y-auto pb-2">{children}</div>
