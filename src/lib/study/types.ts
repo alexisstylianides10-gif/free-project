@@ -20,6 +20,19 @@ export interface MaterialAnalysisSummary {
   question_count: number;
 }
 
+/**
+ * Full shape stored in `study_materials.analysis` by the analyze-material
+ * route — a superset of `MaterialAnalysisSummary` that also keeps the terms
+ * and potential questions extracted from the material, so the material
+ * detail page can show them without a second AI call. Read the jsonb column
+ * as this type (it's a strict superset, so any code expecting
+ * `MaterialAnalysisSummary` still works against it).
+ */
+export interface MaterialAnalysisFull extends MaterialAnalysisSummary {
+  terms: string[];
+  potential_questions: string[];
+}
+
 export interface StudyMaterial {
   id: string;
   user_id: string;
