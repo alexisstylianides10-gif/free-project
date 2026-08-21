@@ -3,7 +3,7 @@
 import { use, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Upload, CalendarClock, Play, Brain, Layers, Trash2, FileText } from "lucide-react";
+import { Upload, CalendarClock, Play, Brain, Layers, Trash2, FileText, HelpCircle } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useExams } from "@/lib/hooks/domain";
@@ -99,6 +99,12 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
           <Button variant="secondary" size="lg" className="w-full">
             <Layers className="h-4 w-4" />
             Flashcards
+          </Button>
+        </Link>
+        <Link href={`/app/school/subjects/${subjectId}/homework-help`} className="col-span-2">
+          <Button variant="secondary" size="lg" className="w-full">
+            <HelpCircle className="h-4 w-4" />
+            Homework Help
           </Button>
         </Link>
       </div>

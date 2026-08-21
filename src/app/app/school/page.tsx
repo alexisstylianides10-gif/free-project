@@ -3,10 +3,10 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock } from "lucide-react";
+import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock, Layers } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useTimetable, useStudySessions } from "@/lib/hooks/domain";
-import { useStudySubjects, useStudyTopics, useStudyFocusSessions } from "@/lib/hooks/study";
+import { useStudySubjects, useStudyTopics, useStudyFocusSessions, useStudyFlashcards } from "@/lib/hooks/study";
 import { supabase } from "@/lib/supabase/client";
 import { awardXP } from "@/lib/actions/xp";
 import { awardAchievementOnce } from "@/lib/actions/achievements";
@@ -41,6 +41,7 @@ export default function StudyHomePage() {
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: topics } = useStudyTopics(user?.id);
   const { data: focusSessions } = useStudyFocusSessions(user?.id);
+  const { data: flashcards } = useStudyFlashcards(user?.id);
 
   const [busyHomeworkId, setBusyHomeworkId] = useState<string | null>(null);
   const [busySessionId, setBusySessionId] = useState<string | null>(null);
@@ -84,14 +85,17 @@ export default function StudyHomePage() {
     return { ...weakest, subjectName: subject?.name ?? "" };
   }, [topics, subjects]);
 
+  const flashcardsDueCount = useMemo(() => flashcards.filter((c) => c.due_date <= today).length, [flashcards, today]);
+
   const recommendation = useMemo(
     () =>
       buildStudyRecommendation({
         upcomingExams: exams.map((e) => ({ ...e, readiness: e.study_subject_id ? subjectReadiness(topics.filter((t) => t.subject_id === e.study_subject_id)) : null })),
         allWeakestTopic: globalWeakestTopic,
         hasAnySubjects: subjects.length > 0,
+        flashcardsDueCount,
       }),
-    [exams, topics, globalWeakestTopic, subjects.length]
+    [exams, topics, globalWeakestTopic, subjects.length, flashcardsDueCount]
   );
 
   const todayMinutes = todaysStudyMinutes(focusSessions);
@@ -134,7 +138,9 @@ export default function StudyHomePage() {
   }
 
   function startRecommendation() {
-    if (recommendation.subjectId) {
+    if (recommendation.action === "flashcards") {
+      router.push("/app/school/flashcards/review?bucket=due");
+    } else if (recommendation.subjectId) {
       const query = recommendation.topicId ? `?topic=${recommendation.topicId}` : "";
       router.push(`/app/school/subjects/${recommendation.subjectId}/session${query}`);
     } else {
@@ -159,6 +165,17 @@ export default function StudyHomePage() {
             </p>
             <p className="mt-1 text-lg font-bold text-foreground">{profile?.streak_count ?? 0} days</p>
           </div>
+          {flashcardsDueCount > 0 && (
+            <>
+              <div className="w-px bg-border" />
+              <Link href="/app/school/flashcards/review?bucket=due" className="flex-1">
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <Layers className="h-3 w-3" /> Due
+                </p>
+                <p className="mt-1 text-lg font-bold text-foreground">{flashcardsDueCount} cards</p>
+              </Link>
+            </>
+          )}
         </CardContent>
       </Card>
 

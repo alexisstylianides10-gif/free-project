@@ -23,6 +23,11 @@ export interface StudyRecommendation {
   text: string;
   subjectId: string | null;
   topicId: string | null;
+  /** Where "Start Study" should go. Defaults to "topic" behavior (a
+   * subject/topic session) when omitted — added so the flashcards-due
+   * case can point at a review session instead without every existing
+   * caller needing to branch on a new required field. */
+  action?: "topic" | "flashcards" | "explore";
 }
 
 /**
@@ -35,6 +40,11 @@ export function buildStudyRecommendation(input: {
   upcomingExams: (Exam & { readiness: number | null })[];
   allWeakestTopic: (StudyTopic & { subjectName: string }) | null;
   hasAnySubjects: boolean;
+  /** Count of due-today flashcards, across every subject. Optional so
+   * existing callers (and older tests) don't need to change — when
+   * omitted, the recommendation behaves exactly as before flashcards
+   * existed as a real destination. */
+  flashcardsDueCount?: number;
 }): StudyRecommendation {
   const today = todayISO();
   const soonExam = input.upcomingExams
@@ -54,6 +64,19 @@ export function buildStudyRecommendation(input: {
       text: `Practice ${input.allWeakestTopic.name} for 30 minutes — your recent results show this is currently your weakest topic.`,
       subjectId: input.allWeakestTopic.subject_id,
       topicId: input.allWeakestTopic.id,
+    };
+  }
+
+  // No exam pressure and no weak topic signal yet (e.g. a subject with
+  // material but no quiz/session history) — due flashcards are still a
+  // legitimate, low-friction "one clear next action" in that gap.
+  if ((input.flashcardsDueCount ?? 0) > 0) {
+    const n = input.flashcardsDueCount as number;
+    return {
+      text: `You have ${n} flashcard${n === 1 ? "" : "s"} due for review today — a quick way to keep what you've learned fresh.`,
+      subjectId: null,
+      topicId: null,
+      action: "flashcards",
     };
   }
 
