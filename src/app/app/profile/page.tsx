@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { RoadmapTimeline, RoadmapStep } from "@/components/shared/RoadmapTimeline";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -146,6 +147,16 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="p-5">
             <RoadmapTimeline steps={roadmapSteps} />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Settings</h2>
+        <Card>
+          <CardContent className="p-4">
+            <p className="mb-2.5 text-sm font-medium text-foreground">Appearance</p>
+            <ThemeToggle />
           </CardContent>
         </Card>
       </section>

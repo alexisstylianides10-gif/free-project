@@ -1,11 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { computeCareerMatches } from "@/lib/matching";
-import { buildDemoData } from "@/lib/seed/demoData";
+import { buildDemoData, type DemoDataResult } from "@/lib/seed/demoData";
+import { researchSchoolData } from "@/lib/onboarding/researchSchool";
 import { todayISO } from "@/lib/utils";
 
 export interface FullOnboardingAnswers {
   yearGroup: string;
   country: string;
+  schoolName: string;
   subjects: string[];
   interests: string[];
   strengths: string[];
@@ -69,11 +71,23 @@ export async function completeOnboarding(
   });
   const topMatch = matches[0];
 
-  const { timetable, homework, exams, studySessions } = buildDemoData({
-    userId,
-    subjects: answers.subjects,
-    freeTime: answers.freeTime,
-  });
+  let curriculumSummary: string | null = null;
+  let seedData: DemoDataResult;
+  try {
+    const researched = await researchSchoolData({
+      country: answers.country,
+      schoolName: answers.schoolName,
+      yearGroup: answers.yearGroup,
+      subjects: answers.subjects,
+      userId,
+      freeTime: answers.freeTime,
+    });
+    seedData = researched.data;
+    curriculumSummary = researched.curriculumSummary;
+  } catch {
+    seedData = buildDemoData({ userId, subjects: answers.subjects, freeTime: answers.freeTime });
+  }
+  const { timetable, homework, exams, studySessions } = seedData;
 
   await Promise.all([
     supabase.from("profiles").upsert(
@@ -97,6 +111,8 @@ export async function completeOnboarding(
         user_id: userId,
         year_group: answers.yearGroup,
         country: answers.country,
+        school_name: answers.schoolName,
+        curriculum_summary: curriculumSummary,
         subjects: answers.subjects,
         interests: answers.interests,
         strengths: answers.strengths,

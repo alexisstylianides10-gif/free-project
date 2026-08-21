@@ -180,6 +180,7 @@ function emptyAnswers() {
   return {
     yearGroup: "",
     country: "",
+    schoolName: "",
     subjects: [],
     interests: [],
     strengths: [],

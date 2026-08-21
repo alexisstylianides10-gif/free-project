@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { ThemeProvider, themeInitScript } from "@/components/providers/ThemeProvider";
 import { branding } from "@/lib/branding";
 
 const inter = Inter({
@@ -32,10 +33,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${inter.variable}`}>
+    <html lang="en" className={inter.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="antialiased">
-        <ServiceWorkerRegister />
-        <AuthProvider>{children}</AuthProvider>
+        <ThemeProvider>
+          <ServiceWorkerRegister />
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

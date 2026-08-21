@@ -39,30 +39,34 @@ export function personalizedContext(step: number, a: FullOnboardingAnswers): str
     }
     case 2: {
       if (!a.country) return null;
-      return `Got it, ${a.country}. Now let's talk about school.`;
+      return `Got it, ${a.country}. What school do you go to?`;
     }
     case 3: {
+      if (!a.schoolName.trim()) return null;
+      return `${a.schoolName} — noted. What subjects do you enjoy most?`;
+    }
+    case 4: {
       if (a.subjects.length === 0) return null;
       return `You're into ${formatList(a.subjects.map((s) => labelOf(SUBJECT_OPTIONS, s)))} — what pulls you in beyond the classroom?`;
     }
-    case 4: {
+    case 5: {
       if (a.interests.length === 0) return null;
       return `Since you're drawn to ${formatList(a.interests.map((s) => labelOf(INTEREST_OPTIONS, s)))}, what are you already good at?`;
     }
-    case 5: {
+    case 6: {
       if (a.strengths.length === 0) return null;
       return `With strengths like ${formatList(a.strengths.map((s) => labelOf(STRENGTH_OPTIONS, s)))}, what do you want to explore?`;
     }
-    case 6: {
+    case 7: {
       if (a.exploreGoals.length === 0) return null;
       return `Building toward ${formatList(a.exploreGoals.map((s) => labelOf(EXPLORE_OPTIONS, s)))} takes real time — how much do you actually have?`;
     }
-    case 7: {
+    case 8: {
       if (!a.freeTime) return null;
       const freeTime = labelOf(FREE_TIME_OPTIONS, a.freeTime);
       return `${freeTime} a day, noted. What's the one thing you most want to move forward?`;
     }
-    case 8: {
+    case 9: {
       if (!a.biggestGoal) return null;
       const goal = labelOf(GOAL_OPTIONS, a.biggestGoal).toLowerCase();
       return `Got it — ${goal}. What's most likely to get in your way?`;

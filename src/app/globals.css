@@ -42,6 +42,42 @@
   color-scheme: dark;
 }
 
+/* Light mode — opt-in via a `.light` class on <html>, toggled by
+   ThemeProvider. Dark stays the unclassed default above. */
+.light {
+  --background: 220 22% 98%;
+  --foreground: 230 30% 12%;
+  --surface: 0 0% 100%;
+  --surface-raised: 220 25% 97%;
+  --border: 220 16% 88%;
+  --border-strong: 220 14% 76%;
+  --muted: 220 20% 94%;
+  --muted-foreground: 222 12% 42%;
+
+  --accent: 252 74% 54%;
+  --accent-end: 186 70% 40%;
+  --accent-foreground: 0 0% 100%;
+  --accent-soft: 252 65% 92%;
+
+  --mission-from: 14 82% 50%;
+  --mission-via: 336 72% 50%;
+  --mission-to: 262 66% 52%;
+
+  --success: 158 58% 36%;
+  --success-soft: 158 50% 91%;
+  --warning: 38 82% 44%;
+  --warning-soft: 38 65% 89%;
+  --danger: 356 68% 48%;
+  --danger-soft: 356 60% 92%;
+
+  --school: 206 80% 44%;
+  --future: 28 82% 46%;
+
+  --shadow-color: 220 25% 72%;
+
+  color-scheme: light;
+}
+
 * {
   border-color: hsl(var(--border));
 }
@@ -50,6 +86,10 @@ html {
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
   color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
 }
 
 body {
@@ -104,6 +144,14 @@ body {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid hsl(220 30% 100% / 0.08);
+}
+
+/* Light mode needs a dark-tinted glass treatment — the white-tinted overlay
+   above is invisible on a near-white background. */
+.light .glass {
+  background: linear-gradient(180deg, hsl(0 0% 100% / 0.9), hsl(220 20% 100% / 0.55));
+  border: 1px solid hsl(230 25% 12% / 0.08);
+  box-shadow: 0 1px 3px hsl(230 25% 12% / 0.05);
 }
 
 .text-gradient-brand {

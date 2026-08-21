@@ -25,6 +25,8 @@ export interface OnboardingResponse {
   user_id: string;
   year_group: string;
   country: string;
+  school_name: string;
+  curriculum_summary: string | null;
   subjects: string[];
   interests: string[];
   strengths: string[];

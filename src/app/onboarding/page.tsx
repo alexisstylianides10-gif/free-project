@@ -28,6 +28,7 @@ type Answers = FullOnboardingAnswers;
 const EMPTY_ANSWERS: Answers = {
   yearGroup: "",
   country: "",
+  schoolName: "",
   subjects: [],
   interests: [],
   strengths: [],
@@ -41,11 +42,11 @@ function toggle(list: string[], key: string): string[] {
   return list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
 }
 
-const QUESTION_COUNT = 9;
+const QUESTION_COUNT = 10;
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState(0); // 0..8 = questions, 9 = results
+  const [step, setStep] = useState(0); // 0..9 = questions, 10 = results
   const [answers, setAnswers] = useState<Answers>(EMPTY_ANSWERS);
 
   const matches = useMemo(
@@ -69,18 +70,20 @@ export default function OnboardingPage() {
       case 1:
         return answers.country !== "";
       case 2:
-        return answers.subjects.length > 0;
+        return answers.schoolName.trim() !== "";
       case 3:
-        return answers.interests.length > 0;
+        return answers.subjects.length > 0;
       case 4:
-        return answers.strengths.length > 0;
+        return answers.interests.length > 0;
       case 5:
-        return answers.exploreGoals.length > 0;
+        return answers.strengths.length > 0;
       case 6:
-        return answers.freeTime !== "";
+        return answers.exploreGoals.length > 0;
       case 7:
-        return answers.biggestGoal !== "";
+        return answers.freeTime !== "";
       case 8:
+        return answers.biggestGoal !== "";
+      case 9:
         return answers.biggestProblem !== "";
       default:
         return true;
@@ -141,7 +144,19 @@ export default function OnboardingPage() {
       )}
 
       {step === 2 && (
-        <Question title="What subjects do you enjoy most?" subtitle="Select as many as you like" context={personalizedContext(2, answers)}>
+        <Question title="What school do you go to?" subtitle="This helps us match your real timetable and curriculum" context={personalizedContext(2, answers)}>
+          <input
+            autoFocus
+            value={answers.schoolName}
+            onChange={(e) => setAnswers({ ...answers, schoolName: e.target.value })}
+            placeholder="e.g. Lincoln High School"
+            className="h-12 w-full rounded-2xl border border-border bg-surface px-4 text-[15px] text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+          />
+        </Question>
+      )}
+
+      {step === 3 && (
+        <Question title="What subjects do you enjoy most?" subtitle="Select as many as you like" context={personalizedContext(3, answers)}>
           <OptionGrid
             options={SUBJECT_OPTIONS}
             selected={answers.subjects}
@@ -150,8 +165,8 @@ export default function OnboardingPage() {
         </Question>
       )}
 
-      {step === 3 && (
-        <Question title="What are you naturally interested in?" subtitle="Select as many as you like" context={personalizedContext(3, answers)}>
+      {step === 4 && (
+        <Question title="What are you naturally interested in?" subtitle="Select as many as you like" context={personalizedContext(4, answers)}>
           <OptionGrid
             options={INTEREST_OPTIONS}
             selected={answers.interests}
@@ -161,8 +176,8 @@ export default function OnboardingPage() {
         </Question>
       )}
 
-      {step === 4 && (
-        <Question title="What are you already good at?" subtitle="Select as many as you like" context={personalizedContext(4, answers)}>
+      {step === 5 && (
+        <Question title="What are you already good at?" subtitle="Select as many as you like" context={personalizedContext(5, answers)}>
           <OptionGrid
             options={STRENGTH_OPTIONS}
             selected={answers.strengths}
@@ -171,8 +186,8 @@ export default function OnboardingPage() {
         </Question>
       )}
 
-      {step === 5 && (
-        <Question title="What would you like to explore?" subtitle="Select as many as you like" context={personalizedContext(5, answers)}>
+      {step === 6 && (
+        <Question title="What would you like to explore?" subtitle="Select as many as you like" context={personalizedContext(6, answers)}>
           <OptionGrid
             options={EXPLORE_OPTIONS}
             selected={answers.exploreGoals}
@@ -181,8 +196,8 @@ export default function OnboardingPage() {
         </Question>
       )}
 
-      {step === 6 && (
-        <Question title="How much free time do you realistically have after school?" context={personalizedContext(6, answers)}>
+      {step === 7 && (
+        <Question title="How much free time do you realistically have after school?" context={personalizedContext(7, answers)}>
           <div className="space-y-2.5">
             {FREE_TIME_OPTIONS.map((o) => (
               <SelectableCard
@@ -196,8 +211,8 @@ export default function OnboardingPage() {
         </Question>
       )}
 
-      {step === 7 && (
-        <Question title="What is your biggest goal right now?" context={personalizedContext(7, answers)}>
+      {step === 8 && (
+        <Question title="What is your biggest goal right now?" context={personalizedContext(8, answers)}>
           <div className="space-y-2.5">
             {GOAL_OPTIONS.map((o) => (
               <SelectableCard
@@ -211,8 +226,8 @@ export default function OnboardingPage() {
         </Question>
       )}
 
-      {step === 8 && (
-        <Question title="What is your biggest problem?" context={personalizedContext(8, answers)}>
+      {step === 9 && (
+        <Question title="What is your biggest problem?" context={personalizedContext(9, answers)}>
           <div className="space-y-2.5">
             {PROBLEM_OPTIONS.map((o) => (
               <SelectableCard
