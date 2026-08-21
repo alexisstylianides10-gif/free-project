@@ -124,7 +124,7 @@ Return JSON: {"days": [{"day_index": number, "topic_name": string, "duration_min
     return NextResponse.json({ error: "Couldn't generate a study plan right now. Try again in a moment." }, { status: 502 });
   }
 
-  let days = Array.isArray(aiResult.days) ? aiResult.days.filter((d) => d && d.topic_name && d.day_index >= 1) : [];
+  const days = Array.isArray(aiResult.days) ? aiResult.days.filter((d) => d && d.topic_name && d.day_index >= 1) : [];
   if (days.length === 0) {
     return NextResponse.json({ error: "The AI didn't return a usable plan. Try again." }, { status: 502 });
   }
