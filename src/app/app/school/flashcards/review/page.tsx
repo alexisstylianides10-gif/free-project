@@ -120,7 +120,7 @@ function ReviewInner() {
         bySubject.set(r.subjectId, g);
       }
 
-      let currentProfile = profile;
+      let currentProfile: Parameters<typeof logFocusSession>[3] = profile;
       for (const [subjId, stat] of bySubject) {
         const share = Math.max(1, Math.round((stat.total / results.length) * elapsedMin));
         const accuracy = Math.round((stat.knew / stat.total) * 100);
@@ -222,15 +222,15 @@ function ReviewInner() {
 
       {revealed && (
         <div className="grid grid-cols-3 gap-2">
-          <Button variant="danger" size="lg" disabled={grading} onClick={() => grade("didnt")} className="flex-col gap-1 !px-2">
+          <Button variant="danger" disabled={grading} onClick={() => grade("didnt")} className="h-auto flex-col gap-1 px-2 py-3">
             <X className="h-4 w-4" />
             <span className="text-xs">Didn&rsquo;t know</span>
           </Button>
-          <Button variant="secondary" size="lg" disabled={grading} onClick={() => grade("almost")} className="flex-col gap-1 !px-2">
+          <Button variant="secondary" disabled={grading} onClick={() => grade("almost")} className="h-auto flex-col gap-1 px-2 py-3">
             <Minus className="h-4 w-4" />
             <span className="text-xs">Almost</span>
           </Button>
-          <Button variant="mission" size="lg" disabled={grading} onClick={() => grade("knew")} className="flex-col gap-1 !px-2">
+          <Button variant="mission" disabled={grading} onClick={() => grade("knew")} className="h-auto flex-col gap-1 px-2 py-3">
             <Check className="h-4 w-4" />
             <span className="text-xs">Knew it</span>
           </Button>

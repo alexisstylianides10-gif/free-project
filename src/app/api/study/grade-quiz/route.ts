@@ -1,7 +1,7 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
-import { callStudyAIForJSON, StudyAIError } from "@/lib/study/ai";
+import { callStudyAIForJSON } from "@/lib/study/ai";
 import { logFocusSession, updateTopicMastery } from "@/lib/study/actions";
 import { awardAchievementOnce } from "@/lib/actions/achievements";
 import type { AnswerVerdict, QuizQuestion, QuizResultItem, StudyQuiz, StudyTopic } from "@/lib/study/types";
