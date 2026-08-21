@@ -2,6 +2,7 @@ import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/supabase/server";
+import { checkEntitlement } from "@/lib/billing/entitlement";
 import { buildCoachSystemPrompt } from "@/lib/coach/systemPrompt";
 import type { Homework, Exam, OnboardingResponse, Profile, CareerPath } from "@/lib/types";
 
@@ -21,6 +22,9 @@ function anthropicClient(): Anthropic {
 export async function POST(req: NextRequest) {
   const { client, user, error } = await requireUser(req);
   if (!client || !user) return NextResponse.json({ error }, { status: 401 });
+  if (!(await checkEntitlement(client, user.id))) {
+    return NextResponse.json({ error: "This feature requires Alxioum Plus." }, { status: 402 });
+  }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: "The AI Coach isn't configured yet — add ANTHROPIC_API_KEY on the server." }, { status: 503 });

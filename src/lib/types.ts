@@ -18,6 +18,9 @@ export interface Profile {
   longest_streak: number;
   last_active_date: string | null;
   onboarding_completed: boolean;
+  plan: "free" | "plus";
+  plan_status: "trialing" | "active" | "canceled" | "past_due";
+  trial_ends_at: string;
   created_at: string;
 }
 

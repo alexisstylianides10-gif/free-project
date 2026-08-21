@@ -1,6 +1,7 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
+import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON, StudyAIError } from "@/lib/study/ai";
 import type { QuizDifficulty, QuizQuestion, QuizQuestionType, StudyQuiz, StudyTopic, MaterialAnalysisFull } from "@/lib/study/types";
 
@@ -42,6 +43,9 @@ const DIFFICULTY_GUIDANCE: Record<QuizDifficulty, string> = {
 export async function POST(req: NextRequest) {
   const { client, user, error } = await requireUser(req);
   if (!client || !user) return NextResponse.json({ error }, { status: 401 });
+  if (!(await checkEntitlement(client, user.id))) {
+    return NextResponse.json({ error: "This feature requires Alxioum Plus." }, { status: 402 });
+  }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: "Quiz generation isn't configured yet — add ANTHROPIC_API_KEY on the server." }, { status: 503 });

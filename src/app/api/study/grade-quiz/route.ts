@@ -1,6 +1,7 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
+import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON } from "@/lib/study/ai";
 import { logFocusSession, updateTopicMastery } from "@/lib/study/actions";
 import { awardAchievementOnce } from "@/lib/actions/achievements";
@@ -58,6 +59,9 @@ function gradeObjective(question: QuizQuestion, yourAnswer: string): QuizResultI
 export async function POST(req: NextRequest) {
   const { client, user, error } = await requireUser(req);
   if (!client || !user) return NextResponse.json({ error }, { status: 401 });
+  if (!(await checkEntitlement(client, user.id))) {
+    return NextResponse.json({ error: "This feature requires Alxioum Plus." }, { status: 402 });
+  }
 
   let body: GradeQuizBody;
   try {

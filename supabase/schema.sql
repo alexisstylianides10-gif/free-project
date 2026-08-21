@@ -25,6 +25,12 @@ create table if not exists public.profiles (
   longest_streak int not null default 0,
   last_active_date date,
   onboarding_completed boolean not null default false,
+  -- Alxioum Plus billing (see "billing" section below for the column-grant lockdown).
+  plan text not null default 'free' check (plan in ('free', 'plus')),
+  plan_status text not null default 'trialing' check (plan_status in ('trialing', 'active', 'canceled', 'past_due')),
+  trial_ends_at timestamptz not null default (now() + interval '3 days'),
+  stripe_customer_id text,
+  stripe_subscription_id text,
   created_at timestamptz not null default now()
 );
 
@@ -34,6 +40,22 @@ create policy "profiles_select_own" on public.profiles for select to authenticat
 create policy "profiles_insert_own" on public.profiles for insert to authenticated with check (id = auth.uid());
 create policy "profiles_update_own" on public.profiles for update to authenticated using (id = auth.uid()) with check (id = auth.uid());
 
+-- Billing columns (plan, plan_status, trial_ends_at, stripe_customer_id,
+-- stripe_subscription_id) are deliberately excluded from the client's
+-- UPDATE grant below — the update-own RLS policy above only checks row
+-- ownership, not which columns are being written, so without this a signed
+-- in user could grant themselves Alxioum Plus by calling
+-- `supabase.from("profiles").update({ plan: "plus" })` directly. Every
+-- billing-column write in the app goes through supabaseServiceRole()
+-- instead (billing API routes + the Stripe webhook), which bypasses this
+-- grant entirely.
+revoke update on public.profiles from authenticated;
+grant update (
+  full_name, year_group, country, avatar_emoji, xp_school, xp_career,
+  xp_skill, xp_project, streak_count, longest_streak, last_active_date,
+  onboarding_completed
+) on public.profiles to authenticated;
+
 -- ---------------------------------------------------------------------------
 -- onboarding_responses
 -- ---------------------------------------------------------------------------
@@ -41,6 +63,8 @@ create table if not exists public.onboarding_responses (
   user_id uuid primary key references auth.users (id) on delete cascade,
   year_group text not null default '',
   country text not null default '',
+  school_name text not null default '',
+  curriculum_summary text,
   subjects text[] not null default '{}',
   interests text[] not null default '{}',
   strengths text[] not null default '{}',

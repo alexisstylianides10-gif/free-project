@@ -18,6 +18,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { RoadmapTimeline, RoadmapStep } from "@/components/shared/RoadmapTimeline";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { branding } from "@/lib/branding";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -157,6 +158,21 @@ export default function ProfilePage() {
           <CardContent className="p-4">
             <p className="mb-2.5 text-sm font-medium text-foreground">Appearance</p>
             <ThemeToggle />
+          </CardContent>
+        </Card>
+        <Card className="mt-3">
+          <CardContent className="flex items-center justify-between gap-3 p-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">{branding.name} Plus</p>
+              <p className="text-xs text-muted-foreground">
+                {profile.plan === "plus" ? "Manage your subscription" : "AI Coach, study plans, quizzes & more"}
+              </p>
+            </div>
+            <Link href="/app/upgrade">
+              <Button size="sm" variant="outline">
+                {profile.plan === "plus" ? "Manage" : "Upgrade"}
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </section>
