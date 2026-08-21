@@ -21,6 +21,7 @@ import { computeCareerMatches } from "@/lib/matching";
 import { savePendingOnboarding, type FullOnboardingAnswers } from "@/lib/onboarding/completeOnboarding";
 import { personalizedContext } from "@/lib/onboarding/personalize";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { branding } from "@/lib/branding";
 
 type Answers = FullOnboardingAnswers;
 
@@ -310,7 +311,7 @@ function ResultsScreen({ matches, slugs, onContinue }: { matches: number[]; slug
             Build My Plan
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            School always comes first — FutureOS fits around it, never instead of it.
+            School always comes first — {branding.name} fits around it, never instead of it.
           </p>
         </div>
       </div>

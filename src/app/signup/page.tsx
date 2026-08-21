@@ -84,7 +84,7 @@ export default function SignupPage() {
     <main className="flex min-h-dvh flex-col justify-center bg-background px-6 py-10">
       <div className="mx-auto w-full max-w-sm">
         <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-brand text-base font-extrabold text-white shadow-glow-accent">
-          F
+          {branding.markLetter}
         </span>
         <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground">Create your account</h1>
         <p className="mt-1.5 text-center text-sm text-muted-foreground">

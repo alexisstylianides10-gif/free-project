@@ -42,7 +42,7 @@ export function LoadingScreen({
     >
       <div className="relative z-10 flex w-full max-w-xs flex-col items-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-xl font-extrabold text-white shadow-glow-accent animate-pulse-glow">
-          F
+          {branding.markLetter}
         </span>
 
         <p className="mt-8 text-3xl font-bold tabular-nums tracking-tight text-foreground">{Math.round(percent)}%</p>

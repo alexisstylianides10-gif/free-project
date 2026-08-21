@@ -24,7 +24,7 @@ export default function WelcomePage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-sm font-extrabold text-white shadow-glow-accent">
-              F
+              {branding.markLetter}
             </span>
             <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>
           </div>
