@@ -238,3 +238,184 @@ create index if not exists exams_user_date_idx on public.exams (user_id, exam_da
 create index if not exists timetable_user_day_idx on public.timetable_entries (user_id, day_of_week);
 create index if not exists study_sessions_user_week_idx on public.study_sessions (user_id, week_start);
 create index if not exists chat_messages_user_created_idx on public.chat_messages (user_id, created_at);
+
+-- ---------------------------------------------------------------------------
+-- Study system: subjects, materials, topics, plans, sessions, quizzes,
+-- flashcards, and tutor chat. Every table user_id-scoped with RLS.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.study_subjects (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  name text not null,
+  icon text not null default '📘',
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_subjects enable row level security;
+create policy "study_subjects_all_own" on public.study_subjects for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.study_materials (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.study_subjects (id) on delete cascade,
+  title text not null,
+  kind text not null check (kind in ('pdf', 'image', 'notes', 'paste')),
+  storage_path text,
+  raw_text text,
+  status text not null default 'pending' check (status in ('pending', 'analyzing', 'analyzed', 'failed')),
+  analysis jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_materials enable row level security;
+create policy "study_materials_all_own" on public.study_materials for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.study_topics (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.study_subjects (id) on delete cascade,
+  material_id uuid references public.study_materials (id) on delete set null,
+  name text not null,
+  summary text,
+  key_concepts text[] not null default '{}',
+  mastery int not null default 30 check (mastery between 0 and 100),
+  quiz_attempts int not null default 0,
+  correct_answers int not null default 0,
+  last_practiced_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_topics enable row level security;
+create policy "study_topics_all_own" on public.study_topics for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+alter table public.exams add column if not exists study_subject_id uuid references public.study_subjects (id) on delete set null;
+
+create table if not exists public.study_plans (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.study_subjects (id) on delete cascade,
+  exam_id uuid references public.exams (id) on delete set null,
+  accepted boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_plans enable row level security;
+create policy "study_plans_all_own" on public.study_plans for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.study_plan_items (
+  id uuid primary key default gen_random_uuid(),
+  plan_id uuid not null references public.study_plans (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  day_index int not null,
+  topic_id uuid references public.study_topics (id) on delete set null,
+  label text not null,
+  duration_min int not null default 30,
+  completed boolean not null default false
+);
+
+alter table public.study_plan_items enable row level security;
+create policy "study_plan_items_all_own" on public.study_plan_items for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.study_focus_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.study_subjects (id) on delete cascade,
+  topic_id uuid references public.study_topics (id) on delete set null,
+  mode text not null check (mode in ('learn', 'practice', 'quiz', 'review')),
+  duration_min int not null default 0,
+  accuracy_percent int,
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_focus_sessions enable row level security;
+create policy "study_focus_sessions_all_own" on public.study_focus_sessions for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.study_quizzes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.study_subjects (id) on delete cascade,
+  topic_id uuid references public.study_topics (id) on delete set null,
+  material_id uuid references public.study_materials (id) on delete set null,
+  difficulty text not null default 'medium' check (difficulty in ('easy', 'medium', 'hard', 'exam')),
+  question_count int not null,
+  questions jsonb not null,
+  is_mock_exam boolean not null default false,
+  time_limit_min int,
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_quizzes enable row level security;
+create policy "study_quizzes_all_own" on public.study_quizzes for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.study_quiz_attempts (
+  id uuid primary key default gen_random_uuid(),
+  quiz_id uuid not null references public.study_quizzes (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  score_percent int not null,
+  correct_count int not null,
+  results jsonb not null,
+  strong_topics text[] not null default '{}',
+  weak_topics text[] not null default '{}',
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_quiz_attempts enable row level security;
+create policy "study_quiz_attempts_all_own" on public.study_quiz_attempts for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.study_flashcards (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.study_subjects (id) on delete cascade,
+  topic_id uuid references public.study_topics (id) on delete set null,
+  front text not null,
+  back text not null,
+  interval_days int not null default 1,
+  ease_factor numeric not null default 2.5,
+  due_date date not null default current_date,
+  reps int not null default 0,
+  last_result text check (last_result in ('knew', 'almost', 'didnt')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_flashcards enable row level security;
+create policy "study_flashcards_all_own" on public.study_flashcards for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.study_tutor_messages (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.study_subjects (id) on delete cascade,
+  topic_id uuid references public.study_topics (id) on delete set null,
+  role text not null check (role in ('user', 'assistant')),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.study_tutor_messages enable row level security;
+create policy "study_tutor_messages_all_own" on public.study_tutor_messages for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create index if not exists study_materials_subject_idx on public.study_materials (user_id, subject_id);
+create index if not exists study_topics_subject_idx on public.study_topics (user_id, subject_id);
+create index if not exists study_plan_items_plan_idx on public.study_plan_items (plan_id, day_index);
+create index if not exists study_focus_sessions_user_idx on public.study_focus_sessions (user_id, created_at);
+create index if not exists study_quizzes_subject_idx on public.study_quizzes (user_id, subject_id);
+create index if not exists study_quiz_attempts_quiz_idx on public.study_quiz_attempts (quiz_id, created_at);
+create index if not exists study_flashcards_due_idx on public.study_flashcards (user_id, due_date);
+create index if not exists study_tutor_messages_topic_idx on public.study_tutor_messages (user_id, subject_id, created_at);
+
+-- Private storage bucket for uploaded study material (PDFs/photos).
+insert into storage.buckets (id, name, public)
+values ('study-materials', 'study-materials', false)
+on conflict (id) do nothing;
+
+create policy "study_materials_storage_select_own" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'study-materials' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "study_materials_storage_insert_own" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'study-materials' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "study_materials_storage_delete_own" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'study-materials' and (storage.foldername(name))[1] = auth.uid()::text);

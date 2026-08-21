@@ -2,18 +2,21 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, GraduationCap, BookOpen, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useTimetable, useStudySessions } from "@/lib/hooks/domain";
+import { useStudySubjects, useStudyTopics, useStudyFocusSessions } from "@/lib/hooks/study";
 import { supabase } from "@/lib/supabase/client";
 import { awardXP } from "@/lib/actions/xp";
 import { awardAchievementOnce } from "@/lib/actions/achievements";
+import { weakestTopic, todaysStudyMinutes, subjectReadiness, buildStudyRecommendation } from "@/lib/study/recommendation";
 import { formatCountdown, formatTime12, mondayOfThisWeek, todayISO, cn } from "@/lib/utils";
 import type { Homework, StudySession } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 import { PriorityBadge } from "@/components/ui/PriorityBadge";
-import { ScreenHeader } from "@/components/shared/ScreenHeader";
 
 const HOMEWORK_XP: Record<Homework["priority"], number> = { high: 15, medium: 10, low: 8 };
 
@@ -25,15 +28,19 @@ const STUDY_PLAN_DAYS = [
   { day: 5, label: "Friday" },
 ];
 
-export default function SchoolPage() {
+export default function StudyHomePage() {
   const { user, profile, refreshProfile } = useAuth();
+  const router = useRouter();
   const today = todayISO();
   const todayDow = new Date(today + "T00:00:00").getDay();
 
   const { data: timetable, loading: timetableLoading } = useTimetable(user?.id);
   const { data: homework, loading: homeworkLoading, refetch: refetchHomework } = useHomework(user?.id);
-  const { data: exams, loading: examsLoading } = useExams(user?.id);
+  const { data: exams } = useExams(user?.id);
   const { data: studySessions, loading: studyLoading, refetch: refetchStudy } = useStudySessions(user?.id, mondayOfThisWeek());
+  const { data: subjects } = useStudySubjects(user?.id);
+  const { data: topics } = useStudyTopics(user?.id);
+  const { data: focusSessions } = useStudyFocusSessions(user?.id);
 
   const [busyHomeworkId, setBusyHomeworkId] = useState<string | null>(null);
   const [busySessionId, setBusySessionId] = useState<string | null>(null);
@@ -52,8 +59,6 @@ export default function SchoolPage() {
     [homework]
   );
 
-  const sortedExams = useMemo(() => [...exams].sort((a, b) => a.exam_date.localeCompare(b.exam_date)), [exams]);
-
   const studyByDay = useMemo(() => {
     const map = new Map<number, StudySession[]>();
     for (const s of studySessions) {
@@ -64,6 +69,32 @@ export default function SchoolPage() {
     for (const list of map.values()) list.sort((a, b) => a.subject.localeCompare(b.subject));
     return map;
   }, [studySessions]);
+
+  const nextExam = useMemo(() => [...exams].sort((a, b) => a.exam_date.localeCompare(b.exam_date))[0], [exams]);
+
+  const nextExamReadiness = useMemo(() => {
+    if (!nextExam?.study_subject_id) return null;
+    return subjectReadiness(topics.filter((t) => t.subject_id === nextExam.study_subject_id));
+  }, [nextExam, topics]);
+
+  const globalWeakestTopic = useMemo(() => {
+    const weakest = weakestTopic(topics);
+    if (!weakest) return null;
+    const subject = subjects.find((s) => s.id === weakest.subject_id);
+    return { ...weakest, subjectName: subject?.name ?? "" };
+  }, [topics, subjects]);
+
+  const recommendation = useMemo(
+    () =>
+      buildStudyRecommendation({
+        upcomingExams: exams.map((e) => ({ ...e, readiness: e.study_subject_id ? subjectReadiness(topics.filter((t) => t.subject_id === e.study_subject_id)) : null })),
+        allWeakestTopic: globalWeakestTopic,
+        hasAnySubjects: subjects.length > 0,
+      }),
+    [exams, topics, globalWeakestTopic, subjects.length]
+  );
+
+  const todayMinutes = todaysStudyMinutes(focusSessions);
 
   async function toggleHomework(hw: Homework) {
     if (!user || !profile || !supabase || busyHomeworkId) return;
@@ -102,11 +133,62 @@ export default function SchoolPage() {
     }
   }
 
-  return (
-    <div className="space-y-7 pb-4 animate-fade-in">
-      <ScreenHeader title="My School" subtitle="Class, homework and exams — all in one place." />
+  function startRecommendation() {
+    if (recommendation.subjectId) {
+      const query = recommendation.topicId ? `?topic=${recommendation.topicId}` : "";
+      router.push(`/app/school/subjects/${recommendation.subjectId}/session${query}`);
+    } else {
+      router.push("/app/school/subjects");
+    }
+  }
 
-      {/* Today's classes */}
+  return (
+    <div className="space-y-7">
+      <Card>
+        <CardContent className="flex items-stretch gap-4 p-4">
+          <div className="flex-1">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <Clock className="h-3 w-3" /> Today
+            </p>
+            <p className="mt-1 text-lg font-bold text-foreground">{todayMinutes}m studied</p>
+          </div>
+          <div className="w-px bg-border" />
+          <div className="flex-1">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <Flame className="h-3 w-3" /> Streak
+            </p>
+            <p className="mt-1 text-lg font-bold text-foreground">{profile?.streak_count ?? 0} days</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {nextExam && (
+        <Link href="/app/school/exams">
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{nextExam.subject} Exam</p>
+              <p className="mt-1 text-2xl font-extrabold text-foreground">{formatCountdown(nextExam.exam_date)}</p>
+              {nextExamReadiness !== null && (
+                <>
+                  <ProgressBar value={nextExamReadiness} className="mt-3" />
+                  <p className="mt-1.5 text-xs text-muted-foreground">{nextExamReadiness}% ready</p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
+      )}
+
+      <Card className="border-accent/30">
+        <CardContent className="p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent">Today&rsquo;s recommendation</p>
+          <p className="mt-2 text-sm leading-relaxed text-foreground">{recommendation.text}</p>
+          <Button size="md" className="mt-4" onClick={startRecommendation}>
+            Start Study
+          </Button>
+        </CardContent>
+      </Card>
+
       <section>
         <div className="mb-3 flex items-center gap-2">
           <CalendarClock className="h-4 w-4 text-school" />
@@ -114,9 +196,7 @@ export default function SchoolPage() {
         </div>
         {!timetableLoading && todayTimetable.length === 0 ? (
           <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              No classes today — enjoy the break, or get ahead on your study plan below.
-            </CardContent>
+            <CardContent className="py-6 text-center text-sm text-muted-foreground">No classes today.</CardContent>
           </Card>
         ) : (
           <div className="space-y-2">
@@ -139,7 +219,6 @@ export default function SchoolPage() {
         )}
       </section>
 
-      {/* Homework */}
       <section>
         <div className="mb-3 flex items-center gap-2">
           <ClipboardCheck className="h-4 w-4 text-accent" />
@@ -147,9 +226,7 @@ export default function SchoolPage() {
         </div>
         {!homeworkLoading && sortedHomework.length === 0 ? (
           <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              Nothing set right now. Nice and clear.
-            </CardContent>
+            <CardContent className="py-6 text-center text-sm text-muted-foreground">Nothing set right now.</CardContent>
           </Card>
         ) : (
           <div className="space-y-2">
@@ -182,44 +259,14 @@ export default function SchoolPage() {
         )}
       </section>
 
-      {/* Exams */}
-      <section>
-        <div className="mb-3 flex items-center gap-2">
-          <GraduationCap className="h-4 w-4 text-school" />
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Exams</h2>
-        </div>
-        {!examsLoading && sortedExams.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">No exams on the horizon yet.</CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-2">
-            {sortedExams.map((exam) => (
-              <Card key={exam.id}>
-                <CardContent className="flex items-center justify-between gap-3 p-4">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{exam.subject} Exam</p>
-                    {exam.title !== exam.subject && <p className="truncate text-xs text-muted-foreground">{exam.title}</p>}
-                  </div>
-                  <span className="shrink-0 text-sm font-bold text-accent">{formatCountdown(exam.exam_date)}</span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* AI Study Plan */}
       <section>
         <div className="mb-3 flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-accent" />
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">AI Study Plan</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">This Week&rsquo;s Study Plan</h2>
         </div>
         {!studyLoading && studySessions.length === 0 ? (
           <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              No study plan for this week yet. Ask Future Coach to help you build one.
-            </CardContent>
+            <CardContent className="py-6 text-center text-sm text-muted-foreground">No weekly plan yet.</CardContent>
           </Card>
         ) : (
           <div className="space-y-3">

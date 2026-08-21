@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { completeOnboarding, loadPendingOnboarding, clearPendingOnboarding } from "@/lib/onboarding/completeOnboarding";
 import { BottomNav } from "@/components/shared/BottomNav";
+import { LoadingScreen } from "@/components/shared/LoadingScreen";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, refreshProfile } = useAuth();
@@ -37,20 +37,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, profile, router, refreshProfile]);
 
-  if (loading || recovering || !user || !profile) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-accent" />
-      </div>
-    );
+  if (loading || !user || !profile) {
+    return <LoadingScreen message="Signing you in…" />;
   }
 
-  if (!profile.onboarding_completed) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-accent" />
-      </div>
-    );
+  if (recovering || !profile.onboarding_completed) {
+    return <LoadingScreen message="Building your plan…" />;
   }
 
   return (

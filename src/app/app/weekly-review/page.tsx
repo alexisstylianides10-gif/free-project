@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useStudySessions, useUserMissions, useCareerPaths, useUserSkills } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
@@ -11,6 +10,7 @@ import { mondayOfThisWeek, addDaysISO, daysBetween, todayISO } from "@/lib/utils
 import { Card, CardContent } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { LoadingScreen } from "@/components/shared/LoadingScreen";
 
 function formatStudyTime(totalMinutes: number): string {
   const h = Math.floor(totalMinutes / 60);
@@ -139,9 +139,7 @@ export default function WeeklyReviewPage() {
       <ScreenHeader eyebrow="This Week" title="Weekly Review" subtitle={formatWeekLabel(weekStart)} />
 
       {!ready ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-accent" />
-        </div>
+        <LoadingScreen message="Putting your week together…" fullScreen={false} />
       ) : (
         <>
           <Card>

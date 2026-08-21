@@ -58,6 +58,7 @@ export interface Exam {
   subject: string;
   title: string;
   exam_date: string;
+  study_subject_id: string | null;
   created_at: string;
 }
 
