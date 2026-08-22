@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTableRows } from "@/lib/hooks/useTableRows";
+import { supabase } from "@/lib/supabase/client";
 import type {
   Homework,
   Exam,
@@ -12,6 +14,11 @@ import type {
   UserMission,
   RoadmapProgress,
   ChatMessage,
+  BusinessProfile,
+  BusinessMilestone,
+  BusinessMetric,
+  BusinessContentIdea,
+  BusinessCompetitor,
 } from "@/lib/types";
 
 export function useHomework(userId?: string) {
@@ -55,4 +62,52 @@ export function useRoadmapProgress(userId?: string) {
 
 export function useChatHistory(userId?: string) {
   return useTableRows<ChatMessage>("chat_messages", userId, { orderBy: { column: "created_at", ascending: true } });
+}
+
+/** Fetches the founder's single business_profiles row, if any — same
+ * single-row-fetch pattern as useOnboardingResponse. */
+export function useBusinessProfile(userId?: string) {
+  const [data, setData] = useState<BusinessProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      if (!supabase || !userId) {
+        if (active) {
+          setData(null);
+          setLoading(false);
+        }
+        return;
+      }
+      setLoading(true);
+      const { data: row } = await supabase.from("business_profiles").select("*").eq("user_id", userId).maybeSingle();
+      if (active) {
+        setData((row as BusinessProfile | null) ?? null);
+        setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  return { data, loading };
+}
+
+export function useBusinessMilestones(userId?: string) {
+  return useTableRows<BusinessMilestone>("business_milestones", userId, { orderBy: { column: "order_index", ascending: true } });
+}
+
+export function useBusinessMetrics(userId?: string) {
+  return useTableRows<BusinessMetric>("business_metrics", userId, { orderBy: { column: "logged_date", ascending: false } });
+}
+
+export function useBusinessContentIdeas(userId?: string) {
+  return useTableRows<BusinessContentIdea>("business_content_ideas", userId, { orderBy: { column: "created_at", ascending: false } });
+}
+
+export function useBusinessCompetitors(userId?: string) {
+  return useTableRows<BusinessCompetitor>("business_competitors", userId, { orderBy: { column: "created_at", ascending: false } });
 }

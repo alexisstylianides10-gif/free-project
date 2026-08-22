@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { buildCoachSystemPrompt } from "@/lib/coach/systemPrompt";
-import type { Homework, Exam, OnboardingResponse, Profile, CareerPath } from "@/lib/types";
+import type { Homework, Exam, OnboardingResponse, Profile, CareerPath, BusinessProfile, BusinessMilestone } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -43,25 +43,44 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Keep messages under ${MAX_MESSAGE_LENGTH} characters.` }, { status: 400 });
   }
 
-  const [profileRes, onboardingRes, homeworkRes, examsRes, careerRes, historyRes] = await Promise.all([
-    client.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-    client.from("onboarding_responses").select("*").eq("user_id", user.id).maybeSingle(),
-    client.from("homework").select("*").eq("user_id", user.id).eq("status", "pending").order("due_date", { ascending: true }).limit(6),
-    client.from("exams").select("*").eq("user_id", user.id).order("exam_date", { ascending: true }).limit(4),
-    client.from("career_paths").select("*").eq("user_id", user.id).eq("is_primary", true).maybeSingle(),
-    client.from("chat_messages").select("role, content").eq("user_id", user.id).order("created_at", { ascending: false }).limit(12),
-  ]);
-
-  const profile = profileRes.data as Profile | null;
+  const { data: profileRow } = await client.from("profiles").select("*").eq("id", user.id).maybeSingle();
+  const profile = profileRow as Profile | null;
   if (!profile) return NextResponse.json({ error: "Profile not found." }, { status: 404 });
 
-  const systemPrompt = buildCoachSystemPrompt({
-    profile,
-    onboarding: (onboardingRes.data as OnboardingResponse | null) ?? null,
-    pendingHomework: (homeworkRes.data as Homework[]) ?? [],
-    upcomingExams: (examsRes.data as Exam[]) ?? [],
-    primaryCareerSlug: (careerRes.data as CareerPath | null)?.career_slug ?? null,
-  });
+  const [historyRes, systemPrompt] = await Promise.all([
+    client.from("chat_messages").select("role, content").eq("user_id", user.id).order("created_at", { ascending: false }).limit(12),
+    profile.track === "business"
+      ? (async () => {
+          const [businessProfileRes, milestonesRes] = await Promise.all([
+            client.from("business_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+            client.from("business_milestones").select("*").eq("user_id", user.id).neq("status", "done").order("order_index", { ascending: true }).limit(6),
+          ]);
+          return buildCoachSystemPrompt({
+            profile,
+            onboarding: null,
+            pendingHomework: [],
+            upcomingExams: [],
+            primaryCareerSlug: null,
+            businessProfile: (businessProfileRes.data as BusinessProfile | null) ?? null,
+            openMilestones: (milestonesRes.data as BusinessMilestone[]) ?? [],
+          });
+        })()
+      : (async () => {
+          const [onboardingRes, homeworkRes, examsRes, careerRes] = await Promise.all([
+            client.from("onboarding_responses").select("*").eq("user_id", user.id).maybeSingle(),
+            client.from("homework").select("*").eq("user_id", user.id).eq("status", "pending").order("due_date", { ascending: true }).limit(6),
+            client.from("exams").select("*").eq("user_id", user.id).order("exam_date", { ascending: true }).limit(4),
+            client.from("career_paths").select("*").eq("user_id", user.id).eq("is_primary", true).maybeSingle(),
+          ]);
+          return buildCoachSystemPrompt({
+            profile,
+            onboarding: (onboardingRes.data as OnboardingResponse | null) ?? null,
+            pendingHomework: (homeworkRes.data as Homework[]) ?? [],
+            upcomingExams: (examsRes.data as Exam[]) ?? [],
+            primaryCareerSlug: (careerRes.data as CareerPath | null)?.career_slug ?? null,
+          });
+        })(),
+  ]);
 
   const history = ((historyRes.data as { role: "user" | "assistant"; content: string }[]) ?? []).reverse();
 
