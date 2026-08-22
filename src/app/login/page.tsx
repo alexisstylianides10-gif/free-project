@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { LogoMark } from "@/components/shared/LogoMark";
 import { branding } from "@/lib/branding";
 
 export default function LoginPage() {
@@ -57,9 +58,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-dvh flex-col justify-center bg-background px-6 py-10">
       <div className="mx-auto w-full max-w-sm">
-        <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-brand text-base font-extrabold text-white shadow-glow-accent">
-          {branding.markLetter}
-        </span>
+        <LogoMark size={44} className="mx-auto shadow-glow-accent" />
         <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground">Welcome back</h1>
         <p className="mt-1.5 text-center text-sm text-muted-foreground">Log in to {branding.name} to see your plan.</p>
 

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { LogoMark } from "@/components/shared/LogoMark";
 import { branding } from "@/lib/branding";
 
 export default function WelcomePage() {
@@ -29,9 +30,7 @@ export default function WelcomePage() {
       <div className="relative z-10 flex flex-1 flex-col justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-sm font-extrabold text-white shadow-glow-accent">
-              {branding.markLetter}
-            </span>
+            <LogoMark size={36} className="shadow-glow-accent" />
             <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>
           </div>
 
