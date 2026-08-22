@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, GraduationCap, Rocket } from "lucide-react";
+import { Loader2, GraduationCap, Rocket, Check } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { PLAN_OPTIONS, TRACK_LABEL, type Track, type BillingInterval } from "@/lib/billing/plans";
@@ -30,6 +30,10 @@ export default function ChoosePlanPage() {
   const [busy, setBusy] = useState<Track | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const monthlyTotal = PLAN_OPTIONS.find((o) => o.track === "student" && o.interval === "monthly")!.priceUsd * 12;
+  const yearlyTotal = PLAN_OPTIONS.find((o) => o.track === "student" && o.interval === "yearly")!.priceUsd;
+  const yearlySavingsPercent = Math.round((1 - yearlyTotal / monthlyTotal) * 100);
+
   async function choose(track: Track) {
     if (!supabase || !user || busy) return;
     setError(null);
@@ -50,7 +54,7 @@ export default function ChoosePlanPage() {
       <div className="relative z-10 mx-auto w-full max-w-sm flex-1">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">{branding.name}</p>
         <h1 className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">What are you here to build?</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Pick the plan that fits — you can change your billing anytime later.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Pick the plan that fits — your billing interval can change whenever you subscribe.</p>
 
         <div className="mt-6 flex items-center gap-1 rounded-xl bg-muted p-1">
           {(["monthly", "yearly"] as const).map((i) => (
@@ -63,7 +67,16 @@ export default function ChoosePlanPage() {
                 (interval === i ? "bg-surface text-foreground shadow-subtle" : "text-muted-foreground")
               }
             >
-              {i === "monthly" ? "Monthly" : "Yearly"}
+              {i === "monthly" ? (
+                "Monthly"
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  Yearly
+                  <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-bold text-success">
+                    -{yearlySavingsPercent}%
+                  </span>
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -88,8 +101,9 @@ export default function ChoosePlanPage() {
 
                   <ul className="mt-4 space-y-1.5">
                     {copy.perks.map((perk) => (
-                      <li key={perk} className="text-xs text-muted-foreground">
-                        · {perk}
+                      <li key={perk} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                        {perk}
                       </li>
                     ))}
                   </ul>

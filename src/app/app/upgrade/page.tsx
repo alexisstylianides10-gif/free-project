@@ -46,6 +46,9 @@ export default function UpgradePage() {
   const onPlus = Boolean(profile && isEntitled(profile) && profile.plan === "plus");
   const track = profile?.track ?? "student";
   const planOption = getPlanOption(track, interval);
+  const monthlyOption = getPlanOption(track, "monthly");
+  const yearlyOption = getPlanOption(track, "yearly");
+  const yearlySavingsPercent = Math.round((1 - yearlyOption.priceUsd / (monthlyOption.priceUsd * 12)) * 100);
 
   async function startCheckout() {
     setError(null);
@@ -90,7 +93,7 @@ export default function UpgradePage() {
 
   return (
     <div className="space-y-6 pb-4 animate-fade-in">
-      <ScreenHeader eyebrow={`${branding.name} Plus`} title="Unlock the full AI experience" />
+      <ScreenHeader eyebrow={`${branding.name} Plus`} title={`Activate your ${TRACK_LABEL[track].toLowerCase()} plan`} />
 
       {checkoutResult === "success" && (
         <Card className="border-success/40">
@@ -138,7 +141,16 @@ export default function UpgradePage() {
                     (interval === i ? "bg-surface text-foreground shadow-subtle" : "text-muted-foreground")
                   }
                 >
-                  {i === "monthly" ? "Monthly" : "Yearly"}
+                  {i === "monthly" ? (
+                    "Monthly"
+                  ) : (
+                    <span className="inline-flex items-center gap-1">
+                      Yearly
+                      <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-bold text-success">
+                        -{yearlySavingsPercent}%
+                      </span>
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

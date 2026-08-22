@@ -166,12 +166,16 @@ export default function ProfilePage() {
             <div>
               <p className="text-sm font-medium text-foreground">{branding.name} Plus</p>
               <p className="text-xs text-muted-foreground">
-                {profile.plan === "plus" ? "Manage your subscription" : "AI Coach, study plans, quizzes & more"}
+                {profile.plan === "plus"
+                  ? "Manage your subscription"
+                  : isBusiness
+                    ? "AI Coach, business snapshot & content helper"
+                    : "AI Coach, study plans, quizzes & more"}
               </p>
             </div>
             <Link href="/app/upgrade">
               <Button size="sm" variant="outline">
-                {profile.plan === "plus" ? "Manage" : "Upgrade"}
+                {profile.plan === "plus" ? "Manage" : "Activate"}
               </Button>
             </Link>
           </CardContent>
