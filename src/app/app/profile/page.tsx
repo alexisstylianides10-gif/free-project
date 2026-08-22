@@ -45,9 +45,10 @@ export default function ProfilePage() {
 
   const level = levelFromXP(totalXP(profile));
 
+  const isBusiness = profile.track === "business";
   const progressStats: { label: string; value: number; cap: number; tone: "school" | "future" | "brand" | "mission" }[] = [
-    { label: "School XP", value: profile.xp_school, cap: 220, tone: "school" },
-    { label: "Career XP", value: profile.xp_career, cap: 260, tone: "future" },
+    { label: isBusiness ? "Plan XP" : "School XP", value: profile.xp_school, cap: 220, tone: "school" },
+    { label: isBusiness ? "Business XP" : "Career XP", value: profile.xp_career, cap: 260, tone: "future" },
     { label: "Skill XP", value: profile.xp_skill, cap: 250, tone: "brand" },
     { label: "Project XP", value: profile.xp_project, cap: 200, tone: "mission" },
   ];
