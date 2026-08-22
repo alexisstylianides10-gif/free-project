@@ -24,10 +24,18 @@ export async function researchBusinessData(params: {
   targetCustomer: string;
   focusAreas: string[];
 }): Promise<BusinessResearchResult> {
-  const res = await authedFetch("/api/onboarding/research-business", {
-    method: "POST",
-    body: JSON.stringify(params),
-  });
+  // Bounded to 20s: this AI call runs web search and can genuinely take
+  // 30s+, but onboarding must never hang on it — completeBusinessOnboarding's
+  // catch below falls back to the hardcoded milestone list on a timeout
+  // just like any other failure here.
+  const res = await authedFetch(
+    "/api/onboarding/research-business",
+    {
+      method: "POST",
+      body: JSON.stringify(params),
+    },
+    20000
+  );
   if (!res.ok) throw new Error("Research request failed.");
 
   const body = (await res.json()) as ResearchApiResponse;

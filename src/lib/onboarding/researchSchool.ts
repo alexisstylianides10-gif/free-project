@@ -27,15 +27,23 @@ export async function researchSchoolData(params: {
   freeTime: string;
   userId: string;
 }): Promise<{ data: DemoDataResult; curriculumSummary: string }> {
-  const res = await authedFetch("/api/onboarding/research-school", {
-    method: "POST",
-    body: JSON.stringify({
-      country: params.country,
-      schoolName: params.schoolName,
-      yearGroup: params.yearGroup,
-      subjects: params.subjects,
-    }),
-  });
+  // Bounded to 20s: this AI call runs web search and can genuinely take
+  // 30s+, but onboarding must never hang on it — completeOnboarding's
+  // catch below falls back to buildDemoData on a timeout just like any
+  // other failure here.
+  const res = await authedFetch(
+    "/api/onboarding/research-school",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        country: params.country,
+        schoolName: params.schoolName,
+        yearGroup: params.yearGroup,
+        subjects: params.subjects,
+      }),
+    },
+    20000
+  );
   if (!res.ok) throw new Error("Research request failed.");
 
   const body = (await res.json()) as ResearchApiResponse;
