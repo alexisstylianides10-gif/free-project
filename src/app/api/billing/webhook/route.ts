@@ -36,10 +36,16 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
       const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+      const interval = session.metadata?.interval === "yearly" ? "yearly" : "monthly";
       if (customerId) {
         await db
           .from("profiles")
-          .update({ plan: "plus", plan_status: "active", stripe_subscription_id: subscriptionId ?? null })
+          .update({
+            plan: "plus",
+            plan_status: "active",
+            stripe_subscription_id: subscriptionId ?? null,
+            billing_interval: interval,
+          })
           .eq("stripe_customer_id", customerId);
       }
       break;

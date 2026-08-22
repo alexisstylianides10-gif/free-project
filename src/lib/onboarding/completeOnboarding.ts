@@ -17,29 +17,6 @@ export interface FullOnboardingAnswers {
   biggestProblem: string;
 }
 
-const PENDING_KEY = "futureos_pending_onboarding";
-
-export function savePendingOnboarding(answers: FullOnboardingAnswers) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(PENDING_KEY, JSON.stringify(answers));
-}
-
-export function loadPendingOnboarding(): FullOnboardingAnswers | null {
-  if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(PENDING_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as FullOnboardingAnswers;
-  } catch {
-    return null;
-  }
-}
-
-export function clearPendingOnboarding() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(PENDING_KEY);
-}
-
 function baselineSkills(strengths: string[]): { skill_key: string; proficiency: number }[] {
   const picked = strengths.slice(0, 5);
   const fillers = ["communication", "problem_solving", "organisation"].filter((k) => !picked.includes(k));

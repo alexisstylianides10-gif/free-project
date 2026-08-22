@@ -18,6 +18,8 @@ export interface Profile {
   longest_streak: number;
   last_active_date: string | null;
   onboarding_completed: boolean;
+  track: "student" | "business";
+  billing_interval: "monthly" | "yearly" | null;
   plan: "free" | "plus";
   plan_status: "trialing" | "active" | "canceled" | "past_due";
   trial_ends_at: string;
@@ -134,6 +136,58 @@ export interface ChatMessage {
   user_id: string;
   role: "user" | "assistant";
   content: string;
+  created_at: string;
+}
+
+export type BusinessStage = "idea" | "validating" | "building" | "launched";
+
+export interface BusinessProfile {
+  user_id: string;
+  business_idea: string;
+  stage: BusinessStage;
+  target_customer: string;
+  ai_snapshot: string | null;
+  created_at: string;
+}
+
+export type MilestoneStatus = "todo" | "in_progress" | "done";
+
+export interface BusinessMilestone {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  status: MilestoneStatus;
+  due_date: string | null;
+  order_index: number;
+  created_at: string;
+}
+
+export interface BusinessMetric {
+  id: string;
+  user_id: string;
+  metric_key: string;
+  value: number;
+  logged_date: string;
+  created_at: string;
+}
+
+export interface BusinessContentIdea {
+  id: string;
+  user_id: string;
+  platform: string;
+  topic: string;
+  generated_content: string | null;
+  status: "draft" | "used";
+  created_at: string;
+}
+
+export interface BusinessCompetitor {
+  id: string;
+  user_id: string;
+  name: string;
+  url: string | null;
+  notes: string | null;
   created_at: string;
 }
 

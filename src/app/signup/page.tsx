@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Loader2, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
-import { completeOnboarding, loadPendingOnboarding, clearPendingOnboarding } from "@/lib/onboarding/completeOnboarding";
 import { branding } from "@/lib/branding";
 
 export default function SignupPage() {
@@ -41,23 +40,19 @@ export default function SignupPage() {
       return;
     }
 
-    const pending = loadPendingOnboarding();
-
     if (data.session && data.user) {
-      try {
-        await completeOnboarding(supabase, data.user.id, name.trim(), pending ?? emptyAnswers());
-        clearPendingOnboarding();
-        router.push("/app");
-        return;
-      } catch {
-        setError("Your account was created, but we couldn't save your plan yet. Try logging in.");
+      const { error: profileError } = await supabase.from("profiles").upsert({ id: data.user.id, full_name: name.trim() }, { onConflict: "id" });
+      if (profileError) {
+        setError("Your account was created, but we couldn't set it up yet. Try logging in.");
         setLoading(false);
         return;
       }
+      router.push("/choose-plan");
+      return;
     }
 
-    // Email confirmation required before a session exists — the pending
-    // onboarding answers stay in localStorage and get applied on first login.
+    // Email confirmation required before a session exists — the profile row
+    // and choose-plan/onboarding steps happen on first login instead.
     setNeedsConfirmation(true);
     setLoading(false);
   }
@@ -88,7 +83,7 @@ export default function SignupPage() {
         </span>
         <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground">Create your account</h1>
         <p className="mt-1.5 text-center text-sm text-muted-foreground">
-          One last step before {branding.name} builds your plan.
+          Create an account, then pick your plan and build your future.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
@@ -174,19 +169,4 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       {children}
     </label>
   );
-}
-
-function emptyAnswers() {
-  return {
-    yearGroup: "",
-    country: "",
-    schoolName: "",
-    subjects: [],
-    interests: [],
-    strengths: [],
-    exploreGoals: [],
-    freeTime: "",
-    biggestGoal: "",
-    biggestProblem: "",
-  };
 }

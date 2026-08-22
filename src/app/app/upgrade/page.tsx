@@ -6,17 +6,31 @@ import { Loader2, Sparkles, Check } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
 import { isEntitled } from "@/lib/billing/entitlement";
+import { getPlanOption, TRACK_LABEL, type BillingInterval } from "@/lib/billing/plans";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { branding } from "@/lib/branding";
 
-const PERKS = [
-  "AI Coach — your always-on mentor for school, skills, and career",
-  "AI study plans built around your real exams and deadlines",
-  "Upload notes, photos, or PDFs and get an instant AI breakdown",
-  "AI tutor sessions, quizzes, and spaced-repetition flashcards",
-];
+const PERKS_BY_TRACK = {
+  student: [
+    "AI Coach — your always-on mentor for school, skills, and career",
+    "AI study plans built around your real exams and deadlines",
+    "Upload notes, photos, or PDFs and get an instant AI breakdown",
+    "AI tutor sessions, quizzes, and spaced-repetition flashcards",
+  ],
+  business: [
+    "AI Coach — your always-on mentor for building your business",
+    "An AI-generated snapshot and starter milestones for your idea",
+    "AI-drafted marketing and content ideas for any platform",
+    "Milestone, metrics, and competitor tracking in one place",
+  ],
+} as const;
+
+const FREE_TAGLINE_BY_TRACK = {
+  student: "School tracking — timetable, homework, exams, career matches, and your roadmap — is always free.",
+  business: "Your business plan basics, milestone checklist, and metrics log are always free.",
+} as const;
 
 export default function UpgradePage() {
   const { profile, refreshProfile } = useAuth();
@@ -24,17 +38,23 @@ export default function UpgradePage() {
   const searchParams = useSearchParams();
   const checkoutResult = searchParams.get("checkout");
 
+  const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [loading, setLoading] = useState<"checkout" | "portal" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const onPlus = Boolean(profile && isEntitled(profile) && profile.plan === "plus");
+  const track = profile?.track ?? "student";
+  const planOption = getPlanOption(track, interval);
 
   async function startCheckout() {
     setError(null);
     setLoading("checkout");
     try {
-      const res = await authedFetch("/api/billing/create-checkout-session", { method: "POST" });
+      const res = await authedFetch("/api/billing/create-checkout-session", {
+        method: "POST",
+        body: JSON.stringify({ interval }),
+      });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Couldn't start checkout.");
       window.location.href = json.url;
@@ -103,14 +123,34 @@ export default function UpgradePage() {
       <Card>
         <CardContent className="p-6">
           <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-accent">
-            <Sparkles className="h-3.5 w-3.5" /> {branding.name} Plus
+            <Sparkles className="h-3.5 w-3.5" /> {branding.name} Plus — {TRACK_LABEL[track]}
           </p>
-          <p className="mt-2 text-3xl font-extrabold text-foreground">
-            $9.99<span className="text-base font-medium text-muted-foreground">/mo</span>
+
+          {!onPlus && (
+            <div className="mt-4 flex items-center gap-1 rounded-xl bg-muted p-1">
+              {(["monthly", "yearly"] as const).map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setInterval(i)}
+                  className={
+                    "flex-1 rounded-lg py-2 text-xs font-semibold transition-colors " +
+                    (interval === i ? "bg-surface text-foreground shadow-subtle" : "text-muted-foreground")
+                  }
+                >
+                  {i === "monthly" ? "Monthly" : "Yearly"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <p className="mt-4 text-3xl font-extrabold text-foreground">
+            ${planOption.priceUsd}
+            <span className="text-base font-medium text-muted-foreground">/{interval === "monthly" ? "mo" : "yr"}</span>
           </p>
 
           <ul className="mt-5 space-y-3">
-            {PERKS.map((perk) => (
+            {PERKS_BY_TRACK[track].map((perk) => (
               <li key={perk} className="flex items-start gap-2.5 text-sm text-foreground">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                 {perk}
@@ -127,7 +167,7 @@ export default function UpgradePage() {
               </Button>
             ) : (
               <Button size="lg" className="w-full" onClick={startCheckout} disabled={loading !== null}>
-                {loading === "checkout" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Subscribe — $9.99/mo"}
+                {loading === "checkout" ? <Loader2 className="h-4 w-4 animate-spin" /> : `Subscribe — $${planOption.priceUsd}/${interval === "monthly" ? "mo" : "yr"}`}
               </Button>
             )}
             <Button size="sm" variant="ghost" className="w-full" onClick={() => router.push("/app")}>
@@ -137,9 +177,7 @@ export default function UpgradePage() {
         </CardContent>
       </Card>
 
-      <p className="text-center text-xs text-muted-foreground">
-        School tracking — timetable, homework, exams, career matches, and your roadmap — is always free.
-      </p>
+      <p className="text-center text-xs text-muted-foreground">{FREE_TAGLINE_BY_TRACK[track]}</p>
     </div>
   );
 }

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
-import { completeOnboarding, loadPendingOnboarding, clearPendingOnboarding } from "@/lib/onboarding/completeOnboarding";
 import { branding } from "@/lib/branding";
 
 export default function LoginPage() {
@@ -31,21 +30,21 @@ export default function LoginPage() {
       return;
     }
 
-    const { data: profile } = await supabase.from("profiles").select("onboarding_completed").eq("id", data.user.id).maybeSingle();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed, billing_interval")
+      .eq("id", data.user.id)
+      .maybeSingle();
 
-    if (!profile?.onboarding_completed) {
-      const pending = loadPendingOnboarding();
-      if (pending) {
-        try {
-          await completeOnboarding(supabase, data.user.id, data.user.email?.split("@")[0] ?? "Student", pending);
-          clearPendingOnboarding();
-          router.push("/app");
-          return;
-        } catch {
-          // Fall through to onboarding — they can redo the questions.
-        }
-      }
-      router.push("/onboarding");
+    if (!profile) {
+      // First login after email confirmation — no profile row yet.
+      await supabase.from("profiles").upsert({ id: data.user.id, full_name: data.user.email?.split("@")[0] ?? "Student" }, { onConflict: "id" });
+      router.push("/choose-plan");
+      return;
+    }
+
+    if (!profile.onboarding_completed) {
+      router.push(profile.billing_interval ? "/onboarding" : "/choose-plan");
       return;
     }
 
@@ -96,8 +95,8 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           New here?{" "}
-          <Link href="/onboarding" className="font-semibold text-foreground underline underline-offset-4">
-            Build your plan
+          <Link href="/signup" className="font-semibold text-foreground underline underline-offset-4">
+            Sign up
           </Link>
         </p>
       </div>

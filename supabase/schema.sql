@@ -25,6 +25,11 @@ create table if not exists public.profiles (
   longest_streak int not null default 0,
   last_active_date date,
   onboarding_completed boolean not null default false,
+  -- Which product track this account is on — set once at /choose-plan,
+  -- before onboarding. Ordinary client-writable preference, not an
+  -- entitlement flag, so it's fine in the client's UPDATE grant below.
+  track text not null default 'student' check (track in ('student', 'business')),
+  billing_interval text check (billing_interval in ('monthly', 'yearly')),
   -- Alxioum Plus billing (see "billing" section below for the column-grant lockdown).
   plan text not null default 'free' check (plan in ('free', 'plus')),
   plan_status text not null default 'trialing' check (plan_status in ('trialing', 'active', 'canceled', 'past_due')),
@@ -53,7 +58,7 @@ revoke update on public.profiles from authenticated;
 grant update (
   full_name, year_group, country, avatar_emoji, xp_school, xp_career,
   xp_skill, xp_project, streak_count, longest_streak, last_active_date,
-  onboarding_completed
+  onboarding_completed, track, billing_interval
 ) on public.profiles to authenticated;
 
 -- ---------------------------------------------------------------------------
@@ -443,3 +448,77 @@ create policy "study_materials_storage_insert_own" on storage.objects
 create policy "study_materials_storage_delete_own" on storage.objects
   for delete to authenticated
   using (bucket_id = 'study-materials' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ---------------------------------------------------------------------------
+-- Business track: plan basics, milestones, self-logged metrics, an AI
+-- marketing/content helper, and competitor notes. Same per-user RLS pattern
+-- as everything above; `business_` prefix mirrors the `study_` convention.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.business_profiles (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  business_idea text not null default '',
+  stage text not null default 'idea' check (stage in ('idea', 'validating', 'building', 'launched')),
+  target_customer text not null default '',
+  ai_snapshot text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.business_profiles enable row level security;
+create policy "business_profiles_all_own" on public.business_profiles for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.business_milestones (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  title text not null,
+  description text,
+  status text not null default 'todo' check (status in ('todo', 'in_progress', 'done')),
+  due_date date,
+  order_index int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table public.business_milestones enable row level security;
+create policy "business_milestones_all_own" on public.business_milestones for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.business_metrics (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  metric_key text not null,
+  value numeric not null,
+  logged_date date not null default current_date,
+  created_at timestamptz not null default now()
+);
+
+alter table public.business_metrics enable row level security;
+create policy "business_metrics_all_own" on public.business_metrics for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.business_content_ideas (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  platform text not null,
+  topic text not null,
+  generated_content text,
+  status text not null default 'draft' check (status in ('draft', 'used')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.business_content_ideas enable row level security;
+create policy "business_content_ideas_all_own" on public.business_content_ideas for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.business_competitors (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  name text not null,
+  url text,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.business_competitors enable row level security;
+create policy "business_competitors_all_own" on public.business_competitors for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create index if not exists business_milestones_user_idx on public.business_milestones (user_id, order_index);
+create index if not exists business_metrics_user_date_idx on public.business_metrics (user_id, logged_date);
+create index if not exists business_content_ideas_user_idx on public.business_content_ideas (user_id, created_at);
+create index if not exists business_competitors_user_idx on public.business_competitors (user_id, created_at);

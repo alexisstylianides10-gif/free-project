@@ -116,3 +116,18 @@ export const PROBLEM_OPTIONS: Option[] = [
   { key: "learning_skills", label: "Learning new skills" },
   { key: "staying_consistent", label: "Staying consistent" },
 ];
+
+export const BUSINESS_STAGE_OPTIONS: Option[] = [
+  { key: "idea", label: "Just an idea so far" },
+  { key: "validating", label: "Validating with real people" },
+  { key: "building", label: "Building the product/service" },
+  { key: "launched", label: "Already launched" },
+];
+
+export const BUSINESS_FOCUS_OPTIONS: Option[] = [
+  { key: "product", label: "Product/service" },
+  { key: "marketing", label: "Marketing" },
+  { key: "sales", label: "Sales" },
+  { key: "fundraising", label: "Fundraising" },
+  { key: "operations", label: "Operations" },
+];

@@ -13,7 +13,13 @@ export default function WelcomePage() {
 
   useEffect(() => {
     if (loading || !user) return;
-    router.replace(profile?.onboarding_completed ? "/app" : "/onboarding");
+    if (profile?.onboarding_completed) {
+      router.replace("/app");
+    } else if (!profile?.billing_interval) {
+      router.replace("/choose-plan");
+    } else {
+      router.replace("/onboarding");
+    }
   }, [loading, user, profile, router]);
 
   return (
@@ -43,7 +49,7 @@ export default function WelcomePage() {
 
         <div className="mt-16 space-y-4">
           <Link
-            href="/onboarding"
+            href="/signup"
             className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-[15px] font-semibold text-white shadow-glow-accent transition-transform active:scale-[0.98]"
           >
             Get Started
