@@ -50,17 +50,20 @@ export async function completeBusinessOnboarding(
   }
 
   await Promise.all([
-    supabase.from("profiles").upsert(
-      {
-        id: userId,
+    // Plain update, not upsert: PostgREST rejects upsert (ON CONFLICT DO
+    // UPDATE) on profiles because its UPDATE grant is column-restricted
+    // rather than table-wide. The row always exists by this point (signup/
+    // login creates it), so a plain update is correct here.
+    supabase
+      .from("profiles")
+      .update({
         onboarding_completed: true,
         streak_count: 1,
         longest_streak: 1,
         last_active_date: todayISO(),
         xp_career: 15,
-      },
-      { onConflict: "id" }
-    ),
+      })
+      .eq("id", userId),
     supabase.from("business_profiles").upsert(
       {
         user_id: userId,

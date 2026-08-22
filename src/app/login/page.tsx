@@ -37,8 +37,11 @@ export default function LoginPage() {
       .maybeSingle();
 
     if (!profile) {
-      // First login after email confirmation — no profile row yet.
-      await supabase.from("profiles").upsert({ id: data.user.id, full_name: data.user.email?.split("@")[0] ?? "Student" }, { onConflict: "id" });
+      // First login after email confirmation — no profile row yet. Plain
+      // insert, not upsert: PostgREST rejects upsert (ON CONFLICT DO UPDATE)
+      // on profiles because its UPDATE grant is column-restricted rather
+      // than table-wide, and the row is confirmed absent by the select above.
+      await supabase.from("profiles").insert({ id: data.user.id, full_name: data.user.email?.split("@")[0] ?? "Student" });
       router.push("/choose-plan");
       return;
     }

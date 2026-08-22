@@ -41,7 +41,10 @@ export default function SignupPage() {
     }
 
     if (data.session && data.user) {
-      const { error: profileError } = await supabase.from("profiles").upsert({ id: data.user.id, full_name: name.trim() }, { onConflict: "id" });
+      // Plain insert, not upsert: PostgREST rejects upsert (ON CONFLICT DO
+      // UPDATE) on profiles because its UPDATE grant is column-restricted
+      // rather than table-wide, and this is always a brand-new row.
+      const { error: profileError } = await supabase.from("profiles").insert({ id: data.user.id, full_name: name.trim() });
       if (profileError) {
         setError("Your account was created, but we couldn't set it up yet. Try logging in.");
         setLoading(false);

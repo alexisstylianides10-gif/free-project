@@ -67,9 +67,13 @@ export async function completeOnboarding(
   const { timetable, homework, exams, studySessions } = seedData;
 
   await Promise.all([
-    supabase.from("profiles").upsert(
-      {
-        id: userId,
+    // Plain update, not upsert: PostgREST rejects upsert (ON CONFLICT DO
+    // UPDATE) on profiles because its UPDATE grant is column-restricted
+    // rather than table-wide. The row always exists by this point (signup/
+    // login creates it), so a plain update is correct here.
+    supabase
+      .from("profiles")
+      .update({
         full_name: fullName,
         year_group: answers.yearGroup,
         country: answers.country,
@@ -80,9 +84,8 @@ export async function completeOnboarding(
         xp_school: 15,
         xp_career: topMatch ? 30 : 15,
         xp_skill: 10,
-      },
-      { onConflict: "id" }
-    ),
+      })
+      .eq("id", userId),
     supabase.from("onboarding_responses").upsert(
       {
         user_id: userId,
