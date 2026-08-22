@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "The AI Coach isn't configured yet — add ANTHROPIC_API_KEY on the server." }, { status: 503 });
   }
 
-  let body: { message?: string };
+  let body: { message?: string; threadId?: string };
   try {
     body = await req.json();
   } catch {
@@ -38,17 +38,23 @@ export async function POST(req: NextRequest) {
   }
 
   const message = (body.message ?? "").trim();
+  const threadId = (body.threadId ?? "").trim();
   if (!message) return NextResponse.json({ error: "Message can't be empty." }, { status: 400 });
   if (message.length > MAX_MESSAGE_LENGTH) {
     return NextResponse.json({ error: `Keep messages under ${MAX_MESSAGE_LENGTH} characters.` }, { status: 400 });
   }
+  if (!threadId) return NextResponse.json({ error: "Missing threadId." }, { status: 400 });
 
   const { data: profileRow } = await client.from("profiles").select("*").eq("id", user.id).maybeSingle();
   const profile = profileRow as Profile | null;
   if (!profile) return NextResponse.json({ error: "Profile not found." }, { status: 404 });
 
+  const { data: thread } = await client.from("chat_threads").select("id, title").eq("id", threadId).eq("user_id", user.id).maybeSingle();
+  if (!thread) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
+  const needsTitle = !thread.title;
+
   const [historyRes, systemPrompt] = await Promise.all([
-    client.from("chat_messages").select("role, content").eq("user_id", user.id).order("created_at", { ascending: false }).limit(12),
+    client.from("chat_messages").select("role, content").eq("thread_id", threadId).order("created_at", { ascending: false }).limit(12),
     profile.track === "business"
       ? (async () => {
           const [businessProfileRes, milestonesRes] = await Promise.all([
@@ -104,10 +110,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "The AI Coach is having trouble responding right now. Try again in a moment." }, { status: 502 });
   }
 
-  await client.from("chat_messages").insert([
-    { user_id: user.id, role: "user", content: message },
-    { user_id: user.id, role: "assistant", content: replyText },
+  await Promise.all([
+    client.from("chat_messages").insert([
+      { user_id: user.id, thread_id: threadId, role: "user", content: message },
+      { user_id: user.id, thread_id: threadId, role: "assistant", content: replyText },
+    ]),
+    client.from("chat_threads").update({ last_message_at: new Date().toISOString() }).eq("id", threadId),
   ]);
 
-  return NextResponse.json({ reply: replyText });
+  let title: string | null = null;
+  if (needsTitle) {
+    try {
+      const titleResponse = await anthropicClient().messages.create({
+        model: MODEL,
+        max_tokens: 20,
+        system: "Give a 3-6 word title summarizing this conversation. No quotes, no punctuation at the end, no markdown.",
+        messages: [
+          { role: "user", content: message },
+          { role: "assistant", content: replyText },
+        ],
+        output_config: { effort: "low" },
+      });
+      const titleBlock = titleResponse.content.find((b): b is Anthropic.Messages.TextBlock => b.type === "text");
+      title = titleBlock?.text.trim().replace(/^["']|["']$/g, "") || null;
+      if (title) await client.from("chat_threads").update({ title }).eq("id", threadId);
+    } catch {
+      // Auto-naming is a nice-to-have — leave the thread untitled on failure.
+    }
+  }
+
+  return NextResponse.json({ reply: replyText, title });
 }

@@ -131,9 +131,18 @@ export interface UserAchievement {
   earned_at: string;
 }
 
+export interface ChatThread {
+  id: string;
+  user_id: string;
+  title: string | null;
+  created_at: string;
+  last_message_at: string;
+}
+
 export interface ChatMessage {
   id: string;
   user_id: string;
+  thread_id: string;
   role: "user" | "assistant";
   content: string;
   created_at: string;

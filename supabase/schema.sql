@@ -226,11 +226,25 @@ alter table public.user_achievements enable row level security;
 create policy "user_achievements_all_own" on public.user_achievements for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- ---------------------------------------------------------------------------
--- chat_messages (AI Coach history)
+-- chat_threads + chat_messages (AI Coach history, one row per named
+-- conversation — a thread's title is auto-generated from its first
+-- exchange, see /api/coach)
 -- ---------------------------------------------------------------------------
+create table if not exists public.chat_threads (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  title text,
+  created_at timestamptz not null default now(),
+  last_message_at timestamptz not null default now()
+);
+
+alter table public.chat_threads enable row level security;
+create policy "chat_threads_all_own" on public.chat_threads for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
 create table if not exists public.chat_messages (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
+  thread_id uuid not null references public.chat_threads (id) on delete cascade,
   role text not null check (role in ('user', 'assistant')),
   content text not null,
   created_at timestamptz not null default now()
@@ -267,6 +281,8 @@ create index if not exists exams_user_date_idx on public.exams (user_id, exam_da
 create index if not exists timetable_user_day_idx on public.timetable_entries (user_id, day_of_week);
 create index if not exists study_sessions_user_week_idx on public.study_sessions (user_id, week_start);
 create index if not exists chat_messages_user_created_idx on public.chat_messages (user_id, created_at);
+create index if not exists chat_threads_user_idx on public.chat_threads (user_id, last_message_at);
+create index if not exists chat_messages_thread_idx on public.chat_messages (thread_id, created_at);
 
 -- ---------------------------------------------------------------------------
 -- Study system: subjects, materials, topics, plans, sessions, quizzes,

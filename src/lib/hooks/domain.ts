@@ -14,6 +14,7 @@ import type {
   UserMission,
   RoadmapProgress,
   ChatMessage,
+  ChatThread,
   BusinessProfile,
   BusinessMilestone,
   BusinessMetric,
@@ -60,8 +61,15 @@ export function useRoadmapProgress(userId?: string) {
   return useTableRows<RoadmapProgress>("roadmap_progress", userId, { orderBy: { column: "level_number", ascending: true } });
 }
 
-export function useChatHistory(userId?: string) {
-  return useTableRows<ChatMessage>("chat_messages", userId, { orderBy: { column: "created_at", ascending: true } });
+export function useChatThreads(userId?: string) {
+  return useTableRows<ChatThread>("chat_threads", userId, { orderBy: { column: "last_message_at", ascending: false } });
+}
+
+export function useChatHistory(userId?: string, threadId?: string) {
+  return useTableRows<ChatMessage>("chat_messages", userId, {
+    orderBy: { column: "created_at", ascending: true },
+    eq: threadId ? { thread_id: threadId } : undefined,
+  });
 }
 
 /** Fetches the founder's single business_profiles row, if any — same
