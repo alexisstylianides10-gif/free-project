@@ -32,38 +32,29 @@ export async function POST(req: NextRequest) {
   if (!db) return NextResponse.json({ error: "Service role not configured." }, { status: 503 });
 
   switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
-      const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
-      const interval = session.metadata?.interval === "yearly" ? "yearly" : "monthly";
-      if (customerId) {
-        await db
-          .from("profiles")
-          .update({
-            plan: "plus",
-            plan_status: "active",
-            stripe_subscription_id: subscriptionId ?? null,
-            billing_interval: interval,
-          })
-          .eq("stripe_customer_id", customerId);
-      }
-      break;
-    }
+    // Fires once right after create-subscription creates the subscription
+    // (status "incomplete", awaiting the customer's card confirmation) and
+    // again whenever its status changes. Only "active"/"past_due"/"unpaid"/
+    // "canceled" should ever move plan/plan_status — "incomplete" and
+    // "incomplete_expired" are deliberately no-ops, otherwise a customer who
+    // has merely started the custom checkout form (and not yet paid) would
+    // get Plus for free.
+    case "customer.subscription.created":
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer?.id;
+      const interval = subscription.metadata?.interval === "yearly" ? "yearly" : "monthly";
       if (customerId) {
-        const planStatus =
-          subscription.status === "active"
-            ? "active"
-            : subscription.status === "past_due" || subscription.status === "unpaid"
-              ? "past_due"
-              : subscription.status === "canceled"
-                ? "canceled"
-                : "past_due";
-        const plan = planStatus === "canceled" ? "free" : "plus";
-        await db.from("profiles").update({ plan, plan_status: planStatus }).eq("stripe_customer_id", customerId);
+        if (subscription.status === "active") {
+          await db
+            .from("profiles")
+            .update({ plan: "plus", plan_status: "active", billing_interval: interval })
+            .eq("stripe_customer_id", customerId);
+        } else if (subscription.status === "past_due" || subscription.status === "unpaid") {
+          await db.from("profiles").update({ plan_status: "past_due" }).eq("stripe_customer_id", customerId);
+        } else if (subscription.status === "canceled") {
+          await db.from("profiles").update({ plan: "free", plan_status: "canceled" }).eq("stripe_customer_id", customerId);
+        }
       }
       break;
     }

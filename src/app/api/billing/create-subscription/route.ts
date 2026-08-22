@@ -1,5 +1,6 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 import { requireUser, supabaseServiceRole } from "@/lib/supabase/server";
 import { stripeClient } from "@/lib/billing/stripe";
 import { getPlanOption, type BillingInterval } from "@/lib/billing/plans";
@@ -13,6 +14,13 @@ export const runtime = "nodejs";
  * it back via the service-role client, since profiles.stripe_customer_id is
  * not client-writable (see the column-grant lockdown in the billing
  * migration).
+ *
+ * Unlike a hosted Checkout Session, this creates the subscription directly
+ * in `incomplete` status and hands back its first invoice's PaymentIntent
+ * client secret — the caller's own CheckoutForm confirms it in place with
+ * Stripe's Payment Element, so the customer never leaves the app. The
+ * webhook (customer.subscription.updated) is what actually flips
+ * plan/plan_status once that confirmation succeeds.
  */
 export async function POST(req: NextRequest) {
   const { client, user, error } = await requireUser(req);
@@ -32,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await client
     .from("profiles")
-    .select("stripe_customer_id, track")
+    .select("stripe_customer_id, stripe_subscription_id, track")
     .eq("id", user.id)
     .maybeSingle();
   if (!profile) return NextResponse.json({ error: "Profile not found." }, { status: 404 });
@@ -47,6 +55,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const stripe = stripeClient();
+    const serviceClient = supabaseServiceRole();
 
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -54,25 +63,43 @@ export async function POST(req: NextRequest) {
         metadata: { supabase_user_id: user.id },
       });
       customerId = customer.id;
-
-      const serviceClient = supabaseServiceRole();
       if (serviceClient) {
         await serviceClient.from("profiles").update({ stripe_customer_id: customerId }).eq("id", user.id);
       }
     }
 
-    const origin = req.nextUrl.origin;
-    const session = await stripe.checkout.sessions.create({
+    // A previous attempt may have left an incomplete subscription behind
+    // (e.g. the customer closed the tab before paying) — cancel it so the
+    // customer isn't left with two subscriptions once this one activates.
+    const previousSubscriptionId = profile.stripe_subscription_id as string | null | undefined;
+    if (previousSubscriptionId) {
+      const previous = await stripe.subscriptions.retrieve(previousSubscriptionId).catch(() => null);
+      if (previous && previous.status === "incomplete") {
+        await stripe.subscriptions.cancel(previousSubscriptionId).catch(() => undefined);
+      }
+    }
+
+    const subscription = await stripe.subscriptions.create({
       customer: customerId,
-      mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
+      items: [{ price: priceId }],
+      payment_behavior: "default_incomplete",
+      payment_settings: { save_default_payment_method: "on_subscription", payment_method_types: ["card"] },
+      expand: ["latest_invoice.confirmation_secret"],
       metadata: { supabase_user_id: user.id, track: profile.track, interval },
-      success_url: `${origin}/app/upgrade?checkout=success`,
-      cancel_url: `${origin}/app/upgrade?checkout=cancel`,
     });
 
-    if (!session.url) throw new Error("Stripe didn't return a Checkout URL.");
-    return NextResponse.json({ url: session.url });
+    if (serviceClient) {
+      await serviceClient.from("profiles").update({ stripe_subscription_id: subscription.id }).eq("id", user.id);
+    }
+
+    // Invoices no longer carry a `payment_intent` field directly (recent
+    // Stripe API versions) — the PaymentIntent's client secret for
+    // confirming payment now lives on the invoice's `confirmation_secret`.
+    const invoice = subscription.latest_invoice as Stripe.Invoice | null;
+    const clientSecret = invoice?.confirmation_secret?.client_secret;
+    if (!clientSecret) throw new Error("Stripe didn't return a payment client secret.");
+
+    return NextResponse.json({ clientSecret });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Couldn't start checkout.";
     return NextResponse.json({ error: message }, { status: 502 });

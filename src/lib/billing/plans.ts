@@ -10,7 +10,7 @@ export interface PlanOption {
 }
 
 /** Single source of truth for pricing — the display copy on /choose-plan and
- * /app/upgrade, and the Stripe price lookup in create-checkout-session, both
+ * /app/upgrade, and the Stripe price lookup in create-subscription, both
  * read from here so a price never has to be typed in more than one place. */
 export const PLAN_OPTIONS: PlanOption[] = [
   { track: "student", interval: "monthly", priceUsd: 9.99, envVar: "STRIPE_PRICE_STUDENT_MONTHLY" },
