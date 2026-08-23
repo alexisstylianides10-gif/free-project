@@ -15,37 +15,29 @@ function GoogleIcon() {
   );
 }
 
-function AppleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 fill-current" aria-hidden>
-      <path d="M16.365 1.43c0 1.14-.468 2.2-1.24 3.02-.83.9-2.18 1.6-3.3 1.51-.14-1.1.42-2.24 1.2-3.02.85-.86 2.28-1.51 3.34-1.51zm4.47 16.6c-.4.94-.6 1.36-1.13 2.19-.74 1.16-1.78 2.6-3.07 2.61-1.15.02-1.45-.75-3-.74-1.56.01-1.9.75-3.05.73-1.29-.02-2.28-1.32-3.02-2.48-2.07-3.2-2.29-6.96-1-8.97.9-1.4 2.32-2.22 3.66-2.22 1.36 0 2.22.75 3.35.75 1.09 0 1.76-.75 3.34-.75 1.19 0 2.45.65 3.35 1.77-2.95 1.62-2.47 5.83.57 7.11z" />
-    </svg>
-  );
-}
-
-/** Google/Apple OAuth entry points, shared by signup and login. Both call
- * signInWithOAuth and let Supabase redirect to the provider; the actual
+/** Google OAuth entry point, shared by signup and login. Calls
+ * signInWithOAuth and lets Supabase redirect to the provider; the actual
  * session/profile handling happens on the way back at /auth/callback. */
 export function OAuthButtons() {
-  const [loading, setLoading] = useState<"google" | "apple" | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleOAuth(provider: "google" | "apple") {
+  async function handleGoogle() {
     if (!supabase || !isSupabaseConfigured) {
       setError("Sign-in isn't available right now — the backend isn't configured.");
       return;
     }
     setError(null);
-    setLoading(provider);
+    setLoading(true);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider,
+      provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (oauthError) {
       setError(oauthError.message);
-      setLoading(null);
+      setLoading(false);
     }
-    // On success the browser navigates away to the provider's own consent
+    // On success the browser navigates away to Google's own consent
     // screen, so there's nothing further to render here.
   }
 
@@ -53,29 +45,15 @@ export function OAuthButtons() {
     <div className="space-y-2.5">
       <button
         type="button"
-        onClick={() => handleOAuth("google")}
-        disabled={loading !== null}
+        onClick={handleGoogle}
+        disabled={loading}
         className="flex h-11 w-full items-center justify-center gap-2.5 rounded-full border border-border bg-white text-[14px] font-semibold text-black transition-opacity disabled:opacity-60"
       >
-        {loading === "google" ? (
+        {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <>
             <GoogleIcon /> Continue with Google
-          </>
-        )}
-      </button>
-      <button
-        type="button"
-        onClick={() => handleOAuth("apple")}
-        disabled={loading !== null}
-        className="flex h-11 w-full items-center justify-center gap-2.5 rounded-full bg-black text-[14px] font-semibold text-white transition-opacity disabled:opacity-60"
-      >
-        {loading === "apple" ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <>
-            <AppleIcon /> Continue with Apple
           </>
         )}
       </button>
