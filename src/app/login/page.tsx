@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { OAuthButtons } from "@/components/auth/OAuthButtons";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { branding } from "@/lib/branding";
@@ -62,7 +63,17 @@ export default function LoginPage() {
         <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground">Welcome back</h1>
         <p className="mt-1.5 text-center text-sm text-muted-foreground">Log in to {branding.name} to see your plan.</p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
+        <div className="mt-8">
+          <OAuthButtons />
+        </div>
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs font-medium text-muted-foreground">or continue with email</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <label className="block">
             <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</span>
             <input
