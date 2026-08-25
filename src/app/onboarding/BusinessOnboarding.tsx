@@ -92,7 +92,7 @@ export default function BusinessOnboarding() {
   }
 
   if (submitting) {
-    return <LoadingScreen message="Researching your idea and building your plan — this can take up to 20 seconds…" />;
+    return <LoadingScreen message="Researching your idea and building your plan — this can take up to a minute…" />;
   }
 
   if (step === QUESTION_COUNT) {

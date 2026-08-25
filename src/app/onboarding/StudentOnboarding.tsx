@@ -119,7 +119,7 @@ export default function StudentOnboarding() {
   }
 
   if (submitting) {
-    return <LoadingScreen message="Researching your school and building your plan — this can take up to 20 seconds…" />;
+    return <LoadingScreen message="Researching your school and building your plan — this can take up to a minute…" />;
   }
 
   if (step === QUESTION_COUNT) {

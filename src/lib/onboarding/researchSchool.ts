@@ -27,10 +27,12 @@ export async function researchSchoolData(params: {
   freeTime: string;
   userId: string;
 }): Promise<{ data: DemoDataResult; curriculumSummary: string }> {
-  // Bounded to 20s: this AI call runs web search and can genuinely take
-  // 30s+, but onboarding must never hang on it — completeOnboarding's
-  // catch below falls back to buildDemoData on a timeout just like any
-  // other failure here.
+  // Bounded to 55s: this AI call runs web search on Opus and routinely
+  // takes 25-40s+, so the timeout needs real headroom above that — a
+  // tighter bound was causing this to abort (and silently fall back to
+  // buildDemoData's generic placeholder data) on most runs. Onboarding
+  // still can't hang forever — completeOnboarding's catch below falls
+  // back to buildDemoData on a timeout just like any other failure here.
   const res = await authedFetch(
     "/api/onboarding/research-school",
     {
@@ -42,7 +44,7 @@ export async function researchSchoolData(params: {
         subjects: params.subjects,
       }),
     },
-    20000
+    55000
   );
   if (!res.ok) throw new Error("Research request failed.");
 

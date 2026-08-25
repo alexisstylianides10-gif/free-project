@@ -24,17 +24,20 @@ export async function researchBusinessData(params: {
   targetCustomer: string;
   focusAreas: string[];
 }): Promise<BusinessResearchResult> {
-  // Bounded to 20s: this AI call runs web search and can genuinely take
-  // 30s+, but onboarding must never hang on it — completeBusinessOnboarding's
-  // catch below falls back to the hardcoded milestone list on a timeout
-  // just like any other failure here.
+  // Bounded to 55s: this AI call runs web search on Opus and routinely
+  // takes 25-40s+, so the timeout needs real headroom above that — a
+  // tighter bound was causing this to abort (and silently fall back to
+  // the generic hardcoded milestone list) on most runs. Onboarding still
+  // can't hang forever — completeBusinessOnboarding's catch below falls
+  // back to the hardcoded milestone list on a timeout just like any other
+  // failure here.
   const res = await authedFetch(
     "/api/onboarding/research-business",
     {
       method: "POST",
       body: JSON.stringify(params),
     },
-    20000
+    55000
   );
   if (!res.ok) throw new Error("Research request failed.");
 
