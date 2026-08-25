@@ -10,12 +10,15 @@ import { buildTodaysPlan, formatPlanTime } from "@/lib/planner";
 import { pickTodaysMission } from "@/lib/missionPicker";
 import { buildAIRecommendation } from "@/lib/recommendation";
 import { xpToPercent, totalXP, levelFromXP } from "@/lib/xp";
-import { formatCountdown, mondayOfThisWeek, todayISO } from "@/lib/utils";
+import { formatCountdown, mondayOfThisWeek, todayISO, cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/Card";
 import { StatTile, StreakStat } from "@/components/shared/StatTile";
+import { RadialStat } from "@/components/shared/RadialStat";
 import { MissionHeroCard } from "@/components/shared/MissionCard";
 import { Badge } from "@/components/ui/Badge";
 import { PriorityDot } from "@/components/ui/PriorityDot";
+
+const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-glow-accent";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -63,21 +66,38 @@ export default function StudentHome() {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6 lg:mb-8">
-        <h1 className="text-[22px] font-bold text-foreground lg:text-2xl">
-          {greeting()}, {firstName} 👋
-        </h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">Here&rsquo;s your plan for today.</p>
+      <div className="bg-ambient-glow mb-6 lg:mb-8">
+        <div className="relative">
+          <h1 className="text-[22px] font-bold text-foreground lg:text-[28px]">
+            {greeting()}, <span className="text-gradient-brand">{firstName}</span> 👋
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s your plan for today.</p>
+        </div>
       </div>
 
       <div className="space-y-7 pb-4 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-6 lg:space-y-0 lg:pb-0">
-        <Card className="lg:col-start-2">
+        <Card className="lg:hidden">
           <CardContent className="flex items-stretch gap-4 p-4">
             <StatTile label="School" value={schoolPercent} tone="school" />
             <div className="w-px bg-border" />
             <StatTile label="Future" value={futurePercent} tone="future" />
             <div className="w-px bg-border" />
             <StreakStat days={profile?.streak_count ?? 0} />
+          </CardContent>
+        </Card>
+
+        <Card className="hidden overflow-hidden border-accent/20 lg:col-start-2 lg:block">
+          <CardContent className="relative p-5">
+            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-brand opacity-20 blur-2xl" />
+            <div className="relative flex items-center justify-around">
+              <RadialStat label="School" value={schoolPercent} tone="school" />
+              <RadialStat label="Future" value={futurePercent} tone="future" />
+            </div>
+            <div className="relative mt-4 flex items-center justify-center gap-1.5 border-t border-border pt-4 text-sm font-bold text-foreground">
+              <span aria-hidden>🔥</span>
+              {profile?.streak_count ?? 0}
+              <span className="text-xs font-medium text-muted-foreground">day streak</span>
+            </div>
           </CardContent>
         </Card>
 
@@ -116,7 +136,7 @@ export default function StudentHome() {
 
         <section className="grid grid-cols-2 gap-3 lg:col-start-1">
           <Link href="/app/school">
-            <Card className="h-full">
+            <Card className={cn("h-full", HOVER_LIFT)}>
               <CardContent className="p-4">
                 <CalendarClock className="h-5 w-5 text-school" />
                 <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Upcoming exam</p>
@@ -133,7 +153,7 @@ export default function StudentHome() {
           </Link>
 
           <Link href="/app/school">
-            <Card className="h-full">
+            <Card className={cn("h-full", HOVER_LIFT)}>
               <CardContent className="p-4">
                 <ClipboardList className="h-5 w-5 text-accent" />
                 <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Homework due</p>
@@ -155,7 +175,7 @@ export default function StudentHome() {
 
         {primaryCareer && (
           <Link href={`/app/future/${primaryCareer.slug}`} className="lg:col-start-2">
-            <Card>
+            <Card className={HOVER_LIFT}>
               <CardContent className="flex items-center gap-3 p-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand text-xl">
                   {primaryCareer.icon}

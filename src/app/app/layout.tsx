@@ -34,10 +34,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-background md:flex">
       <SidebarNav />
-      <div className="min-w-0 md:flex-1">
-        <TopBar />
-        <div className="mx-auto max-w-md px-5 pb-28 pt-6 md:max-w-3xl md:px-10 md:pb-10 md:pt-8 lg:max-w-5xl xl:max-w-6xl">
-          {children}
+      <div className="relative min-w-0 md:flex-1">
+        {/* Ambient background glow — desktop only. Two soft blurred brand-
+            gradient blobs fixed behind the scrolling content so the wide
+            canvas has depth instead of reading as flat/empty. */}
+        <div className="pointer-events-none fixed inset-0 z-0 hidden overflow-hidden md:block">
+          <div className="absolute -top-32 right-[-10%] h-[520px] w-[520px] rounded-full bg-gradient-brand opacity-[0.10] blur-[140px]" />
+          <div className="absolute bottom-[-15%] left-[10%] h-[420px] w-[420px] rounded-full bg-gradient-mission opacity-[0.07] blur-[140px]" />
+        </div>
+
+        <div className="relative z-10">
+          <TopBar />
+          <div className="mx-auto max-w-md px-5 pb-28 pt-6 md:max-w-3xl md:px-10 md:pb-10 md:pt-8 lg:max-w-5xl xl:max-w-6xl">
+            {children}
+          </div>
         </div>
       </div>
       <BottomNav />

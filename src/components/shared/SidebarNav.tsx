@@ -23,9 +23,12 @@ export function SidebarNav() {
   }
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border bg-surface px-4 py-6 md:flex lg:w-64">
-      <Link href="/app" className="flex items-center gap-2.5 px-2">
-        <LogoMark size={32} />
+    <aside className="sticky top-0 z-20 hidden h-dvh w-60 shrink-0 flex-col border-r border-border bg-surface/70 px-4 py-6 backdrop-blur-xl md:flex lg:w-64">
+      <Link href="/app" className="group flex items-center gap-2.5 px-2">
+        <span className="relative flex h-8 w-8 shrink-0 items-center justify-center">
+          <span className="absolute inset-0 rounded-full bg-gradient-brand opacity-40 blur-md transition-opacity duration-300 group-hover:opacity-70" />
+          <LogoMark size={32} className="relative" />
+        </span>
         <span className="text-base font-bold tracking-tight text-foreground">{branding.name}</span>
       </Link>
 
@@ -39,8 +42,10 @@ export function SidebarNav() {
               href={tab.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                active ? "bg-gradient-brand text-white shadow-glow-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                active
+                  ? "bg-gradient-brand text-white shadow-glow-accent"
+                  : "text-muted-foreground hover:translate-x-0.5 hover:bg-muted hover:text-foreground"
               )}
             >
               <Icon className="h-[18px] w-[18px]" strokeWidth={2.25} />
