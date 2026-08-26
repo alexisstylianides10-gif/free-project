@@ -48,11 +48,14 @@ export default function BusinessOnboarding() {
   const isValid = (() => {
     switch (step) {
       case 0:
-        return answers.businessIdea.trim() !== "";
+        // Optional: a founder without an idea yet can still continue —
+        // the AI suggests one later, grounded in their strengths/focus.
+        return true;
       case 1:
         return Boolean(answers.stage);
       case 2:
-        return answers.targetCustomer.trim() !== "";
+        // Also optional, for the same no-idea-yet reason as step 0.
+        return true;
       case 3:
         return answers.focusAreas.length > 0;
       case 4:
@@ -111,12 +114,15 @@ export default function BusinessOnboarding() {
       }
     >
       {step === 0 && (
-        <Question title="What's your business idea?" subtitle="A sentence or two is plenty">
+        <Question
+          title="What's your business idea?"
+          subtitle="A sentence or two is plenty — no idea yet? Leave this blank and we'll suggest one based on your strengths."
+        >
           <textarea
             autoFocus
             value={answers.businessIdea}
             onChange={(e) => setAnswers({ ...answers, businessIdea: e.target.value })}
-            placeholder="e.g. A subscription box for..."
+            placeholder="e.g. A subscription box for... (or leave blank)"
             rows={5}
             className="w-full resize-none rounded-2xl border border-border bg-surface p-4 text-[15px] text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
           />
@@ -139,12 +145,12 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 2 && (
-        <Question title="Who's your target customer?" subtitle="Be as specific as you can">
+        <Question title="Who's your target customer?" subtitle="Be as specific as you can — or leave blank if you're not sure yet">
           <textarea
             autoFocus
             value={answers.targetCustomer}
             onChange={(e) => setAnswers({ ...answers, targetCustomer: e.target.value })}
-            placeholder="e.g. Busy parents of toddlers in the US"
+            placeholder="e.g. Busy parents of toddlers in the US (or leave blank)"
             rows={4}
             className="w-full resize-none rounded-2xl border border-border bg-surface p-4 text-[15px] text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
           />
@@ -247,16 +253,22 @@ function ResultsScreen({ answers, onContinue }: { answers: Answers; onContinue: 
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Business Snapshot</p>
         <h1 className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">Your plan is ready to build.</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {branding.name} will research your idea and set up a starter milestone checklist tailored to it.
+          {answers.businessIdea.trim()
+            ? `${branding.name} will research your idea and set up a starter milestone checklist tailored to it.`
+            : `${branding.name} will suggest a business direction based on your strengths, then set up a starter milestone checklist for it.`}
         </p>
 
         <div className="mt-8 glass rounded-2xl p-4">
           <p className="text-sm font-semibold text-foreground">Your idea</p>
-          <p className="mt-1 text-sm text-muted-foreground">{answers.businessIdea}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {answers.businessIdea.trim() || "Not sure yet — we'll suggest one based on your strengths."}
+          </p>
         </div>
         <div className="mt-3 glass rounded-2xl p-4">
           <p className="text-sm font-semibold text-foreground">Target customer</p>
-          <p className="mt-1 text-sm text-muted-foreground">{answers.targetCustomer}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {answers.targetCustomer.trim() || "Not sure yet — we'll figure this out together."}
+          </p>
         </div>
 
         <div className="mt-auto pt-10">

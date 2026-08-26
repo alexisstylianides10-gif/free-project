@@ -36,15 +36,20 @@ export async function completeBusinessOnboarding(
 ): Promise<void> {
   let snapshot: string | null = null;
   let milestones = FALLBACK_MILESTONES;
+  let businessIdea = answers.businessIdea;
   try {
     const researched = await researchBusinessData({
       businessIdea: answers.businessIdea,
       stage: answers.stage,
       targetCustomer: answers.targetCustomer,
       focusAreas: answers.focusAreas,
+      strengths: answers.strengths,
     });
     snapshot = researched.snapshot;
     milestones = researched.milestones;
+    if (!businessIdea.trim() && researched.suggestedIdea) {
+      businessIdea = researched.suggestedIdea;
+    }
   } catch {
     // Fallback milestones above — onboarding still completes.
   }
@@ -67,7 +72,7 @@ export async function completeBusinessOnboarding(
     supabase.from("business_profiles").upsert(
       {
         user_id: userId,
-        business_idea: answers.businessIdea,
+        business_idea: businessIdea,
         stage: answers.stage,
         target_customer: answers.targetCustomer,
         ai_snapshot: snapshot,

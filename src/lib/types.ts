@@ -200,6 +200,16 @@ export interface BusinessCompetitor {
   created_at: string;
 }
 
+export interface BusinessExpense {
+  id: string;
+  user_id: string;
+  category: string;
+  description: string | null;
+  amount: number;
+  logged_date: string;
+  created_at: string;
+}
+
 export interface WeeklyReview {
   id: string;
   user_id: string;

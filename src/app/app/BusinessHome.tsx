@@ -25,6 +25,7 @@ export default function BusinessHome() {
   const { data: metrics } = useBusinessMetrics(user?.id);
 
   const nextMilestones = milestones.filter((m) => m.status !== "done").slice(0, 3);
+  const [doNext, ...restMilestones] = nextMilestones;
   const doneCount = milestones.filter((m) => m.status === "done").length;
   const latestMetric = metrics[0];
   const firstName = profile?.full_name?.split(" ")[0] || "there";
@@ -75,32 +76,46 @@ export default function BusinessHome() {
 
         <section className="lg:col-start-1">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Next up</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Do this next</h2>
             <Link href="/app/school" className="flex items-center gap-0.5 text-xs font-semibold text-accent">
               Plan <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          {nextMilestones.length === 0 ? (
+          {!doNext ? (
             <Card>
               <CardContent className="py-6 text-center text-sm text-muted-foreground">
                 {milestones.length === 0 ? "No milestones yet — check your Plan tab." : "All caught up on milestones!"}
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-2">
-              {nextMilestones.map((m) => (
-                <Card key={m.id}>
-                  <CardContent className="flex items-center gap-3 p-4">
-                    {m.status === "in_progress" ? (
-                      <Flame className="h-5 w-5 shrink-0 text-warning" />
-                    ) : (
-                      <Circle className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    )}
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{m.title}</span>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <>
+              <Card className="border-accent/30">
+                <CardContent className="flex gap-3 p-4">
+                  {doNext.status === "in_progress" ? (
+                    <Flame className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+                  ) : (
+                    <Circle className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-foreground">{doNext.title}</p>
+                    {doNext.description && <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{doNext.description}</p>}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {restMilestones.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {restMilestones.map((m) => (
+                    <Card key={m.id}>
+                      <CardContent className="flex items-center gap-3 p-4">
+                        <Circle className="h-5 w-5 shrink-0 text-muted-foreground" />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{m.title}</span>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </section>
 

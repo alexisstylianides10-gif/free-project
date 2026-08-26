@@ -534,7 +534,21 @@ create table if not exists public.business_competitors (
 alter table public.business_competitors enable row level security;
 create policy "business_competitors_all_own" on public.business_competitors for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
+create table if not exists public.business_expenses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  category text not null,
+  description text,
+  amount numeric not null,
+  logged_date date not null default current_date,
+  created_at timestamptz not null default now()
+);
+
+alter table public.business_expenses enable row level security;
+create policy "business_expenses_all_own" on public.business_expenses for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
 create index if not exists business_milestones_user_idx on public.business_milestones (user_id, order_index);
 create index if not exists business_metrics_user_date_idx on public.business_metrics (user_id, logged_date);
 create index if not exists business_content_ideas_user_idx on public.business_content_ideas (user_id, created_at);
 create index if not exists business_competitors_user_idx on public.business_competitors (user_id, created_at);
+create index if not exists business_expenses_user_date_idx on public.business_expenses (user_id, logged_date);

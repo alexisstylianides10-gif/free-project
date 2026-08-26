@@ -20,6 +20,7 @@ import type {
   BusinessMetric,
   BusinessContentIdea,
   BusinessCompetitor,
+  BusinessExpense,
 } from "@/lib/types";
 
 export function useHomework(userId?: string) {
@@ -118,4 +119,8 @@ export function useBusinessContentIdeas(userId?: string) {
 
 export function useBusinessCompetitors(userId?: string) {
   return useTableRows<BusinessCompetitor>("business_competitors", userId, { orderBy: { column: "created_at", ascending: false } });
+}
+
+export function useBusinessExpenses(userId?: string) {
+  return useTableRows<BusinessExpense>("business_expenses", userId, { orderBy: { column: "logged_date", ascending: false } });
 }

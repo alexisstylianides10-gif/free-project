@@ -3,26 +3,31 @@ import { authedFetch } from "@/lib/api";
 interface ResearchApiResponse {
   snapshot?: string;
   milestones?: { title: string; description: string }[];
+  suggestedIdea?: string;
   error?: string;
 }
 
 export interface BusinessResearchResult {
   snapshot: string;
   milestones: { title: string; description: string }[];
+  suggestedIdea?: string;
 }
 
 /**
  * Calls /api/onboarding/research-business (Claude + web search) to turn a
  * founder's onboarding answers into a short snapshot and starter milestone
- * list. Throws on any failure or malformed response —
- * completeBusinessOnboarding falls back to a hardcoded milestone list so
- * onboarding never gets stuck on this.
+ * list. When businessIdea is blank (the founder doesn't have one yet), the
+ * API instead suggests a concrete idea grounded in their strengths/focus
+ * areas — returned as suggestedIdea so the caller can save it as their idea.
+ * Throws on any failure or malformed response — completeBusinessOnboarding
+ * falls back to a hardcoded milestone list so onboarding never gets stuck.
  */
 export async function researchBusinessData(params: {
   businessIdea: string;
   stage: string;
   targetCustomer: string;
   focusAreas: string[];
+  strengths: string[];
 }): Promise<BusinessResearchResult> {
   // Bounded to 55s: this AI call runs web search on Opus and routinely
   // takes 25-40s+, so the timeout needs real headroom above that — a
@@ -46,5 +51,5 @@ export async function researchBusinessData(params: {
     throw new Error("Malformed research response.");
   }
 
-  return { snapshot: body.snapshot, milestones: body.milestones };
+  return { snapshot: body.snapshot, milestones: body.milestones, suggestedIdea: body.suggestedIdea };
 }
