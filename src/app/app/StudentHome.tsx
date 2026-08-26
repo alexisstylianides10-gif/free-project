@@ -86,7 +86,7 @@ export default function StudentHome() {
           </CardContent>
         </Card>
 
-        <Card className="hidden overflow-hidden border-accent/20 lg:col-start-2 lg:block">
+        <Card className="hidden overflow-hidden border-accent/20 lg:col-start-2 lg:row-start-1 lg:block">
           <CardContent className="relative p-5">
             <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-brand opacity-20 blur-2xl" />
             <div className="relative flex items-center justify-around">
@@ -102,12 +102,12 @@ export default function StudentHome() {
         </Card>
 
         {mission && (
-          <div className="lg:col-start-2">
+          <div className="lg:col-start-2 lg:row-start-2">
             <MissionHeroCard mission={mission} />
           </div>
         )}
 
-        <section className="lg:col-start-1">
+        <section className="lg:col-start-1 lg:row-start-1">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Today&rsquo;s Plan</h2>
             <Link href="/app/school" className="flex items-center gap-0.5 text-xs font-semibold text-accent">
@@ -134,7 +134,7 @@ export default function StudentHome() {
           )}
         </section>
 
-        <section className="grid grid-cols-2 gap-3 lg:col-start-1">
+        <section className="grid grid-cols-2 gap-3 lg:col-start-1 lg:row-start-2">
           <Link href="/app/school">
             <Card className={cn("h-full", HOVER_LIFT)}>
               <CardContent className="p-4">
@@ -174,7 +174,7 @@ export default function StudentHome() {
         </section>
 
         {primaryCareer && (
-          <Link href={`/app/future/${primaryCareer.slug}`} className="lg:col-start-2">
+          <Link href={`/app/future/${primaryCareer.slug}`} className="lg:col-start-2 lg:row-start-3">
             <Card className={HOVER_LIFT}>
               <CardContent className="flex items-center gap-3 p-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand text-xl">
@@ -191,7 +191,7 @@ export default function StudentHome() {
           </Link>
         )}
 
-        <Card className="border-accent/30 lg:col-start-2">
+        <Card className="border-accent/30 lg:col-start-2 lg:row-start-4">
           <CardContent className="flex gap-3 p-4">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft">
               <Sparkles className="h-4 w-4 text-accent" />

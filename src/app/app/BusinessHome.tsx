@@ -51,7 +51,7 @@ export default function BusinessHome() {
           </CardContent>
         </Card>
 
-        <Card className="hidden overflow-hidden border-accent/20 lg:col-start-2 lg:block">
+        <Card className="hidden overflow-hidden border-accent/20 lg:col-start-2 lg:row-start-1 lg:block">
           <CardContent className="relative p-5">
             <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-mission opacity-20 blur-2xl" />
             <div className="relative flex items-center justify-center">
@@ -66,7 +66,7 @@ export default function BusinessHome() {
         </Card>
 
         {businessProfile?.business_idea && (
-          <Card className="lg:col-start-2">
+          <Card className="lg:col-start-2 lg:row-start-2">
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Your idea</p>
               <p className="mt-1 text-sm font-semibold text-foreground">{businessProfile.business_idea}</p>
@@ -74,7 +74,7 @@ export default function BusinessHome() {
           </Card>
         )}
 
-        <section className="lg:col-start-1">
+        <section className="lg:col-start-1 lg:row-start-1">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Do this next</h2>
             <Link href="/app/school" className="flex items-center gap-0.5 text-xs font-semibold text-accent">
@@ -119,7 +119,7 @@ export default function BusinessHome() {
           )}
         </section>
 
-        <section className="lg:col-start-2">
+        <section className="lg:col-start-2 lg:row-start-3">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Latest metric</h2>
             <Link href="/app/future" className="flex items-center gap-0.5 text-xs font-semibold text-accent">
@@ -143,7 +143,7 @@ export default function BusinessHome() {
           </Card>
         </section>
 
-        <Link href="/app/coach" className="lg:col-start-2">
+        <Link href="/app/coach" className="lg:col-start-2 lg:row-start-4">
           <Card className={cn("border-accent/30", HOVER_LIFT)}>
             <CardContent className="flex items-center gap-3 p-4">
               <CheckCircle2 className="h-5 w-5 shrink-0 text-accent" />
