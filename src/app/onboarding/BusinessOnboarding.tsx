@@ -241,9 +241,9 @@ function Question({ title, subtitle, children }: { title: string; subtitle?: str
 
 function ResultsScreen({ answers, onContinue }: { answers: Answers; onContinue: () => void }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-background px-6 pb-8 pt-16">
+    <div className="flex min-h-dvh flex-col bg-background px-6 pb-8 pt-16 md:px-10">
       <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
-      <div className="relative z-10 flex flex-1 flex-col">
+      <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col md:max-w-lg lg:max-w-xl">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Business Snapshot</p>
         <h1 className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">Your plan is ready to build.</h1>
         <p className="mt-2 text-sm text-muted-foreground">

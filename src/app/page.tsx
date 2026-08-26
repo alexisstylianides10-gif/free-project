@@ -24,10 +24,10 @@ export default function WelcomePage() {
   }, [loading, user, profile, router]);
 
   return (
-    <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background px-6 pb-10 pt-16">
+    <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background px-6 pb-10 pt-16 md:px-10">
       <div className="bg-ambient-glow pointer-events-none absolute inset-0" aria-hidden />
 
-      <div className="relative z-10 flex flex-1 flex-col justify-between">
+      <div className="relative z-10 mx-auto flex w-full max-w-sm flex-1 flex-col justify-between md:max-w-md lg:max-w-lg">
         <div>
           <div className="flex items-center gap-2">
             <LogoMark size={36} className="shadow-glow-accent" />
