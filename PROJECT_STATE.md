@@ -12,7 +12,7 @@ TECH STACK: Next.js 15 (App Router) + TypeScript + Tailwind. Supabase (Postgres 
 
 ARCHITECTURE: Two product tracks (student, business) chosen once at /choose-plan and permanently locked by a Postgres trigger once onboarding_completed is true. Route-level branching pattern: shared routes (`/app`, `/app/school`, `/app/future`) render a track-specific component (e.g. `StudentHome`/`BusinessHome`, `StudentSchoolHome`/`BusinessPlanHome`, `StudentFutureHome`/`BusinessGrowHome`) chosen by `profile.track` in a thin page/layout wrapper. Coach and Profile are track-agnostic single implementations with inline conditional copy. Nav (SidebarNav desktop, BottomNav mobile) is driven by one shared `STUDENT_TABS`/`BUSINESS_TABS` table in `src/lib/navTabs.ts`. The student School tab has a real sub-app (SchoolSubNav: Home/Subjects/Exams/Flashcards/Quizzes/Progress); the business Plan tab is intentionally a single flat page with no sub-nav (by design, per code comment in `school/layout.tsx`) — this is the root cause of most business-track UI thinness identified below.
 
-CURRENT TASK: 🔵 IN PROGRESS — Cato (CTO) completed codebase audit of Home/School/Future/Coach/Profile for both tracks + shared components/design tokens. Handoff brief to Product written below. Awaiting Product's UI/UX specs for the priorities listed.
+CURRENT TASK: 🟢 DONE — Product turned Cato's audit findings into implementable specs: 6 priorities (EmptyState component + system-wide adoption, track-aware Achievements, BusinessHome hero parity, BusinessGrowHome IA polish, BusinessPlanHome decision, Coach polish), each with exact copy, component reuse, and precise layout/JSX changes. Product deliberately cut the business-track sub-nav ask (Priority 5) as manufactured parity rather than a real UX gap — see PRODUCT_SPECS.md for full reasoning. Full specs: see PRODUCT_SPECS.md at repo root.
 
 COMPLETED TASKS: Full Alxioum build history (onboarding, School study system, Future/career matching, AI Coach, Profile, Stripe billing, student/business track split) — see prior task list, all marked complete. This audit is the first task of the new UI-improvement initiative.
 
@@ -23,6 +23,6 @@ BUGS: None found that break functionality during this pass (this was a UI/UX aud
 
 BLOCKERS: None. CEO has authorized building.
 
-NEXT TASK: 🟡 TODO — Product specifies the 6 priorities below in detail (copy, layout, states); Dev implements; QA reviews for regressions across both tracks and both themes (light/dark) before merge.
+NEXT TASK: 🟡 TODO — Dev implements PRODUCT_SPECS.md priorities in order. QA reviews for regressions across both tracks and both themes (light/dark) before merge.
 
 DEPLOYMENT STATUS: 🟢 Live at https://alxioum-app.onrender.com, unaffected by this audit (no code changed yet).
