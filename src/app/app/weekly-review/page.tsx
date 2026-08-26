@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useStudySessions, useUserMissions, useCareerPaths, useUserSkills } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
@@ -11,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 function formatStudyTime(totalMinutes: number): string {
   const h = Math.floor(totalMinutes / 60);
@@ -161,11 +163,11 @@ export default function WeeklyReviewPage() {
               <p className="flex items-center gap-2 text-sm font-bold text-foreground">
                 <span aria-hidden>🧠</span> Skills
               </p>
-              <p className="text-sm text-muted-foreground">
-                {skillsTouched.length === 0
-                  ? "No skill activity to report yet — complete missions to start building skills."
-                  : skillsTouched.map((k) => skillLabel(k)).join(", ")}
-              </p>
+              {skillsTouched.length === 0 ? (
+                <EmptyState icon={Sparkles} title="No skill activity yet" subtitle="Complete missions to start building skills." bare />
+              ) : (
+                <p className="text-sm text-muted-foreground">{skillsTouched.map((k) => skillLabel(k)).join(", ")}</p>
+              )}
             </CardContent>
           </Card>
 

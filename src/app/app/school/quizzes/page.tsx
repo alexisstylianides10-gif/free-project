@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Brain, ChevronRight, GraduationCap, TriangleAlert } from "lucide-react";
+import { Brain, ChevronRight, GraduationCap, TriangleAlert, BookOpen, ClipboardList } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
 import { useStudySubjects, useStudyTopics, useStudyQuizzes, useStudyQuizAttempts } from "@/lib/hooks/study";
@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { cn } from "@/lib/utils";
 
 const QUESTION_COUNTS = [5, 10, 20] as const;
@@ -111,11 +112,12 @@ function QuizzesPageInner() {
         )}
 
         {subjects.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              Add a subject first, then come back to generate a quiz.
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={BookOpen}
+            title="Add a subject first"
+            subtitle="Come back here once you've added a subject to generate a quiz."
+            cta={{ label: "Add subject", href: "/app/school/subjects" }}
+          />
         ) : (
           <Card>
             <CardContent className="space-y-5 p-4">
@@ -223,9 +225,7 @@ function QuizzesPageInner() {
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">History</h2>
         {!quizzesLoading && quizzes.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">No quizzes yet — generate one above.</CardContent>
-          </Card>
+          <EmptyState icon={ClipboardList} title="No quizzes yet" subtitle="Generate one above to start practicing." />
         ) : (
           <div className="space-y-2">
             {quizzes.map((q) => {

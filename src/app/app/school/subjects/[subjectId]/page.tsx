@@ -13,6 +13,7 @@ import { formatCountdown } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export default function SubjectDetailPage({ params }: { params: Promise<{ subjectId: string }> }) {
   const { subjectId } = use(params);
@@ -138,11 +139,7 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
           </Link>
         </div>
         {materials.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              No material yet — upload a PDF, photo, or your notes to get started.
-            </CardContent>
-          </Card>
+          <EmptyState icon={Upload} title="No material yet" subtitle="Upload a PDF, photo, or your notes to get started." />
         ) : (
           <div className="space-y-2">
             {materials.map((m) => (

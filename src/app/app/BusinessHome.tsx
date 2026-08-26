@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, CheckCircle2, Circle, Flame, TrendingUp } from "lucide-react";
+import { ChevronRight, CheckCircle2, Circle, Flame, TrendingUp, Target } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useBusinessProfile, useBusinessMilestones, useBusinessMetrics } from "@/lib/hooks/domain";
 import { Card, CardContent } from "@/components/ui/Card";
 import { StatTile, StreakStat } from "@/components/shared/StatTile";
 import { RadialStat } from "@/components/shared/RadialStat";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { cn } from "@/lib/utils";
 
 const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-glow-accent";
@@ -55,8 +56,13 @@ export default function BusinessHome() {
           <CardContent className="relative p-5">
             <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-mission opacity-20 blur-2xl" />
             <div className="relative flex items-center justify-center">
-              <RadialStat label="Milestones" value={milestonePercent} tone="future" size={104} strokeWidth={8} />
+              <RadialStat label="Milestones" value={milestonePercent} tone="future" size={128} strokeWidth={10} />
             </div>
+            {milestones.length > 0 && (
+              <p className="relative mt-3 text-center text-xs font-medium text-muted-foreground">
+                {doneCount} of {milestones.length} milestones done
+              </p>
+            )}
             <div className="relative mt-4 flex items-center justify-center gap-1.5 border-t border-border pt-4 text-sm font-bold text-foreground">
               <span aria-hidden>🔥</span>
               {profile?.streak_count ?? 0}
@@ -82,11 +88,21 @@ export default function BusinessHome() {
             </Link>
           </div>
           {!doNext ? (
-            <Card>
-              <CardContent className="py-6 text-center text-sm text-muted-foreground">
-                {milestones.length === 0 ? "No milestones yet — check your Plan tab." : "All caught up on milestones!"}
-              </CardContent>
-            </Card>
+            milestones.length === 0 ? (
+              <EmptyState
+                icon={Target}
+                title="No milestones yet"
+                subtitle="Add milestones in Plan to see what's next."
+                cta={{ label: "Go to Plan", href: "/app/school" }}
+              />
+            ) : (
+              <EmptyState
+                icon={CheckCircle2}
+                title="All caught up"
+                subtitle="Every milestone is done — add a new one in Plan."
+                cta={{ label: "Go to Plan", href: "/app/school" }}
+              />
+            )
           ) : (
             <>
               <Card className="border-accent/30">
@@ -126,21 +142,26 @@ export default function BusinessHome() {
               Grow <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <TrendingUp className="h-5 w-5 shrink-0 text-accent" />
-              {latestMetric ? (
+          {latestMetric ? (
+            <Card>
+              <CardContent className="flex items-center gap-3 p-4">
+                <TrendingUp className="h-5 w-5 shrink-0 text-accent" />
                 <div>
                   <p className="text-sm font-bold text-foreground">
                     {latestMetric.value} <span className="font-normal text-muted-foreground">{latestMetric.metric_key}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">{latestMetric.logged_date}</p>
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No metrics logged yet — head to Grow to log one.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={TrendingUp}
+              title="No metrics logged yet"
+              subtitle="Log your first number in Grow to start tracking trends."
+              cta={{ label: "Go to Grow", href: "/app/future" }}
+            />
+          )}
         </section>
 
         <Link href="/app/coach" className="lg:col-start-2 lg:row-start-4">

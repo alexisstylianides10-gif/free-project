@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { CalendarClock, ClipboardList, ChevronRight, Sparkles } from "lucide-react";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useTimetable, useStudySessions, useCareerPaths, useUserMissions } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
@@ -115,11 +116,12 @@ export default function StudentHome() {
             </Link>
           </div>
           {plan.length === 0 ? (
-            <Card>
-              <CardContent className="py-6 text-center text-sm text-muted-foreground">
-                Nothing scheduled yet — check School to add homework and exams.
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={CalendarClock}
+              title="Nothing scheduled yet"
+              subtitle="Add homework and exams in School to build today's plan."
+              cta={{ label: "Go to School", href: "/app/school" }}
+            />
           ) : (
             <ol className="space-y-2">
               {plan.map((item, i) => (

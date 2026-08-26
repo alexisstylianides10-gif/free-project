@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Layers, Clock, CalendarDays, Trophy, Sparkles, TriangleAlert, ArrowLeft } from "lucide-react";
+import { Layers, Clock, CalendarDays, Trophy, Sparkles, TriangleAlert, ArrowLeft, BookOpen } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
 import { useStudySubjects, useStudyTopics, useStudyMaterials, useStudyFlashcards } from "@/lib/hooks/study";
@@ -10,6 +10,7 @@ import { todayISO, daysBetween, cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 const COUNT_OPTIONS = [5, 10, 20] as const;
 const MASTERED_REPS = 4;
@@ -121,11 +122,12 @@ function FlashcardsPageInner() {
           )}
 
           {subjects.length === 0 ? (
-            <Card>
-              <CardContent className="py-6 text-center text-sm text-muted-foreground">
-                Add a subject first, then come back to generate flashcards.
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={BookOpen}
+              title="Add a subject first"
+              subtitle="Come back here once you've added a subject to generate flashcards."
+              cta={{ label: "Add subject", href: "/app/school/subjects" }}
+            />
           ) : (
             <Card>
               <CardContent className="space-y-5 p-4">

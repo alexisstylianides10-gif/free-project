@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Lock, LogOut } from "lucide-react";
+import { ChevronRight, Lock, LogOut, Sparkles } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useUserSkills, useUserAchievements, useRoadmapProgress } from "@/lib/hooks/domain";
 import { ACHIEVEMENTS } from "@/lib/catalog/achievements";
@@ -18,6 +18,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { RoadmapTimeline, RoadmapStep } from "@/components/shared/RoadmapTimeline";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { branding } from "@/lib/branding";
 
 export default function ProfilePage() {
@@ -97,7 +98,7 @@ export default function ProfilePage() {
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Achievements</h2>
         <div className="grid grid-cols-2 gap-3">
-          {ACHIEVEMENTS.map((a) => {
+          {ACHIEVEMENTS.filter((a) => !a.track || a.track === profile.track).map((a) => {
             const earned = earnedKeys.has(a.key);
             return (
               <Card key={a.key} className={cn(!earned && "opacity-55")}>
@@ -118,11 +119,7 @@ export default function ProfilePage() {
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Skills</h2>
         {sortedSkills.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              Complete missions to start building skills.
-            </CardContent>
-          </Card>
+          <EmptyState icon={Sparkles} title="No skills yet" subtitle="Complete missions to start building skills." />
         ) : (
           <Card>
             <CardContent className="space-y-4 p-5">

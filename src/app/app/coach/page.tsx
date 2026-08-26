@@ -134,7 +134,7 @@ export default function CoachPage() {
   const activeThread = threads.find((t) => t.id === activeThreadId);
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] flex-col animate-fade-in">
+    <div className="flex h-[calc(100dvh-8rem)] flex-col animate-fade-in lg:mx-auto lg:w-full lg:max-w-2xl">
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-accent">Coach</p>

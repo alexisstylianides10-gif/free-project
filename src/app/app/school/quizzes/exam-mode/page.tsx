@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, GraduationCap, TriangleAlert } from "lucide-react";
+import { ArrowLeft, GraduationCap, TriangleAlert, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
@@ -12,6 +12,7 @@ import type { QuizDifficulty } from "@/lib/study/types";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { cn } from "@/lib/utils";
 
 const PRESETS = [
@@ -96,9 +97,12 @@ export default function ExamModeSetupPage() {
       )}
 
       {subjects.length === 0 ? (
-        <Card>
-          <CardContent className="py-6 text-center text-sm text-muted-foreground">Add a subject first, then come back to start a mock exam.</CardContent>
-        </Card>
+        <EmptyState
+          icon={BookOpen}
+          title="Add a subject first"
+          subtitle="Come back here once you've added a subject to start a mock exam."
+          cta={{ label: "Add subject", href: "/app/school/subjects" }}
+        />
       ) : (
         <Card>
           <CardContent className="space-y-5 p-4">

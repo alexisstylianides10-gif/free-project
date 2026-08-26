@@ -8,8 +8,10 @@ import { supabase } from "@/lib/supabase/client";
 import { authedFetch } from "@/lib/api";
 import { todayISO } from "@/lib/utils";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 
 const METRIC_OPTIONS = [
   { key: "revenue", label: "Revenue ($)" },
@@ -165,19 +167,42 @@ export default function BusinessGrowHome() {
               </Button>
             </form>
 
+            {metrics.length > 0 &&
+              (() => {
+                const latest = metrics[0];
+                const prior = metrics.slice(1).find((m) => m.metric_key === latest.metric_key);
+                if (!prior) return null;
+                const delta = latest.value - prior.value;
+                if (delta === 0) return null;
+                return (
+                  <Badge tone={delta > 0 ? "success" : "danger"} className="mt-3">
+                    {delta > 0 ? "+" : ""}
+                    {delta} vs last {METRIC_OPTIONS.find((o) => o.key === latest.metric_key)?.label ?? latest.metric_key} entry
+                  </Badge>
+                );
+              })()}
+
             {metrics.length === 0 ? (
-              <p className="mt-4 text-center text-sm text-muted-foreground">No metrics logged yet.</p>
+              <EmptyState
+                icon={TrendingUp}
+                title="No metrics logged yet"
+                subtitle="Log your first number above to start tracking trends."
+                bare
+              />
             ) : (
-              <div className="mt-4 space-y-1.5">
-                {metrics.slice(0, 6).map((m) => (
-                  <div key={m.id} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {METRIC_OPTIONS.find((o) => o.key === m.metric_key)?.label ?? m.metric_key} · {m.logged_date}
-                    </span>
-                    <span className="font-semibold text-foreground">{m.value}</span>
-                  </div>
-                ))}
-              </div>
+              <>
+                <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <div className="space-y-1.5">
+                  {metrics.slice(0, 6).map((m) => (
+                    <div key={m.id} className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {METRIC_OPTIONS.find((o) => o.key === m.metric_key)?.label ?? m.metric_key} · {m.logged_date}
+                      </span>
+                      <span className="font-semibold text-foreground">{m.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -227,14 +252,20 @@ export default function BusinessGrowHome() {
             </form>
 
             {expenses.length === 0 ? (
-              <p className="mt-4 text-center text-sm text-muted-foreground">No expenses logged yet.</p>
+              <EmptyState
+                icon={Receipt}
+                title="No expenses logged yet"
+                subtitle="Log your first expense above to start tracking spend."
+                bare
+              />
             ) : (
               <>
                 <div className="mt-4 flex items-center justify-between border-b border-border pb-2 text-sm">
                   <span className="font-semibold text-foreground">Total spent</span>
                   <span className="font-bold text-foreground">${totalExpenses.toFixed(2)}</span>
                 </div>
-                <div className="mt-2 space-y-1.5">
+                <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <div className="space-y-1.5">
                   {expenses.slice(0, 6).map((exp) => (
                     <div key={exp.id} className="flex items-center justify-between text-sm">
                       <span className="min-w-0 flex-1 truncate text-muted-foreground">
@@ -308,16 +339,24 @@ export default function BusinessGrowHome() {
         <Card>
           <CardContent className="p-4">
             {competitors.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground">No competitors added yet.</p>
+              <EmptyState
+                icon={Users}
+                title="No competitors added yet"
+                subtitle="Add one below to start watching the market."
+                bare
+              />
             ) : (
-              <div className="space-y-2">
-                {competitors.map((c) => (
-                  <div key={c.id} className="rounded-xl bg-muted px-3.5 py-2.5">
-                    <p className="text-sm font-semibold text-foreground">{c.name}</p>
-                    {c.url && <p className="truncate text-xs text-muted-foreground">{c.url}</p>}
-                  </div>
-                ))}
-              </div>
+              <>
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <div className="space-y-2">
+                  {competitors.map((c) => (
+                    <div key={c.id} className="rounded-xl bg-muted px-3.5 py-2.5">
+                      <p className="text-sm font-semibold text-foreground">{c.name}</p>
+                      {c.url && <p className="truncate text-xs text-muted-foreground">{c.url}</p>}
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
 
             <form onSubmit={addCompetitor} className="mt-3 flex items-center gap-2">

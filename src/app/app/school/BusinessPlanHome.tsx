@@ -8,6 +8,7 @@ import { useBusinessProfile, useBusinessMilestones } from "@/lib/hooks/domain";
 import { supabase } from "@/lib/supabase/client";
 import { awardXP } from "@/lib/actions/xp";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -66,7 +67,7 @@ export default function BusinessPlanHome() {
 
   return (
     <div className="space-y-7">
-      <Card>
+      <Card className="border-accent/30">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Your Business</p>
@@ -94,9 +95,7 @@ export default function BusinessPlanHome() {
         </div>
 
         {milestones.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">No milestones yet — add your first below.</CardContent>
-          </Card>
+          <EmptyState icon={Target} title="No milestones yet" subtitle="Add your first milestone below to start your plan." />
         ) : (
           <div className="space-y-2">
             {milestones.map((m) => {

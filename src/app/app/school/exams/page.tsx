@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { GraduationCap, Sparkles } from "lucide-react";
+import { CalendarClock, Sparkles } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useExams } from "@/lib/hooks/domain";
 import { useStudySubjects, useStudyTopics } from "@/lib/hooks/study";
 import { subjectReadiness } from "@/lib/study/recommendation";
 import { supabase } from "@/lib/supabase/client";
 import { formatCountdown } from "@/lib/utils";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Button } from "@/components/ui/Button";
@@ -35,12 +36,7 @@ export default function ExamsPage() {
   return (
     <div className="space-y-5">
       {sortedExams.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <GraduationCap className="h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">No exams on the horizon yet.</p>
-          </CardContent>
-        </Card>
+        <EmptyState icon={CalendarClock} title="No exams on the horizon yet" subtitle="Add an exam to start tracking your countdown." />
       ) : (
         sortedExams.map((exam) => {
           const readiness = exam.study_subject_id ? subjectReadiness(topics.filter((t) => t.subject_id === exam.study_subject_id)) : null;

@@ -8,6 +8,7 @@ import type { StudyFocusSession, StudyQuizAttempt, StudyTopic } from "@/lib/stud
 import { addDaysISO, mondayOfThisWeek, formatDayLabel, cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/Card";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 const MASTERED_CUTOFF = 80;
 const IMPROVED_CUTOFF = 60;
@@ -121,11 +122,11 @@ export default function ProgressPage() {
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Study History</h2>
         {history.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              No study sessions logged yet — they&rsquo;ll show up here once you start studying.
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Clock}
+            title="No study sessions logged yet"
+            subtitle="They'll show up here once you start studying."
+          />
         ) : (
           <div className="space-y-4">
             {history.map((group) => (

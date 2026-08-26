@@ -9,6 +9,7 @@ import { ROADMAP_LEVELS } from "@/lib/catalog/roadmap";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { CareerMatchRow } from "@/components/shared/CareerMatchRow";
 import { RoadmapTimeline, type RoadmapStep } from "@/components/shared/RoadmapTimeline";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useOnboardingResponse, mergeTopMatches } from "./_lib/matches";
 
@@ -42,17 +43,11 @@ export default function StudentFutureHome() {
               <CardContent className="py-6 text-center text-sm text-muted-foreground">Loading your matches…</CardContent>
             </Card>
           ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-brand text-xl">
-                  <Compass className="h-5 w-5 text-white" />
-                </span>
-                <p className="text-sm font-semibold text-foreground">No career matches yet</p>
-                <p className="text-xs text-muted-foreground">
-                  Complete onboarding to see careers matched to your subjects, interests, and strengths.
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Compass}
+              title="No career matches yet"
+              subtitle="Complete onboarding to see careers matched to your subjects, interests, and strengths."
+            />
           )
         ) : (
           <div className="space-y-2">

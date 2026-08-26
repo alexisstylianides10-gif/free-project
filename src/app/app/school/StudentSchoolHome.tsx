@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock, Layers } from "lucide-react";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useTimetable, useStudySessions } from "@/lib/hooks/domain";
 import { useStudySubjects, useStudyTopics, useStudyFocusSessions, useStudyFlashcards } from "@/lib/hooks/study";
@@ -212,9 +213,7 @@ export default function StudentSchoolHome() {
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Today&rsquo;s Classes</h2>
         </div>
         {!timetableLoading && todayTimetable.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">No classes today.</CardContent>
-          </Card>
+          <EmptyState icon={CalendarClock} title="No classes today" subtitle="Nothing on your timetable for today." />
         ) : (
           <div className="space-y-2">
             {todayTimetable.map((entry) => (
@@ -242,9 +241,7 @@ export default function StudentSchoolHome() {
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Homework</h2>
         </div>
         {!homeworkLoading && sortedHomework.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">Nothing set right now.</CardContent>
-          </Card>
+          <EmptyState icon={ClipboardCheck} title="Nothing set right now" subtitle="You're all caught up on homework." />
         ) : (
           <div className="space-y-2">
             {sortedHomework.map((hw) => {
@@ -282,9 +279,12 @@ export default function StudentSchoolHome() {
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">This Week&rsquo;s Study Plan</h2>
         </div>
         {!studyLoading && studySessions.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">No weekly plan yet.</CardContent>
-          </Card>
+          <EmptyState
+            icon={BookOpen}
+            title="No weekly plan yet"
+            subtitle="Build a study plan in Subjects to see it here."
+            cta={{ label: "Go to Subjects", href: "/app/school/subjects" }}
+          />
         ) : (
           <div className="space-y-3">
             {STUDY_PLAN_DAYS.filter((d) => studyByDay.has(d.day)).map(({ day, label }) => (
