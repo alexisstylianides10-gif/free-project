@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, GraduationCap, Rocket, Check } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { PLAN_OPTIONS, TRACK_LABEL, type Track, type BillingInterval } from "@/lib/billing/plans";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { LoadingScreen } from "@/components/shared/LoadingScreen";
 import { branding } from "@/lib/branding";
 
 const TRACK_COPY: Record<Track, { icon: typeof GraduationCap; tagline: string; perks: string[] }> = {
@@ -24,11 +25,23 @@ const TRACK_COPY: Record<Track, { icon: typeof GraduationCap; tagline: string; p
 };
 
 export default function ChoosePlanPage() {
-  const { user, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const router = useRouter();
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [busy, setBusy] = useState<Track | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Track is locked once onboarding is done — no going back here to switch
+  // (e.g. student -> business). Server-side trigger enforces this too.
+  useEffect(() => {
+    if (!loading && profile?.onboarding_completed) {
+      router.replace("/app");
+    }
+  }, [loading, profile, router]);
+
+  if (loading || profile?.onboarding_completed) {
+    return <LoadingScreen message="Loading…" />;
+  }
 
   const monthlyTotal = PLAN_OPTIONS.find((o) => o.track === "student" && o.interval === "monthly")!.priceUsd * 12;
   const yearlyTotal = PLAN_OPTIONS.find((o) => o.track === "student" && o.interval === "yearly")!.priceUsd;

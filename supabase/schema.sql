@@ -28,6 +28,8 @@ create table if not exists public.profiles (
   -- Which product track this account is on — set once at /choose-plan,
   -- before onboarding. Ordinary client-writable preference, not an
   -- entitlement flag, so it's fine in the client's UPDATE grant below.
+  -- Locked from further changes once onboarding_completed is true — see
+  -- the lock_track_after_onboarding trigger below.
   track text not null default 'student' check (track in ('student', 'business')),
   billing_interval text check (billing_interval in ('monthly', 'yearly')),
   -- Alxioum Plus billing (see "billing" section below for the column-grant lockdown).
@@ -44,6 +46,26 @@ alter table public.profiles enable row level security;
 create policy "profiles_select_own" on public.profiles for select to authenticated using (id = auth.uid());
 create policy "profiles_insert_own" on public.profiles for insert to authenticated with check (id = auth.uid());
 create policy "profiles_update_own" on public.profiles for update to authenticated using (id = auth.uid()) with check (id = auth.uid());
+
+-- Once a founder/student has completed onboarding on a track, they can't
+-- switch tracks (e.g. student -> business) — the whole account (dashboard,
+-- onboarding answers, business/study tables) is built around one track.
+-- Enforced server-side so no client path can bypass it.
+create or replace function public.prevent_track_change_after_onboarding()
+returns trigger as $$
+begin
+  if old.onboarding_completed = true and new.track is distinct from old.track then
+    raise exception 'track cannot be changed after onboarding is completed';
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+drop trigger if exists lock_track_after_onboarding on public.profiles;
+create trigger lock_track_after_onboarding
+  before update on public.profiles
+  for each row
+  execute function public.prevent_track_change_after_onboarding();
 
 -- Billing columns (plan, plan_status, trial_ends_at, stripe_customer_id,
 -- stripe_subscription_id) are deliberately excluded from the client's
