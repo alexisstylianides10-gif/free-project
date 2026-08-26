@@ -31,16 +31,17 @@ function applyClass(resolved: "dark" | "light") {
 /**
  * Inline script injected before hydration so the correct theme class is on
  * <html> before first paint — without this, a light-mode user would see a
- * flash of the dark default while React boots.
+ * flash of the dark default while React boots. Light is the primary/default
+ * look; dark is opt-in via the toggle (and its own class), matching that.
  */
-export const themeInitScript = `(function(){try{var m=localStorage.getItem("${STORAGE_KEY}")||"dark";var isLight=m==="light"||(m==="system"&&window.matchMedia("(prefers-color-scheme: light)").matches);if(isLight)document.documentElement.classList.add("light");}catch(e){}})();`;
+export const themeInitScript = `(function(){try{var m=localStorage.getItem("${STORAGE_KEY}")||"light";var isLight=m==="light"||(m==="system"&&window.matchMedia("(prefers-color-scheme: light)").matches);if(isLight)document.documentElement.classList.add("light");}catch(e){}})();`;
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>("dark");
-  const [resolved, setResolved] = useState<"dark" | "light">("dark");
+  const [mode, setModeState] = useState<ThemeMode>("light");
+  const [resolved, setResolved] = useState<"dark" | "light">("light");
 
   useEffect(() => {
-    const stored = (typeof window !== "undefined" && (window.localStorage.getItem(STORAGE_KEY) as ThemeMode | null)) || "dark";
+    const stored = (typeof window !== "undefined" && (window.localStorage.getItem(STORAGE_KEY) as ThemeMode | null)) || "light";
     setModeState(stored);
     const r = resolve(stored);
     setResolved(r);

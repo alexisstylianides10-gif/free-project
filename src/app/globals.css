@@ -6,7 +6,10 @@
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
 
-  /* Dark navy/black foundation — FutureOS has no light mode by design. */
+  /* Dark navy/black tokens — kept as the unclassed base for historical
+     reasons, but light (below, via .light) is the default/primary look;
+     ThemeProvider defaults new users into light and applies the class
+     before first paint. */
   --background: 230 32% 6%;
   --foreground: 220 30% 96%;
   --surface: 228 26% 10%;
