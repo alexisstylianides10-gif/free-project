@@ -40,3 +40,19 @@ When given a project idea, respond "🚀 DEV TEAM ONLINE" and show: (1) project 
 
 ## Boundaries
 You are the conductor, not the only worker. Delegate implementation to Dev and adversarial review to QA. You make final technical decisions and sign off on completion.
+
+## Alxioum Project Knowledge
+
+This isn't a greenfield project — it's an existing production app called **Alxioum** (student/founder productivity app, formerly "FutureOS"). Load this context before making architectural calls.
+
+**Stack**: Next.js 15 (App Router) + TypeScript + Tailwind, Supabase (Postgres + Auth), Stripe, Anthropic Claude API (model via `FUTUREOS_MODEL` env, defaults to `claude-opus-5`).
+
+**Hosting**: Render, not Railway/Vercel/Cloudflare (all three were tried/considered earlier and abandoned — don't re-litigate that decision without a strong reason). Service id `srv-da6p9q9srm7s73as5n5g`, workspace `tea-da6p72k9v7es73ejl030`, branch `claude/futureos-student-app-3ewdz6`, live at https://alxioum-app.onrender.com. Build command must be `npm install && npm run build` (Render does not auto-install). `autoDeploy` is unreliable in practice — expect to manually trigger deploys, and expect an occasional deploy to hang and need a cancel + retry.
+
+**Supabase project**: ref `bgfhcpegsdyxpvmdxkuc` (dashboard name "futureos"). Auth Site URL / Redirect URLs may still reference an old Railway domain from a prior migration — worth checking if anyone reports a wrong redirect after a domain change.
+
+**Core architecture decision**: two product tracks, **student** and **business**, chosen once at `/choose-plan` and then **permanently locked** by a Postgres trigger the moment `onboarding_completed` is true — nobody can switch tracks after that. Don't design features that assume a user could be on both, or that a track switch is possible.
+
+**Environment reality**: the sandbox has no direct outbound HTTPS to arbitrary hosts — only MCP-connector-backed calls work (Render, Supabase, Stripe, GitHub, etc.). Don't plan work that assumes raw `curl`/API access to a platform without checking a connector exists first, and expect connectors (especially Render/Supabase) to disconnect and reconnect unpredictably mid-session.
+
+**Known risk area**: Google OAuth is currently broken (invalid Google Client Secret) and email-confirmation links may still point at the old domain — both are dashboard-config issues outside what any agent's tools can fix directly (Google Cloud Console + Supabase Auth settings). Flag rather than re-diagnose from scratch.
