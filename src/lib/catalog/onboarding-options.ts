@@ -131,3 +131,40 @@ export const BUSINESS_FOCUS_OPTIONS: Option[] = [
   { key: "fundraising", label: "Fundraising" },
   { key: "operations", label: "Operations" },
 ];
+
+export const BUSINESS_STRENGTH_OPTIONS: Option[] = [
+  { key: "sales_persuasion", label: "Sales & persuasion" },
+  { key: "marketing_branding", label: "Marketing & branding" },
+  { key: "product_design", label: "Product/design thinking" },
+  { key: "coding_building", label: "Coding & building" },
+  { key: "financial_planning", label: "Financial planning" },
+  { key: "leadership_hiring", label: "Leadership & hiring" },
+  { key: "networking", label: "Networking" },
+  { key: "content_creation", label: "Content creation" },
+  { key: "operations_systems", label: "Operations & systems" },
+  { key: "customer_service", label: "Customer service" },
+  { key: "negotiation", label: "Negotiation" },
+  { key: "public_speaking", label: "Public speaking" },
+];
+
+export const BUSINESS_GOAL_OPTIONS: Option[] = [
+  { key: "first_customer", label: "Get my first paying customer" },
+  { key: "grow_revenue", label: "Grow revenue" },
+  { key: "product_market_fit", label: "Reach product-market fit" },
+  { key: "build_team_process", label: "Build a reliable team/process" },
+  { key: "raise_funding", label: "Raise funding" },
+  { key: "personal_brand", label: "Build a personal brand around it" },
+  { key: "replace_income", label: "Replace my current income" },
+  { key: "dont_know", label: "I don't know yet" },
+];
+
+export const BUSINESS_PROBLEM_OPTIONS: Option[] = [
+  { key: "finding_customers", label: "Finding customers" },
+  { key: "pricing", label: "Pricing my product/service" },
+  { key: "not_enough_time", label: "Not enough time" },
+  { key: "unclear_what_to_build", label: "Not sure what to build" },
+  { key: "marketing_visibility", label: "Marketing & getting noticed" },
+  { key: "cash_flow", label: "Managing money/cash flow" },
+  { key: "staying_consistent", label: "Staying motivated & consistent" },
+  { key: "doing_it_alone", label: "Doing it all alone" },
+];

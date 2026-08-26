@@ -8,10 +8,10 @@ import { OnboardingShell } from "./OnboardingShell";
 import {
   BUSINESS_STAGE_OPTIONS,
   BUSINESS_FOCUS_OPTIONS,
-  STRENGTH_OPTIONS,
+  BUSINESS_STRENGTH_OPTIONS,
   FREE_TIME_OPTIONS,
-  GOAL_OPTIONS,
-  PROBLEM_OPTIONS,
+  BUSINESS_GOAL_OPTIONS,
+  BUSINESS_PROBLEM_OPTIONS,
 } from "@/lib/catalog/onboarding-options";
 import { completeBusinessOnboarding, type FullBusinessOnboardingAnswers } from "@/lib/onboarding/completeBusinessOnboarding";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -169,7 +169,7 @@ export default function BusinessOnboarding() {
       {step === 4 && (
         <Question title="What are you already good at?" subtitle="Select as many as you like">
           <div className="space-y-2.5">
-            {STRENGTH_OPTIONS.map((o) => (
+            {BUSINESS_STRENGTH_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
                 label={o.label}
@@ -199,7 +199,7 @@ export default function BusinessOnboarding() {
       {step === 6 && (
         <Question title="What's your biggest goal right now?">
           <div className="space-y-2.5">
-            {GOAL_OPTIONS.map((o) => (
+            {BUSINESS_GOAL_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
                 label={o.label}
@@ -212,9 +212,9 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 7 && (
-        <Question title="What's your biggest problem?">
+        <Question title="What's your biggest problem right now?">
           <div className="space-y-2.5">
-            {PROBLEM_OPTIONS.map((o) => (
+            {BUSINESS_PROBLEM_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
                 label={o.label}
