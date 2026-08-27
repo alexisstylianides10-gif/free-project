@@ -43,7 +43,7 @@ Deadlines wins on user value (both tracks, daily-relevant), architecture fit (re
 
 Pipeline from here: Product writes the full spec next (copy, exact layout, grouping thresholds, urgency-badge rules, the Home touch-point design) → Dev builds → QA reviews → Cato signs off, same as the UI initiative.
 
-CURRENT TASK (Deadlines initiative): ✅ QA signed off on commit `eeedc5f`, ready for final build+push+deploy (Cato sign-off next, then CEO push). Dev's build implements `DEADLINES_SPEC.md` exactly — no deviations found on independent adversarial review. See QA REVIEW (Deadlines initiative) below for the full pass.
+CURRENT TASK (Deadlines initiative): ✅ COMPLETE — Cato final sign-off given. Independently re-read the full diff (`git show eeedc5f`), re-verified the grid-safety invariant by grep, booted the dev server and hit `/`, `/app/deadlines`, `/login` directly (all 200, clean compile, no runtime errors), then re-ran `npx tsc --noEmit` and `npx next build` independently (both clean, all 42 routes including `/app/deadlines`) before push. Pushed eeedc5f + 0a10fdd to `claude/futureos-student-app-3ewdz6` and triggered a Render deploy. See QA REVIEW (Deadlines initiative) below for the full adversarial pass this was signed off on.
 
 Spec summary: one new shared lib `src/lib/deadlines.ts` (union `DeadlineItem` type + urgency bucketing/grouping, shared by all 3 touch-points so date math isn't duplicated); one new route `src/app/app/deadlines/page.tsx` (no local layout, no back button — same shape as `weekly-review/page.tsx`); one form addition to `BusinessPlanHome.tsx` (optional native `<input type="date">` for milestone due date, second row under the title input, fully optional/no validation, plus a due-date badge on milestone cards); Home touch-points on both `StudentHome.tsx` (urgency-tints the existing exam/homework tile countdown text + adds a "View all deadlines" button) and `BusinessHome.tsx` (adds due-date badges to milestone cards + same "View all deadlines" button) — both changes append *inside* existing grid cells only, no new `lg:col-start`/`lg:row-start` assignment anywhere, specifically to avoid the CSS Grid subtlety QA caught last pass.
 
@@ -66,9 +66,9 @@ QA REVIEW (Deadlines initiative, commit `eeedc5f`, reviewed against `DEADLINES_S
 
 BLOCKERS (Deadlines initiative): None.
 
-NEXT TASK (Deadlines initiative): Cato final review/sign-off, then CEO handles final build+push+deploy to Render.
+NEXT TASK (Deadlines initiative): None open. The feature is implemented, QA-reviewed, independently re-verified, and deployed. One non-bug note QA flagged for future consistency: `deadlines/page.tsx` branches on `profile?.track` inline rather than the wrapper-component pattern used by `/app/page.tsx`/`/app/school/page.tsx` — safe today only because `app/layout.tsx` already gates all `/app/*` children on `profile` being resolved, but worth following the established pattern next time a single-page track branch is added.
 
-DEPLOYMENT STATUS (Deadlines initiative): 🟡 Built, committed, and QA-signed-off locally; not yet pushed or deployed. Production is still running the UI-improvement initiative's shipped build (see below); unaffected until this branch is pushed and deployed.
+DEPLOYMENT STATUS (Deadlines initiative): 🟢 Live at https://alxioum-app.onrender.com — pushed and deployed.
 
 ---
 
