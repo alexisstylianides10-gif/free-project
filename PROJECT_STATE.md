@@ -2,6 +2,59 @@
 
 PROJECT: Alxioum (formerly FutureOS) — student/founder productivity app. Live production app, not greenfield.
 
+GOAL: New-feature initiative. CEO brief this round: "make the agents work on a new feature they think is good" — no feature pre-decided by the CEO; the team picks it. This is a new initiative layered on top of the UI-improvement initiative below (which is complete and shipped) — that section is kept as history, not overwritten.
+
+**Cato's feature pick for this initiative: Deadlines — a unified, cross-track upcoming-deadlines view (exams, homework, business milestones), free-tier, in-app only.** Full reasoning below. This is the CTO brief handed to Product next; Product should treat this as their spec input the same way they treated Cato's UI audit last time (see PRODUCT_SPECS.md for that precedent — Product should write a `PRODUCT_SPECS_DEADLINES.md` or equivalent, not overwrite the old one).
+
+### Why this feature (Cato's reasoning)
+
+**The gap:** Three different tables already carry due-date semantics — `exams.exam_date`, `homework.due_date`, `business_milestones.due_date` — but the product only ever surfaces the single *soonest* item, on Home, with no visual urgency treatment and no way to see the full list anywhere. Worse: `business_milestones.due_date` is a column that has existed in the schema since the business track shipped and is **never read or written by any UI in the codebase** — confirmed by reading `BusinessPlanHome.tsx` in full and grepping the repo. The add-milestone form only ever inserts `title`/`status`/`order_index`; there is no due-date input anywhere, so the column is structurally dead. That's not a hypothetical gap, it's a shipped half-feature.
+
+Today, a student with 3 overdue homework items and an exam in 2 days sees exactly the same Home screen as a student with nothing due — only the single nearest exam and single nearest homework item render, both in the same neutral gray text as everything else on the page, "Passed" (overdue) included. A founder with 5 stale, past-due milestones has literally no way to know it — the column to track that isn't even wired to an input.
+
+**Who it serves:** every user on both tracks, every day — this is the single most-checked kind of information in a productivity app ("what's due, what's late") and today the app under-serves it despite already storing the data. It's also low-friction to notice as missing, which makes it a credible next feature rather than a nice-to-have nobody asked for.
+
+**Why now:** it directly follows the just-shipped UI initiative (EmptyState system, urgency-capable Badge tones `success`/`warning`/`danger` already exist in `globals.css`/`Badge.tsx`, `formatCountdown()` in `src/lib/utils.ts` already returns `"Passed"`/`"Today"`/`"Tomorrow"`/`"N days"`) — the primitives this feature needs are already in place from that pass, so build cost is low and consistency risk is near zero.
+
+**Why this over the other candidates I weighed:**
+- *Edit `business_idea`/`stage` after onboarding* — real gap, but single-field, single-track, low breadth. More a settings fix than a feature.
+- *Data export (CSV) for founders' metrics/expenses* — real but niche (business-track only, power-user).
+- *Coach conversation search/export* — real but narrow; thread history is already reachable via the existing thread popover, search is a nice-to-have on top of a working feature, not a missing one.
+- *Achievements leaderboard* — **rejected, not just deprioritized.** A cross-user leaderboard breaks the app's entire data model: every table today is single-user RLS (`using (user_id = auth.uid())`), and a leaderboard requires an aggregate, other-users-visible query — a genuinely new RLS pattern, not a UI addition. It also raises an unaddressed privacy question for a student app whose users may be minors (surfacing names/ranks publicly). This is a multi-week, product-and-legal-reviewed initiative, not a one-pass feature — correctly out of scope per the brief's own sizing guidance.
+- *Student study-time logging outside a formal session* — real but student-only and narrower in daily-use value than deadlines, which every user has by definition.
+
+Deadlines wins on user value (both tracks, daily-relevant), architecture fit (reuses existing tables/hooks/design tokens, zero new RLS patterns, zero migrations), and scope (one pass, not a phase).
+
+### Explicit non-goals for this pass
+- **No push notifications, no email, no cron.** The environment has no email-sending infra (no Resend/SES in `package.json`) and Render `autoDeploy`/background jobs are already flagged as unreliable in this project's history — building a delivery pipeline is a separate, materially larger initiative (new provider, new secrets, new failure modes) and isn't what makes this gap painful today. In-app surfacing is the actual fix; "notifications" in the CEO's own gap list is being interpreted as in-app for this pass, not push/email.
+- **No new database tables or columns.** `exams.exam_date`, `homework.due_date`, and `business_milestones.due_date` already exist and are sufficient. The only data-layer change is making the *existing, unused* `business_milestones.due_date` column actually settable from the UI (a form field addition, not a migration).
+- **No new nav tab.** The app has exactly 5 nav tabs on both tracks (`src/lib/navTabs.ts`, `STUDENT_TABS`/`BUSINESS_TABS`, mirrored 1:1) — adding a 6th competes for scarce mobile bottom-nav space for a feature that doesn't need its own primary destination. Follow the existing precedent of `/app/weekly-review` and `/app/upgrade`: real routes, reachable by a link, not in the tab bar.
+- **No editing of milestone due dates after creation** in this pass (set at creation only) — an edit affordance is a legitimate follow-up, not required for the core gap.
+- **Not Plus-gated.** Every `PaywallGate`-wrapped route today is AI-generation-heavy (Study subsystem: subjects/quizzes/flashcards/progress/weak-topics, and Coach — confirmed via grep of all `PaywallGate` usages). Exams, homework, and Plan milestones are all free-tier CRUD today. Deadlines is a read-only lens over data users already own for free; gating it would be inconsistent with that pattern and would paywall core organizational value, not incremental AI value.
+- **No redesign of Home.** The just-shipped, QA-signed-off `StudentHome.tsx`/`BusinessHome.tsx` are not being reopened for a layout rework. At most, Product may spec a small, additive touch (e.g. urgency-tinting the existing single-item tiles, or a "View all" link) — not a restructure.
+
+### Rough shape (Product to turn into a full spec — this is not one)
+- **New route:** `/app/deadlines` (or similarly named) — a single page, not a sub-app, listing every open item with a due date across the user's track, grouped by urgency (Overdue / Today / This week / Later), using the existing `Badge` `danger`/`warning`/`success` tones and `formatCountdown()`.
+  - Student: merges `exams` (all) + `homework` (`status = 'pending'`) via the already-existing `useExams`/`useHomework` hooks — no new query, no new API route.
+  - Business: `business_milestones` where `due_date is not null and status != 'done'`, via the already-existing `useBusinessMilestones` hook.
+- **One small form change:** `BusinessPlanHome.tsx`'s add-milestone form gets an optional due-date input, and the insert call starts writing `due_date`. Each milestone card gets a due-date badge when set (reusing `formatCountdown`).
+- **Minimal Home touch:** a "View all" link from the existing Home tiles into `/app/deadlines`, and/or urgency-tinting the existing single-item text when overdue/due-soon — Product's call on exact placement, but no structural Home change.
+- **No new API routes, no new Supabase tables/migrations, no new AI calls.** This is a pure client-side aggregation + one form-field addition + one new page.
+
+Pipeline from here: Product writes the full spec next (copy, exact layout, grouping thresholds, urgency-badge rules, the Home touch-point design) → Dev builds → QA reviews → Cato signs off, same as the UI initiative.
+
+CURRENT TASK (Deadlines initiative): ✅ Cato's step complete — feature selected, reasoning and rough shape written above. Handing off to Product to write the full spec. No code has been written or changed for this feature yet.
+
+BLOCKERS (Deadlines initiative): None technical. Note on authorization: the CEO's brief for this round was "make the agents work on a new feature they think is good," which reads as authorization to proceed through the normal pipeline (Product → Dev → QA), not a request to stop after the pick. Cato is proceeding on that basis unless the CEO says otherwise — this is not a request for the CEO to manually approve the feature choice before Product starts.
+
+NEXT TASK (Deadlines initiative): Product writes the full spec (exact copy, grouping thresholds e.g. what counts as "this week," urgency badge rules, exact Home touch-point design) — same rigor/format as PRODUCT_SPECS.md was for the UI initiative. Then Dev builds, QA reviews, Cato signs off.
+
+DEPLOYMENT STATUS (Deadlines initiative): N/A — nothing built yet. Production is still running the UI-improvement initiative's shipped build (see below); unaffected by this planning step.
+
+---
+
+## UI/UX IMPROVEMENT INITIATIVE (COMPLETE — history, not active)
+
 GOAL: UI/UX improvement initiative on the existing live app. CEO brief: "Use the team to make Alxioum better, use Product to make the UI a lot better — fix it." Building is authorized now, not just planning. Scope: visual polish, consistency, and UX gaps in the existing screens — not new features, not a redesign of the architecture.
 
 MVP: N/A — post-MVP, live app with paying users on two locked tracks (student, business).
