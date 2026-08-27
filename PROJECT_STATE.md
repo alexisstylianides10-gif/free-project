@@ -68,7 +68,7 @@ BLOCKERS (Deadlines initiative): None.
 
 NEXT TASK (Deadlines initiative): None open. The feature is implemented, QA-reviewed, independently re-verified, and deployed. One non-bug note QA flagged for future consistency: `deadlines/page.tsx` branches on `profile?.track` inline rather than the wrapper-component pattern used by `/app/page.tsx`/`/app/school/page.tsx` — safe today only because `app/layout.tsx` already gates all `/app/*` children on `profile` being resolved, but worth following the established pattern next time a single-page track branch is added.
 
-DEPLOYMENT STATUS (Deadlines initiative): 🟢 Live at https://alxioum-app.onrender.com — pushed and deployed.
+DEPLOYMENT STATUS (Deadlines initiative): 🟢 Live at https://alxioum-app.onrender.com — pushed (commit bf27a2a) and deployed. Render MCP connector was intermittently unavailable for the automated trigger; CEO triggered the deploy manually via the Render dashboard and confirmed it live.
 
 ---
 
