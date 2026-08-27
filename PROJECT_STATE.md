@@ -43,7 +43,7 @@ Deadlines wins on user value (both tracks, daily-relevant), architecture fit (re
 
 Pipeline from here: Product writes the full spec next (copy, exact layout, grouping thresholds, urgency-badge rules, the Home touch-point design) → Dev builds → QA reviews → Cato signs off, same as the UI initiative.
 
-CURRENT TASK (Deadlines initiative): ✅ Product's step complete — full spec written to `DEADLINES_SPEC.md` at repo root (same role `PRODUCT_SPECS.md` played for the UI initiative). Every file it touches was read in full first (`BusinessPlanHome.tsx`, `StudentHome.tsx`, `BusinessHome.tsx`, `weekly-review/page.tsx` as the non-tab-route precedent, `Badge.tsx`, `EmptyState.tsx`, `domain.ts`, `useTableRows.ts`, `types.ts`, `utils.ts`, `navTabs.ts`). No code has been built yet — this was a planning/spec pass only.
+CURRENT TASK (Deadlines initiative): ✅ Dev's build complete, per `DEADLINES_SPEC.md` exactly — no deviations. New `src/lib/deadlines.ts` (shared `DeadlineItem`/bucketing/grouping helpers), new `src/app/app/deadlines/page.tsx` (no local layout/back button, matching `weekly-review/page.tsx`'s precedent; 3 distinct empty states per §3), `BusinessPlanHome.tsx` gets the optional due-date input + milestone card badge, `StudentHome.tsx`/`BusinessHome.tsx` get the "View all deadlines" button + urgency treatment purely as content inside existing grid cells (grepped: every `col-start` in both files still has an explicit paired `row-start`, no new grid item added). `npx tsc --noEmit` and `npx next build` both run directly and clean (42/42 routes, including new `/app/deadlines`). Committed, not pushed (Dev leaves push to CEO per instruction).
 
 Spec summary: one new shared lib `src/lib/deadlines.ts` (union `DeadlineItem` type + urgency bucketing/grouping, shared by all 3 touch-points so date math isn't duplicated); one new route `src/app/app/deadlines/page.tsx` (no local layout, no back button — same shape as `weekly-review/page.tsx`); one form addition to `BusinessPlanHome.tsx` (optional native `<input type="date">` for milestone due date, second row under the title input, fully optional/no validation, plus a due-date badge on milestone cards); Home touch-points on both `StudentHome.tsx` (urgency-tints the existing exam/homework tile countdown text + adds a "View all deadlines" button) and `BusinessHome.tsx` (adds due-date badges to milestone cards + same "View all deadlines" button) — both changes append *inside* existing grid cells only, no new `lg:col-start`/`lg:row-start` assignment anywhere, specifically to avoid the CSS Grid subtlety QA caught last pass.
 
@@ -51,9 +51,9 @@ Two deliberate deviations from Cato's rough shape, called out explicitly in the 
 
 BLOCKERS (Deadlines initiative): None.
 
-NEXT TASK (Deadlines initiative): Dev builds per `DEADLINES_SPEC.md` — new `src/lib/deadlines.ts`, new `src/app/app/deadlines/page.tsx`, edits to `src/app/app/school/BusinessPlanHome.tsx`, `src/app/app/StudentHome.tsx`, `src/app/app/BusinessHome.tsx` (exact diffs/JSX/copy in the spec — no code choices left open). Then QA reviews, then Cato signs off.
+NEXT TASK (Deadlines initiative): QA reviews the Deadlines feature for regressions across both tracks and both themes before merge.
 
-DEPLOYMENT STATUS (Deadlines initiative): N/A — nothing built yet. Production is still running the UI-improvement initiative's shipped build (see below); unaffected by this planning step.
+DEPLOYMENT STATUS (Deadlines initiative): 🟡 Built and committed locally, not yet pushed or deployed. Production is still running the UI-improvement initiative's shipped build (see below); unaffected until this branch is pushed and deployed.
 
 ---
 

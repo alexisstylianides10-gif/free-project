@@ -12,11 +12,13 @@ import { pickTodaysMission } from "@/lib/missionPicker";
 import { buildAIRecommendation } from "@/lib/recommendation";
 import { xpToPercent, totalXP, levelFromXP } from "@/lib/xp";
 import { formatCountdown, mondayOfThisWeek, todayISO, cn } from "@/lib/utils";
+import { bucketForDate } from "@/lib/deadlines";
 import { Card, CardContent } from "@/components/ui/Card";
 import { StatTile, StreakStat } from "@/components/shared/StatTile";
 import { RadialStat } from "@/components/shared/RadialStat";
 import { MissionHeroCard } from "@/components/shared/MissionCard";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { PriorityDot } from "@/components/ui/PriorityDot";
 
 const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-glow-accent";
@@ -26,6 +28,11 @@ function greeting(): string {
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   return "Good evening";
+}
+
+function isUrgent(dateISO: string): boolean {
+  const bucket = bucketForDate(dateISO);
+  return bucket === "overdue" || bucket === "today";
 }
 
 export default function StudentHome() {
@@ -136,42 +143,60 @@ export default function StudentHome() {
           )}
         </section>
 
-        <section className="grid grid-cols-2 gap-3 lg:col-start-1 lg:row-start-2">
-          <Link href="/app/school">
-            <Card className={cn("h-full", HOVER_LIFT)}>
-              <CardContent className="p-4">
-                <CalendarClock className="h-5 w-5 text-school" />
-                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Upcoming exam</p>
-                {nextExam ? (
-                  <>
-                    <p className="mt-1 truncate text-sm font-bold text-foreground">{nextExam.subject}</p>
-                    <p className="text-xs text-muted-foreground">{formatCountdown(nextExam.exam_date)}</p>
-                  </>
-                ) : (
-                  <p className="mt-1 text-sm text-muted-foreground">No exams yet</p>
-                )}
-              </CardContent>
-            </Card>
-          </Link>
+        <section className="lg:col-start-1 lg:row-start-2">
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/app/school">
+              <Card className={cn("h-full", HOVER_LIFT)}>
+                <CardContent className="p-4">
+                  <CalendarClock className="h-5 w-5 text-school" />
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Upcoming exam</p>
+                  {nextExam ? (
+                    <>
+                      <p className="mt-1 truncate text-sm font-bold text-foreground">{nextExam.subject}</p>
+                      <p className={cn("text-xs", isUrgent(nextExam.exam_date) ? "font-semibold text-danger" : "text-muted-foreground")}>
+                        {formatCountdown(nextExam.exam_date)}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-1 text-sm text-muted-foreground">No exams yet</p>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
 
-          <Link href="/app/school">
-            <Card className={cn("h-full", HOVER_LIFT)}>
-              <CardContent className="p-4">
-                <ClipboardList className="h-5 w-5 text-accent" />
-                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Homework due</p>
-                {nextHomework ? (
-                  <>
-                    <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-bold text-foreground">
-                      <PriorityDot priority={nextHomework.priority} />
-                      {nextHomework.subject}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{formatCountdown(nextHomework.due_date)}</p>
-                  </>
-                ) : (
-                  <p className="mt-1 text-sm text-muted-foreground">All caught up</p>
-                )}
-              </CardContent>
-            </Card>
+            <Link href="/app/school">
+              <Card className={cn("h-full", HOVER_LIFT)}>
+                <CardContent className="p-4">
+                  <ClipboardList className="h-5 w-5 text-accent" />
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Homework due</p>
+                  {nextHomework ? (
+                    <>
+                      <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-bold text-foreground">
+                        <PriorityDot priority={nextHomework.priority} />
+                        {nextHomework.subject}
+                      </p>
+                      <p
+                        className={cn(
+                          "text-xs",
+                          isUrgent(nextHomework.due_date) ? "font-semibold text-danger" : "text-muted-foreground"
+                        )}
+                      >
+                        {formatCountdown(nextHomework.due_date)}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-1 text-sm text-muted-foreground">All caught up</p>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          <Link href="/app/deadlines" className="mt-2 block">
+            <Button variant="outline" size="md" className="w-full">
+              View all deadlines
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
           </Link>
         </section>
 

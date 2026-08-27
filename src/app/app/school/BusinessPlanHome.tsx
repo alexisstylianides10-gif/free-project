@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Circle, Sparkles, Target, Plus } from "lucide-react";
+import { CheckCircle2, Circle, Sparkles, Target, Plus, CalendarClock } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useBusinessProfile, useBusinessMilestones } from "@/lib/hooks/domain";
 import { supabase } from "@/lib/supabase/client";
 import { awardXP } from "@/lib/actions/xp";
-import { cn } from "@/lib/utils";
+import { cn, formatCountdown } from "@/lib/utils";
+import { bucketForDate, badgeToneForBucket } from "@/lib/deadlines";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -27,6 +28,7 @@ export default function BusinessPlanHome() {
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
+  const [newDueDate, setNewDueDate] = useState("");
   const [adding, setAdding] = useState(false);
 
   const doneCount = milestones.filter((m) => m.status === "done").length;
@@ -57,8 +59,10 @@ export default function BusinessPlanHome() {
         title: newTitle.trim(),
         status: "todo",
         order_index: milestones.length,
+        due_date: newDueDate || null,
       });
       setNewTitle("");
+      setNewDueDate("");
       await refetchMilestones();
     } finally {
       setAdding(false);
@@ -117,6 +121,11 @@ export default function BusinessPlanHome() {
                         {m.title}
                       </p>
                       {m.description && <p className="mt-0.5 truncate text-xs text-muted-foreground">{m.description}</p>}
+                      {m.due_date && !isDone && (
+                        <Badge tone={badgeToneForBucket(bucketForDate(m.due_date))} className="mt-1.5">
+                          {formatCountdown(m.due_date)}
+                        </Badge>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -125,21 +134,36 @@ export default function BusinessPlanHome() {
           </div>
         )}
 
-        <form onSubmit={addMilestone} className="mt-3 flex items-center gap-2">
-          <input
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Add a milestone…"
-            className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-          />
-          <button
-            type="submit"
-            disabled={adding || !newTitle.trim()}
-            aria-label="Add milestone"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+        <form onSubmit={addMilestone} className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="Add a milestone…"
+              className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            />
+            <button
+              type="submit"
+              disabled={adding || !newTitle.trim()}
+              aria-label="Add milestone"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex items-center gap-2 pl-1">
+            <CalendarClock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <label htmlFor="milestone-due-date" className="text-xs text-muted-foreground">
+              Due date <span className="text-muted-foreground/60">(optional)</span>
+            </label>
+            <input
+              id="milestone-due-date"
+              type="date"
+              value={newDueDate}
+              onChange={(e) => setNewDueDate(e.target.value)}
+              className="h-8 rounded-full border border-border bg-surface px-3 text-xs text-foreground outline-none focus:border-accent/60"
+            />
+          </div>
         </form>
       </section>
 

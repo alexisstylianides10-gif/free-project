@@ -8,7 +8,10 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { StatTile, StreakStat } from "@/components/shared/StatTile";
 import { RadialStat } from "@/components/shared/RadialStat";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { badgeToneForBucket, bucketForDate } from "@/lib/deadlines";
+import { cn, formatCountdown } from "@/lib/utils";
 
 const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-glow-accent";
 
@@ -112,9 +115,14 @@ export default function BusinessHome() {
                   ) : (
                     <Circle className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
                   )}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-foreground">{doNext.title}</p>
                     {doNext.description && <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{doNext.description}</p>}
+                    {doNext.due_date && (
+                      <Badge tone={badgeToneForBucket(bucketForDate(doNext.due_date))} className="mt-2">
+                        {formatCountdown(doNext.due_date)}
+                      </Badge>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -126,6 +134,11 @@ export default function BusinessHome() {
                       <CardContent className="flex items-center gap-3 p-4">
                         <Circle className="h-5 w-5 shrink-0 text-muted-foreground" />
                         <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{m.title}</span>
+                        {m.due_date && (
+                          <Badge tone={badgeToneForBucket(bucketForDate(m.due_date))} className="shrink-0">
+                            {formatCountdown(m.due_date)}
+                          </Badge>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -133,6 +146,13 @@ export default function BusinessHome() {
               )}
             </>
           )}
+
+          <Link href="/app/deadlines" className="mt-2 block">
+            <Button variant="outline" size="md" className="w-full">
+              View all deadlines
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          </Link>
         </section>
 
         <section className="lg:col-start-2 lg:row-start-3">
