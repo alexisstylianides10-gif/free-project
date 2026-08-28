@@ -181,14 +181,14 @@ export default function StudentSchoolHome() {
       <Card>
         <CardContent className="flex items-stretch gap-4 p-4">
           <div className="flex-1">
-            <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
               <Clock className="h-3 w-3" /> Today
             </p>
             <p className="mt-1 text-lg font-bold text-foreground">{todayMinutes}m studied</p>
           </div>
           <div className="w-px bg-border" />
           <div className="flex-1">
-            <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
               <Flame className="h-3 w-3" /> Streak
             </p>
             <p className="mt-1 text-lg font-bold text-foreground">{profile?.streak_count ?? 0} days</p>
@@ -197,7 +197,7 @@ export default function StudentSchoolHome() {
             <>
               <div className="w-px bg-border" />
               <Link href="/app/school/flashcards/review?bucket=due" className="flex-1">
-                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
                   <Layers className="h-3 w-3" /> Due
                 </p>
                 <p className="mt-1 text-lg font-bold text-foreground">{flashcardsDueCount} cards</p>
@@ -304,7 +304,7 @@ export default function StudentSchoolHome() {
               value={newHwSubject}
               onChange={(e) => setNewHwSubject(e.target.value)}
               placeholder="Subject…"
-              className="h-11 w-28 shrink-0 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+              className="h-11 w-28 shrink-0 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60 sm:w-32"
             />
             <input
               value={newHwTitle}
@@ -312,13 +312,15 @@ export default function StudentSchoolHome() {
               placeholder="Add homework…"
               className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
             />
+          </div>
+          <div className="flex items-center gap-2">
             <input
               type="date"
               value={newHwDueDate}
               onChange={(e) => setNewHwDueDate(e.target.value)}
               aria-label="Due date"
               required
-              className="h-11 shrink-0 rounded-full border border-border bg-surface px-3 text-sm text-foreground outline-none focus:border-accent/60"
+              className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
             />
             <button
               type="submit"

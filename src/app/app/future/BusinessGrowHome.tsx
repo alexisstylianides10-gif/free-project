@@ -191,7 +191,7 @@ export default function BusinessGrowHome() {
               />
             ) : (
               <>
-                <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <p className="mb-2 mt-4 text-caption font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
                 <div className="space-y-1.5">
                   {metrics.slice(0, 6).map((m) => (
                     <div key={m.id} className="flex items-center justify-between text-sm">
@@ -264,7 +264,7 @@ export default function BusinessGrowHome() {
                   <span className="font-semibold text-foreground">Total spent</span>
                   <span className="font-bold text-foreground">${totalExpenses.toFixed(2)}</span>
                 </div>
-                <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <p className="mb-2 mt-4 text-caption font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
                 <div className="space-y-1.5">
                   {expenses.slice(0, 6).map((exp) => (
                     <div key={exp.id} className="flex items-center justify-between text-sm">
@@ -347,7 +347,7 @@ export default function BusinessGrowHome() {
               />
             ) : (
               <>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
                 <div className="space-y-2">
                   {competitors.map((c) => (
                     <div key={c.id} className="rounded-xl bg-muted px-3.5 py-2.5">

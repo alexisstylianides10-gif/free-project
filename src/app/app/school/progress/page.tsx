@@ -184,7 +184,7 @@ function StatTile({
   return (
     <Card>
       <CardContent className="p-4">
-        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
           <Icon className="h-3 w-3" /> {label}
         </p>
         <p className="mt-1 text-xl font-extrabold text-foreground">{value}</p>

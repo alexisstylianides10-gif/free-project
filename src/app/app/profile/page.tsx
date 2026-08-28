@@ -85,7 +85,7 @@ export default function ProfilePage() {
             {progressStats.map((stat) => (
               <div key={stat.label}>
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{stat.label}</p>
+                  <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">{stat.label}</p>
                   <p className="shrink-0 text-sm font-bold text-foreground">{stat.value} XP</p>
                 </div>
                 <ProgressBar value={xpToPercent(stat.value, stat.cap)} tone={stat.tone} className="mt-2 h-1.5" />

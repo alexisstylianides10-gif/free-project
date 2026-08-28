@@ -66,7 +66,7 @@ export default function ChoosePlanPage() {
       <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
       <div className="relative z-10 mx-auto w-full max-w-sm flex-1">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">{branding.name}</p>
-        <h1 className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">What are you here to build?</h1>
+        <h1 className="mt-1 text-heading font-extrabold tracking-tight text-foreground">What are you here to build?</h1>
         <p className="mt-2 text-sm text-muted-foreground">Pick the plan that fits — your billing interval can change whenever you subscribe.</p>
 
         <div className="mt-6 flex items-center gap-1 rounded-xl bg-muted p-1">
@@ -85,7 +85,7 @@ export default function ChoosePlanPage() {
               ) : (
                 <span className="inline-flex items-center gap-1">
                   Yearly
-                  <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-bold text-success">
+                  <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-2xs font-bold text-success">
                     -{yearlySavingsPercent}%
                   </span>
                 </span>
@@ -107,7 +107,7 @@ export default function ChoosePlanPage() {
                       <Icon className="h-4 w-4" />
                     </span>
                     <div>
-                      <p className="text-[15px] font-bold text-foreground">{TRACK_LABEL[track]}</p>
+                      <p className="text-body font-bold text-foreground">{TRACK_LABEL[track]}</p>
                       <p className="text-xs text-muted-foreground">{copy.tagline}</p>
                     </div>
                   </div>

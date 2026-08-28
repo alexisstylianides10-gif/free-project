@@ -16,7 +16,7 @@ export function StatTile({
   return (
     <div className="flex-1">
       <div className="flex items-baseline justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
         {suffix}
       </div>
       <p className="mt-1 text-lg font-bold tabular-nums text-foreground">{value}%</p>
@@ -28,7 +28,7 @@ export function StatTile({
 export function StreakStat({ days }: { days: number }) {
   return (
     <div className="flex-1">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Streak</p>
+      <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">Streak</p>
       <p className={cn("mt-1 flex items-center gap-1 text-lg font-bold text-foreground")}>
         <span aria-hidden>🔥</span>
         {days}

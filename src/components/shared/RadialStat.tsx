@@ -61,7 +61,7 @@ export function RadialStat({
         </svg>
         <div className="absolute inset-0 flex items-center justify-center text-lg font-bold tabular-nums text-foreground">{clamped}%</div>
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
     </div>
   );
 }

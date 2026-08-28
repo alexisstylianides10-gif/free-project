@@ -203,7 +203,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
       <Card>
         <CardContent className="space-y-5 p-5">
           {question.type === "scenario" && (
-            <span className="inline-block rounded-full bg-accent-soft px-2.5 py-1 text-[11px] font-semibold text-accent">Scenario</span>
+            <span className="inline-block rounded-full bg-accent-soft px-2.5 py-1 text-caption font-semibold text-accent">Scenario</span>
           )}
           <p className="text-base font-semibold leading-relaxed text-foreground">{question.prompt}</p>
 

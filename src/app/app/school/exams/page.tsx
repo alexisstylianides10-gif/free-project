@@ -57,29 +57,31 @@ export default function ExamsPage() {
 
   return (
     <div className="space-y-5">
-      <form onSubmit={addExam} className="flex items-center gap-2">
+      <form onSubmit={addExam} className="space-y-2">
         <input
           value={newSubject}
           onChange={(e) => setNewSubject(e.target.value)}
           placeholder="Add an exam (e.g. Biology)…"
-          className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+          className="h-11 w-full rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
         />
-        <input
-          type="date"
-          value={newDate}
-          onChange={(e) => setNewDate(e.target.value)}
-          aria-label="Exam date"
-          required
-          className="h-11 shrink-0 rounded-full border border-border bg-surface px-3 text-sm text-foreground outline-none focus:border-accent/60"
-        />
-        <button
-          type="submit"
-          disabled={adding || !newSubject.trim() || !newDate}
-          aria-label="Add exam"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={newDate}
+            onChange={(e) => setNewDate(e.target.value)}
+            aria-label="Exam date"
+            required
+            className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
+          />
+          <button
+            type="submit"
+            disabled={adding || !newSubject.trim() || !newDate}
+            aria-label="Add exam"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
       </form>
 
       {sortedExams.length === 0 ? (

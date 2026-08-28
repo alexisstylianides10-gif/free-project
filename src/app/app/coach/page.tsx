@@ -138,7 +138,7 @@ export default function CoachPage() {
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-accent">Coach</p>
-          <h1 className="mt-0.5 truncate text-[22px] font-bold tracking-tight text-foreground">{activeThread?.title || "New chat"}</h1>
+          <h1 className="mt-0.5 truncate text-title font-bold tracking-tight text-foreground">{activeThread?.title || "New chat"}</h1>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <button
@@ -162,7 +162,7 @@ export default function CoachPage() {
       </div>
 
       {threadPanelOpen && (
-        <div className="glass mt-3 max-h-56 shrink-0 space-y-1 overflow-y-auto rounded-2xl p-2">
+        <div className="glass mt-3 max-h-56 shrink-0 space-y-1 overflow-y-auto rounded-2xl p-2 shadow-raised">
           {threads.length === 0 ? (
             <p className="p-3 text-center text-xs text-muted-foreground">No conversations yet.</p>
           ) : (
@@ -187,7 +187,7 @@ export default function CoachPage() {
 
       <div ref={scrollRef} className="scrollbar-none mt-5 flex-1 space-y-3 overflow-y-auto pb-3">
         {messages.length === 0 && !sending && (
-          <div className="glass rounded-2xl p-4 text-sm text-muted-foreground">
+          <div className="glass rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
             {profile?.track === "business"
               ? "Ask me anything about building your business — I'll keep it real, not hype."
               : "Ask me anything about school, skills, or your future — I'll always make sure school comes first."}
@@ -198,7 +198,7 @@ export default function CoachPage() {
             <div
               className={cn(
                 "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                m.role === "user" ? "bg-gradient-brand text-white" : "glass text-foreground"
+                m.role === "user" ? "bg-gradient-brand text-white shadow-subtle" : "glass text-foreground shadow-subtle"
               )}
             >
               {m.content}
@@ -207,7 +207,7 @@ export default function CoachPage() {
         ))}
         {sending && (
           <div className="flex justify-start">
-            <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground">
+            <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function CoachPage() {
         {error && <p className="text-xs text-danger">{error}</p>}
 
         {(chips.length > 0 || profile) && messages.length < 2 && (
-          <div className="glass rounded-2xl p-4">
+          <div className="glass rounded-2xl p-4 shadow-card">
             <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-accent">
               <Sparkles className="h-3.5 w-3.5" /> Today&rsquo;s Recommendation
             </p>
@@ -269,7 +269,7 @@ export default function CoachPage() {
           <Send className="h-4 w-4" />
         </button>
       </form>
-      <p className="mt-2 shrink-0 text-center text-[11px] text-muted-foreground">
+      <p className="mt-2 shrink-0 text-center text-caption text-muted-foreground">
         Future Coach is a study &amp; career guide, not a substitute for a teacher, parent, or professional.
       </p>
     </div>

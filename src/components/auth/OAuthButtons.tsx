@@ -47,7 +47,7 @@ export function OAuthButtons() {
         type="button"
         onClick={handleGoogle}
         disabled={loading}
-        className="flex h-11 w-full items-center justify-center gap-2.5 rounded-full border border-border bg-white text-[14px] font-semibold text-black transition-opacity disabled:opacity-60"
+        className="flex h-11 w-full items-center justify-center gap-2.5 rounded-full border border-border bg-white text-sm font-semibold text-black transition-opacity disabled:opacity-60"
       >
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />

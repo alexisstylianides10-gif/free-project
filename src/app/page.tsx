@@ -34,13 +34,13 @@ export default function WelcomePage() {
             <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>
           </div>
 
-          <h1 className="mt-14 text-[34px] font-extrabold leading-[1.15] tracking-tight text-foreground">
+          <h1 className="mt-14 text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
             Build your future
             <br />
             while you build your{" "}
             <span className="text-gradient-brand">grades.</span>
           </h1>
-          <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
+          <p className="mt-4 max-w-sm text-body leading-relaxed text-muted-foreground">
             Your AI coach will help you stay on top of school, discover your strengths, and build a path toward the
             future you want.
           </p>
@@ -49,7 +49,7 @@ export default function WelcomePage() {
         <div className="mt-16 space-y-4">
           <Link
             href="/signup"
-            className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-[15px] font-semibold text-white shadow-glow-accent transition-transform active:scale-[0.98]"
+            className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-body font-semibold text-white shadow-glow-accent transition-transform active:scale-[0.98]"
           >
             Get Started
             <ArrowRight className="h-4 w-4" />
