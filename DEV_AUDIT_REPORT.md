@@ -198,3 +198,143 @@ explicitly above rather than silently reused).
 - `npx next build`: clean (exit 0), all 42 routes compiled/prerendered,
   including `/app/deadlines`.
 - `npm run lint`: clean, no warnings or errors.
+
+---
+
+# ROUND 2 — 2026-08-28
+
+Branch: `claude/futureos-student-app-3ewdz6` (worktree
+`agent-a554984a31f5d5ad2`). Base commit audited from: `acab9ef` (Cato's
+reconciliation of the 3 parallel Dev/QA/Product worktrees, which fixed all 4
+bugs QA found in the round-1-era `QA_FULL_APP_REPORT.md` pass).
+
+## Method
+
+Baseline `tsc`/`build` first, then re-ran every known bug class from
+`PROJECT_STATE.md`'s project-knowledge section against the current source
+(not assumed from round 1), with specific focus on the 4 files Cato's
+reconciliation commit touched: `StudentSchoolHome.tsx`, `BusinessPlanHome.tsx`
+(one-way completion guards + new add-forms), `exams/page.tsx` (new add-exam
+form), `useTableRows.ts`/`domain.ts` (multi-clause `orderBy`), and
+`weekly-review/page.tsx` (new track branch).
+
+## Baseline
+
+- `npx tsc --noEmit`: clean (exit 0) before any investigation.
+- `npx next build`: clean (exit 0), all 42 routes, before any investigation.
+- `npm run lint`: clean, no warnings or errors.
+
+## Targeted re-checks (all held, nothing new found)
+
+- **`toggleHomework`/`toggleMilestone` one-way completion guards** — read
+  both in full and diffed them line-for-line against `completeStudySession`'s
+  guard, not just visually compared. All three share the identical shape:
+  early-return if `!user || !profile || !supabase || <already-done-check> ||
+  <busyId-check>`, then a single `.update()` to the terminal status, XP
+  award, then `Promise.all([refreshProfile(), refetch...()])` in a
+  `finally`-guarded `busyId` reset. `toggleHomework`'s guard is
+  `hw.status === "completed"`, `toggleMilestone`'s is `currentStatus ===
+  "done"` — both correctly check the *terminal* status value for their
+  respective table's status enum (`homework.status` uses
+  `pending|completed`, `business_milestones.status` uses
+  `todo|in_progress|done`, confirmed against `schema.sql`), not a copy-paste
+  of the wrong literal. Button `disabled={isCompleted/isDone || busyId ===
+  <this row's id>}` correctly locks only the row being processed while the
+  function-level `busyId` truthiness check blocks concurrent submits on any
+  other row too (a global one-at-a-time lock) — this is the same
+  global-lock behavior `completeStudySession` already had pre-existing, not
+  a new inconsistency introduced by this round. No bug.
+- **New `addExam`/`addHomework` forms** — both scope `user_id: user.id`
+  correctly (no cross-user insert risk). Checked every column each insert
+  writes against `schema.sql`'s `not null` constraints for `exams`
+  (`subject`, `title`, `exam_date` all `not null`, all three supplied —
+  `addExam` sets both `subject` and `title` to the same trimmed input,
+  matching the pre-existing pattern `exam.title !== exam.subject` in the
+  same file already expects) and `homework` (`subject`, `title`, `due_date`
+  all `not null`, all three supplied; `priority`/`status` have DB defaults
+  but are explicitly set anyway to `"medium"`/`"pending"`). Submit buttons
+  are `disabled` until all required fields are non-empty
+  (`.trim()`-checked for text, plain truthiness for the `required` date
+  input), so there's no path to inserting a malformed/empty row through the
+  UI. No bug.
+- **`useTableRows`'s new multi-clause `orderBy`** — read `useTableRows.ts`
+  in full; the array-vs-single-clause branch (`Array.isArray(options.orderBy)
+  ? options.orderBy : [options.orderBy]`) is a strict superset of the old
+  behavior, not a rewrite — a single `OrderClause` object is wrapped into a
+  1-element array and produces the exact same `.order()` call as before.
+  Grepped every caller of `useTableRows` across `src/lib/hooks/domain.ts`
+  and `src/lib/hooks/study.ts` (17 call sites total) — 16 use the old
+  single-clause object form (`useHomework`, `useExams`, `useTimetable`,
+  `useStudySessions`, `useCareerPaths`, `useUserAchievements`,
+  `useUserMissions`, `useRoadmapProgress`, `useChatThreads`,
+  `useChatHistory`, `useBusinessMilestones`, `useBusinessContentIdeas`,
+  `useBusinessCompetitors`, `useBusinessExpenses`, and the 10 in
+  `study.ts`), only `useBusinessMetrics` uses the new array form. Traced
+  `useBusinessMetrics`'s consumer (`BusinessGrowHome.tsx`'s trend badge:
+  `const latest = metrics[0]; const prior = metrics.slice(1).find((m) =>
+  m.metric_key === latest.metric_key)`) — with the new `[logged_date desc,
+  created_at desc]` order this is now deterministic for same-day
+  same-metric-key entries, closing the exact bug QA reported. No regression
+  to any of the other 16 callers. No bug.
+- **`weekly-review/page.tsx`'s new track branch** — diffed against `26e9d89`
+  (pre-fix) directly (`git show acab9ef -- .../weekly-review/page.tsx`)
+  rather than re-deriving it from scratch. The student (`else`) branch's
+  `nextFocus` logic (upcoming-exam / priority-homework / primary-career /
+  "maintain routine" items) and the `useEffect`'s `homework`-table count
+  query for the student case are byte-identical to the pre-fix version,
+  just relocated inside an `if (isBusiness) {...} else {...}` block — no
+  logic was altered, only wrapped. Confirmed via diff, not just re-reading
+  the after-state and assuming it matches. No bug.
+- **`.upsert()` on `profiles`**: re-grepped `\.upsert(` across `src/` —
+  still zero hits against `profiles`; the one pre-existing `.upsert()` on
+  `business_profiles` (`completeBusinessOnboarding.ts`) is unaffected by
+  this round's diff and that table isn't column-restricted. No bug.
+- **CSS Grid `col-start`/`row-start` pairing**: re-grepped `col-start`
+  across `src/` — same two files as round 1 (`StudentHome.tsx`,
+  `BusinessHome.tsx`); neither was touched by Cato's reconciliation commit
+  (only by Product's 1-line shadow-token swap each, already reviewed and
+  signed off in `PROJECT_STATE.md`). `StudentSchoolHome.tsx` and
+  `exams/page.tsx` — the two files flagged for special attention since new
+  forms landed there — don't use the `col-start` grid pattern at all
+  (grepped, zero hits in both); their layouts are plain `space-y-*` stacks,
+  so this bug class has zero surface area in either file. Every grid item
+  in both `StudentHome.tsx`/`BusinessHome.tsx` still has both `col-start`
+  and `row-start` paired. No bug.
+- **Business onboarding option catalogs, AI research route timeouts, billing
+  column write isolation**: none of the relevant files
+  (`BusinessOnboarding.tsx`/`StudentOnboarding.tsx`/
+  `onboarding-options.ts`, `researchSchool.ts`/`researchBusiness.ts`,
+  `api/billing/webhook/route.ts`/`api/billing/create-subscription/route.ts`)
+  appear in the `7220b5e..acab9ef` diff (confirmed via `git diff --stat`),
+  so round 1's findings still hold unchanged. Re-grepped
+  `stripe_customer_id`/`stripe_subscription_id`/`plan_status`/
+  `trial_ends_at` across `src/` as a fresh check rather than trusting that:
+  4 non-API hits, all in `PaywallGate.tsx`/`upgrade/page.tsx`/
+  `billing/entitlement.ts`/`types.ts`, all reads (`profile.plan_status ===
+  ...`, `.select("plan_status, trial_ends_at")`), zero client-side writes.
+  No bug.
+- **Dead code / `any` / `@ts-ignore`**: re-grepped both — zero
+  `@ts-ignore`/`@ts-expect-error`/`: any`/`as any` in `src/` (still clean),
+  zero `console.log`, zero `TODO`/`FIXME`/`XXX`/`HACK`. Confirmed
+  `src/components/ui/EmptyState.tsx` (deleted round 1) hasn't been
+  reintroduced by the merge. No bug.
+- **RLS policy presence**: re-confirmed `exams_all_own`, `homework_all_own`,
+  `business_milestones_all_own` all exist in `supabase/schema.sql` with the
+  standard `for all ... using (user_id = auth.uid()) with check (user_id =
+  auth.uid())` shape (unchanged since round 1, no migration in this round's
+  diff). No bug.
+
+## Summary of actual changes made this round
+
+None. Every checked item — including the 4 files this round's brief called
+out by name for extra scrutiny — held up under a genuine line-by-line
+re-check, not a re-statement of round 1's conclusions. This is the expected,
+credible outcome given Cato's reconciliation commit was itself independently
+verified (own `tsc`/`build` run, diff read in full) before this round even
+started.
+
+## Final verification (round 2)
+
+- `npx tsc --noEmit`: clean (exit 0), run directly, no changes made.
+- `npx next build`: clean (exit 0), all 42 routes compiled/prerendered.
+- `npm run lint`: clean, no warnings or errors.
