@@ -246,3 +246,55 @@ BLOCKERS: None.
 NEXT TASK: None open from this round. Recommend the next visual pass (if any) look at border-radius scale review and any remaining bespoke-screen polish beyond what two rounds of token/primitive work already covered — both still deferred, same reasoning as round 1 (large-radius language is a deliberate brand choice, not a bug; no further screen found that clears the guiding-question bar without restructuring, which is out of scope per Cato's standing "no Home redesign" direction).
 
 DEPLOYMENT STATUS (round 2): not deployed — isolated worktree, committed locally on `claude/futureos-student-app-3ewdz6` via worktree `agent-a4979b1aa14970469`, not pushed. Awaiting Cato/CEO review and merge, per standing process.
+
+---
+
+## QA — FULL APP FUNCTIONAL PASS, ROUND 2 (both tracks) — 2026-08-28
+
+CEO asked for a second comprehensive logged-in functional test, both tracks, now that `acab9ef` (the
+round-1 bug fixes) is live in production. Full findings in **`QA_FULL_APP_REPORT.md`** at repo root
+(overwritten this round, round-1 content preserved in git history at commit `e63c475`). Short version:
+
+- **Step 1 retried, still blocked.** Confirmed 3 independent ways again this session (Playwright
+  `ERR_TUNNEL_CONNECTION_FAILED` on a real signup attempt, direct `curl` 403, proxy status log
+  `connect_rejected` 403 to `bgfhcpegsdyxpvmdxkuc.supabase.co:443`) — same org egress policy denial as
+  round 1, not session noise. No Supabase MCP/DB tool was exposed in my available toolset this session
+  either, so the direct-seed-and-trace fallback was also unavailable again. Did not fabricate live testing.
+- **Went one step further than round 1 anyway**: built a temporary, unauthenticated render-harness route
+  (deleted before commit) that served the *exact* JSX/classNames of the new add-exam/add-homework/
+  add-milestone forms through the real dev server + real compiled Tailwind, and screenshotted it with
+  Playwright at real phone widths (320/375/390px), checking actual `getBoundingClientRect()` geometry, not
+  eyeballing.
+- **Found a real, severe, newly-shipped bug this way**: the add-exam form (`exams/page.tsx`) and
+  add-homework form (`StudentSchoolHome.tsx`) — both added this round to close round 1's Bug 4 — overflow
+  their container on real phone widths because their `flex-1` text input is missing `min-w-0` (present on
+  every other `flex-1` usage in these same files, just not these two new forms). Combined with this app's
+  pre-existing `overflow-x: hidden` on `html`/`body` (confirmed pre-existing via `git blame`, not touched
+  this round), the date-picker input and submit button are pushed **entirely outside the viewport with no
+  way to scroll to them** — not degraded, completely unreachable. A student on a real phone (320–390px,
+  most phones) cannot tap "Add exam" or "Add homework" at all right now, in production. The add-milestone
+  form (business track) is unaffected — renders correctly at all tested widths.
+- **Second, lower-severity new gap found in the same investigation**: the add-exam date input has no
+  `min={today}` guard, and exams have no edit/delete UI anywhere — a mistyped past date becomes a
+  permanently-stuck "Passed" exam on both Home and School screens with no way to fix it. Structurally
+  unreachable before this round (only onboarding ever wrote to `exams`, always future dates); now
+  reachable via the new form.
+- **All 4 of round 1's fixes re-verified genuinely correct at the code level** (XP-farming guard, metrics
+  trend-badge tiebreaker, track-aware Weekly Review, add-exam/homework forms existing and correctly wired
+  at the data layer) — confirmed by reading the actual shipped `acab9ef` code, not the commit message.
+  `business_metrics.created_at` and the RLS/grant shape of every touched table confirmed against
+  `schema.sql` directly (unchanged by this diff — no new migration needed).
+- Grid-regression class (`col-start`/`row-start`) grepped clean across all 4 touched files — none use the
+  grid pattern, zero risk of that bug class here. This is a different failure mode (flexbox min-width).
+- `npx tsc --noEmit` and `npx next build` both clean, run directly, twice (before/after the harness route
+  was added and removed) — harness confirmed fully absent from the final route list and `git status`.
+- No live data touched this session (network block prevented any write reaching the database) — no
+  cleanup sweep needed, verified via `git status`, not assumed.
+
+**Status: NOT signed off.** Bugs 1–3 from round 1 confirmed fixed. Bug 4 from round 1 is closed in spirit
+but its own fix ships a new, severe mobile regression (add-exam/add-homework forms unusable on real phones)
+that must go back to Dev before this round can be called done. Root-cause fix is narrow and well-understood
+(add `min-w-0` to the `flex-1` title/subject inputs in both new forms — same pattern already used
+correctly elsewhere in the same files) — recommend Dev fix + QA re-verify via the same render-harness
+technique (real Playwright render at 320/375/390px, not just a JSX read) before Cato re-signs-off. Bundle
+the `min={todayISO()}` fix for the past-dated-exam gap into the same patch since it's the same file.
