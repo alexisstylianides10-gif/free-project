@@ -34,15 +34,15 @@ export default function BusinessPlanHome() {
   const doneCount = milestones.filter((m) => m.status === "done").length;
 
   async function toggleMilestone(id: string, currentStatus: string) {
-    if (!supabase || !user || !profile || busyId) return;
+    // One-way completion, same guard pattern as StudentSchoolHome's
+    // completeStudySession/toggleHomework — once done, this is a no-op.
+    // Prevents XP-farming by repeatedly toggling the same milestone.
+    if (!supabase || !user || !profile || currentStatus === "done" || busyId) return;
     setBusyId(id);
     try {
-      const nextStatus = currentStatus === "done" ? "todo" : "done";
-      await supabase.from("business_milestones").update({ status: nextStatus }).eq("id", id);
-      if (nextStatus === "done") {
-        await awardXP(supabase, user.id, profile, { xp_career: 15 });
-        await refreshProfile();
-      }
+      await supabase.from("business_milestones").update({ status: "done" }).eq("id", id);
+      await awardXP(supabase, user.id, profile, { xp_career: 15 });
+      await refreshProfile();
       await refetchMilestones();
     } finally {
       setBusyId(null);
@@ -109,10 +109,10 @@ export default function BusinessPlanHome() {
                   <CardContent className="flex items-center gap-3 p-4">
                     <button
                       type="button"
-                      aria-label={isDone ? "Mark as not done" : "Mark as done"}
+                      aria-label="Mark as done"
                       onClick={() => toggleMilestone(m.id, m.status)}
-                      disabled={busyId === m.id}
-                      className="shrink-0 text-muted-foreground transition-colors hover:text-success disabled:opacity-40"
+                      disabled={isDone || busyId === m.id}
+                      className="shrink-0 text-muted-foreground transition-colors hover:text-success disabled:cursor-default disabled:opacity-40"
                     >
                       {isDone ? <CheckCircle2 className="h-6 w-6 text-success" /> : <Circle className="h-6 w-6" />}
                     </button>

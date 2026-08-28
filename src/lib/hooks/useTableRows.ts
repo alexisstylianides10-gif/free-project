@@ -3,8 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
+interface OrderClause {
+  column: string;
+  ascending?: boolean;
+}
+
 interface Options {
-  orderBy?: { column: string; ascending?: boolean };
+  /** A single clause, or an ordered array for a primary + tiebreaker sort
+   * (e.g. sort by day-granularity date, then by created_at to make same-day
+   * ties deterministic). */
+  orderBy?: OrderClause | OrderClause[];
   eq?: Record<string, string | number | boolean>;
 }
 
@@ -33,7 +41,10 @@ export function useTableRows<T>(table: string, userId: string | undefined, optio
       for (const [col, val] of Object.entries(options.eq)) query = query.eq(col, val);
     }
     if (options.orderBy) {
-      query = query.order(options.orderBy.column, { ascending: options.orderBy.ascending ?? true });
+      const clauses = Array.isArray(options.orderBy) ? options.orderBy : [options.orderBy];
+      for (const clause of clauses) {
+        query = query.order(clause.column, { ascending: clause.ascending ?? true });
+      }
     }
     const { data: rows, error: err } = await query;
     if (err) {

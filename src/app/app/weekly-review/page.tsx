@@ -1,9 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Target } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { useHomework, useExams, useStudySessions, useUserMissions, useCareerPaths, useUserSkills } from "@/lib/hooks/domain";
+import {
+  useHomework,
+  useExams,
+  useStudySessions,
+  useUserMissions,
+  useCareerPaths,
+  useUserSkills,
+  useBusinessMilestones,
+  useBusinessExpenses,
+} from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
 import { skillLabel } from "@/lib/catalog/skills";
 import { supabase } from "@/lib/supabase/client";
@@ -31,17 +40,28 @@ export default function WeeklyReviewPage() {
   const { user, profile } = useAuth();
   const weekStart = mondayOfThisWeek();
 
+  const isBusiness = profile?.track === "business";
+
   const { data: homework, loading: homeworkLoading } = useHomework(user?.id);
   const { data: exams, loading: examsLoading } = useExams(user?.id);
   const { data: studySessions, loading: studySessionsLoading } = useStudySessions(user?.id, weekStart);
   const { data: userMissions, loading: userMissionsLoading } = useUserMissions(user?.id);
   const { data: careerPaths, loading: careerPathsLoading } = useCareerPaths(user?.id);
   const { data: userSkills, loading: userSkillsLoading } = useUserSkills(user?.id);
+  const { data: milestones, loading: milestonesLoading } = useBusinessMilestones(user?.id);
+  const { data: expenses, loading: expensesLoading } = useBusinessExpenses(user?.id);
 
   const allLoaded =
-    !homeworkLoading && !examsLoading && !studySessionsLoading && !userMissionsLoading && !careerPathsLoading && !userSkillsLoading;
+    !homeworkLoading &&
+    !examsLoading &&
+    !studySessionsLoading &&
+    !userMissionsLoading &&
+    !careerPathsLoading &&
+    !userSkillsLoading &&
+    !milestonesLoading &&
+    !expensesLoading;
 
-  const [assignmentsCompleted, setAssignmentsCompleted] = useState<number | null>(null);
+  const [primaryCompletedCount, setPrimaryCompletedCount] = useState<number | null>(null);
   const savedForUser = useRef<string | null>(null);
 
   const primaryCareer = useMemo(() => {
@@ -53,6 +73,13 @@ export default function WeeklyReviewPage() {
     () => studySessions.filter((s) => s.completed).reduce((sum, s) => sum + s.duration_min, 0),
     [studySessions]
   );
+
+  const expensesThisWeek = useMemo(() => {
+    const weekEnd = addDaysISO(weekStart, 6);
+    return expenses
+      .filter((e) => e.logged_date >= weekStart && e.logged_date <= weekEnd)
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+  }, [expenses, weekStart]);
 
   const missionsCompleted = useMemo(() => {
     const weekEnd = addDaysISO(weekStart, 6);
@@ -77,25 +104,37 @@ export default function WeeklyReviewPage() {
     const items: string[] = [];
     const today = todayISO();
 
-    const upcomingExam = [...exams]
-      .filter((e) => {
-        const diff = daysBetween(today, e.exam_date);
-        return diff >= 0 && diff <= 10;
-      })
-      .sort((a, b) => a.exam_date.localeCompare(b.exam_date))[0];
-    if (upcomingExam) items.push(`Prepare for ${upcomingExam.subject} exam`);
+    if (isBusiness) {
+      const upcomingMilestone = [...milestones]
+        .filter((m) => m.status !== "done" && m.due_date && daysBetween(today, m.due_date) >= 0 && daysBetween(today, m.due_date) <= 10)
+        .sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""))[0];
+      if (upcomingMilestone) items.push(`Work toward: ${upcomingMilestone.title}`);
 
-    const priorityHomework = homework
-      .filter((h) => h.status === "pending" && h.priority === "high")
-      .sort((a, b) => a.due_date.localeCompare(b.due_date))[0];
-    if (priorityHomework) items.push(`Finish ${priorityHomework.subject}: ${priorityHomework.title}`);
+      const nextOpenMilestone = [...milestones].filter((m) => m.status !== "done").sort((a, b) => a.order_index - b.order_index)[0];
+      if (nextOpenMilestone && nextOpenMilestone.id !== upcomingMilestone?.id) items.push(`Next up: ${nextOpenMilestone.title}`);
 
-    if (primaryCareer) items.push(`Keep building toward ${primaryCareer.name}`);
+      items.push("Keep logging your metrics and expenses");
+    } else {
+      const upcomingExam = [...exams]
+        .filter((e) => {
+          const diff = daysBetween(today, e.exam_date);
+          return diff >= 0 && diff <= 10;
+        })
+        .sort((a, b) => a.exam_date.localeCompare(b.exam_date))[0];
+      if (upcomingExam) items.push(`Prepare for ${upcomingExam.subject} exam`);
 
-    items.push("Maintain your daily study routine");
+      const priorityHomework = homework
+        .filter((h) => h.status === "pending" && h.priority === "high")
+        .sort((a, b) => a.due_date.localeCompare(b.due_date))[0];
+      if (priorityHomework) items.push(`Finish ${priorityHomework.subject}: ${priorityHomework.title}`);
+
+      if (primaryCareer) items.push(`Keep building toward ${primaryCareer.name}`);
+
+      items.push("Maintain your daily study routine");
+    }
 
     return items.slice(0, 4);
-  }, [exams, homework, primaryCareer]);
+  }, [isBusiness, exams, homework, milestones, primaryCareer]);
 
   useEffect(() => {
     if (!user || !profile || !supabase) return;
@@ -107,21 +146,26 @@ export default function WeeklyReviewPage() {
     const userId = user.id;
 
     (async () => {
+      // weekly_reviews has no business-specific columns, so the generic
+      // int columns are reused per-track: assignments_completed holds
+      // homework-completed (student) or milestones-done (business) counts;
+      // study_minutes holds study time (student) or 0 (business — no
+      // time-tracking analog exists on that track).
       const { count } = await client
-        .from("homework")
+        .from(isBusiness ? "business_milestones" : "homework")
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
-        .eq("status", "completed");
+        .eq("status", isBusiness ? "done" : "completed");
 
       const completedCount = count ?? 0;
-      setAssignmentsCompleted(completedCount);
+      setPrimaryCompletedCount(completedCount);
 
       await client.from("weekly_reviews").upsert(
         {
           user_id: userId,
           week_start: weekStart,
           assignments_completed: completedCount,
-          study_minutes: studyMinutes,
+          study_minutes: isBusiness ? 0 : studyMinutes,
           missions_completed: missionsCompleted,
           consistency_days: consistencyDays,
           skill_deltas: skillDeltas,
@@ -131,10 +175,10 @@ export default function WeeklyReviewPage() {
       );
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, profile, allLoaded]);
+  }, [user, profile, allLoaded, isBusiness]);
 
   const skillsTouched = Object.keys(skillDeltas);
-  const ready = allLoaded && assignmentsCompleted !== null;
+  const ready = allLoaded && primaryCompletedCount !== null;
 
   return (
     <div className="space-y-7 pb-4 animate-fade-in">
@@ -146,15 +190,31 @@ export default function WeeklyReviewPage() {
         <>
           <Card>
             <CardContent className="space-y-1.5 p-5">
-              <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <span aria-hidden>📚</span> School
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Completed assignments: <span className="font-semibold text-foreground">{assignmentsCompleted}</span>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Study time: <span className="font-semibold text-foreground">{formatStudyTime(studyMinutes)}</span>
-              </p>
+              {isBusiness ? (
+                <>
+                  <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <Target className="h-4 w-4 text-accent" aria-hidden /> Plan
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Milestones completed: <span className="font-semibold text-foreground">{primaryCompletedCount}</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Expenses logged this week: <span className="font-semibold text-foreground">${expensesThisWeek.toFixed(2)}</span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <span aria-hidden>📚</span> School
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Completed assignments: <span className="font-semibold text-foreground">{primaryCompletedCount}</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Study time: <span className="font-semibold text-foreground">{formatStudyTime(studyMinutes)}</span>
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 

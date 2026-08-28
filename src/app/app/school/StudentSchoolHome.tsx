@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock, Layers } from "lucide-react";
+import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock, Layers, Plus } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useTimetable, useStudySessions } from "@/lib/hooks/domain";
@@ -46,6 +46,10 @@ export default function StudentSchoolHome() {
 
   const [busyHomeworkId, setBusyHomeworkId] = useState<string | null>(null);
   const [busySessionId, setBusySessionId] = useState<string | null>(null);
+  const [newHwSubject, setNewHwSubject] = useState("");
+  const [newHwTitle, setNewHwTitle] = useState("");
+  const [newHwDueDate, setNewHwDueDate] = useState("");
+  const [addingHw, setAddingHw] = useState(false);
 
   const todayTimetable = useMemo(
     () => timetable.filter((t) => t.day_of_week === todayDow).sort((a, b) => a.start_time.localeCompare(b.start_time)),
@@ -102,17 +106,40 @@ export default function StudentSchoolHome() {
   const todayMinutes = todaysStudyMinutes(focusSessions);
 
   async function toggleHomework(hw: Homework) {
-    if (!user || !profile || !supabase || busyHomeworkId) return;
+    // One-way completion, matching completeStudySession's guard below — once
+    // completed, this is a no-op (not a toggle back to pending). Prevents
+    // XP-farming by repeatedly checking/unchecking the same item, and keeps
+    // completion semantics consistent across all three XP-awarding actions.
+    if (!user || !profile || !supabase || hw.status === "completed" || busyHomeworkId) return;
     setBusyHomeworkId(hw.id);
     try {
-      const nextStatus = hw.status === "pending" ? "completed" : "pending";
-      await supabase.from("homework").update({ status: nextStatus }).eq("id", hw.id);
-      if (nextStatus === "completed") {
-        await awardXP(supabase, user.id, profile, { xp_school: HOMEWORK_XP[hw.priority] });
-      }
+      await supabase.from("homework").update({ status: "completed" }).eq("id", hw.id);
+      await awardXP(supabase, user.id, profile, { xp_school: HOMEWORK_XP[hw.priority] });
       await Promise.all([refreshProfile(), refetchHomework()]);
     } finally {
       setBusyHomeworkId(null);
+    }
+  }
+
+  async function addHomework(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase || !user || !newHwSubject.trim() || !newHwTitle.trim() || !newHwDueDate || addingHw) return;
+    setAddingHw(true);
+    try {
+      await supabase.from("homework").insert({
+        user_id: user.id,
+        subject: newHwSubject.trim(),
+        title: newHwTitle.trim(),
+        due_date: newHwDueDate,
+        priority: "medium",
+        status: "pending",
+      });
+      setNewHwSubject("");
+      setNewHwTitle("");
+      setNewHwDueDate("");
+      await refetchHomework();
+    } finally {
+      setAddingHw(false);
     }
   }
 
@@ -251,10 +278,10 @@ export default function StudentSchoolHome() {
                   <CardContent className="flex items-center gap-3 p-4">
                     <button
                       type="button"
-                      aria-label={isCompleted ? "Mark as pending" : "Mark as complete"}
+                      aria-label="Mark as complete"
                       onClick={() => toggleHomework(hw)}
-                      disabled={busyHomeworkId === hw.id}
-                      className="shrink-0 text-muted-foreground transition-colors hover:text-success disabled:opacity-40"
+                      disabled={isCompleted || busyHomeworkId === hw.id}
+                      className="shrink-0 text-muted-foreground transition-colors hover:text-success disabled:cursor-default disabled:opacity-40"
                     >
                       {isCompleted ? <CheckCircle2 className="h-6 w-6 text-success" /> : <Circle className="h-6 w-6" />}
                     </button>
@@ -271,6 +298,38 @@ export default function StudentSchoolHome() {
             })}
           </div>
         )}
+        <form onSubmit={addHomework} className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              value={newHwSubject}
+              onChange={(e) => setNewHwSubject(e.target.value)}
+              placeholder="Subject…"
+              className="h-11 w-28 shrink-0 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            />
+            <input
+              value={newHwTitle}
+              onChange={(e) => setNewHwTitle(e.target.value)}
+              placeholder="Add homework…"
+              className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            />
+            <input
+              type="date"
+              value={newHwDueDate}
+              onChange={(e) => setNewHwDueDate(e.target.value)}
+              aria-label="Due date"
+              required
+              className="h-11 shrink-0 rounded-full border border-border bg-surface px-3 text-sm text-foreground outline-none focus:border-accent/60"
+            />
+            <button
+              type="submit"
+              disabled={addingHw || !newHwSubject.trim() || !newHwTitle.trim() || !newHwDueDate}
+              aria-label="Add homework"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+        </form>
       </section>
 
       <section>

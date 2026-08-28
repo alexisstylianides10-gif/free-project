@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, Sparkles } from "lucide-react";
+import { CalendarClock, Sparkles, Plus } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useExams } from "@/lib/hooks/domain";
 import { useStudySubjects, useStudyTopics } from "@/lib/hooks/study";
@@ -20,6 +20,9 @@ export default function ExamsPage() {
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: topics } = useStudyTopics(user?.id);
   const [linkingId, setLinkingId] = useState<string | null>(null);
+  const [newSubject, setNewSubject] = useState("");
+  const [newDate, setNewDate] = useState("");
+  const [adding, setAdding] = useState(false);
 
   const sortedExams = useMemo(() => [...exams].sort((a, b) => a.exam_date.localeCompare(b.exam_date)), [exams]);
 
@@ -33,10 +36,54 @@ export default function ExamsPage() {
     setLinkingId(null);
   }
 
+  async function addExam(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase || !user || !newSubject.trim() || !newDate || adding) return;
+    setAdding(true);
+    try {
+      await supabase.from("exams").insert({
+        user_id: user.id,
+        subject: newSubject.trim(),
+        title: newSubject.trim(),
+        exam_date: newDate,
+      });
+      setNewSubject("");
+      setNewDate("");
+      await refetch();
+    } finally {
+      setAdding(false);
+    }
+  }
+
   return (
     <div className="space-y-5">
+      <form onSubmit={addExam} className="flex items-center gap-2">
+        <input
+          value={newSubject}
+          onChange={(e) => setNewSubject(e.target.value)}
+          placeholder="Add an exam (e.g. Biology)…"
+          className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+        />
+        <input
+          type="date"
+          value={newDate}
+          onChange={(e) => setNewDate(e.target.value)}
+          aria-label="Exam date"
+          required
+          className="h-11 shrink-0 rounded-full border border-border bg-surface px-3 text-sm text-foreground outline-none focus:border-accent/60"
+        />
+        <button
+          type="submit"
+          disabled={adding || !newSubject.trim() || !newDate}
+          aria-label="Add exam"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </form>
+
       {sortedExams.length === 0 ? (
-        <EmptyState icon={CalendarClock} title="No exams on the horizon yet" subtitle="Add an exam to start tracking your countdown." />
+        <EmptyState icon={CalendarClock} title="No exams on the horizon yet" subtitle="Add an exam above to start tracking your countdown." />
       ) : (
         sortedExams.map((exam) => {
           const readiness = exam.study_subject_id ? subjectReadiness(topics.filter((t) => t.subject_id === exam.study_subject_id)) : null;

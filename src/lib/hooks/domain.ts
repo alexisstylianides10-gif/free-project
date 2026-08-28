@@ -110,7 +110,16 @@ export function useBusinessMilestones(userId?: string) {
 }
 
 export function useBusinessMetrics(userId?: string) {
-  return useTableRows<BusinessMetric>("business_metrics", userId, { orderBy: { column: "logged_date", ascending: false } });
+  // Secondary `created_at` tiebreaker: `logged_date` is day-granularity, so
+  // two entries of the same metric_key logged the same day would otherwise
+  // sort in an unspecified/unstable order, breaking BusinessGrowHome's
+  // "latest vs prior" trend badge for that metric.
+  return useTableRows<BusinessMetric>("business_metrics", userId, {
+    orderBy: [
+      { column: "logged_date", ascending: false },
+      { column: "created_at", ascending: false },
+    ],
+  });
 }
 
 export function useBusinessContentIdeas(userId?: string) {
