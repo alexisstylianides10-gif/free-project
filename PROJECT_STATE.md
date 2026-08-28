@@ -171,3 +171,23 @@ in **`QA_FULL_APP_REPORT.md`** at the repo root (not duplicated here — it's lo
 **Status: not signed off as comprehensively tested end-to-end.** Bugs 1-3 go to Dev; Bug 4 is a scope
 call for Cato. Recommend next pass gets live DB access restored (MCP tool or egress allow-list) before
 "whole app tested" can honestly be claimed.
+
+---
+
+## UI PREMIUM VISUAL PASS (Product, isolated worktree — parallel with Dev's codebase audit and QA's full-app test)
+
+CEO brief: make the UI look genuinely premium/professional-caliber ("came from 100,000 people web development/app development"), not incremental tweaks. Mandated scope strategy: tokens first (`globals.css`/`tailwind.config.ts`), then shared primitives, only bespoke screens if the uplift doesn't already cover it. Figma/Canva authorized; Lovable explicitly out of scope (separate hosted app, can't edit this codebase).
+
+**Figma/Canva note (No-BS):** neither tool was actually exposed as a callable tool in this execution session (only Read/Write/Edit/Bash/Glob/Grep/WebSearch were available) despite being authorized. Did not fabricate a Figma file/link. Did the design-system work directly in tokens with real Playwright render-harness verification substituting for a Figma mockup review. No genuine Canva need arose — every icon use is already covered by Lucide.
+
+**What shipped (8 files, tokens + primitives only, no screen restructuring):** `src/app/globals.css` + `tailwind.config.ts` — multi-layer elevation/shadow system replacing single soft-blur shadows, light-mode `--shadow-color` deliberately enriched (light has almost no luminance gap between card and page to lean on), new global `:focus-visible` halo ring (previously **zero** focus states existed anywhere in the app — grepped, confirmed), `.glass` refinement (blur/saturate/border), `text-wrap: balance` on headings. `Card.tsx`/`ProgressBar.tsx`/`RadialStat.tsx`/`StatTile.tsx` — transition-shadow, inset track groove, stronger ring track color, `tabular-nums`. Two 1-line mechanical touches in `StudentHome.tsx`/`BusinessHome.tsx` swapping an existing local `HOVER_LIFT` constant's shadow token (no grid/structural changes — `col-start`/`row-start` grepped identical before/after).
+
+**Real bug caught mid-pass, not just a design choice:** `.glass`'s own `box-shadow` was silently overriding the `shadow-card` Tailwind utility applied alongside it on every `Card` (same CSS property, `.glass` sits later in the compiled stylesheet, so it always won) — the app's card elevation was effectively half-dead before this pass; no shadow-token change would have been visible until this was found and fixed (moved the glass "top-edge highlight" into the shadow tokens themselves via a new `--card-highlight` variable instead of `.glass` owning `box-shadow`).
+
+**Deferred, with reasoning (see `UI_REDESIGN_REPORT.md`):** typography scale consolidation (49 arbitrary `text-[Npx]` usages across ~30 files — real but too broad/low-value for one pass), border-radius scale (large-radius language is consistent and part of existing brand identity, not a bug), any screen-level redesign beyond the two mechanical `HOVER_LIFT` touches (the token+primitive uplift alone visibly fixed the biggest issue — flat, undefined light-mode cards — on every screenshotted screen).
+
+**Verification:** no live Supabase session in this worktree, so built a real-component render harness (not hand-approximated HTML) — bundled the actual `Card`/`Button`/`Badge`/`ProgressBar`/`RadialStat`/`StatTile`/`MissionHeroCard`/`EmptyState`/`ScreenHeader`/real Lucide icons/real `cn`/`deadlines` lib via esbuild with mock data, rendered via `react-dom/server`, compiled through the actual `tailwind.config.ts`/`globals.css`, screenshotted with Playwright/Chromium at 390px/1280px, light/dark, before/after, for Home (both tracks), School/Exams, Deadlines, Coach — same harness methodology QA used in the prior UI initiative. Also verified `:focus-visible` with real keyboard Tab navigation (`document.activeElement` + screenshot), not just visual inspection. Harness lived in a git-ignored `.harness-tmp/` at repo root, deleted before final verification — `git status` confirmed clean apart from the 8 intentional source files. `npx tsc --noEmit` and `npx next build` both clean (all 42 routes) after harness deletion.
+
+**Not done in this pass:** functional/data/route changes (none — pure visual pass, confirmed via `git diff` file list), Dev-side implementation review, QA sign-off (both out of scope for this isolated worktree; Cato reconciles across all three parallel worktrees).
+
+DEPLOYMENT STATUS (this pass): not deployed — isolated worktree, awaiting Cato's reconciliation across the parallel Dev/QA/Product worktrees before merge.

@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PriorityDot } from "@/components/ui/PriorityDot";
 
-const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-glow-accent";
+const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-float";
 
 function greeting(): string {
   const h = new Date().getHours();
