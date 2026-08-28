@@ -310,7 +310,7 @@ export default function StudentSchoolHome() {
               value={newHwTitle}
               onChange={(e) => setNewHwTitle(e.target.value)}
               placeholder="Add homework…"
-              className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -320,7 +320,8 @@ export default function StudentSchoolHome() {
               onChange={(e) => setNewHwDueDate(e.target.value)}
               aria-label="Due date"
               required
-              className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
+              min={todayISO()}
+              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
             />
             <button
               type="submit"

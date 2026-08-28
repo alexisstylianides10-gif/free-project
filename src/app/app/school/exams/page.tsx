@@ -8,7 +8,7 @@ import { useExams } from "@/lib/hooks/domain";
 import { useStudySubjects, useStudyTopics } from "@/lib/hooks/study";
 import { subjectReadiness } from "@/lib/study/recommendation";
 import { supabase } from "@/lib/supabase/client";
-import { formatCountdown } from "@/lib/utils";
+import { formatCountdown, todayISO } from "@/lib/utils";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -71,7 +71,8 @@ export default function ExamsPage() {
             onChange={(e) => setNewDate(e.target.value)}
             aria-label="Exam date"
             required
-            className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
+            min={todayISO()}
+            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
           />
           <button
             type="submit"
