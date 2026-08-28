@@ -154,7 +154,7 @@ export default function UpgradePage() {
                     ) : (
                       <span className="inline-flex items-center gap-1">
                         Yearly
-                        <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-bold text-success">
+                        <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-2xs font-bold text-success">
                           -{yearlySavingsPercent}%
                         </span>
                       </span>

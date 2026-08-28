@@ -17,7 +17,7 @@ export function CareerMatchRow({ career, percent }: { career: Career; percent: n
       </span>
       <span className="shrink-0 text-right">
         <span className="block text-sm font-bold text-accent">{percent}%</span>
-        <span className="block text-[10px] text-muted-foreground">match</span>
+        <span className="block text-2xs text-muted-foreground">match</span>
       </span>
       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
     </Link>

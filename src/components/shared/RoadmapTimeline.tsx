@@ -39,7 +39,7 @@ export function RoadmapTimeline({ steps }: { steps: RoadmapStep[] }) {
             )}
           </span>
           <div className="pt-0.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">
               Level {step.level}
             </p>
             <p className={cn("text-sm font-semibold", step.status === "locked" ? "text-muted-foreground" : "text-foreground")}>

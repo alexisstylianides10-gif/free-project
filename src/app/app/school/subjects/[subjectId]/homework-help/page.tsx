@@ -125,7 +125,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ subject
               <div
                 className={cn(
                   "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                  m.role === "user" ? "bg-gradient-brand text-white" : "glass text-foreground"
+                  m.role === "user" ? "bg-gradient-brand text-white shadow-subtle" : "glass text-foreground shadow-subtle"
                 )}
               >
                 {m.content}
@@ -134,7 +134,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ subject
           ))}
           {sending && (
             <div className="flex justify-start">
-              <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground">
+              <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
               </div>
             </div>
@@ -143,7 +143,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ subject
       )}
       {error && <p className="text-xs text-danger">{error}</p>}
 
-      <p className="text-center text-[11px] text-muted-foreground">Homework Help teaches the concept — it won&rsquo;t just hand you the answer.</p>
+      <p className="text-center text-caption text-muted-foreground">Homework Help teaches the concept — it won&rsquo;t just hand you the answer.</p>
     </div>
   );
 }

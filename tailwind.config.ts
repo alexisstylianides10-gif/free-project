@@ -18,6 +18,28 @@ const config: Config = {
           "sans-serif",
         ],
       },
+      // Named tiers for the sizes the app was already reaching for via
+      // arbitrary `text-[Npx]` values (round 2 of the visual pass: audited
+      // 51 arbitrary usages across ~30 files). Every value here is copied
+      // verbatim from what was already in use — this renames the scale,
+      // it doesn't change it, so there's zero visual diff, just less risk
+      // of the next screen picking 12px where the rest of the app uses 11.
+      // Deliberately plain strings (font-size only, no bundled line-height)
+      // so these always compose safely with whatever `leading-*` class a
+      // call site already has, instead of the two fighting over which
+      // line-height wins in the cascade — the same class of bug the
+      // `.glass`/`shadow-card` box-shadow collision was, last pass.
+      fontSize: {
+        "2xs": "10px", // nav labels, tiny inline badge counters
+        caption: "11px", // eyebrow labels, disclaimers, small badges — the single most-used tier
+        tooltip: "12px", // Tooltip primitive only
+        label: "13px", // tab pills, small buttons
+        body: "15px", // onboarding copy, card titles, large buttons
+        title: "22px", // mobile page/section h1s
+        "title-lg": "28px", // desktop variant of `title` (StudentHome/BusinessHome lg:)
+        heading: "26px", // ScreenHeader and onboarding/choose-plan success headlines
+        display: "34px", // landing page hero only
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

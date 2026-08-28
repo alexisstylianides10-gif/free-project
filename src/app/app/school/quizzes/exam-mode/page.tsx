@@ -174,7 +174,7 @@ export default function ExamModeSetupPage() {
                     )}
                   >
                     <span className="block text-sm font-bold">{p.count} Qs</span>
-                    <span className="block text-[11px] opacity-80">{p.timeMin} min</span>
+                    <span className="block text-caption opacity-80">{p.timeMin} min</span>
                   </button>
                 ))}
               </div>
@@ -202,7 +202,7 @@ export default function ExamModeSetupPage() {
             <Button variant="mission" size="lg" className="w-full" disabled={!subjectId} onClick={startExam}>
               Start Mock Exam
             </Button>
-            <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+            <p className="text-center text-caption leading-relaxed text-muted-foreground">
               Practice-based signal only — a strong mock score is a good sign, not a guarantee for your real exam.
             </p>
           </CardContent>

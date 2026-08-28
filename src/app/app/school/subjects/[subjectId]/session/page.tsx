@@ -398,7 +398,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
         </div>
 
         {remainingSec === 0 && !confirmingEnd && (
-          <div className="glass rounded-xl px-3.5 py-2.5 text-xs text-muted-foreground">
+          <div className="glass rounded-xl px-3.5 py-2.5 text-xs text-muted-foreground shadow-subtle">
             Time&rsquo;s up — keep going if you&rsquo;re in the zone, or end the session whenever you&rsquo;re ready.
           </div>
         )}
@@ -431,7 +431,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
           <div className="flex h-full flex-col">
             <div ref={learnScrollRef} className="flex-1 space-y-3 overflow-y-auto pb-3 scrollbar-none">
               {learnMessages.length === 0 && !learnSending && (
-                <div className="glass rounded-2xl p-4 text-sm text-muted-foreground">
+                <div className="glass rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
                   Ask a question, or pick a level below to get an explanation of{" "}
                   {explicitTopic ? explicitTopic.name : subject.name} started.
                 </div>
@@ -441,7 +441,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
                   <div
                     className={cn(
                       "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                      m.role === "user" ? "bg-gradient-brand text-white" : "glass text-foreground"
+                      m.role === "user" ? "bg-gradient-brand text-white shadow-subtle" : "glass text-foreground shadow-subtle"
                     )}
                   >
                     {m.content}
@@ -450,7 +450,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
               ))}
               {learnSending && (
                 <div className="flex justify-start">
-                  <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground">
+                  <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
                   </div>
                 </div>
@@ -503,7 +503,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
         {mode === "practice" && (
           <div className="space-y-4">
             {!activeTopic ? (
-              <div className="glass rounded-2xl p-4 text-sm text-muted-foreground">
+              <div className="glass rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
                 Add some material to this subject first so there&rsquo;s content to practice.
               </div>
             ) : (
@@ -514,11 +514,11 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
                   </p>
                 )}
                 {practiceLoading && !practiceQuestion ? (
-                  <div className="glass flex items-center gap-2 rounded-2xl p-4 text-sm text-muted-foreground">
+                  <div className="glass flex items-center gap-2 rounded-2xl p-4 text-sm text-muted-foreground shadow-subtle">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading a question…
                   </div>
                 ) : practiceQuestion ? (
-                  <div className="glass space-y-3 rounded-2xl p-4">
+                  <div className="glass space-y-3 rounded-2xl p-4 shadow-card">
                     <p className="text-sm font-semibold leading-relaxed text-foreground">{practiceQuestion}</p>
                     {!practiceResult ? (
                       <>
@@ -558,11 +558,11 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
         {mode === "quiz" && (
           <div className="space-y-4">
             {!activeTopic ? (
-              <div className="glass rounded-2xl p-4 text-sm text-muted-foreground">
+              <div className="glass rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
                 Add some material to this subject first so there&rsquo;s content to quiz on.
               </div>
             ) : quizDone ? (
-              <div className="glass space-y-3 rounded-2xl p-5 text-center">
+              <div className="glass space-y-3 rounded-2xl p-5 text-center shadow-card">
                 <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Quick Check Complete</p>
                 <p className="text-3xl font-extrabold text-foreground">
                   {quizScore}/{QUIZ_LENGTH}
@@ -582,11 +582,11 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
                   Question {quizIndex + 1} of {QUIZ_LENGTH}
                 </p>
                 {quizLoading && !quizQuestion ? (
-                  <div className="glass flex items-center gap-2 rounded-2xl p-4 text-sm text-muted-foreground">
+                  <div className="glass flex items-center gap-2 rounded-2xl p-4 text-sm text-muted-foreground shadow-subtle">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading a question…
                   </div>
                 ) : quizQuestion ? (
-                  <div className="glass space-y-3 rounded-2xl p-4">
+                  <div className="glass space-y-3 rounded-2xl p-4 shadow-card">
                     <p className="text-sm font-semibold leading-relaxed text-foreground">{quizQuestion}</p>
                     {!quizResult ? (
                       <>
@@ -621,11 +621,11 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
         {mode === "review" && (
           <div className="space-y-3">
             {!activeTopic ? (
-              <div className="glass rounded-2xl p-4 text-sm text-muted-foreground">
+              <div className="glass rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
                 Add some material to this subject first so there&rsquo;s content to review.
               </div>
             ) : (
-              <div className="glass space-y-4 rounded-2xl p-4">
+              <div className="glass space-y-4 rounded-2xl p-4 shadow-card">
                 {!explicitTopic && (
                   <p className="text-xs text-muted-foreground">
                     Reviewing your weakest topic: <span className="font-semibold text-foreground">{activeTopic.name}</span>
@@ -665,7 +665,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
             <Square className="h-3 w-3" /> End Session
           </button>
         ) : (
-          <div className="glass space-y-2.5 rounded-2xl p-4">
+          <div className="glass space-y-2.5 rounded-2xl p-4 shadow-raised">
             <p className="text-sm text-foreground">
               End this session? You&rsquo;ll have studied about{" "}
               <span className="font-bold">{Math.max(1, Math.round((durationMin * 60 - remainingSec) / 60))} min</span>

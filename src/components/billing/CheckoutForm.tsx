@@ -45,7 +45,7 @@ function InnerForm({ submitLabel, onSuccess }: { submitLabel: string; onSuccess:
       <Button type="submit" size="lg" className="w-full" disabled={!stripe || submitting}>
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}
       </Button>
-      <p className="flex items-center justify-center gap-1 text-center text-[11px] text-muted-foreground">
+      <p className="flex items-center justify-center gap-1 text-center text-caption text-muted-foreground">
         <Lock className="h-3 w-3" /> Payments are processed securely by Stripe.
       </p>
     </form>

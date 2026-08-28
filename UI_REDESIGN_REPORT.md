@@ -89,3 +89,89 @@ All harness files lived in a git-ignored, untracked `.harness-tmp/` directory at
 - **Mobile**: nothing in this pass is layout-affecting — every change is a color/shadow/token/transition value. Verified at 390px in the harness for all 5 screens, both themes; no overflow/wrap/misalignment.
 - **Both themes**: every token change was written for both `:root` (dark) and `.light`, and every harness screenshot was taken in both themes before and after.
 - **No functionality touched**: no data logic, routes, or track-architecture changes. Confirmed via `git diff` — the full diff is 8 files, all CSS/token/className changes.
+
+---
+
+## Round 2 — 2026-08-28
+
+CEO/Cato brief: pick up the two things explicitly deferred last round (typography-scale consolidation, screen-level polish on the newest UI), try Figma/Canva again first.
+
+### Figma/Canva, checked again
+
+Loaded the task instructions and looked for `use_figma`/Canva as callable tools in this session the same way I did last round. **Still not exposed** — my actual available tool set this session is Read/Write/Edit/Bash/Glob/Grep/WebSearch only. The MCP server list in my environment describes Figma/Canva/Railway/etc. capabilities in the abstract (background instructions), but none of those are callable functions I can invoke. Same honest conclusion as last round: did not fabricate a Figma file or mockup link. Did the work directly in code with real Playwright verification, same methodology as round 1.
+
+### 1. Typography scale — consolidated, not just audited this time
+
+Re-counted the arbitrary `text-[Npx]` usages: 51 occurrences across 30 files (grep `text-\[[0-9]+px\]`), 10 distinct pixel values: 10, 11, 12, 13, 14, 15, 22, 26, 28, 34.
+
+**Decision:** these were not random noise — grouping them by value showed real, repeated tiers already in de facto use (11px alone was 22 of the 51 occurrences, always for the same "eyebrow" uppercase-label/caption role). The risk the round-1 report flagged (a broad, high-regression-risk diff) turned out to be avoidable: instead of changing any rendered size, I **named the existing values as `fontSize` tokens in `tailwind.config.ts`** and did a pure find-and-replace of `text-[Npx]` → `text-{token}` everywhere. Every replacement preserves the exact pixel value — this is a rename, not a resize, so visual output is byte-for-byte identical; the value is purely in preventing the next screen from picking `12px` where the rest of the app uses `11px`.
+
+New tokens (`tailwind.config.ts`, `theme.extend.fontSize`): `2xs` (10px), `caption` (11px), `tooltip` (12px), `label` (13px), `body` (15px), `title` (22px), `title-lg` (28px), `heading` (26px), `display` (34px). One value, 14px, wasn't given a new token at all — it was already load-bearing-identical to Tailwind's own default `text-sm` (0.875rem = 14px), so `OAuthButtons.tsx` now just uses `text-sm` instead of inventing a redundant token for a value the framework already names.
+
+**Deliberately plain string values, not `[fontSize, {lineHeight}]` tuples** — several call sites already carry their own explicit `leading-*`/`tracking-*` classes (e.g. `text-[34px] leading-[1.15]` on the landing hero). Bundling a line-height into the token would create the exact same cascade-order risk this pass already found and fixed once before (`.glass`/`shadow-card`, round 1): two classes setting the same CSS property, order-dependent winner. Plain `fontSize` strings only ever set `font-size`, so they always compose safely with whatever `leading-*` a call site already has.
+
+Nothing was "left alone as load-bearing" in the sense of a value tied to a fixed-size icon — I checked (e.g. `Avatar.tsx`'s `sm` variant, `h-7 w-7 text-[11px]`) and none of the 51 usages were actually pinned to an icon's pixel dimensions; they're all typographic choices. So this pass converted all 51, not a subset.
+
+Verified via `grep -rE 'text-\[[0-9]+px\]' src` returning zero matches after the change, and confirmed the exact same count of each token class exists post-change (22× `caption`, 9× `body`, 5× `title`, 4× `heading`, 4× `2xs`, 2× `title-lg`, 2× `label`, 1× `display`, 1× `tooltip`) as there were px-values pre-change.
+
+### 2. Real bug caught: `.glass` cards with no `shadow-*` utility went fully flat after round 1's fix
+
+Round 1 fixed `.glass` silently overriding `shadow-card` on every `Card`, by moving the box-shadow entirely out of `.glass` and into the `shadow-*` tokens — correct fix, but it created a hard invariant: **any `glass` div with no explicit `shadow-*` utility now renders with zero box-shadow at all**, where before it always got the base `.glass` shadow for free. Grepped every raw `glass` className usage outside `Card.tsx` (which always pairs it via the component) and found **25 of them, across 5 files, had no shadow-* utility paired**: the entire Coach page (thread-history popover, both message-bubble types, the "Thinking…" indicator, the recommendation card), the nearly-identical subject-session AI tutor page (`session/page.tsx`, 14 separate `glass` blocks — the practice/quiz/review mode cards, chat bubbles, end-session confirm dialog), the homework-help chat page, and two onboarding result-screen summary cards (`StudentOnboarding.tsx`'s career-match cards, `BusinessOnboarding.tsx`'s idea/target-customer preview cards).
+
+This is a genuine, previously-shipped regression, not a design opinion — it was invisible in round 1 because that pass's own screenshots were of Home/Deadlines/School-Exams, not Coach or the tutor chat, so it was never actually rendered and checked. Caught it this round specifically because the task asked for a screen-level pass on Coach.
+
+**Fix:** added the appropriate `shadow-*` tier to all 25 call sites, tiered by role rather than uniformly:
+- `shadow-subtle` — transient/small elements: chat bubbles (both user and assistant — user bubbles use `bg-gradient-brand`, not `.glass`, but were equally shadow-less and would have looked visually inconsistent sitting next to a now-shadowed assistant bubble), loading/"Thinking…" indicators.
+- `shadow-card` — standard content cards: empty-state prompts, the Coach recommendation card, onboarding result-preview cards, the tutor's practice/quiz/review question cards.
+- `shadow-raised` — floating/popover-like surfaces that should read as sitting above the page: Coach's thread-history dropdown, the tutor's end-session confirm dialog.
+
+Verified with the Playwright harness (see below) — before this fix, Coach's cards, chat bubbles, and thread panel were flat/undefined against the background in both themes; after, they read as lifted, consistent with the Home/School cards round 1 already fixed.
+
+### 3. Screen-level polish: the two brand-new forms from last round's Deadlines/QA-fix work
+
+`StudentSchoolHome.tsx`'s add-homework form (3 real inputs: subject, title, required due date) and `exams/page.tsx`'s add-exam form (2 inputs: subject/title merged, required due date) were both added by Cato in the prior reconciliation pass to close a real functional gap QA found — but neither ever got a design pass. Read them cold and found a real mobile problem: the homework form crammed **4 elements into one flex row** (a fixed `w-28` subject input, a flex-1 title input, a native date input, and a 44px circular submit button) — at 390px, after the fixed-width elements and gaps are subtracted, the flex-1 title input was left with roughly 40-50px of usable width, which is broken, not just tight. The exam form crammed 3 elements into one row, less broken but still cramped, and inconsistent with the two-row pattern `BusinessPlanHome.tsx`'s existing add-milestone form already established (title row, then a secondary date row).
+
+**Fix:** restructured both to a two-row layout, matching the visual grammar `BusinessPlanHome` already uses (each row has at most one `flex-1` element plus fixed/shrink-0 siblings, never three-plus items competing for the same row):
+- Homework: row 1 = subject (`w-28 sm:w-32`, shrink-0) + title (`flex-1`); row 2 = required due date (`flex-1`, upgraded from a cramped `shrink-0` sliver to full remaining width) + submit button.
+- Exam: row 1 = subject/title input, now full width instead of squeezed against a date input and button; row 2 = required due date (`flex-1`) + submit button.
+
+No new components, no new props, same pill-input visual language (`h-11 rounded-full border-border bg-surface`), same button styling — purely a row-grouping change. Verified in the harness at 390px: both forms now have generous breathing room for every input, no squeeze.
+
+### 4. What I looked at and left alone
+
+- **Deadlines page** (`deadlines/page.tsx`): considered tinting the source-icon circle (currently always neutral `bg-muted`) by urgency bucket to reinforce the section coloring. Decided against it — the urgency signal is already carried by the countdown badge's tone, and the group header already labels the bucket in text; a third color signal on the icon would be redundant, and the icon's neutral gray is doing useful work today as a "type" indicator (exam vs. homework vs. milestone), which a bucket-tinted icon would compete with. Left unchanged — this is exactly the guiding-question discipline the brief asked for, applied to *not* making a change.
+- **Home (`StudentHome.tsx`/`BusinessHome.tsx`)**: re-read both in full looking for anything beyond the typography-token mechanical swap. Grid safety, empty-state coverage, and conditional-card handling were all already solid from round 1 and Cato's reconciliation pass; found nothing that cleared the bar for a change without restructuring, which is out of scope per Cato's explicit "no redesign of Home" from the Deadlines initiative.
+- **Border-radius scale, bespoke screen redesigns**: same reasoning as round 1, still holds — not revisited.
+
+### Verification methodology (round 2)
+
+Same real-component-render-harness approach as round 1, extended to cover this round's actual changes. Compiled the real `tailwind.config.ts`/`globals.css` via the Tailwind CLI (`npx tailwindcss -i globals.css -o out.css`) — this alone validates every new `fontSize` token actually generates a utility class. Bundled a harness entry (`esbuild`, `platform: node`, `jsx: automatic`, `react`/`react-dom` marked external so the bundle shares the host's React instance and avoids the "invalid hook call" duplicate-React trap) importing the real `Card`/`Button`/`Badge`/`EmptyState`/`ScreenHeader` components plus hand-copied JSX fragments using the **exact, verbatim classNames** from the real Coach page and both redesigned forms (copy-pasted from the actual source after editing, not approximated). Rendered to static HTML via `react-dom/server`, screenshotted with Playwright/Chromium at 390px and 1280px, light and dark — 4 renders covering: the Coach glass/shadow fix (thread panel, both bubble types, thinking indicator, recommendation card), both redesigned add-homework/add-exam forms, the full new typography scale (all 9 tokens rendered together with their intended weight/case), and an `EmptyState`/`ScreenHeader` sanity check (confirms `ScreenHeader`'s pre-existing `text-heading` class, now a named token instead of `text-[26px]`, still renders identically).
+
+All 4 renders confirm: Coach's cards/bubbles/panel now read as clearly lifted in both themes (previously flat), both forms have comfortable input widths at 390px, and the typography scale renders as a coherent, readable hierarchy with no size regressions.
+
+Harness lived in a git-ignored `.harness-tmp/` at repo root (same location/pattern as round 1) for the duration of verification and was deleted before the final `tsc`/build/commit — `git status` confirmed clean apart from the intentional 34 source files below.
+
+### Files changed (round 2)
+
+- `tailwind.config.ts` — new `fontSize` scale (9 named tokens)
+- 30 files — mechanical `text-[Npx]` → named token replacement (see full list via `git diff --stat`)
+- `src/app/app/coach/page.tsx` — 5 `shadow-*` additions to previously shadow-less `glass` elements
+- `src/app/app/school/subjects/[subjectId]/session/page.tsx` — 14 `shadow-*` additions
+- `src/app/app/school/subjects/[subjectId]/homework-help/page.tsx` — 2 `shadow-*` additions
+- `src/app/onboarding/StudentOnboarding.tsx`, `src/app/onboarding/BusinessOnboarding.tsx` — 1 and 2 `shadow-*` additions respectively
+- `src/app/app/school/StudentSchoolHome.tsx` — add-homework form restructured to two rows
+- `src/app/app/school/exams/page.tsx` — add-exam form restructured to two rows
+
+(The `shadow-*` and typography-token changes overlap several of the same files — e.g. `coach/page.tsx` has both a `text-[22px]`→`text-title` rename and 5 new `shadow-*` classes.)
+
+### Build/type verification (round 2)
+
+- `npx tsc --noEmit` — clean, run directly, after `.harness-tmp/` was deleted.
+- `npx next build` — clean, all 42 routes compiled/prerendered, run directly, after `.harness-tmp/` was deleted.
+
+### Hard constraints — confirmed not regressed (round 2)
+
+- **CSS Grid dashboards**: grepped `col-start` in `StudentHome.tsx`/`BusinessHome.tsx` after all edits — same 5 and 6 pairs (respectively) as before, all still paired with `row-start`. This round touched zero grid-positioning classNames on either file (only the pre-existing `text-[22px]`/`text-[28px]` → `text-title`/`text-title-lg` rename, which round 1 already established as a safe 1-line token swap).
+- **Mobile**: verified in the harness at 390px — both redesigned forms, the typography scale, and the Coach shadow fix all render correctly with no overflow/wrap/misalignment. The form restructuring is the one change this round that's genuinely layout-affecting (row-grouping), and it was specifically done *to fix* a mobile problem, verified before/after in the harness.
+- **Both themes**: every harness render was taken in both `light` and dark (unclassed `:root`) before finalizing.
+- **No functionality touched**: confirmed via `git diff` — every change is a className/token edit (renames, added shadow utilities, or DOM re-grouping of existing form inputs with no changed `name`/`value`/`onChange`/submit-handler logic). No hooks, no Supabase calls, no routes touched.

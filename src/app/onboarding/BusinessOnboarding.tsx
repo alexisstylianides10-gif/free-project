@@ -124,7 +124,7 @@ export default function BusinessOnboarding() {
             onChange={(e) => setAnswers({ ...answers, businessIdea: e.target.value })}
             placeholder="e.g. A subscription box for... (or leave blank)"
             rows={5}
-            className="w-full resize-none rounded-2xl border border-border bg-surface p-4 text-[15px] text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            className="w-full resize-none rounded-2xl border border-border bg-surface p-4 text-body text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
           />
         </Question>
       )}
@@ -152,7 +152,7 @@ export default function BusinessOnboarding() {
             onChange={(e) => setAnswers({ ...answers, targetCustomer: e.target.value })}
             placeholder="e.g. Busy parents of toddlers in the US (or leave blank)"
             rows={4}
-            className="w-full resize-none rounded-2xl border border-border bg-surface p-4 text-[15px] text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            className="w-full resize-none rounded-2xl border border-border bg-surface p-4 text-body text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
           />
         </Question>
       )}
@@ -238,7 +238,7 @@ export default function BusinessOnboarding() {
 function Question({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div className="flex h-full flex-col">
-      <h2 className="text-[22px] font-bold leading-snug tracking-tight text-foreground">{title}</h2>
+      <h2 className="text-title font-bold leading-snug tracking-tight text-foreground">{title}</h2>
       {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
       <div className="mt-6 scrollbar-none flex-1 overflow-y-auto pb-2">{children}</div>
     </div>
@@ -251,20 +251,20 @@ function ResultsScreen({ answers, onContinue }: { answers: Answers; onContinue: 
       <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col md:max-w-lg lg:max-w-xl">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Business Snapshot</p>
-        <h1 className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">Your plan is ready to build.</h1>
+        <h1 className="mt-1 text-heading font-extrabold tracking-tight text-foreground">Your plan is ready to build.</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {answers.businessIdea.trim()
             ? `${branding.name} will research your idea and set up a starter milestone checklist tailored to it.`
             : `${branding.name} will suggest a business direction based on your strengths, then set up a starter milestone checklist for it.`}
         </p>
 
-        <div className="mt-8 glass rounded-2xl p-4">
+        <div className="mt-8 glass rounded-2xl p-4 shadow-card">
           <p className="text-sm font-semibold text-foreground">Your idea</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {answers.businessIdea.trim() || "Not sure yet — we'll suggest one based on your strengths."}
           </p>
         </div>
-        <div className="mt-3 glass rounded-2xl p-4">
+        <div className="mt-3 glass rounded-2xl p-4 shadow-card">
           <p className="text-sm font-semibold text-foreground">Target customer</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {answers.targetCustomer.trim() || "Not sure yet — we'll figure this out together."}

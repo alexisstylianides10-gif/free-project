@@ -166,7 +166,7 @@ export default function StudentOnboarding() {
             value={answers.schoolName}
             onChange={(e) => setAnswers({ ...answers, schoolName: e.target.value })}
             placeholder="e.g. Lincoln High School"
-            className="h-12 w-full rounded-2xl border border-border bg-surface px-4 text-[15px] text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            className="h-12 w-full rounded-2xl border border-border bg-surface px-4 text-body text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
           />
         </Question>
       )}
@@ -276,7 +276,7 @@ function Question({
   return (
     <div className={`flex h-full flex-col ${className ?? ""}`}>
       {context && <p className="mb-2 text-sm font-medium italic text-accent">{context}</p>}
-      <h2 className="text-[22px] font-bold leading-snug tracking-tight text-foreground">{title}</h2>
+      <h2 className="text-title font-bold leading-snug tracking-tight text-foreground">{title}</h2>
       {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
       <div className="mt-6 scrollbar-none flex-1 overflow-y-auto pb-2">{children}</div>
     </div>
@@ -317,16 +317,16 @@ function ResultsScreen({ matches, slugs, onContinue }: { matches: number[]; slug
       <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col md:max-w-lg lg:max-w-xl">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Future Map</p>
-        <h1 className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">Your Future Map is ready.</h1>
+        <h1 className="mt-1 text-heading font-extrabold tracking-tight text-foreground">Your Future Map is ready.</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Based on your answers, here are the directions where you&rsquo;re most likely to thrive.
         </p>
 
         <div className="mt-8 space-y-3">
           {careers.map((career, i) => (
-            <div key={career.slug} className="glass rounded-2xl p-4">
+            <div key={career.slug} className="glass rounded-2xl p-4 shadow-card">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2.5 text-[15px] font-semibold text-foreground">
+                <span className="flex items-center gap-2.5 text-body font-semibold text-foreground">
                   <span className="text-xl">{career.icon}</span>
                   {career.name}
                 </span>

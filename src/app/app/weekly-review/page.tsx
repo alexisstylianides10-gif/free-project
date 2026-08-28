@@ -262,7 +262,7 @@ export default function WeeklyReviewPage() {
                 <ol className="space-y-3">
                   {nextFocus.map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-foreground">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[11px] font-bold text-accent">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-caption font-bold text-accent">
                         {i + 1}
                       </span>
                       <span className="leading-relaxed">{item}</span>
