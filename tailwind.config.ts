@@ -62,10 +62,19 @@ const config: Config = {
         "3xl": "34px",
       },
       boxShadow: {
-        subtle: "0 1px 2px hsl(var(--shadow-color) / 0.2)",
-        card: "0 1px 3px hsl(var(--shadow-color) / 0.3), 0 12px 32px -16px hsl(var(--shadow-color) / 0.5)",
-        raised: "0 4px 16px hsl(var(--shadow-color) / 0.4)",
-        pop: "0 20px 48px -12px hsl(var(--shadow-color) / 0.6)",
+        // Multi-layer elevation recipe (crisp near-shadow + soft diffuse
+        // far-shadow) instead of a single soft blur — the near layer is
+        // what actually reads as "this surface is lifted," which the
+        // single-shadow version was missing, especially on the near-white
+        // light theme where there's little luminance gap to rely on.
+        subtle: "0 1px 2px hsl(var(--shadow-color) / 0.22)",
+        card: "inset 0 1px 0 var(--card-highlight), 0 1px 1px hsl(var(--shadow-color) / 0.22), 0 4px 10px -4px hsl(var(--shadow-color) / 0.32), 0 20px 40px -20px hsl(var(--shadow-color) / 0.55)",
+        raised: "inset 0 1px 0 var(--card-highlight), 0 2px 6px -1px hsl(var(--shadow-color) / 0.3), 0 10px 24px -8px hsl(var(--shadow-color) / 0.45)",
+        pop: "inset 0 1px 0 var(--card-highlight), 0 8px 16px -6px hsl(var(--shadow-color) / 0.35), 0 28px 56px -16px hsl(var(--shadow-color) / 0.55)",
+        // Neutral elevated hover shadow for interactive cards that aren't
+        // inherently accent-branded (a plain career-progress or CTA card
+        // shouldn't glow purple on hover just because it's clickable).
+        float: "inset 0 1px 0 var(--card-highlight), 0 12px 24px -8px hsl(var(--shadow-color) / 0.35), 0 32px 64px -24px hsl(var(--shadow-color) / 0.5)",
         "glow-accent": "0 12px 32px -10px hsl(var(--accent) / 0.55)",
         "glow-mission": "0 12px 32px -10px hsl(var(--mission-via) / 0.5)",
       },

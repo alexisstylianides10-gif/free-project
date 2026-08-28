@@ -19,7 +19,12 @@ export function ProgressBar({
   }[tone];
 
   return (
-    <div className={cn("h-2 w-full overflow-hidden rounded-full bg-muted", className)}>
+    <div
+      className={cn(
+        "h-2 w-full overflow-hidden rounded-full bg-muted shadow-[inset_0_1px_2px_hsl(var(--shadow-color)/0.35)]",
+        className
+      )}
+    >
       <div
         className={cn("h-full rounded-full transition-[width] duration-700 ease-out", toneClass)}
         style={{ width: `${Math.min(100, Math.max(0, value))}%` }}

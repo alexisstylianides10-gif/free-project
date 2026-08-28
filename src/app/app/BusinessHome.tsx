@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { badgeToneForBucket, bucketForDate } from "@/lib/deadlines";
 import { cn, formatCountdown } from "@/lib/utils";
 
-const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-glow-accent";
+const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-float";
 
 function greeting(): string {
   const h = new Date().getHours();

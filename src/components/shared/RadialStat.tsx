@@ -45,7 +45,7 @@ export function RadialStat({
               <stop offset="100%" stopColor={to} />
             </linearGradient>
           </defs>
-          <circle cx={size / 2} cy={size / 2} r={r} strokeWidth={strokeWidth} className="stroke-muted" fill="none" />
+          <circle cx={size / 2} cy={size / 2} r={r} strokeWidth={strokeWidth} className="stroke-border" fill="none" />
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -59,7 +59,7 @@ export function RadialStat({
             className="transition-[stroke-dashoffset] duration-700 ease-out"
           />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center text-lg font-bold text-foreground">{clamped}%</div>
+        <div className="absolute inset-0 flex items-center justify-center text-lg font-bold tabular-nums text-foreground">{clamped}%</div>
       </div>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
     </div>

@@ -19,7 +19,7 @@ export function StatTile({
         <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
         {suffix}
       </div>
-      <p className="mt-1 text-lg font-bold text-foreground">{value}%</p>
+      <p className="mt-1 text-lg font-bold tabular-nums text-foreground">{value}%</p>
       <ProgressBar value={value} tone={tone} className="mt-2 h-1.5" />
     </div>
   );

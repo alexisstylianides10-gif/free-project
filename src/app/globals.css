@@ -41,6 +41,11 @@
   --future: 28 92% 60%;
 
   --shadow-color: 230 60% 2%;
+  /* Faint top-edge highlight baked into the shadow-* tokens (see
+     tailwind.config.ts) — the classic glassmorphism "light catching an
+     edge" cue. Stored as a full color value (incl. alpha) since the two
+     themes need different alpha, not just different hues. */
+  --card-highlight: hsl(220 30% 100% / 0.06);
 
   color-scheme: dark;
 }
@@ -52,7 +57,7 @@
   --foreground: 230 30% 12%;
   --surface: 0 0% 100%;
   --surface-raised: 220 25% 97%;
-  --border: 220 16% 88%;
+  --border: 220 15% 85%;
   --border-strong: 220 14% 76%;
   --muted: 220 20% 94%;
   --muted-foreground: 222 12% 42%;
@@ -76,7 +81,13 @@
   --school: 206 80% 44%;
   --future: 28 82% 46%;
 
-  --shadow-color: 220 25% 72%;
+  /* Deliberately darker/richer than a literal sampled shadow would be —
+     light mode has almost no luminance gap between card and page (98% vs
+     100% surface) to lean on, so the shadow itself has to carry the sense
+     of elevation. A pale sampled tint just disappears at any reasonable
+     opacity; this reads as a real lifted surface without looking heavy. */
+  --shadow-color: 224 32% 42%;
+  --card-highlight: hsl(0 0% 100% / 0.75);
 
   color-scheme: light;
 }
@@ -111,6 +122,23 @@ body {
   color: hsl(var(--accent));
 }
 
+/* Global keyboard focus treatment — previously entirely absent from the app
+   (no :focus-visible/ring styling anywhere), a real accessibility and
+   polish gap for a product this far along. A halo ring (background-colored
+   gap + accent ring) rather than a hard outline so it automatically follows
+   whatever border-radius the focused element already has (pill buttons,
+   circular avatars, cards) instead of looking like a mismatched rectangle. */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px hsl(var(--background)), 0 0 0 5.5px hsl(var(--accent) / 0.65);
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -141,20 +169,26 @@ body {
 }
 
 /* Glass card: subtle translucent surface over the navy background, used
-   for nearly every card in the design so the app never feels flat. */
+   for nearly every card in the design so the app never feels flat.
+   Deliberately does NOT set box-shadow here — every real call site pairs
+   `.glass` with a `shadow-*` utility (Card.tsx always does), and a
+   box-shadow declared here would win the cascade over that utility (same
+   property, this rule sits later in the stylesheet) and silently swallow
+   it. The top-edge highlight lives inside the shadow-* tokens themselves
+   (see `--card-highlight` + tailwind.config.ts) so it composes with
+   elevation instead of fighting it. */
 .glass {
-  background: linear-gradient(180deg, hsl(220 30% 100% / 0.05), hsl(220 30% 100% / 0.02));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid hsl(220 30% 100% / 0.08);
+  background: linear-gradient(180deg, hsl(220 30% 100% / 0.06), hsl(220 30% 100% / 0.025));
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid hsl(220 30% 100% / 0.1);
 }
 
 /* Light mode needs a dark-tinted glass treatment — the white-tinted overlay
    above is invisible on a near-white background. */
 .light .glass {
-  background: linear-gradient(180deg, hsl(0 0% 100% / 0.9), hsl(220 20% 100% / 0.55));
-  border: 1px solid hsl(230 25% 12% / 0.08);
-  box-shadow: 0 1px 3px hsl(230 25% 12% / 0.05);
+  background: linear-gradient(180deg, hsl(0 0% 100% / 0.92), hsl(220 20% 100% / 0.6));
+  border: 1px solid hsl(230 25% 12% / 0.09);
 }
 
 .text-gradient-brand {

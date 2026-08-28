@@ -5,7 +5,7 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "glass rounded-2xl shadow-card",
+        "glass rounded-2xl shadow-card transition-shadow duration-200",
         className
       )}
       {...props}
