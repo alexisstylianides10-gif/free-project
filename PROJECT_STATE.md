@@ -138,3 +138,36 @@ CEO explicitly authorized this pass: seed real, disposable rows directly in prod
 **Cleanup — verified, not assumed:** deleted all seeded rows (`exams`, `homework`, `business_milestones`, `profiles`, `auth.users`) for both disposable accounts, then ran a follow-up `SELECT` count against every one of those 5 tables filtered by the disposable UUIDs, plus a `LIKE 'qa-test-%@example.invalid'` sweep across `auth.users` to catch anything the UUID filter might have missed. All 6 counts returned `0`. No disposable data remains in production.
 
 **Verdict:** Deadlines' core urgency-bucketing and cross-source filtering logic is correct against real data, including the adversarial `done`-with-past-due-date case. RLS isolation (including write-path and the billing-column lockdown) held up under live, real impersonation attempts, not just a policy-text read. No blocking bugs found. Two non-blocking items handed to Cato: (1) schema-wide `auth_rls_initplan` perf cleanup (systemic, pre-existing, not introduced by Deadlines), (2) leaked-password protection toggle + `SECURITY DEFINER` EXECUTE-revoke hygiene on the track-lock trigger function (verified not currently exploitable).
+
+---
+
+## QA — FULL APP FUNCTIONAL PASS (both tracks) — 2026-08-28
+
+CEO requested a comprehensive logged-in functional test of the whole app, both tracks. Full findings are
+in **`QA_FULL_APP_REPORT.md`** at the repo root (not duplicated here — it's long). Short version:
+
+- **Real live/logged-in testing was not possible this session** — a genuine org egress-policy 403 blocks
+  this sandbox from reaching `*.supabase.co` at all (confirmed 3 independent ways: Playwright browser,
+  direct `curl`, and the proxy's own status log), and no Supabase MCP/DB tool was available as an
+  alternative. This is not the same coverage as the 2026-08-27 live pass and I did not present it as such.
+- Fell back to a deep code-level trace of every checklist item, plus `tsc`/`build` gates (both clean) and
+  static Playwright renders of the pages reachable without a session.
+- **4 real findings, all new** (nothing in `src/` changed since `26e9d89`, so none of these are
+  regressions — they were simply never surfaced by a prior pass scoped to a single feature):
+  1. **XP-farming via toggle** — `toggleHomework`/`toggleMilestone` award XP on every completion, no
+     once-only guard (unlike `completeStudySession`, which has one). Low security impact, real product bug.
+  2. **Business metrics trend badge** — no secondary sort key on same-day entries of the same metric key;
+     Postgres doesn't guarantee tie order on `logged_date` alone. Exactly the "2+ same-key entries" case
+     the task asked me to check, and it's broken.
+  3. **Weekly Review page isn't track-aware** — shows a permanently-empty "School" card to every
+     business-track account. Same bug class already fixed once elsewhere (commit `6420e46`), missed here.
+  4. **No add-exam/add-homework UI exists anywhere** (student track) — only onboarding seeds those tables;
+     this blocked me from literally completing that checklist item, live or otherwise. Business track's
+     equivalent (add-milestone) is fine. Scope question for Cato/Product, not a Dev bug fix.
+- Explicitly not re-litigated: track-lock trigger and RLS isolation are carried forward from the
+  2026-08-27 live pass on byte-identical schema (high confidence, not fresh evidence this session).
+- No cleanup needed — the network block meant no write ever reached the database this session.
+
+**Status: not signed off as comprehensively tested end-to-end.** Bugs 1-3 go to Dev; Bug 4 is a scope
+call for Cato. Recommend next pass gets live DB access restored (MCP tool or egress allow-list) before
+"whole app tested" can honestly be claimed.
