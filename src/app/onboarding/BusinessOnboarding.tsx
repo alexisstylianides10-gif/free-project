@@ -107,6 +107,7 @@ export default function BusinessOnboarding() {
       step={step}
       totalSteps={QUESTION_COUNT}
       onBack={back}
+      track="business"
       footer={
         <Button size="lg" className="w-full" disabled={!isValid} onClick={next}>
           Continue

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { LogoMark } from "@/components/shared/LogoMark";
+import { BrandPanel } from "@/components/shared/BrandPanel";
 import { branding } from "@/lib/branding";
 
 export default function LoginPage() {
@@ -57,62 +58,70 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col justify-center bg-background px-6 py-10">
-      <div className="mx-auto w-full max-w-sm">
-        <LogoMark size={44} className="mx-auto shadow-glow-accent" />
-        <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground">Welcome back</h1>
-        <p className="mt-1.5 text-center text-sm text-muted-foreground">Log in to {branding.name} to see your plan.</p>
+    <main className="flex min-h-dvh bg-background">
+      <div className="flex flex-1 flex-col justify-center px-6 py-10 lg:px-16 xl:px-20">
+        <div className="mx-auto w-full max-w-sm">
+          <LogoMark size={44} className="mx-auto shadow-glow-accent lg:mx-0" />
+          <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground lg:text-left">
+            Welcome back
+          </h1>
+          <p className="mt-1.5 text-center text-sm text-muted-foreground lg:text-left">
+            Log in to {branding.name} to see your plan.
+          </p>
 
-        <div className="mt-8">
-          <OAuthButtons />
+          <div className="mt-8">
+            <OAuthButtons />
+          </div>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium text-muted-foreground">or continue with email</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+                className="input"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Password</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your password"
+                autoComplete="current-password"
+                required
+                className="input"
+              />
+            </label>
+
+            {error && <p className="text-sm text-danger">{error}</p>}
+
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Log in <ArrowRight className="h-4 w-4" /></>}
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-muted-foreground lg:text-left">
+            New here?{" "}
+            <Link href="/signup" className="font-semibold text-foreground underline underline-offset-4">
+              Sign up
+            </Link>
+          </p>
         </div>
-
-        <div className="my-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs font-medium text-muted-foreground">or continue with email</span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3.5">
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              autoComplete="email"
-              required
-              className="input"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-              autoComplete="current-password"
-              required
-              className="input"
-            />
-          </label>
-
-          {error && <p className="text-sm text-danger">{error}</p>}
-
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Log in <ArrowRight className="h-4 w-4" /></>}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          New here?{" "}
-          <Link href="/signup" className="font-semibold text-foreground underline underline-offset-4">
-            Sign up
-          </Link>
-        </p>
       </div>
+
+      <BrandPanel variant="login" />
 
       <style jsx global>{`
         .input {

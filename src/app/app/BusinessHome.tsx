@@ -155,7 +155,7 @@ export default function BusinessHome() {
           </Link>
         </section>
 
-        <section className="lg:col-start-2 lg:row-start-3">
+        <section className="lg:col-start-1 lg:row-start-2">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Latest metric</h2>
             <Link href="/app/future" className="flex items-center gap-0.5 text-xs font-semibold text-accent">
@@ -184,7 +184,7 @@ export default function BusinessHome() {
           )}
         </section>
 
-        <Link href="/app/coach" className="lg:col-start-2 lg:row-start-4">
+        <Link href="/app/coach" className="lg:col-start-1 lg:row-start-3">
           <Card className={cn("border-accent/30", HOVER_LIFT)}>
             <CardContent className="flex items-center gap-3 p-4">
               <CheckCircle2 className="h-5 w-5 shrink-0 text-accent" />

@@ -201,7 +201,7 @@ export default function StudentHome() {
         </section>
 
         {primaryCareer && (
-          <Link href={`/app/future/${primaryCareer.slug}`} className="lg:col-start-2 lg:row-start-3">
+          <Link href={`/app/future/${primaryCareer.slug}`} className="lg:col-start-1 lg:row-start-3">
             <Card className={HOVER_LIFT}>
               <CardContent className="flex items-center gap-3 p-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand text-xl">
@@ -218,7 +218,7 @@ export default function StudentHome() {
           </Link>
         )}
 
-        <Card className="border-accent/30 lg:col-start-2 lg:row-start-4">
+        <Card className="border-accent/30 lg:col-start-2 lg:row-start-3">
           <CardContent className="flex gap-3 p-4">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft">
               <Sparkles className="h-4 w-4 text-accent" />

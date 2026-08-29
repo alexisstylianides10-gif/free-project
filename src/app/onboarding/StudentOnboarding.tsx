@@ -131,6 +131,7 @@ export default function StudentOnboarding() {
       step={step}
       totalSteps={QUESTION_COUNT}
       onBack={back}
+      track="student"
       footer={
         <Button size="lg" className="w-full" disabled={!isValid} onClick={next}>
           Continue
