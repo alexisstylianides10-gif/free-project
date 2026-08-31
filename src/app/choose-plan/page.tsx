@@ -99,15 +99,25 @@ export default function ChoosePlanPage() {
             const copy = TRACK_COPY[track];
             const Icon = copy.icon;
             const option = PLAN_OPTIONS.find((o) => o.track === track && o.interval === interval)!;
+            // Business track is temporarily paused — visible so people know
+            // it's coming, but not selectable yet.
+            const comingSoon = track === "business";
             return (
-              <Card key={track}>
+              <Card key={track} className={comingSoon ? "opacity-60" : undefined}>
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-white">
                       <Icon className="h-4 w-4" />
                     </span>
-                    <div>
-                      <p className="text-body font-bold text-foreground">{TRACK_LABEL[track]}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-body font-bold text-foreground">{TRACK_LABEL[track]}</p>
+                        {comingSoon && (
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                            Coming soon
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">{copy.tagline}</p>
                     </div>
                   </div>
@@ -126,9 +136,15 @@ export default function ChoosePlanPage() {
                       ${option.priceUsd}
                       <span className="text-xs font-medium text-muted-foreground">/{interval === "monthly" ? "mo" : "yr"}</span>
                     </p>
-                    <Button size="sm" onClick={() => choose(track)} disabled={busy !== null}>
-                      {busy === track ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : `Choose ${TRACK_LABEL[track]}`}
-                    </Button>
+                    {comingSoon ? (
+                      <Button size="sm" disabled>
+                        Coming soon
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={() => choose(track)} disabled={busy !== null}>
+                        {busy === track ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : `Choose ${TRACK_LABEL[track]}`}
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
