@@ -73,7 +73,7 @@ export default function SignupPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/login` },
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
     if (signUpError) {
       setError(signUpError.message);
@@ -88,8 +88,10 @@ export default function SignupPage() {
     }
 
     // Email confirmation required before a session exists — the user enters
-    // the 6-digit code we emailed them (or, as a fallback, clicks the link
-    // in the same email, which lands on /login).
+    // the 6-digit code we emailed them, or clicks the link in the same
+    // email, which now routes through /auth/callback (same handler as
+    // Google sign-in) so it lands straight in the app instead of dumping
+    // them on /login requiring a manual re-submit.
     setNeedsConfirmation(true);
     setResendCooldown(RESEND_COOLDOWN_SECONDS);
     setLoading(false);
@@ -238,11 +240,8 @@ export default function SignupPage() {
         </button>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          Prefer the link instead?{" "}
-          <Link href="/login" className="font-semibold text-foreground underline underline-offset-4">
-            Log in
-          </Link>{" "}
-          after clicking it in the email.
+          Prefer the link instead? Click &ldquo;Confirm your email&rdquo; in the message we sent — it&rsquo;ll take you
+          straight into the app.
         </p>
 
         <style jsx global>{`
