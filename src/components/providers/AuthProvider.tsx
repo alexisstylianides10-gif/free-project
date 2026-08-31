@@ -43,6 +43,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfile = useCallback(async (userId: string) => {
     if (!supabase) return;
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    // Staleness guard: a newer sign-in (or a sign-out) may have superseded
+    // this fetch while it was in flight — e.g. User A signs in, their
+    // profile fetch starts, User A signs out, User B signs in and their
+    // (faster) fetch resolves and correctly sets `profile` for User B. If
+    // User A's stale fetch were allowed to land unconditionally afterward,
+    // it would clobber User B's already-correct profile with User A's data
+    // even though `user` in context is still (correctly) User B. Comparing
+    // against `lastUserIdRef.current` at *resolve* time (not at call time,
+    // when this closure's `userId` argument was captured) catches this:
+    // only write if this fetch is still the one that matters. Harmless
+    // no-op for the common case (nothing raced), since the ref still equals
+    // `userId` whenever no newer sign-in/sign-out has happened meanwhile.
+    if (lastUserIdRef.current !== userId) return;
     setProfile(data as Profile | null);
   }, []);
 
@@ -93,7 +106,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // this is the case the previous fix's `loading` check missed.
         lastUserIdRef.current = nextUserId;
         setProfileLoading(true);
-        loadProfile(nextUserId).finally(() => setProfileLoading(false));
+        loadProfile(nextUserId).finally(() => {
+          // Only clear profileLoading if this fetch is still the current
+          // one. If a *newer* sign-in has already superseded it (this
+          // fetch's own userId no longer matches lastUserIdRef.current),
+          // firing setProfileLoading(false) here would stomp the newer
+          // sign-in's own still-in-flight profileLoading=true back to
+          // false while its fetch hasn't resolved yet — which would let
+          // app/layout.tsx's `!profile` fallback flash for the *new*,
+          // perfectly healthy user during that window. The newer sign-in's
+          // own `.finally` is responsible for clearing profileLoading once
+          // *it* resolves.
+          if (lastUserIdRef.current === nextUserId) {
+            setProfileLoading(false);
+          }
+        });
       } else {
         // Same user as already loaded (token refresh, user-updated, a
         // duplicate INITIAL_SESSION fire, etc.) — refresh in the
