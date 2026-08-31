@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, ArrowRight } from "lucide-react";
+import { Loader2, Mail, ArrowRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -28,6 +28,11 @@ export default function SignupPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
+  // Set once verifyOtp succeeds (a real session now exists). Distinguishes
+  // "still entering the code" from "code was correct, but the follow-up
+  // profile-creation insert failed" — the latter needs its own recovery UI,
+  // not another attempt at a now-already-consumed code.
+  const [verifiedUserId, setVerifiedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -93,6 +98,7 @@ export default function SignupPage() {
   async function handleVerifyCode(e: React.FormEvent) {
     e.preventDefault();
     setVerifyError(null);
+    setError(null);
     if (!supabase || !isSupabaseConfigured) {
       setVerifyError("Verification isn't available right now — the backend isn't configured.");
       return;
@@ -120,7 +126,23 @@ export default function SignupPage() {
       setVerifyLoading(false);
       return;
     }
+    // Code was correct — a real session now exists. From here on, any
+    // failure is a profile-creation failure, not a code-verification one;
+    // remember the user id so a retry doesn't need (and can't reuse) the
+    // now-consumed code.
+    setVerifiedUserId(data.user.id);
     await createProfileAndContinue(data.user.id, name.trim() || (data.user.email?.split("@")[0] ?? "Student"));
+    setVerifyLoading(false);
+  }
+
+  // Retries just the profile-creation step using the session already
+  // established by a successful verifyOtp — no code re-entry needed (and
+  // re-submitting the same code would just fail as "already used").
+  async function handleRetryProfile() {
+    if (!verifiedUserId) return;
+    setVerifyLoading(true);
+    setError(null);
+    await createProfileAndContinue(verifiedUserId, name.trim() || (email.split("@")[0] || "Student"));
     setVerifyLoading(false);
   }
 
@@ -140,6 +162,37 @@ export default function SignupPage() {
   }
 
   if (needsConfirmation) {
+    // The code was verified (a real session exists) but the follow-up
+    // profile-creation insert failed. This is not a "wrong code" state —
+    // re-entering/resubmitting the code would just fail as already-used —
+    // so it gets its own recovery view instead of falling through silently.
+    if (verifiedUserId && error) {
+      return (
+        <main className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/15">
+            <AlertTriangle className="h-6 w-6 text-danger" />
+          </span>
+          <h1 className="mt-6 text-xl font-bold text-foreground">Almost there</h1>
+          <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+            Your email is confirmed, but we hit a problem finishing setup for{" "}
+            <span className="text-foreground">{email}</span>.
+          </p>
+          <p className="mt-2 max-w-xs text-sm text-danger">{error}</p>
+
+          <div className="mt-8 w-full max-w-xs space-y-3">
+            <Button type="button" size="lg" className="w-full" onClick={handleRetryProfile} disabled={verifyLoading}>
+              {verifyLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Try again"}
+            </Button>
+            <Link href="/login">
+              <Button type="button" size="lg" variant="secondary" className="w-full">
+                Log in instead
+              </Button>
+            </Link>
+          </div>
+        </main>
+      );
+    }
+
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand shadow-glow-accent">
@@ -163,8 +216,8 @@ export default function SignupPage() {
             autoFocus
           />
 
-          {verifyError && <p className="text-sm text-danger">{verifyError}</p>}
-          {resendMessage && !verifyError && <p className="text-sm text-success">{resendMessage}</p>}
+          {(verifyError || error) && <p className="text-sm text-danger">{verifyError || error}</p>}
+          {resendMessage && !verifyError && !error && <p className="text-sm text-success">{resendMessage}</p>}
 
           <Button type="submit" size="lg" className="w-full" disabled={verifyLoading}>
             {verifyLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Confirm account <ArrowRight className="h-4 w-4" /></>}

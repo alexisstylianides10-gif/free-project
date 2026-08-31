@@ -458,4 +458,32 @@ BLOCKERS: Bug above blocks sign-off — not deployable as-is (silent failure wit
 
 NEXT TASK: Dev fixes the two items above; QA retests the `needsConfirmation` branch's error rendering (forced-failure case) and the `app/layout.tsx` defensive fallback, then hands to Cato.
 
+---
+
+## DEV — FIX: SIGNUP OTP SILENT PROFILE-CREATION FAILURE, worktree `agent-a542a83380afadd79` — 2026-08-31
+
+Fixed the bug QA sent back (`createProfileAndContinue` failure after a successful `verifyOtp` was invisible — session live, no profile row, no error shown, no recovery). This worktree branched from `e55fe07`, before Dev's OTP commit (`5efd0e73`) had been pushed anywhere, so cherry-picked QA's own commit `a9fb383` (which already carries `5efd0e73`'s code byte-identical, per QA's own note, plus their review) directly onto this branch — clean cherry-pick, confirmed via `git diff` before editing.
+
+**`src/app/signup/page.tsx`:**
+- Added `verifiedUserId` state, set the moment `verifyOtp` succeeds (real session/user exist from that point on). Distinguishes "still entering the code" from "code was correct, the follow-up `profiles` insert failed" — the latter is not a code-verification failure and re-submitting the same (now-consumed) code would just produce a confusing "already used" error, so it gets its own branch instead of falling through to the code-entry form.
+- New recovery view, rendered when `verifiedUserId && error`: explains the account is confirmed but setup didn't finish, shows the real `error` message (previously swallowed), and offers two ways forward — "Try again" (calls new `handleRetryProfile()`, which re-runs just the `profiles` insert against the existing session, no code re-entry needed) and "Log in instead" (links to `/login`, whose `handleSubmit` already re-queries/inserts a missing profile — confirmed working, not new).
+- Normal code-entry view: `{(verifyError || error) && ...}` now reads `error` too (previously only `verifyError`/`resendMessage`), so the shared error state is never silently dropped regardless of which path set it. In practice `error` is only ever truthy alongside `verifiedUserId`, so this mainly serves as the documented shared-display QA suggested — the dedicated recovery view is what actually fires for this bug.
+- `handleVerifyCode` now clears `error` (not just `verifyError`) at the start of each attempt, for the same hygiene reason `handleSubmit` already clears `error` at the start of its own attempts.
+
+**`src/app/app/layout.tsx`:** added a fallback for `user` truthy + `profile` genuinely `null` (not just still loading). `AuthProvider`'s initial `loading` flip to `false` only happens after its `loadProfile` call is awaited (read `AuthProvider.tsx` in full to confirm this, not assumed), so by the time `loading` is `false` in this gate, a missing `profile` is real, not a race — there's no code path that would make one appear later on its own. Split the old single `if (loading || !user || !profile)` gate into `if (loading || !user)` (spinner, unchanged) and a new `if (!profile)` branch showing a real message ("We couldn't find your profile… Logging back in usually fixes this.") with a "Go to log in" button — same visual language as the new signup recovery view (danger-tinted icon badge, heading, subtext, single CTA).
+
+**Reproduced the bug live before fixing it, not assumed from QA's report:** since this sandbox has no real Supabase network access (confirmed again this session — `curl` to the project's `*.supabase.co` host returns a 403 tunnel failure, same org egress block prior QA passes hit), set a temporary local-only `.env.local` (gitignored, deleted before commit) pointing `NEXT_PUBLIC_SUPABASE_URL` at a fake host, ran the real dev server, and used Playwright's network-route interception to mock exactly the 3 calls this flow makes: `POST /auth/v1/signup` (no session → code-entry screen), `POST /auth/v1/verify` (success, real session), `POST /rest/v1/profiles` (mocked `409` to simulate a real insert failure). On the pre-fix code (`git stash` to the QA-reviewed commit), typing the correct code and submitting reproduced exactly what QA described: the button re-enabled, code input still showed the entered digits, and the rendered DOM had zero error text anywhere — confirmed via `page.locator("main").innerText()` and a screenshot. Restored the fix (`git stash pop`) and re-ran the identical script: the recovery view now renders with the real error message and both buttons. Then verified the retry path end-to-end with a second Playwright run (profile insert mocked to fail once, then succeed) — "Try again" correctly calls just the profile insert (no re-verify), and on success navigates to `/choose-plan`.
+
+**Regression-checked the rest of the OTP flow with the same interception technique**, all passing: correct code still verifies and navigates to `/choose-plan` on the first try when the profile insert succeeds; wrong/expired code still shows Supabase's real error inline with no navigation; resend cooldown still starts at 45s and the button is still disabled during it.
+
+**`app/layout.tsx` fallback verified separately:** seeded a fake, valid Supabase session directly into `localStorage` (matching the real `sb-<project-ref>-auth-token` key `supabase-js` uses) so `getSession()` resolves with a user with no network call, mocked the `profiles` GET to return `[]` (genuinely-absent row, not a timing artifact), and loaded `/app` directly. The new fallback renders correctly in both themes at 390px — confirmed via screenshot, no layout/overflow issues, matches the signup recovery view's visual language.
+
+**Verification:** `npx tsc --noEmit` clean (exit 0). `npx next build` clean (exit 0, all 43 routes). `.env.local` and all scratch Playwright scripts/screenshots were outside the repo or deleted before commit — `git status` confirms only the two intended source files changed.
+
+BLOCKERS: None.
+
+NEXT TASK: Handing back to QA to re-verify the fix (forced-failure recovery view, retry path, `app/layout.tsx` fallback) before Cato/CEO merge and deploy.
+
+DEPLOYMENT STATUS: not deployed — committed locally on `claude/futureos-student-app-3ewdz6` via worktree `agent-a542a83380afadd79`, not pushed, per instruction (QA re-verifies before merge/deploy).
+
 DEPLOYMENT STATUS (this QA pass): not deployed — reviewed and committed locally on `claude/futureos-student-app-3ewdz6` via this worktree, not pushed. Do not merge/deploy until the bug above is fixed and retested.
