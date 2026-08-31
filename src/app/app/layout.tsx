@@ -12,7 +12,7 @@ import { LoadingScreen } from "@/components/shared/LoadingScreen";
 import { Button } from "@/components/ui/Button";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -26,18 +26,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, profile, router]);
 
-  if (loading || !user) {
+  if (loading || !user || profileLoading) {
     return <LoadingScreen message="Signing you in…" />;
   }
 
-  // AuthProvider only flips `loading` to false once its initial profile
-  // fetch for this session has resolved (awaited, not fired-and-forgotten —
-  // see AuthProvider.tsx), so reaching here with a user but no profile means
-  // the row is genuinely absent, not still in flight. This happens if
-  // account setup (signup or first login) failed partway through — e.g. the
-  // profiles insert errored after auth succeeded. There's no way for a
-  // profile to spontaneously appear from here, so show a way out instead of
-  // spinning forever.
+  // AuthProvider flips `loading` false once its initial-mount profile fetch
+  // resolves, AND tracks every *subsequent* auth event's own profile fetch
+  // (e.g. a fresh sign-in) via `profileLoading` — see AuthProvider.tsx. Both
+  // are checked above, so reaching here with a user but no profile means the
+  // row is genuinely absent, not still in flight under either path. This
+  // happens if account setup (signup or first login) failed partway through
+  // — e.g. the profiles insert errored after auth succeeded. There's no way
+  // for a profile to spontaneously appear from here, so show a way out
+  // instead of spinning forever.
   if (!profile) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center">
