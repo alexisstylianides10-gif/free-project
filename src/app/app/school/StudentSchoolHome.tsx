@@ -291,7 +291,19 @@ export default function StudentSchoolHome() {
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">{isCompleted ? "Completed" : formatCountdown(hw.due_date)}</p>
                     </div>
-                    {!isCompleted && <PriorityBadge priority={hw.priority} />}
+                    {!isCompleted && (
+                      <>
+                        <PriorityBadge priority={hw.priority} />
+                        <Link
+                          href={`/app/school/homework/${hw.id}/help`}
+                          aria-label="Get AI help with this homework"
+                          title="Get AI help"
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-accent transition-colors hover:bg-border-strong/40"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" />
+                        </Link>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               );
