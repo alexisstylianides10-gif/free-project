@@ -1027,3 +1027,67 @@ Built on top of QA's review branch (`worktree-agent-a962f91d084c8381d` at `9b64c
 NEXT TASK: Hand back to QA for re-verification per their stated plan ("re-read the diff, re-run both build gates fresh, re-render the Playwright checks, and re-derive the Stripe-error-handling fix against the Stripe SDK's actual error shape") before Cato final sign-off.
 
 DEPLOYMENT STATUS (this fix): not deployed — committed locally on branch `fix-wave3b-stripe-fail-closed` (built on top of QA's `worktree-agent-a962f91d084c8381d` at `9b64cc5`), not pushed, not merged.
+
+---
+
+## QA RE-VERIFY (Wave 3b Stripe fail-closed fix), commits `618110a`/`04fa31a`
+
+Second pass on this wave, same adversarial standard as the first — did not take Dev's report on trust for anything checkable. Fast-forward-merged `04fa31a` cleanly into this worktree (`git merge --ff-only`, no conflicts; confirmed `9b64cc5`, my own blocking review, is a real ancestor of `04fa31a` via `git merge-base --is-ancestor`, i.e. this fix is genuinely built on top of my review, not a parallel/rebased rewrite of it).
+
+**1) `git diff --stat 9b64cc5 04fa31a`, read myself before trusting the commit message:** exactly `api/account/delete/route.ts` (+37/-5) and `reset-password/page.tsx` (+7), plus the `PROJECT_STATE.md` doc addition — matches Dev's claim exactly, no scope creep, no other file touched.
+
+**2) `api/account/delete/route.ts` — read the full file fresh (not just the diff hunk) in its post-fix state:**
+- The `profiles` select now destructures `error: profileError` and returns `503` with `"We couldn't confirm your subscription status right now, so we can't safely delete your account. Try again shortly."` if non-null, **before** the `subscriptionId` is ever read or the Stripe block is entered — confirmed by line position (the check is lines 50-60, `subscriptionId` isn't derived until line 61). This is a genuine fail-closed return, not a cosmetic check that still falls through: verified there is no code path after this `return` that could still proceed to Stripe or `deleteUser`.
+- The `stripe.subscriptions.retrieve(...).catch((err) => {...})` handler checks `err instanceof Stripe.errors.StripeInvalidRequestError && err.code === "resource_missing"` — only that condition returns `null` (safe-to-proceed); everything else `throw err`s, which rejects the `.catch()`'s returned promise, which rejects the `await` on that line, which is caught by the surrounding `try {...} catch (err) { ...return 502...}` block that was already correct before this fix. Confirmed structurally by reading the full ~30-line try block, not just the isolated hunk.
+
+**3) Verified the Stripe SDK error shape independently — did not reuse Dev's citation, re-derived it myself.** This worktree also had no `node_modules` (confirmed: `ls node_modules` → "No such file or directory"); ran my own `npm install` (717 packages, same count Dev reported, consistent). Read `node_modules/stripe/esm/Error.js` directly:
+- `generateV1Error`: HTTP `400`/`404` (excluding `idempotency_error`) → `StripeInvalidRequestError`; `401` → `StripeAuthenticationError`; `429` (or `400`+`code:'rate_limit'`) → `StripeRateLimitError`; anything else → `StripeAPIError`. `StripeConnectionError` is a separate class thrown directly by the HTTP layer on network failure (not via `generateV1Error`). All five are genuinely distinct classes/instances — `StripeConnectionError`/`StripeAPIError`/`StripeRateLimitError`/`StripeAuthenticationError` are never `instanceof StripeInvalidRequestError`, so none of them can accidentally satisfy the narrowed catch's `instanceof` check.
+- `StripeError`'s constructor sets `this.code = raw.code` generically (in the generated `errorAssignments` block) — `err.code` is a real, populated field on every Stripe error, not something Dev invented; Stripe's API is documented to set `code: "resource_missing"` specifically on a 404 for a deleted/nonexistent object id, which is exactly what a `retrieve()` on an already-gone subscription returns.
+- Confirmed `Stripe.errors = _Error` is a real static property on the default export (`grep "Stripe.errors = _Error" node_modules/stripe/cjs/stripe.core.js` → hit at line 637) and `export default Stripe` (`node_modules/stripe/esm/stripe.esm.node.js` line 644) — so `import Stripe from "stripe"; Stripe.errors.StripeInvalidRequestError` in the route is a real, valid reference, not a made-up path.
+- **Went one step further than reading the source: actually executed the exact catch-handler logic from the route** (copied verbatim into a standalone script, imported the real installed `stripe` package) against constructed instances of all five error classes. Results, run fresh:
+  - `StripeInvalidRequestError` with `code: "resource_missing"` → returns `null` (proceeds to deletion) — correct, the one genuinely safe case.
+  - `StripeInvalidRequestError` with a different code (`"parameter_missing"`) → re-throws — correct, confirms the fix checks the *code*, not just the class, so a generic 400 that happens to be an "invalid request" for some other reason doesn't get waved through.
+  - `StripeConnectionError`, `StripeAPIError`, `StripeRateLimitError`, `StripeAuthenticationError` → all four re-throw — correct, none of these are silently swallowed anymore.
+  This is stronger evidence than a source read alone: the actual narrowing logic was exercised against the actual installed SDK's actual error classes, not just reasoned about.
+
+**4) Traced all three account-deletion cases myself, post-fix, independent of Dev's write-up:**
+- **(a) No subscription on file:** `profileError` null, `subscriptionId` is `undefined`/`null`, `if (subscriptionId)` at line 63 is false → entire Stripe block skipped → falls straight to storage cleanup + `deleteUser`. Unaffected by this fix, correct.
+- **(b) Subscription exists, Stripe confirms cancelable:** `profileError` null, `retrieve()` resolves without rejecting (the new `.catch()` handler never runs), `subscription.status !== "canceled"` → `cancel()` called, no exception → falls through to storage cleanup + `deleteUser`. Unaffected by this fix, correct.
+- **(c) Stripe unreachable/errors/rate-limits:** confirmed via the executed test above that a `StripeConnectionError`/`StripeAPIError`/`StripeRateLimitError`/`StripeAuthenticationError` all re-throw out of the `.catch()`, which rejects the `await` on line 75, which is caught by the outer `catch (err)` at line 97 → returns `{ status: 502, error: "We couldn't cancel your active subscription (...). Your account was not deleted..." }` → execution never reaches the storage-cleanup block or `serviceClient.auth.admin.deleteUser(user.id)` at all (both are textually after the `try/catch`, and the `catch` block itself `return`s). **The account is genuinely not deleted in this case** — confirmed by control flow, not by trusting the message string.
+  - Also traced the `profiles`-select-failure sub-case of (c): `profileError` non-null → `503` returned at line 56-59, before `subscriptionId` is even computed, before the `if (subscriptionId)` block, before storage cleanup, before `deleteUser`. Same outcome: no deletion.
+
+**5) `reset-password/page.tsx` — read the full file fresh (297 lines) in its post-fix state, not just the diff hunk:**
+- `markReady()` (lines 73-84): now calls `setLinkError(null)` at line 81, positioned after `resolvedRef.current = true` and before `setSessionReady(true)`/`setChecking(false)`. Confirmed this actually fixes the described bug: the render logic (lines 191-215) checks `if (linkError) return <error UI>` strictly before `if (!sessionReady) return null` — so previously, a stale `linkError` set by the 4-second timeout would have permanently masked a genuinely-successful late `markReady()` call (state update, but dead on arrival since the error branch renders first and there's no further re-render trigger to re-check). Now `linkError` is explicitly nulled in the same state-update batch, so the success path always wins. Confirmed against actual React render-order semantics, not just "the line was added."
+- `exchangeCodeForSession` error branch (lines 102-114): now has `if (resolvedRef.current || cancelled) return;` at line 106, immediately before `setLinkError(...)`, matching the exact guard style already used in the 4-second-timeout branch (`if (!resolvedRef.current && !cancelled) {...}`, lines 132-137) and the plain `if (cancelled) return;` already on line 104 one line above it. Confirmed the guard is semantically correct for its purpose: if a concurrent `onAuthStateChange` event already called `markReady()` while `exchangeCodeForSession` was in flight, `resolvedRef.current` is already `true` by the time the `await` resolves with an error, and this branch now correctly no-ops instead of overwriting a real success with a stale "link expired" state.
+- Confirmed via `git diff 9b64cc5 04fa31a -- src/app/reset-password/page.tsx` that these are the **only** two hunks — no other line in the file changed, no adjacent logic touched.
+
+**6) Re-checked Dev's claim that this fix stays dormant in production today (PKCE path):** re-read `src/lib/supabase/client.ts` myself — grepped for `flowType`, zero hits, confirming `@supabase/auth-js`'s `GoTrueClient` default (`flowType: 'implicit'`) still applies, unchanged since my original review. The `exchangeCodeForSession` guard is real defense-in-depth for a path that isn't live today, exactly as claimed — not overstated.
+
+**7) Regression sanity check on the rest of Wave 3b (untouched-by-this-fix claim), verified by diff not assumption:**
+- `git diff 9b64cc5 04fa31a --stat -- src/app/app/profile/page.tsx src/app/forgot-password/page.tsx src/app/page.tsx src/app/login/page.tsx` → **zero output, zero changes** to any of these four files between my original blocking review and this fix. This is stronger than a visual re-render — it's byte-for-byte proof nothing regressed, not an inference from "the diff looks narrow."
+- Spot-confirmed the two features I'd already verified in the first pass are still textually present and unperturbed: `profile/page.tsx`'s `DELETE_CONFIRM_PHRASE`/`deleteConfirmText`/`deleting`-gated modal (grepped, all present, same shape as before), and `page.tsx`'s `Suspense`-wrapped deleted-banner (`<Suspense fallback={null}>` still wraps the banner component). Did not re-run a fresh Playwright render of these this pass since the diff proves they're literally unchanged bytes from the version I already screenshotted and verified in the `9b64cc5` review — re-rendering identical bytes would not produce new information. If a future pass touches any of these four files, a fresh render is warranted then, not carried forward indefinitely.
+
+**8) Build gates — run fresh, this worktree, not reused from any prior pass:**
+- This worktree had no `node_modules` either; ran my own `npm install` (717 packages).
+- `rm -rf .next && npx tsc --noEmit` — clean, exit 0.
+- `npx next build` — clean, exit 0, 49 routes compiled, including `/api/account/delete`, `/reset-password`, `/forgot-password`, `/` — matches Dev's reported route count exactly, verified by my own build output, not copied from theirs.
+
+**What I could not test (same restriction as every prior round on this surface, noted explicitly, not silently skipped):** no live Stripe/Supabase credentials in this sandbox, so I could not trigger an actual live Stripe outage/rate-limit/revoked-key response against the real network. What I did instead — and consider sufficient given the constraint — is execute the real, unmodified narrowing logic from the route against real instances of the real installed Stripe SDK's error classes (section 3 above), which is a materially stronger check than reading the source and reasoning about it, even though it isn't a live end-to-end network test.
+
+**Verdict:** Both items from my prior blocking review are genuinely fixed, not cosmetically patched:
+1. The `profiles`-select error now fails closed (503) before any Stripe or deletion logic runs.
+2. The `stripe.subscriptions.retrieve()` catch is now narrowed to only `resource_missing` `StripeInvalidRequestError` as safe-to-proceed; every other Stripe failure mode (connection error, outage, rate limit, bad/revoked key) now re-throws into the pre-existing, already-correct outer `catch`, which returns 502 and does not delete the account — confirmed both by static control-flow tracing and by actually executing the logic against the real SDK's error classes.
+
+Both `reset-password/page.tsx` should-fix items are also genuinely fixed and match the exact guard pattern already used elsewhere in the file. No scope creep (diff-stat confirmed exactly 2 code files touched), no regression to the rest of Wave 3b (diff-stat confirmed zero changes to the other 4 files in that wave), both build gates clean and run fresh in this worktree.
+
+This was the highest-risk item in this wave (a real financial-integrity/support-liability bug: a paying account being deleted while Stripe kept billing it) and I'm not signing off on vibes — the fix was traced through actual control flow and exercised against the actual installed dependency, not just read and trusted.
+
+**SIGN-OFF: GIVEN.**
+
+Handing to Cato for final sign-off on Wave 3b as a whole (password reset + account deletion + this Stripe fail-closed fix).
+
+BLOCKERS: None.
+
+NEXT TASK: Cato — final sign-off on Wave 3b.
+
+DEPLOYMENT STATUS (this QA pass): not deployed — reviewed and fast-forward-merged in this worktree (`agent-a9ca27ff3a643f841`), committed locally, not pushed.
