@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, CheckCircle2, X } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { BrandPanel } from "@/components/shared/BrandPanel";
@@ -14,6 +14,40 @@ const PROOF = [
   { value: "Built from your data", label: "Daily plan" },
   { value: "No card required", label: "Free to start" },
 ];
+
+/**
+ * Reads the `?deleted=1` query param set by profile/page.tsx after a
+ * successful account deletion. Split out and wrapped in its own Suspense
+ * boundary below because useSearchParams() forces the whole subtree it's
+ * called in to opt out of static prerendering unless isolated like this —
+ * without it `next build` fails outright ("useSearchParams() should be
+ * wrapped in a suspense boundary") rather than just warning.
+ */
+function DeletedAccountBanner() {
+  const searchParams = useSearchParams();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setVisible(searchParams.get("deleted") === "1");
+  }, [searchParams]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-success/40 bg-success/10 p-4 text-sm text-foreground">
+      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+      <span className="flex-1">Your account has been deleted.</span>
+      <button
+        type="button"
+        onClick={() => setVisible(false)}
+        aria-label="Dismiss"
+        className="shrink-0 text-muted-foreground hover:text-foreground"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
 
 export default function WelcomePage() {
   const { user, profile, loading } = useAuth();
@@ -38,6 +72,9 @@ export default function WelcomePage() {
         <div className="relative z-10 flex w-full flex-1 flex-col px-6 pb-10 pt-16 md:px-10 lg:justify-center lg:px-16 lg:pb-16 lg:pt-0 xl:px-20">
           <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-between md:max-w-md lg:max-w-lg lg:flex-none lg:justify-start lg:gap-10">
             <div>
+              <Suspense fallback={null}>
+                <DeletedAccountBanner />
+              </Suspense>
               <div className="flex items-center gap-2">
                 <LogoMark size={36} className="shadow-glow-accent" />
                 <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>

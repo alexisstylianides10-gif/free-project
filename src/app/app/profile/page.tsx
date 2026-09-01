@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Lock, LogOut, Sparkles } from "lucide-react";
+import { ChevronRight, Lock, LogOut, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useUserSkills, useUserAchievements, useRoadmapProgress } from "@/lib/hooks/domain";
 import { ACHIEVEMENTS } from "@/lib/catalog/achievements";
@@ -11,9 +11,11 @@ import { skillLabel } from "@/lib/catalog/skills";
 import { ROADMAP_LEVELS } from "@/lib/catalog/roadmap";
 import { xpToPercent, totalXP, levelFromXP } from "@/lib/xp";
 import { initials, cn } from "@/lib/utils";
+import { authedFetch } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { RoadmapTimeline, RoadmapStep } from "@/components/shared/RoadmapTimeline";
@@ -21,12 +23,19 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { branding } from "@/lib/branding";
 
+const DELETE_CONFIRM_PHRASE = "DELETE";
+
 export default function ProfilePage() {
   const router = useRouter();
   const { user, profile, signOut } = useAuth();
   const { data: skills } = useUserSkills(user?.id);
   const { data: achievements } = useUserAchievements(user?.id);
   const { data: roadmapProgress } = useRoadmapProgress(user?.id);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const earnedKeys = useMemo(() => new Set(achievements.map((a) => a.achievement_key)), [achievements]);
 
@@ -57,6 +66,36 @@ export default function ProfilePage() {
   async function handleSignOut() {
     await signOut();
     router.push("/");
+  }
+
+  function openDeleteModal() {
+    setDeleteError(null);
+    setDeleteConfirmText("");
+    setDeleteModalOpen(true);
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConfirmText !== DELETE_CONFIRM_PHRASE) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await authedFetch("/api/account/delete", { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setDeleteError(json.error || "Couldn't delete your account. Try again.");
+        setDeleting(false);
+        return;
+      }
+      // Server-side deletion already succeeded — sign out locally (the
+      // deleted user's access token is no longer valid server-side anyway,
+      // this just clears the local session state) and route to a
+      // logged-out screen that confirms what happened.
+      await signOut();
+      router.push("/?deleted=1");
+    } catch {
+      setDeleteError("Couldn't reach the server. Check your connection and try again.");
+      setDeleting(false);
+    }
   }
 
   return (
@@ -183,6 +222,80 @@ export default function ProfilePage() {
         <LogOut className="h-4 w-4" />
         Sign out
       </Button>
+
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-danger">Danger zone</h2>
+        <Card className="border-danger/40">
+          <CardContent className="flex items-center justify-between gap-3 p-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">Delete account</p>
+              <p className="text-xs text-muted-foreground">
+                Permanently deletes your account and everything in it. This can&rsquo;t be undone.
+              </p>
+            </div>
+            <Button size="sm" variant="danger" onClick={openDeleteModal}>
+              Delete
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
+      <Modal
+        open={deleteModalOpen}
+        onOpenChange={(open) => {
+          if (!deleting) setDeleteModalOpen(open);
+        }}
+        title="Delete your account?"
+        description="This permanently deletes your profile, progress, XP, missions, study materials, chat history, and (if you're subscribed) cancels your Alxioum Plus subscription. There is no way to undo this."
+      >
+        <div className="space-y-4">
+          {profile.plan === "plus" && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-warning/40 bg-warning/10 p-3 text-sm text-foreground">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+              <span>You&rsquo;re on {branding.name} Plus. Your subscription will be canceled automatically as part of deletion.</span>
+            </div>
+          )}
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              Type <span className="font-bold text-foreground">{DELETE_CONFIRM_PHRASE}</span> to confirm
+            </span>
+            <input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder={DELETE_CONFIRM_PHRASE}
+              autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              disabled={deleting}
+              className="h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-danger/60"
+            />
+          </label>
+
+          {deleteError && <p className="text-sm text-danger">{deleteError}</p>}
+
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setDeleteModalOpen(false)}
+              disabled={deleting}
+              type="button"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              className="flex-1"
+              onClick={handleDeleteAccount}
+              disabled={deleting || deleteConfirmText !== DELETE_CONFIRM_PHRASE}
+              type="button"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete permanently"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
