@@ -12,7 +12,7 @@ import { branding } from "@/lib/branding";
 
 const RESEND_COOLDOWN_SECONDS = 45;
 
-export default function SignupPage() {
+export function SignupClient() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

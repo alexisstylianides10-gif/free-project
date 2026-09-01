@@ -10,7 +10,7 @@ import { LogoMark } from "@/components/shared/LogoMark";
 import { BrandPanel } from "@/components/shared/BrandPanel";
 import { branding } from "@/lib/branding";
 
-export default function LoginPage() {
+export function LoginClient() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

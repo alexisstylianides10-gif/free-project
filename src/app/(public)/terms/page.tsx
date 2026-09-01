@@ -25,9 +25,10 @@ export default function TermsPage() {
         account has been accessed without your permission.
       </p>
       <p>
-        When you sign up, you choose a track (student or founder) and complete a short onboarding flow. Your
-        track is locked once onboarding is complete so the app can build itself around it correctly; if you
-        signed up on the wrong track, contact us and we&rsquo;ll help.
+        When you sign up, you choose a track (student or founder) and complete a short onboarding flow. Note:
+        the founder track is currently paused for new signups while we polish it, so new accounts are on the
+        student track for now. Your track is locked once onboarding is complete so the app can build itself
+        around it correctly; if you signed up on the wrong track, contact us and we&rsquo;ll help.
       </p>
 
       <h2 className="text-body font-semibold text-foreground">Using {branding.name}</h2>

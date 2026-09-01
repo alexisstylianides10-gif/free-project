@@ -4,7 +4,6 @@ import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider, themeInitScript } from "@/components/providers/ThemeProvider";
-import { CookieBanner } from "@/components/shared/CookieBanner";
 import { branding, siteUrl } from "@/lib/branding";
 
 const inter = Inter({
@@ -63,7 +62,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <ServiceWorkerRegister />
           <AuthProvider>{children}</AuthProvider>
-          <CookieBanner />
         </ThemeProvider>
       </body>
     </html>
