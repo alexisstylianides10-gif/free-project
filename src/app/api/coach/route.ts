@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "The AI Coach isn't configured yet — add ANTHROPIC_API_KEY on the server." }, { status: 503 });
+    return NextResponse.json({ error: "The AI Coach isn't configured yet. Add ANTHROPIC_API_KEY on the server." }, { status: 503 });
   }
 
   let body: { message?: string; threadId?: string };
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       output_config: { effort: "low" },
     });
     const textBlock = response.content.find((b): b is Anthropic.Messages.TextBlock => b.type === "text");
-    replyText = textBlock?.text ?? "Sorry, I couldn't put that into words just now — try asking again.";
+    replyText = textBlock?.text ?? "Sorry, I couldn't put that into words just now. Try asking again.";
   } catch {
     return NextResponse.json({ error: "The AI Coach is having trouble responding right now. Try again in a moment." }, { status: 502 });
   }

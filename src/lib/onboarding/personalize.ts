@@ -35,7 +35,7 @@ export function personalizedContext(step: number, a: FullOnboardingAnswers): str
     case 1: {
       if (!a.yearGroup) return null;
       const year = labelOf(YEAR_OPTIONS, a.yearGroup);
-      return `${year} — let's find out where you're studying.`;
+      return `${year}. Let's find out where you're studying.`;
     }
     case 2: {
       if (!a.country) return null;
@@ -43,11 +43,11 @@ export function personalizedContext(step: number, a: FullOnboardingAnswers): str
     }
     case 3: {
       if (!a.schoolName.trim()) return null;
-      return `${a.schoolName} — noted. What subjects do you enjoy most?`;
+      return `${a.schoolName}, noted. What subjects do you enjoy most?`;
     }
     case 4: {
       if (a.subjects.length === 0) return null;
-      return `You're into ${formatList(a.subjects.map((s) => labelOf(SUBJECT_OPTIONS, s)))} — what pulls you in beyond the classroom?`;
+      return `You're into ${formatList(a.subjects.map((s) => labelOf(SUBJECT_OPTIONS, s)))}. What pulls you in beyond the classroom?`;
     }
     case 5: {
       if (a.interests.length === 0) return null;
@@ -59,7 +59,7 @@ export function personalizedContext(step: number, a: FullOnboardingAnswers): str
     }
     case 7: {
       if (a.exploreGoals.length === 0) return null;
-      return `Building toward ${formatList(a.exploreGoals.map((s) => labelOf(EXPLORE_OPTIONS, s)))} takes real time — how much do you actually have?`;
+      return `Building toward ${formatList(a.exploreGoals.map((s) => labelOf(EXPLORE_OPTIONS, s)))} takes real time. How much do you actually have?`;
     }
     case 8: {
       if (!a.freeTime) return null;
@@ -69,7 +69,7 @@ export function personalizedContext(step: number, a: FullOnboardingAnswers): str
     case 9: {
       if (!a.biggestGoal) return null;
       const goal = labelOf(GOAL_OPTIONS, a.biggestGoal).toLowerCase();
-      return `Got it — ${goal}. What's most likely to get in your way?`;
+      return `Got it, ${goal}. What's most likely to get in your way?`;
     }
     default:
       return null;

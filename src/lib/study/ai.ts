@@ -123,5 +123,5 @@ export async function callStudyAIForText(params: {
     output_config: { effort: params.effort ?? "low" },
   });
   const textBlock = response.content.find((b): b is Anthropic.Messages.TextBlock => b.type === "text");
-  return textBlock?.text ?? "Sorry, I couldn't put that into words just now — try asking again.";
+  return textBlock?.text ?? "Sorry, I couldn't put that into words just now. Try asking again.";
 }

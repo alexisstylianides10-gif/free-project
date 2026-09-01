@@ -15,7 +15,7 @@ const QUESTIONS: { q: string; a: string }[] = [
   },
   {
     q: "Can I switch tracks after signing up?",
-    a: "Your track (student or founder) is locked in once you finish onboarding, so the app can build itself fully around it. If you signed up on the wrong track, contact us and we can help.",
+    a: "Your track (student or founder) is locked in once you finish onboarding, so the app can build itself fully around it. If you signed up on the wrong track, contact us and we can help. Note: the founder track is currently paused for new signups while we polish it, so new accounts are on the student track for now.",
   },
 ];
 
