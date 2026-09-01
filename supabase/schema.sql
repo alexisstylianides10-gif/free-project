@@ -80,8 +80,16 @@ revoke update on public.profiles from authenticated;
 grant update (
   full_name, year_group, country, avatar_emoji, xp_school, xp_career,
   xp_skill, xp_project, streak_count, longest_streak, last_active_date,
-  onboarding_completed, track, billing_interval
+  onboarding_completed, track, billing_interval, tutorial_seen
 ) on public.profiles to authenticated;
+
+-- One-time "here's where everything lives" interstitial tour, shown once per
+-- account right after onboarding completes (see NewUserTutorial.tsx). Added
+-- via `alter table` (same pattern as exams.study_subject_id below) rather
+-- than folded into the `create table if not exists public.profiles` block
+-- above, because that statement is a no-op against the already-deployed
+-- production table -- only this alter actually reaches it.
+alter table public.profiles add column if not exists tutorial_seen boolean not null default false;
 
 -- ---------------------------------------------------------------------------
 -- onboarding_responses

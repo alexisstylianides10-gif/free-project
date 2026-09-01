@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
@@ -9,11 +9,14 @@ import { BottomNav } from "@/components/shared/BottomNav";
 import { SidebarNav } from "@/components/shared/SidebarNav";
 import { TopBar } from "@/components/shared/TopBar";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { NewUserTutorial } from "@/components/shared/NewUserTutorial";
 import { Button } from "@/components/ui/Button";
+import { supabase } from "@/lib/supabase/client";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading, profileLoading } = useAuth();
+  const { user, profile, loading, profileLoading, refreshProfile } = useAuth();
   const router = useRouter();
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -25,6 +28,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       router.replace(profile.billing_interval ? "/onboarding" : "/choose-plan");
     }
   }, [loading, user, profile, router]);
+
+  useEffect(() => {
+    if (profile && profile.onboarding_completed && !profile.tutorial_seen) {
+      setShowTutorial(true);
+    }
+  }, [profile]);
+
+  async function dismissTutorial() {
+    setShowTutorial(false); // flip immediately, don't wait on the network round trip
+    if (!user || !supabase) return;
+    await supabase.from("profiles").update({ tutorial_seen: true }).eq("id", user.id);
+    refreshProfile();
+  }
 
   if (loading || !user || profileLoading) {
     return <LoadingScreen message="Signing you in…" />;
@@ -80,6 +96,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <BottomNav />
+      <NewUserTutorial open={showTutorial} track={profile.track} onFinish={dismissTutorial} />
     </div>
   );
 }

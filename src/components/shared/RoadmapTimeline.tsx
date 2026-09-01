@@ -1,11 +1,15 @@
 import { cn } from "@/lib/utils";
-import { Lock, Check } from "lucide-react";
+import { Lock, Check, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 export interface RoadmapStep {
   level: number;
   title: string;
   description?: string;
   status: "completed" | "unlocked" | "locked";
+  /** Only ever set on the single current frontier "unlocked" step whose
+   * catalog entry is advancement: "manual" — see StudentFutureHome. */
+  action?: { label: string; pending: boolean; onClick: () => void };
 }
 
 export function RoadmapTimeline({ steps }: { steps: RoadmapStep[] }) {
@@ -46,6 +50,15 @@ export function RoadmapTimeline({ steps }: { steps: RoadmapStep[] }) {
               {step.title}
             </p>
             {step.description && <p className="mt-0.5 text-xs text-muted-foreground">{step.description}</p>}
+            {step.action && (
+              <div className="mt-3">
+                <Button size="sm" variant="mission" onClick={step.action.onClick} disabled={step.action.pending}>
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  {step.action.pending ? "Saving…" : step.action.label}
+                </Button>
+                <p className="mt-1.5 text-xs text-muted-foreground">Be honest. This one&apos;s on you to confirm.</p>
+              </div>
+            )}
           </div>
         </li>
       ))}

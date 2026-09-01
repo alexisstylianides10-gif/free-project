@@ -4,6 +4,7 @@ import type { Profile } from "@/lib/types";
 import { awardXP } from "@/lib/actions/xp";
 import { bumpSkills } from "@/lib/actions/xp";
 import { awardAchievementOnce } from "@/lib/actions/achievements";
+import { advanceRoadmapLevel } from "@/lib/actions/roadmap";
 
 const CATEGORY_XP_BUCKET: Record<MissionCategory, "xp_school" | "xp_career" | "xp_skill" | "xp_project"> = {
   school: "xp_school",
@@ -44,11 +45,15 @@ export async function completeMission(
 
   if (mission.skillKeys?.length) await bumpSkills(supabase, userId, mission.skillKeys);
 
+  if (mission.category === "skill" && isFirstOfCategory("skill")) {
+    await advanceRoadmapLevel(supabase, userId, 2);
+  }
   if (mission.category === "career" && isFirstOfCategory("career")) {
     await awardAchievementOnce(supabase, userId, "first_career_mission");
   }
   if ((mission.category === "business" || mission.category === "creative") && isFirstOfCategory(mission.category)) {
     await awardAchievementOnce(supabase, userId, "first_project");
+    await advanceRoadmapLevel(supabase, userId, 3);
   }
 
   return updated;
