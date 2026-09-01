@@ -19,6 +19,7 @@ import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { RoadmapTimeline, RoadmapStep } from "@/components/shared/RoadmapTimeline";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { InstallAppCard } from "@/components/shared/InstallAppCard";
 import { branding } from "@/lib/branding";
 
 export default function ProfilePage() {
@@ -152,7 +153,8 @@ export default function ProfilePage() {
 
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Settings</h2>
-        <Card>
+        <InstallAppCard />
+        <Card className="mt-3">
           <CardContent className="p-4">
             <p className="mb-2.5 text-sm font-medium text-foreground">Appearance</p>
             <ThemeToggle />

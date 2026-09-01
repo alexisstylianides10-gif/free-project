@@ -16,6 +16,11 @@ create table if not exists public.profiles (
   full_name text not null default 'Student',
   year_group text not null default '',
   country text not null default '',
+  -- Purely informational/analytics — collected at onboarding, never read by
+  -- any gating/conditional logic anywhere in the app. Whether this should
+  -- ever gate something (e.g. an under-13 handling policy) is an explicit
+  -- open CEO decision, not decided by this column's existence.
+  age int check (age is null or (age between 5 and 100)),
   avatar_emoji text not null default '🚀',
   xp_school int not null default 0,
   xp_career int not null default 0,
@@ -80,8 +85,14 @@ revoke update on public.profiles from authenticated;
 grant update (
   full_name, year_group, country, avatar_emoji, xp_school, xp_career,
   xp_skill, xp_project, streak_count, longest_streak, last_active_date,
-  onboarding_completed, track, billing_interval
+  onboarding_completed, track, billing_interval, age
 ) on public.profiles to authenticated;
+
+-- Adds `age` to an already-existing profiles table (the `create table if
+-- not exists`/inline column above only takes effect on a fresh install).
+-- Informational/analytics only — see the column comment above; not read by
+-- any gating logic anywhere in the app.
+alter table public.profiles add column if not exists age int check (age is null or (age between 5 and 100));
 
 -- ---------------------------------------------------------------------------
 -- onboarding_responses

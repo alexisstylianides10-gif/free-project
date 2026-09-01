@@ -205,12 +205,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // First-quiz / first-mock-exam achievements.
+  // First-quiz / first-mock-exam achievements. This route runs server-side
+  // (no `window`), so awardAchievementOnce's own browser-CustomEvent toast
+  // trigger can't fire here — collect whichever keys it genuinely awards
+  // and return them so the client can show the toast itself.
+  const unlockedAchievements: string[] = [];
   const { count: totalAttempts } = await client
     .from("study_quiz_attempts")
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id);
-  if ((totalAttempts ?? 0) === 1) await awardAchievementOnce(client, user.id, "first_quiz");
+  if ((totalAttempts ?? 0) === 1 && (await awardAchievementOnce(client, user.id, "first_quiz"))) {
+    unlockedAchievements.push("first_quiz");
+  }
 
   if (quiz.is_mock_exam) {
     const { data: mockExamQuizzes } = await client.from("study_quizzes").select("id").eq("user_id", user.id).eq("is_mock_exam", true);
@@ -221,7 +227,9 @@ export async function POST(req: NextRequest) {
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id)
         .in("quiz_id", mockExamQuizIds);
-      if ((mockAttemptCount ?? 0) === 1) await awardAchievementOnce(client, user.id, "first_mock_exam");
+      if ((mockAttemptCount ?? 0) === 1 && (await awardAchievementOnce(client, user.id, "first_mock_exam"))) {
+        unlockedAchievements.push("first_mock_exam");
+      }
     }
   }
 
@@ -250,5 +258,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     attempt: insertedAttempt,
     ...(nextFocusNote ? { next_focus_note: nextFocusNote } : {}),
+    ...(unlockedAchievements.length > 0 ? { unlocked_achievements: unlockedAchievements } : {}),
   });
 }

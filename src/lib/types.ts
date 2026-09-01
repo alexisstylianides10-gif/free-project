@@ -9,6 +9,10 @@ export interface Profile {
   full_name: string;
   year_group: string;
   country: string;
+  // Informational/analytics only — collected at onboarding, never used to
+  // gate or change any feature/flow. See PROJECT_STATE.md Wave 4a for the
+  // open CEO question on whether it should ever gate something.
+  age: number | null;
   avatar_emoji: string;
   xp_school: number;
   xp_career: number;

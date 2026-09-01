@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Send, Loader2, Sparkles, Plus, MessagesSquare, Check } from "lucide-react";
+import { Send, Loader2, Sparkles, Plus, MessagesSquare, Check, Pencil } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useChatHistory, useChatThreads, useHomework, useExams, useCareerPaths } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
@@ -39,6 +39,9 @@ export default function CoachPage() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [threadPanelOpen, setThreadPanelOpen] = useState(false);
   const [creatingThread, setCreatingThread] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [savingRename, setSavingRename] = useState(false);
 
   const { data: history, loading: historyLoading } = useChatHistory(user?.id, activeThreadId ?? undefined);
   const { data: homework } = useHomework(user?.id);
@@ -111,6 +114,23 @@ export default function CoachPage() {
     setThreadPanelOpen(false);
   }
 
+  function startRename(threadId: string, currentTitle: string | null) {
+    setRenamingId(threadId);
+    setRenameValue(currentTitle || "");
+  }
+
+  async function saveRename(threadId: string) {
+    if (!supabase || !renameValue.trim() || savingRename) return;
+    setSavingRename(true);
+    try {
+      await supabase.from("chat_threads").update({ title: renameValue.trim() }).eq("id", threadId);
+      setRenamingId(null);
+      await refetchThreads();
+    } finally {
+      setSavingRename(false);
+    }
+  }
+
   async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed || sending || !activeThreadId) return;
@@ -166,21 +186,60 @@ export default function CoachPage() {
           {threads.length === 0 ? (
             <p className="p-3 text-center text-xs text-muted-foreground">No conversations yet.</p>
           ) : (
-            threads.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => switchThread(t.id)}
-                className={cn(
-                  "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
-                  t.id === activeThreadId ? "bg-accent-soft/50 text-foreground" : "text-muted-foreground hover:bg-muted"
-                )}
-              >
-                <span className="min-w-0 flex-1 truncate">{t.title || "New chat"}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">{relativeDay(t.last_message_at)}</span>
-                {t.id === activeThreadId && <Check className="h-3.5 w-3.5 shrink-0 text-accent" />}
-              </button>
-            ))
+            threads.map((t) =>
+              renamingId === t.id ? (
+                <div key={t.id} className="flex items-center gap-1.5 px-1 py-1">
+                  <input
+                    autoFocus
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveRename(t.id);
+                      if (e.key === "Escape") setRenamingId(null);
+                    }}
+                    placeholder="Chat name…"
+                    className="h-9 min-w-0 flex-1 rounded-full border border-border bg-surface px-3 text-sm text-foreground outline-none focus:border-accent/60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => saveRename(t.id)}
+                    disabled={!renameValue.trim() || savingRename}
+                    className="shrink-0 rounded-full bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRenamingId(null)}
+                    className="shrink-0 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <div
+                  key={t.id}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                    t.id === activeThreadId ? "bg-accent-soft/50 text-foreground" : "text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  <button type="button" onClick={() => switchThread(t.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                    <span className="min-w-0 flex-1 truncate">{t.title || "New chat"}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{relativeDay(t.last_message_at)}</span>
+                    {t.id === activeThreadId && <Check className="h-3.5 w-3.5 shrink-0 text-accent" />}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Rename chat"
+                    onClick={() => startRename(t.id, t.title)}
+                    className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:text-accent"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )
+            )
           )}
         </div>
       )}

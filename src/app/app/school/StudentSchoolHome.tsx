@@ -13,13 +13,10 @@ import { awardXP } from "@/lib/actions/xp";
 import { awardAchievementOnce } from "@/lib/actions/achievements";
 import { weakestTopic, todaysStudyMinutes, subjectReadiness, buildStudyRecommendation } from "@/lib/study/recommendation";
 import { formatCountdown, formatTime12, mondayOfThisWeek, todayISO, cn } from "@/lib/utils";
-import type { Homework, StudySession } from "@/lib/types";
+import type { StudySession } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { PriorityBadge } from "@/components/ui/PriorityBadge";
-
-const HOMEWORK_XP: Record<Homework["priority"], number> = { high: 15, medium: 10, low: 8 };
 
 const STUDY_PLAN_DAYS = [
   { day: 1, label: "Monday" },
@@ -48,7 +45,7 @@ export default function StudentSchoolHome() {
   const todayDow = new Date(today + "T00:00:00").getDay();
 
   const { data: timetable, loading: timetableLoading, error: timetableError, refetch: refetchTimetable } = useTimetable(user?.id);
-  const { data: homework, loading: homeworkLoading, error: homeworkError, refetch: refetchHomework } = useHomework(user?.id);
+  const { data: homework, error: homeworkError } = useHomework(user?.id);
   const { data: exams, error: examsError } = useExams(user?.id);
   const { data: studySessions, loading: studyLoading, error: studyError, refetch: refetchStudy } = useStudySessions(user?.id, mondayOfThisWeek());
   const { data: subjects, error: subjectsError } = useStudySubjects(user?.id);
@@ -61,13 +58,7 @@ export default function StudentSchoolHome() {
   // failure on any one of them is equally worth flagging to the user.
   const pageError = timetableError ?? homeworkError ?? examsError ?? studyError ?? subjectsError ?? topicsError ?? focusError ?? flashcardsError;
 
-  const [busyHomeworkId, setBusyHomeworkId] = useState<string | null>(null);
   const [busySessionId, setBusySessionId] = useState<string | null>(null);
-  const [newHwSubject, setNewHwSubject] = useState("");
-  const [newHwTitle, setNewHwTitle] = useState("");
-  const [newHwDueDate, setNewHwDueDate] = useState("");
-  const [addingHw, setAddingHw] = useState(false);
-  const [deletingHwId, setDeletingHwId] = useState<string | null>(null);
   const [deletingTtId, setDeletingTtId] = useState<string | null>(null);
   const [newTtDay, setNewTtDay] = useState(todayDow);
   const [newTtSubject, setNewTtSubject] = useState("");
@@ -81,14 +72,15 @@ export default function StudentSchoolHome() {
     [timetable, todayDow]
   );
 
-  const sortedHomework = useMemo(
-    () =>
-      [...homework].sort((a, b) => {
-        if (a.status !== b.status) return a.status === "pending" ? -1 : 1;
-        return a.due_date.localeCompare(b.due_date);
-      }),
+  // Home only ever shows a short preview (pending count + the soonest item)
+  // that links out to the full Homework tab — same relationship Exams has
+  // to Home (nextExam below). Full add/edit/delete/complete lives there now,
+  // not duplicated here.
+  const pendingHomework = useMemo(
+    () => homework.filter((h) => h.status === "pending").sort((a, b) => a.due_date.localeCompare(b.due_date)),
     [homework]
   );
+  const nextHomework = pendingHomework[0];
 
   const studyByDay = useMemo(() => {
     const map = new Map<number, StudySession[]>();
@@ -129,56 +121,6 @@ export default function StudentSchoolHome() {
   );
 
   const todayMinutes = todaysStudyMinutes(focusSessions);
-
-  async function toggleHomework(hw: Homework) {
-    // One-way completion, matching completeStudySession's guard below — once
-    // completed, this is a no-op (not a toggle back to pending). Prevents
-    // XP-farming by repeatedly checking/unchecking the same item, and keeps
-    // completion semantics consistent across all three XP-awarding actions.
-    if (!user || !profile || !supabase || hw.status === "completed" || busyHomeworkId) return;
-    setBusyHomeworkId(hw.id);
-    try {
-      await supabase.from("homework").update({ status: "completed" }).eq("id", hw.id);
-      await awardXP(supabase, user.id, profile, { xp_school: HOMEWORK_XP[hw.priority] });
-      await Promise.all([refreshProfile(), refetchHomework()]);
-    } finally {
-      setBusyHomeworkId(null);
-    }
-  }
-
-  async function addHomework(e: React.FormEvent) {
-    e.preventDefault();
-    if (!supabase || !user || !newHwSubject.trim() || !newHwTitle.trim() || !newHwDueDate || addingHw) return;
-    setAddingHw(true);
-    try {
-      await supabase.from("homework").insert({
-        user_id: user.id,
-        subject: newHwSubject.trim(),
-        title: newHwTitle.trim(),
-        due_date: newHwDueDate,
-        priority: "medium",
-        status: "pending",
-      });
-      setNewHwSubject("");
-      setNewHwTitle("");
-      setNewHwDueDate("");
-      await refetchHomework();
-    } finally {
-      setAddingHw(false);
-    }
-  }
-
-  async function deleteHomework(hwId: string) {
-    if (!supabase || deletingHwId) return;
-    if (!confirm("Delete this homework item? This can't be undone.")) return;
-    setDeletingHwId(hwId);
-    try {
-      await supabase.from("homework").delete().eq("id", hwId);
-      await refetchHomework();
-    } finally {
-      setDeletingHwId(null);
-    }
-  }
 
   async function deleteTimetableEntry(entryId: string) {
     if (!supabase || deletingTtId) return;
@@ -408,99 +350,28 @@ export default function StudentSchoolHome() {
         </form>
       </section>
 
-      <section>
-        <div className="mb-3 flex items-center gap-2">
-          <ClipboardCheck className="h-4 w-4 text-accent" />
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Homework</h2>
-        </div>
-        {!homeworkLoading && sortedHomework.length === 0 ? (
-          <EmptyState icon={ClipboardCheck} title="Nothing set right now" subtitle="You're all caught up on homework." />
-        ) : (
-          <div className="space-y-2">
-            {sortedHomework.map((hw) => {
-              const isCompleted = hw.status === "completed";
-              return (
-                <Card key={hw.id}>
-                  <CardContent className="flex items-center gap-3 p-4">
-                    <button
-                      type="button"
-                      aria-label="Mark as complete"
-                      onClick={() => toggleHomework(hw)}
-                      disabled={isCompleted || busyHomeworkId === hw.id}
-                      className="shrink-0 text-muted-foreground transition-colors hover:text-success disabled:cursor-default disabled:opacity-40"
-                    >
-                      {isCompleted ? <CheckCircle2 className="h-6 w-6 text-success" /> : <Circle className="h-6 w-6" />}
-                    </button>
-                    <div className="min-w-0 flex-1">
-                      <p className={cn("truncate text-sm font-semibold text-foreground", isCompleted && "text-muted-foreground line-through")}>
-                        {hw.subject}: {hw.title}
-                      </p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{isCompleted ? "Completed" : formatCountdown(hw.due_date)}</p>
-                    </div>
-                    {!isCompleted && (
-                      <>
-                        <PriorityBadge priority={hw.priority} />
-                        <Link
-                          href={`/app/school/homework/${hw.id}/help`}
-                          aria-label="Get AI help with this homework"
-                          title="Get AI help"
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-accent transition-colors hover:bg-border-strong/40"
-                        >
-                          <Sparkles className="h-3.5 w-3.5" />
-                        </Link>
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      aria-label="Delete homework"
-                      onClick={() => deleteHomework(hw.id)}
-                      disabled={deletingHwId === hw.id}
-                      className="shrink-0 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-40"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-        <form onSubmit={addHomework} className="mt-3 space-y-2">
-          <div className="flex items-center gap-2">
-            <input
-              value={newHwSubject}
-              onChange={(e) => setNewHwSubject(e.target.value)}
-              placeholder="Subject…"
-              className="h-11 w-28 shrink-0 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60 sm:w-32"
-            />
-            <input
-              value={newHwTitle}
-              onChange={(e) => setNewHwTitle(e.target.value)}
-              placeholder="Add homework…"
-              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={newHwDueDate}
-              onChange={(e) => setNewHwDueDate(e.target.value)}
-              aria-label="Due date"
-              required
-              min={todayISO()}
-              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
-            />
-            <button
-              type="submit"
-              disabled={addingHw || !newHwSubject.trim() || !newHwTitle.trim() || !newHwDueDate}
-              aria-label="Add homework"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-        </form>
-      </section>
+      <Link href="/app/school/homework">
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2">
+              <ClipboardCheck className="h-4 w-4 text-accent" />
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Homework</p>
+            </div>
+            {nextHomework ? (
+              <>
+                <p className="mt-2 text-2xl font-extrabold text-foreground">
+                  {pendingHomework.length} pending
+                </p>
+                <p className="mt-1 truncate text-xs text-muted-foreground">
+                  Next: {nextHomework.subject}: {nextHomework.title} &middot; {formatCountdown(nextHomework.due_date)}
+                </p>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">You&rsquo;re all caught up. Tap to add homework.</p>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
 
       <section>
         <div className="mb-3 flex items-center gap-2">

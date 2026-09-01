@@ -39,13 +39,14 @@ const EMPTY_ANSWERS: Answers = {
   freeTime: "",
   biggestGoal: "",
   biggestProblem: "",
+  age: null,
 };
 
 function toggle(list: string[], key: string): string[] {
   return list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
 }
 
-const QUESTION_COUNT = 10;
+const QUESTION_COUNT = 11;
 
 export default function StudentOnboarding() {
   const router = useRouter();
@@ -255,6 +256,25 @@ export default function StudentOnboarding() {
               />
             ))}
           </div>
+        </Question>
+      )}
+
+      {step === 10 && (
+        <Question title="How old are you?" subtitle="Optional. This just helps us understand our students better.">
+          <input
+            autoFocus
+            type="number"
+            inputMode="numeric"
+            min={5}
+            max={100}
+            value={answers.age ?? ""}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setAnswers({ ...answers, age: raw === "" ? null : Number(raw) });
+            }}
+            placeholder="e.g. 15"
+            className="h-12 w-full rounded-2xl border border-border bg-surface px-4 text-body text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+          />
         </Question>
       )}
     </OnboardingShell>
