@@ -21,7 +21,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setError("Log in isn't available right now — the backend isn't configured.");
+      setError("Log in isn't available right now. The backend isn't configured.");
       return;
     }
     setLoading(true);

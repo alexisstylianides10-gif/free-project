@@ -26,7 +26,7 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     if (!supabase) {
-      setError("Sign-in isn't available right now — the backend isn't configured.");
+      setError("Sign-in isn't available right now. The backend isn't configured.");
       return;
     }
     const client = supabase;
@@ -94,7 +94,7 @@ export default function AuthCallbackPage() {
       if (data.session?.user) {
         await routeAfterSignIn(data.session.user);
       } else {
-        setError("Couldn't complete sign-in — no session was returned. Try again.");
+        setError("Couldn't complete sign-in. No session was returned. Try again.");
       }
     }
 

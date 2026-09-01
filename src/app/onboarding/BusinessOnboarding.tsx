@@ -95,7 +95,7 @@ export default function BusinessOnboarding() {
   }
 
   if (submitting) {
-    return <LoadingScreen message="Researching your idea and building your plan — this can take up to a minute…" />;
+    return <LoadingScreen message="Researching your idea and building your plan. This can take up to a minute…" />;
   }
 
   if (step === QUESTION_COUNT) {
@@ -117,7 +117,7 @@ export default function BusinessOnboarding() {
       {step === 0 && (
         <Question
           title="What's your business idea?"
-          subtitle="A sentence or two is plenty — no idea yet? Leave this blank and we'll suggest one based on your strengths."
+          subtitle="A sentence or two is plenty. No idea yet? Leave this blank and we'll suggest one based on your strengths."
         >
           <textarea
             autoFocus
@@ -146,7 +146,7 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 2 && (
-        <Question title="Who's your target customer?" subtitle="Be as specific as you can — or leave blank if you're not sure yet">
+        <Question title="Who's your target customer?" subtitle="Be as specific as you can, or leave blank if you're not sure yet">
           <textarea
             autoFocus
             value={answers.targetCustomer}
@@ -262,13 +262,13 @@ function ResultsScreen({ answers, onContinue }: { answers: Answers; onContinue: 
         <div className="mt-8 glass rounded-2xl p-4 shadow-card">
           <p className="text-sm font-semibold text-foreground">Your idea</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {answers.businessIdea.trim() || "Not sure yet — we'll suggest one based on your strengths."}
+            {answers.businessIdea.trim() || "Not sure yet? We'll suggest one based on your strengths."}
           </p>
         </div>
         <div className="mt-3 glass rounded-2xl p-4 shadow-card">
           <p className="text-sm font-semibold text-foreground">Target customer</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {answers.targetCustomer.trim() || "Not sure yet — we'll figure this out together."}
+            {answers.targetCustomer.trim() || "Not sure yet? We'll figure this out together."}
           </p>
         </div>
 

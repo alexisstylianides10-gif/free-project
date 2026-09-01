@@ -278,7 +278,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
 
           {checked && !quiz.is_mock_exam && (
             <div className={cn("rounded-xl p-3.5 text-sm leading-relaxed", isCorrectSelection ? "bg-success-soft text-success" : "bg-danger-soft text-danger")}>
-              <p className="font-bold">{isCorrectSelection ? "Correct" : `Not quite — correct answer: ${question.answer}`}</p>
+              <p className="font-bold">{isCorrectSelection ? "Correct" : `Not quite. Correct answer: ${question.answer}`}</p>
               {question.explanation && <p className="mt-1 text-foreground/80">{question.explanation}</p>}
             </div>
           )}

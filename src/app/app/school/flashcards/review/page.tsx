@@ -175,7 +175,7 @@ function ReviewInner() {
             </span>
             <p className="text-lg font-bold text-foreground">Review complete</p>
             <p className="text-sm text-muted-foreground">
-              {results.length} card{results.length === 1 ? "" : "s"} reviewed — {knewCount} knew it, {almostCount} almost, {didntCount} didn&rsquo;t know.
+              {results.length} card{results.length === 1 ? "" : "s"} reviewed: {knewCount} knew it, {almostCount} almost, {didntCount} didn&rsquo;t know.
             </p>
           </CardContent>
         </Card>

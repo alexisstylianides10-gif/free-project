@@ -17,7 +17,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://futureos.vercel.app
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: `${branding.name} — ${branding.tagline}`, template: `%s · ${branding.name}` },
+  title: { default: `${branding.name} · ${branding.tagline}`, template: `%s · ${branding.name}` },
   description: branding.description,
   manifest: "/manifest.json",
   icons: { apple: "/icons/apple-touch-icon.png" },

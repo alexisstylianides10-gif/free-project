@@ -19,7 +19,7 @@ const ACTIONS: { key: string; label: string; icon: typeof Lightbulb; frame: (q: 
     key: "hint",
     label: "Hint",
     icon: Lightbulb,
-    frame: (q) => `Here's my homework question: "${q}". Give me a hint to get started — don't solve it for me.`,
+    frame: (q) => `Here's my homework question: "${q}". Give me a hint to get started, but don't solve it for me.`,
   },
   {
     key: "explain",
@@ -38,7 +38,7 @@ const ACTIONS: { key: string; label: string; icon: typeof Lightbulb; frame: (q: 
     label: "Walk Me Through It",
     icon: Footprints,
     frame: (q) =>
-      `Here's my homework question: "${q}". Walk me through it step by step — ask me what I already know before telling me the next step. Don't just give me the final answer.`,
+      `Here's my homework question: "${q}". Walk me through it step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer.`,
   },
 ];
 
@@ -86,7 +86,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ subject
       <div>
         <h1 className="text-xl font-extrabold text-foreground">Homework Help</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Describe the question you&rsquo;re stuck on — your tutor will help you work through it, not do it for you.
+          Describe the question you&rsquo;re stuck on. Your tutor will help you work through it, not do it for you.
         </p>
       </div>
 
@@ -143,7 +143,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ subject
       )}
       {error && <p className="text-xs text-danger">{error}</p>}
 
-      <p className="text-center text-caption text-muted-foreground">Homework Help teaches the concept — it won&rsquo;t just hand you the answer.</p>
+      <p className="text-center text-caption text-muted-foreground">Homework Help teaches the concept. It won&rsquo;t just hand you the answer.</p>
     </div>
   );
 }

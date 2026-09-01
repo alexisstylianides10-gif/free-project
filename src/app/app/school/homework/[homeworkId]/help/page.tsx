@@ -20,7 +20,7 @@ const ACTIONS: { key: string; label: string; icon: typeof Lightbulb; frame: (q: 
     key: "hint",
     label: "Hint",
     icon: Lightbulb,
-    frame: (q) => (q ? `Here's what I'm stuck on: "${q}". Give me a hint to get started — don't solve it for me.` : "Give me a hint to get started on this homework — don't solve it for me."),
+    frame: (q) => (q ? `Here's what I'm stuck on: "${q}". Give me a hint to get started, but don't solve it for me.` : "Give me a hint to get started on this homework, but don't solve it for me."),
   },
   {
     key: "explain",
@@ -40,8 +40,8 @@ const ACTIONS: { key: string; label: string; icon: typeof Lightbulb; frame: (q: 
     icon: Footprints,
     frame: (q) =>
       q
-        ? `Here's what I'm stuck on: "${q}". Walk me through it step by step — ask me what I already know before telling me the next step. Don't just give me the final answer.`
-        : "Walk me through this homework step by step — ask me what I already know before telling me the next step. Don't just give me the final answer.",
+        ? `Here's what I'm stuck on: "${q}". Walk me through it step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer.`
+        : "Walk me through this homework step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer.",
   },
 ];
 
@@ -105,7 +105,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
           <PriorityBadge priority={hw.priority} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Tell your tutor what you&rsquo;re stuck on, or use a quick action below — it&rsquo;ll help you work through it, not do it for you.
+          Tell your tutor what you&rsquo;re stuck on, or use a quick action below. It&rsquo;ll help you work through it, not do it for you.
         </p>
       </div>
 
@@ -114,7 +114,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
           <textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Optional — describe exactly what you're stuck on…"
+            placeholder="Optional: describe exactly what you're stuck on…"
             rows={3}
             className="w-full resize-none rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
           />
@@ -162,7 +162,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
       )}
       {error && <p className="text-xs text-danger">{error}</p>}
 
-      <p className="text-center text-caption text-muted-foreground">Homework Help teaches the concept — it won&rsquo;t just hand you the answer.</p>
+      <p className="text-center text-caption text-muted-foreground">Homework Help teaches the concept. It won&rsquo;t just hand you the answer.</p>
     </div>
   );
 }

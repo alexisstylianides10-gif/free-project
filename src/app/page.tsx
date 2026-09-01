@@ -31,61 +31,88 @@ export default function WelcomePage() {
   }, [loading, user, profile, router]);
 
   return (
-    <main className="relative flex min-h-dvh overflow-hidden bg-background lg:items-stretch">
-      <div className="bg-ambient-glow pointer-events-none absolute inset-0 lg:hidden" aria-hidden />
+    <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background">
+      <div className="relative flex flex-1 lg:items-stretch">
+        <div className="bg-ambient-glow pointer-events-none absolute inset-0 lg:hidden" aria-hidden />
 
-      <div className="relative z-10 flex w-full flex-1 flex-col px-6 pb-10 pt-16 md:px-10 lg:justify-center lg:px-16 lg:pb-16 lg:pt-0 xl:px-20">
-        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-between md:max-w-md lg:max-w-lg lg:flex-none lg:justify-start lg:gap-10">
-          <div>
-            <div className="flex items-center gap-2">
-              <LogoMark size={36} className="shadow-glow-accent" />
-              <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>
+        <div className="relative z-10 flex w-full flex-1 flex-col px-6 pb-10 pt-16 md:px-10 lg:justify-center lg:px-16 lg:pb-16 lg:pt-0 xl:px-20">
+          <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-between md:max-w-md lg:max-w-lg lg:flex-none lg:justify-start lg:gap-10">
+            <div>
+              <div className="flex items-center gap-2">
+                <LogoMark size={36} className="shadow-glow-accent" />
+                <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>
+              </div>
+
+              <h1 className="mt-14 text-display font-extrabold leading-[1.15] tracking-tight text-foreground lg:mt-10 lg:text-[46px] lg:leading-[1.12]">
+                Build your future
+                <br />
+                while you build your{" "}
+                <span className="text-gradient-brand">grades.</span>
+              </h1>
+              <p className="mt-4 max-w-sm text-body leading-relaxed text-muted-foreground lg:max-w-md">
+                Your AI coach turns a locked-in track, school or startup, into a daily plan, real deadlines, and a
+                future you can actually see.
+              </p>
             </div>
 
-            <h1 className="mt-14 text-display font-extrabold leading-[1.15] tracking-tight text-foreground lg:mt-10 lg:text-[46px] lg:leading-[1.12]">
-              Build your future
-              <br />
-              while you build your{" "}
-              <span className="text-gradient-brand">grades.</span>
-            </h1>
-            <p className="mt-4 max-w-sm text-body leading-relaxed text-muted-foreground lg:max-w-md">
-              Your AI coach turns a locked-in track — school or startup — into a daily plan, real deadlines, and a
-              future you can actually see.
-            </p>
-          </div>
-
-          <div className="mt-16 space-y-4 lg:mt-0">
-            <Link
-              href="/signup"
-              className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-body font-semibold text-white shadow-glow-accent transition-transform active:scale-[0.98] lg:w-auto lg:px-10"
-            >
-              Get Started
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <p className="text-center text-sm text-muted-foreground lg:text-left">
-              Already building your future?{" "}
-              <Link href="/login" className="font-semibold text-foreground underline underline-offset-4">
-                Log in
+            <div className="mt-16 space-y-4 lg:mt-0">
+              <Link
+                href="/signup"
+                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-body font-semibold text-white shadow-glow-accent transition-transform active:scale-[0.98] lg:w-auto lg:px-10"
+              >
+                Get Started
+                <ArrowRight className="h-4 w-4" />
               </Link>
-            </p>
-          </div>
+              <p className="text-center text-sm text-muted-foreground lg:text-left">
+                Already building your future?{" "}
+                <Link href="/login" className="font-semibold text-foreground underline underline-offset-4">
+                  Log in
+                </Link>
+              </p>
+            </div>
 
-          {/* Proof strip — real, checkable claims about the product, not stats.
-              Fills what used to be a large empty gap on every viewport (most
-              severe on desktop, present on mobile too) between the pitch and
-              the CTA. */}
-          <div className="flex items-start justify-between gap-3 border-t border-border pt-6 lg:pt-7">
-            {PROOF.map((p) => (
-              <div key={p.label} className="min-w-0">
-                <p className="text-xs font-extrabold leading-snug text-foreground lg:text-body">{p.value}</p>
-                <p className="mt-1 text-2xs text-muted-foreground lg:text-caption">{p.label}</p>
-              </div>
-            ))}
+            {/* Proof strip — real, checkable claims about the product, not stats.
+                Fills what used to be a large empty gap on every viewport (most
+                severe on desktop, present on mobile too) between the pitch and
+                the CTA. */}
+            <div className="flex items-start justify-between gap-3 border-t border-border pt-6 lg:pt-7">
+              {PROOF.map((p) => (
+                <div key={p.label} className="min-w-0">
+                  <p className="text-xs font-extrabold leading-snug text-foreground lg:text-body">{p.value}</p>
+                  <p className="mt-1 text-2xs text-muted-foreground lg:text-caption">{p.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+        <BrandPanel variant="landing" />
       </div>
 
-      <BrandPanel variant="landing" />
+      <footer className="relative z-10 border-t border-border px-6 py-8 md:px-10 lg:px-16 xl:px-20">
+        <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-5 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div className="flex items-center gap-2">
+            <LogoMark size={20} />
+            <span className="text-sm font-semibold text-muted-foreground">{branding.name}</span>
+          </div>
+
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <Link href="/privacy" className="transition-colors hover:text-foreground">
+              Privacy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-foreground">
+              Terms
+            </Link>
+            <Link href="/faq" className="transition-colors hover:text-foreground">
+              FAQ
+            </Link>
+          </nav>
+
+          <p className="text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} {branding.name}. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }

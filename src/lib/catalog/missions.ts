@@ -93,7 +93,7 @@ export const MISSIONS: Mission[] = [
     id: "career-shadow-conversation",
     category: "career",
     title: "Talk to someone in a career you're curious about",
-    description: "Ask a parent, teacher, or family friend about their job — what they actually do day to day.",
+    description: "Ask a parent, teacher, or family friend about their job: what they actually do day to day.",
     difficulty: "medium",
     minutes: 20,
     xp: 70,

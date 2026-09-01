@@ -12,12 +12,12 @@ export default function SchoolLayout({ children }: { children: React.ReactNode }
   const { profile } = useAuth();
 
   if (profile?.track === "business") {
-    return <div className="animate-fade-in pb-4">{children}</div>;
+    return <div className="pb-4">{children}</div>;
   }
 
   return (
-    <div className="animate-fade-in space-y-5 pb-4">
-      <ScreenHeader title="My School" subtitle="Class, homework, exams — and your AI study coach." />
+    <div className="space-y-5 pb-4">
+      <ScreenHeader title="My School" subtitle="Class, homework, exams, and your AI study coach." />
       <SchoolSubNav />
       <div>{children}</div>
     </div>

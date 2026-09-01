@@ -60,7 +60,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-7 pb-4 animate-fade-in">
+    <div className="space-y-7 pb-4">
       <ScreenHeader eyebrow="Profile" title="Your progress" subtitle="Everything you've built, in one place." />
 
       <Card>
@@ -126,7 +126,7 @@ export default function ProfilePage() {
               {sortedSkills.map((s) => (
                 <div key={s.skill_key}>
                   <p className="text-sm font-medium text-foreground">
-                    {skillLabel(s.skill_key)} — {s.proficiency}%
+                    {skillLabel(s.skill_key)} · {s.proficiency}%
                   </p>
                   <ProgressBar value={s.proficiency} tone="brand" className="mt-1.5" />
                 </div>
