@@ -82,7 +82,7 @@ export default function MissionDetailPage({ params }: { params: Promise<{ id: st
         {alreadyCompleted || justCompleted ? (
           <div className="flex items-center gap-2.5 rounded-2xl border border-success/40 bg-success-soft px-4 py-3.5 text-sm font-semibold text-success">
             <PartyPopper className="h-4.5 w-4.5" />
-            Mission complete — +{mission.xp} XP earned.
+            Mission complete · +{mission.xp} XP earned.
           </div>
         ) : (
           <Button size="lg" variant="mission" className="w-full" onClick={handleComplete} disabled={completing}>
@@ -91,7 +91,7 @@ export default function MissionDetailPage({ params }: { params: Promise<{ id: st
           </Button>
         )}
         <p className="mt-3 text-center text-xs text-muted-foreground">
-          Be honest — missions only count for something if you actually did them.
+          Be honest. Missions only count for something if you actually did them.
         </p>
       </div>
     </div>

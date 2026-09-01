@@ -15,13 +15,13 @@ import { branding } from "@/lib/branding";
 
 const PERKS_BY_TRACK = {
   student: [
-    "AI Coach — your always-on mentor for school, skills, and career",
+    "AI Coach: your always-on mentor for school, skills, and career",
     "AI study plans built around your real exams and deadlines",
     "Upload notes, photos, or PDFs and get an instant AI breakdown",
     "AI tutor sessions, quizzes, and spaced-repetition flashcards",
   ],
   business: [
-    "AI Coach — your always-on mentor for building your business",
+    "AI Coach: your always-on mentor for building your business",
     "An AI-generated snapshot and starter milestones for your idea",
     "AI-drafted marketing and content ideas for any platform",
     "Milestone, metrics, and competitor tracking in one place",
@@ -29,7 +29,7 @@ const PERKS_BY_TRACK = {
 } as const;
 
 const FREE_TAGLINE_BY_TRACK = {
-  student: "School tracking — timetable, homework, exams, career matches, and your roadmap — is always free.",
+  student: "School tracking (timetable, homework, exams, career matches, and your roadmap) is always free.",
   business: "Your business plan basics, milestone checklist, and metrics log are always free.",
 } as const;
 
@@ -116,7 +116,7 @@ export default function UpgradePage() {
           <CardContent className="flex items-center gap-3 p-4">
             {!onPlus && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-success" />}
             <p className="text-sm text-foreground">
-              {onPlus ? "You're on Alxioum Plus — enjoy!" : "Payment received — activating your plan…"}
+              {onPlus ? "You're on Alxioum Plus. Enjoy!" : "Payment received. Activating your plan…"}
             </p>
           </CardContent>
         </Card>
@@ -134,7 +134,7 @@ export default function UpgradePage() {
         <Card>
           <CardContent className="p-6">
             <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-accent">
-              <Sparkles className="h-3.5 w-3.5" /> {branding.name} Plus — {TRACK_LABEL[track]}
+              <Sparkles className="h-3.5 w-3.5" /> {branding.name} Plus · {TRACK_LABEL[track]}
             </p>
 
             {!onPlus && !clientSecret && (

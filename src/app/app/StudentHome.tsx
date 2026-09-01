@@ -73,11 +73,11 @@ export default function StudentHome() {
   const firstName = profile?.full_name?.split(" ")[0] || "there";
 
   return (
-    <div className="animate-fade-in">
+    <div>
       <div className="bg-ambient-glow mb-6 lg:mb-8">
         <div className="relative">
           <h1 className="text-title font-bold text-foreground lg:text-title-lg">
-            {greeting()}, <span className="text-gradient-brand">{firstName}</span> 👋
+            {greeting()}, <span className="text-gradient-brand">{firstName}</span>
           </h1>
           <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s your plan for today.</p>
         </div>

@@ -4,31 +4,31 @@ type Variant = "landing" | "login" | "signup" | "onboarding-student" | "onboardi
 
 const COPY: Record<Variant, { quote: string; cardEyebrow: string; cardTitle: string; cardBody: string }> = {
   landing: {
-    quote: "Every subject, every deadline, every next step — one plan that actually knows what you're working toward.",
+    quote: "Every subject, every deadline, every next step: one plan that actually knows what you're working toward.",
     cardEyebrow: "TODAY'S MISSION",
     cardTitle: "Explore 3 real job postings",
     cardBody: "+45 XP · 15 min",
   },
   login: {
-    quote: "Pick up exactly where you left off — your plan, your streak, your Future Map.",
+    quote: "Pick up exactly where you left off: your plan, your streak, your Future Map.",
     cardEyebrow: "WELCOME BACK",
     cardTitle: "6 day streak",
     cardBody: "Your plan for today is already built.",
   },
   signup: {
-    quote: "Two tracks, one app. Whichever you're building — a transcript or a business — Alxioum locks in and builds around it.",
+    quote: "Two tracks, one app. Whichever you're building, a transcript or a business, Alxioum locks in and builds around it.",
     cardEyebrow: "CHOOSE YOUR TRACK",
     cardTitle: "Student or Founder",
     cardBody: "Locked in at signup, built around from day one.",
   },
   "onboarding-student": {
-    quote: "Every question builds toward your Future Map — real career directions, matched to how you actually think.",
+    quote: "Every question builds toward your Future Map: real career directions, matched to how you actually think.",
     cardEyebrow: "PREVIEW",
-    cardTitle: "Software Engineer — 82% match",
+    cardTitle: "Software Engineer · 82% match",
     cardBody: "Based on the subjects, interests and strengths you're about to tell us.",
   },
   "onboarding-business": {
-    quote: "We turn your answers into a starter milestone checklist — not generic advice, an actual plan for this idea.",
+    quote: "We turn your answers into a starter milestone checklist: not generic advice, but an actual plan for this idea.",
     cardEyebrow: "PREVIEW",
     cardTitle: "Launch landing page",
     cardBody: "Milestone 1 of your starter checklist, built from what you tell us next.",

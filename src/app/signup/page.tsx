@@ -61,7 +61,7 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setError("Sign up isn't available right now — the backend isn't configured.");
+      setError("Sign up isn't available right now. The backend isn't configured.");
       return;
     }
     if (name.trim().length < 2) {
@@ -101,7 +101,7 @@ export default function SignupPage() {
     setVerifyError(null);
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setVerifyError("Verification isn't available right now — the backend isn't configured.");
+      setVerifyError("Verification isn't available right now. The backend isn't configured.");
       return;
     }
     const trimmed = code.trim();
@@ -239,7 +239,7 @@ export default function SignupPage() {
         </button>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          Prefer the link instead? Click &ldquo;Confirm your email&rdquo; in the message we sent — it&rsquo;ll take you
+          Prefer the link instead? Click &ldquo;Confirm your email&rdquo; in the message we sent, and it&rsquo;ll take you
           straight into the app.
         </p>
 

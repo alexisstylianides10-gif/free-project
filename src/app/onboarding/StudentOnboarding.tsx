@@ -119,7 +119,7 @@ export default function StudentOnboarding() {
   }
 
   if (submitting) {
-    return <LoadingScreen message="Researching your school and building your plan — this can take up to a minute…" />;
+    return <LoadingScreen message="Researching your school and building your plan. This can take up to a minute…" />;
   }
 
   if (step === QUESTION_COUNT) {
@@ -343,7 +343,7 @@ function ResultsScreen({ matches, slugs, onContinue }: { matches: number[]; slug
             Build My Plan
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            School always comes first — {branding.name} fits around it, never instead of it.
+            School always comes first. {branding.name} fits around it, never instead of it.
           </p>
         </div>
       </div>

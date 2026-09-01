@@ -95,7 +95,7 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
     return (
       <Card>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          This material couldn&apos;t be found — it may have been deleted.
+          This material couldn&apos;t be found. It may have been deleted.
         </CardContent>
       </Card>
     );

@@ -133,7 +133,7 @@ export default function BusinessGrowHome() {
   }
 
   return (
-    <div className="space-y-7 pb-4 animate-fade-in">
+    <div className="space-y-7 pb-4">
       <ScreenHeader title="Grow" subtitle="Track your numbers, draft content, and watch the market." />
 
       <section>

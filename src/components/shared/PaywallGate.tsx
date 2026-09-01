@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { branding } from "@/lib/branding";
 
 const DESCRIPTION_BY_TRACK = {
-  student: "AI Coach and the full Study system — material analysis, AI study plans, quizzes, flashcards, and your AI tutor — are part of",
+  student: "AI Coach and the full Study system (material analysis, AI study plans, quizzes, flashcards, and your AI tutor) are part of",
   business: "AI Coach, your business snapshot, milestone AI, and the marketing/content helper are part of",
 } as const;
 
@@ -45,7 +45,7 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
       </p>
       <Link href="/app/upgrade" className="mt-6 w-full max-w-xs">
         <Button size="lg" className="w-full">
-          Activate — ${monthlyPrice}/mo
+          Activate for ${monthlyPrice}/mo
         </Button>
       </Link>
     </div>

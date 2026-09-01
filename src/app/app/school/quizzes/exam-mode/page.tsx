@@ -83,7 +83,7 @@ export default function ExamModeSetupPage() {
         </span>
         <div>
           <h1 className="text-lg font-extrabold text-foreground">Exam Mode</h1>
-          <p className="text-xs text-muted-foreground">A timed mock exam — no hints until it&apos;s graded.</p>
+          <p className="text-xs text-muted-foreground">A timed mock exam, no hints until it&apos;s graded.</p>
         </div>
       </div>
 
@@ -203,7 +203,7 @@ export default function ExamModeSetupPage() {
               Start Mock Exam
             </Button>
             <p className="text-center text-caption leading-relaxed text-muted-foreground">
-              Practice-based signal only — a strong mock score is a good sign, not a guarantee for your real exam.
+              Practice-based signal only. A strong mock score is a good sign, not a guarantee for your real exam.
             </p>
           </CardContent>
         </Card>

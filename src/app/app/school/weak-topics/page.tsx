@@ -24,7 +24,7 @@ function band(mastery: number): { emoji: string; tone: "warning" | "danger" | "s
  * a list page like this one). */
 function topicExplanation(topic: StudyTopic): string {
   if (topic.quiz_attempts === 0) {
-    return "Not tested yet — a good next topic to practice.";
+    return "Not tested yet, a good next topic to practice.";
   }
   return `You've gotten this right in ${topic.correct_answers} of your last ${topic.quiz_attempts} attempt${topic.quiz_attempts === 1 ? "" : "s"}.`;
 }
@@ -48,7 +48,7 @@ export default function WeakTopicsPage() {
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
-        Every topic under {NEEDS_ATTENTION_CUTOFF}% mastery, across every subject — weakest first.
+        Every topic under {NEEDS_ATTENTION_CUTOFF}% mastery, across every subject, weakest first.
       </p>
 
       {weakTopics.length === 0 ? (

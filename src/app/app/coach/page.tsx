@@ -134,7 +134,7 @@ export default function CoachPage() {
   const activeThread = threads.find((t) => t.id === activeThreadId);
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] flex-col animate-fade-in lg:mx-auto lg:w-full lg:max-w-2xl">
+    <div className="flex h-[calc(100dvh-8rem)] flex-col lg:mx-auto lg:w-full lg:max-w-2xl">
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-accent">Coach</p>
@@ -189,8 +189,8 @@ export default function CoachPage() {
         {messages.length === 0 && !sending && (
           <div className="glass rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
             {profile?.track === "business"
-              ? "Ask me anything about building your business — I'll keep it real, not hype."
-              : "Ask me anything about school, skills, or your future — I'll always make sure school comes first."}
+              ? "Ask me anything about building your business. I'll keep it real, not hype."
+              : "Ask me anything about school, skills, or your future. I'll always make sure school comes first."}
           </div>
         )}
         {messages.map((m, i) => (

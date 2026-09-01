@@ -53,7 +53,7 @@ export default function ChoosePlanPage() {
     setBusy(track);
     const { error: updateError } = await supabase.from("profiles").update({ track, billing_interval: interval }).eq("id", user.id);
     if (updateError) {
-      setError("Couldn't save your choice — try again.");
+      setError("Couldn't save your choice. Try again.");
       setBusy(null);
       return;
     }
@@ -67,7 +67,7 @@ export default function ChoosePlanPage() {
       <div className="relative z-10 mx-auto w-full max-w-sm flex-1">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">{branding.name}</p>
         <h1 className="mt-1 text-heading font-extrabold tracking-tight text-foreground">What are you here to build?</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Pick the plan that fits — your billing interval can change whenever you subscribe.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Pick the plan that fits. Your billing interval can change whenever you subscribe.</p>
 
         <div className="mt-6 flex items-center gap-1 rounded-xl bg-muted p-1">
           {(["monthly", "yearly"] as const).map((i) => (
