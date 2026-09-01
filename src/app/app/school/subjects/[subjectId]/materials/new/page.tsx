@@ -218,7 +218,7 @@ export default function NewMaterialPage({ params }: { params: Promise<{ subjectI
           <p className="text-sm text-muted-foreground">
             {textKind === "paste"
               ? "Paste in text copied from a textbook, slides, or a document."
-              : "Type up what you've got — even rough notes work."}
+              : "Type up what you've got, even rough notes work."}
           </p>
 
           <textarea

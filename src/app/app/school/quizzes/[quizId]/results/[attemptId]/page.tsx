@@ -126,13 +126,13 @@ export default function QuizResultsPage({ params }: { params: Promise<{ quizId: 
         <Card>
           <CardContent className="p-4">
             <p className="text-xs font-bold uppercase tracking-wide text-success">Strong</p>
-            <p className="mt-1.5 text-sm text-foreground">{attempt.strong_topics.length ? attempt.strong_topics.join(", ") : "None yet — keep practicing."}</p>
+            <p className="mt-1.5 text-sm text-foreground">{attempt.strong_topics.length ? attempt.strong_topics.join(", ") : "None yet, keep practicing."}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <p className="text-xs font-bold uppercase tracking-wide text-warning">Needs work</p>
-            <p className="mt-1.5 text-sm text-foreground">{attempt.weak_topics.length ? attempt.weak_topics.join(", ") : "Nothing — great job across the board."}</p>
+            <p className="mt-1.5 text-sm text-foreground">{attempt.weak_topics.length ? attempt.weak_topics.join(", ") : "Nothing. Great job across the board."}</p>
           </CardContent>
         </Card>
       </div>

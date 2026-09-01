@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles, Target } from "lucide-react";
+import { Sparkles, Target, BookOpen, Brain, Rocket, Flame } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import {
   useHomework,
@@ -205,7 +205,7 @@ export default function WeeklyReviewPage() {
               ) : (
                 <>
                   <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                    <span aria-hidden>📚</span> School
+                    <BookOpen className="h-4 w-4 text-accent" aria-hidden /> School
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Completed assignments: <span className="font-semibold text-foreground">{primaryCompletedCount}</span>
@@ -221,7 +221,7 @@ export default function WeeklyReviewPage() {
           <Card>
             <CardContent className="space-y-1.5 p-5">
               <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <span aria-hidden>🧠</span> Skills
+                <Brain className="h-4 w-4 text-accent" aria-hidden /> Skills
               </p>
               {skillsTouched.length === 0 ? (
                 <EmptyState icon={Sparkles} title="No skill activity yet" subtitle="Complete missions to start building skills." bare />
@@ -234,7 +234,7 @@ export default function WeeklyReviewPage() {
           <Card>
             <CardContent className="space-y-1.5 p-5">
               <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <span aria-hidden>🚀</span> Future
+                <Rocket className="h-4 w-4 text-accent" aria-hidden /> Future
               </p>
               <p className="text-sm text-muted-foreground">
                 <span className="font-semibold text-foreground">{missionsCompleted}</span> mission
@@ -246,7 +246,7 @@ export default function WeeklyReviewPage() {
           <Card>
             <CardContent className="space-y-2.5 p-5">
               <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <span aria-hidden>🔥</span> Consistency
+                <Flame className="h-4 w-4 text-accent" aria-hidden /> Consistency
               </p>
               <p className="text-sm text-muted-foreground">
                 <span className="font-semibold text-foreground">{consistencyDays}/7</span> days active this week.

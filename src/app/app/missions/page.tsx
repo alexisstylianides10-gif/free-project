@@ -9,11 +9,11 @@ import { MissionListItem } from "@/components/shared/MissionCard";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 
 const CATEGORY_TITLES: Record<MissionCategory, string> = {
-  school: "📚 School Missions",
-  skill: "🧠 Skill Missions",
-  career: "🚀 Career Missions",
-  business: "💼 Business Missions",
-  creative: "🎨 Creative Missions",
+  school: "School Missions",
+  skill: "Skill Missions",
+  career: "Career Missions",
+  business: "Business Missions",
+  creative: "Creative Missions",
 };
 
 const ORDER: MissionCategory[] = ["school", "skill", "career", "business", "creative"];
@@ -33,7 +33,7 @@ export default function MissionsPage() {
     <div className="space-y-7 animate-fade-in">
       <ScreenHeader
         title="Missions"
-        subtitle="Real accomplishments, not app-usage streaks — each one moves your future forward."
+        subtitle="Real accomplishments, not app-usage streaks. Each one moves your future forward."
       />
 
       {ORDER.map((category) => (

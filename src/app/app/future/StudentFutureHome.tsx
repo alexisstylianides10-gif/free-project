@@ -32,7 +32,7 @@ export default function StudentFutureHome() {
   );
 
   return (
-    <div className="space-y-7 pb-4 animate-fade-in">
+    <div className="space-y-7 pb-4">
       <ScreenHeader title="Your Future" subtitle="Top career matches, based on you." />
 
       <section>

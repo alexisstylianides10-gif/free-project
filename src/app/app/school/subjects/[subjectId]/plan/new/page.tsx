@@ -152,7 +152,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
                       examId === "none" ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface text-foreground"
                     }`}
                   >
-                    No specific exam — set my own timeframe
+                    No specific exam, set my own timeframe
                   </button>
                 </div>
               </div>

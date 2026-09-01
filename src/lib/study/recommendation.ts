@@ -53,7 +53,7 @@ export function buildStudyRecommendation(input: {
 
   if (soonExam && input.allWeakestTopic) {
     return {
-      text: `Practice ${input.allWeakestTopic.name} for 30 minutes — it's your weakest topic with the ${soonExam.subject} exam coming up.`,
+      text: `Practice ${input.allWeakestTopic.name} for 30 minutes: it's your weakest topic with the ${soonExam.subject} exam coming up.`,
       subjectId: input.allWeakestTopic.subject_id,
       topicId: input.allWeakestTopic.id,
     };
@@ -61,7 +61,7 @@ export function buildStudyRecommendation(input: {
 
   if (input.allWeakestTopic) {
     return {
-      text: `Practice ${input.allWeakestTopic.name} for 30 minutes — your recent results show this is currently your weakest topic.`,
+      text: `Practice ${input.allWeakestTopic.name} for 30 minutes: your recent results show this is currently your weakest topic.`,
       subjectId: input.allWeakestTopic.subject_id,
       topicId: input.allWeakestTopic.id,
     };
@@ -73,7 +73,7 @@ export function buildStudyRecommendation(input: {
   if ((input.flashcardsDueCount ?? 0) > 0) {
     const n = input.flashcardsDueCount as number;
     return {
-      text: `You have ${n} flashcard${n === 1 ? "" : "s"} due for review today — a quick way to keep what you've learned fresh.`,
+      text: `You have ${n} flashcard${n === 1 ? "" : "s"} due for review today, a quick way to keep what you've learned fresh.`,
       subjectId: null,
       topicId: null,
       action: "flashcards",

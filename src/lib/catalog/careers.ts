@@ -69,7 +69,7 @@ export const CAREERS: Career[] = [
     name: "AI Engineer",
     icon: "🤖",
     tagline: "Design and train the models behind modern AI products.",
-    whyItMatches: "You're curious about AI and enjoy math and computer science — the two subjects that matter most here.",
+    whyItMatches: "You're curious about AI and enjoy math and computer science, the two subjects that matter most here.",
     subjects: [
       { subject: "Mathematics", stars: 5 },
       { subject: "Computer Science", stars: 5 },
@@ -120,7 +120,7 @@ export const CAREERS: Career[] = [
     skills: ["Video editing", "Storytelling", "Consistency", "Basic design"],
     projects: ["Post 5 short videos on one topic", "Design a simple brand for your channel", "Edit a 60-second highlight reel"],
     tryNow: ["Film one short video this week", "Learn a free video-editing tool", "Study 3 creators you admire and note what works"],
-    educationRoutes: ["No formal requirement — built through practice", "Media/Design courses (optional)", "Marketing or Communications degree (optional)"],
+    educationRoutes: ["No formal requirement, built through practice", "Media/Design courses (optional)", "Marketing or Communications degree (optional)"],
     progression: ["First posts", "Small consistent audience", "Monetised channel", "Full creative brand/business"],
     interestTags: ["content_creation", "social_media", "entertainment", "design"],
     exploreTags: ["become_creator", "creative_career", "freelance"],

@@ -16,21 +16,21 @@ export function buildAIRecommendation(input: { exams: Exam[]; homework: Homework
 
   if (soonExam) {
     const days = daysBetween(today, soonExam.exam_date);
-    return `Your ${soonExam.subject} exam is in ${days} day${days === 1 ? "" : "s"} — protect that first, then keep a light ${
+    return `Your ${soonExam.subject} exam is in ${days} day${days === 1 ? "" : "s"}. Protect that first, then keep a light ${
       input.primaryCareer ? input.primaryCareer.name.toLowerCase() : "career"
     } habit going.`;
   }
 
   const highPriority = input.homework.find((h) => h.status === "pending" && h.priority === "high");
   if (highPriority) {
-    return `${highPriority.subject} (${highPriority.title}) is high priority — clear that today, then spend your extra time on your future.`;
+    return `${highPriority.subject} (${highPriority.title}) is high priority. Clear that today, then spend your extra time on your future.`;
   }
 
   if (input.primaryCareer) {
-    return `School's under control right now — good time to push further on ${input.primaryCareer.name}. Try today's Future Mission.`;
+    return `School's under control right now. Good time to push further on ${input.primaryCareer.name}. Try today's Future Mission.`;
   }
 
-  return "School's under control right now — a great time to explore a career direction with today's Future Mission.";
+  return "School's under control right now. A great time to explore a career direction with today's Future Mission.";
 }
 
 export interface RecommendationChip {

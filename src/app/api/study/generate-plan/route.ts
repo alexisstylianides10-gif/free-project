@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "Study AI isn't configured yet — add ANTHROPIC_API_KEY on the server." }, { status: 503 });
+    return NextResponse.json({ error: "Study AI isn't configured yet. Add ANTHROPIC_API_KEY on the server." }, { status: 503 });
   }
 
   let body: GeneratePlanBody;
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (topics.length === 0) {
-    return NextResponse.json({ error: "This subject has no topics yet — upload material first so there's something to plan around." }, { status: 400 });
+    return NextResponse.json({ error: "This subject has no topics yet. Upload material first so there's something to plan around." }, { status: 400 });
   }
 
   let daysAvailable = clamp(Math.round(body.daysAvailable ?? 5), 1, 60);

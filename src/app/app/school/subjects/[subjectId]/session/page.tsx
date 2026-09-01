@@ -399,7 +399,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
 
         {remainingSec === 0 && !confirmingEnd && (
           <div className="glass rounded-xl px-3.5 py-2.5 text-xs text-muted-foreground shadow-subtle">
-            Time&rsquo;s up — keep going if you&rsquo;re in the zone, or end the session whenever you&rsquo;re ready.
+            Time&rsquo;s up. Keep going if you&rsquo;re in the zone, or end the session whenever you&rsquo;re ready.
           </div>
         )}
 

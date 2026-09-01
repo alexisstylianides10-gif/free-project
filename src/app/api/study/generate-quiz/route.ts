@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "Quiz generation isn't configured yet — add ANTHROPIC_API_KEY on the server." }, { status: 503 });
+    return NextResponse.json({ error: "Quiz generation isn't configured yet. Add ANTHROPIC_API_KEY on the server." }, { status: 503 });
   }
 
   let body: GenerateQuizBody;
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
       const topics = (subjectTopics ?? []) as StudyTopic[];
       if (topics.length === 0) {
         return NextResponse.json(
-          { error: "This subject has no topics yet — add some material first so there's something to quiz on." },
+          { error: "This subject has no topics yet. Add some material first so there's something to quiz on." },
           { status: 400 }
         );
       }

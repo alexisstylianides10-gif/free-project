@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "Answer grading isn't configured yet — add ANTHROPIC_API_KEY on the server." }, { status: 503 });
+    return NextResponse.json({ error: "Answer grading isn't configured yet. Add ANTHROPIC_API_KEY on the server." }, { status: 503 });
   }
 
   let body: EvaluateBody;

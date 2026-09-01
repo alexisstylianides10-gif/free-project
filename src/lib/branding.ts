@@ -15,7 +15,7 @@ export const branding = {
   markLetter: "A",
   tagline: "Build your future while you build your grades.",
   description:
-    "Alxioum helps students stay on top of school while discovering and building their future career — school, skills, projects, and career, all in one place.",
+    "Alxioum helps students stay on top of school while discovering and building their future career: school, skills, projects, and career, all in one place.",
   themeColor: "#0A0C1A",
   backgroundColor: "#0A0C1A",
 } as const;

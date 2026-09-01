@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "Flashcard generation isn't configured yet — add ANTHROPIC_API_KEY on the server." }, { status: 503 });
+    return NextResponse.json({ error: "Flashcard generation isn't configured yet. Add ANTHROPIC_API_KEY on the server." }, { status: 503 });
   }
 
   let body: GenerateFlashcardsBody;
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   } else {
     if (subjectTopics.length === 0) {
       return NextResponse.json(
-        { error: "This subject has no topics yet — add some material first so there's something to make flashcards from." },
+        { error: "This subject has no topics yet. Add some material first so there's something to make flashcards from." },
         { status: 400 }
       );
     }
