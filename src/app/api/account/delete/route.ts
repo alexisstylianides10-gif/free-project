@@ -1,4 +1,5 @@
 import "server-only";
+import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser, supabaseServiceRole } from "@/lib/supabase/server";
 import { stripeClient } from "@/lib/billing/stripe";
@@ -41,11 +42,22 @@ export async function POST(req: NextRequest) {
   // Read with the caller's own scoped client — RLS-backstopped, and matches
   // the exact select create-subscription/create-portal-session already do
   // for these same two columns.
-  const { data: profile } = await client
+  const { data: profile, error: profileError } = await client
     .from("profiles")
     .select("stripe_subscription_id")
     .eq("id", user.id)
     .maybeSingle();
+  if (profileError) {
+    // Fail closed: we couldn't determine whether a subscription is on file
+    // at all (transient network blip, RLS/policy misconfiguration, Supabase
+    // hiccup). Silently treating "I couldn't find out" as "there is none"
+    // would risk deleting an account that still has an active Stripe
+    // subscription attached, with no way to reach the person afterward.
+    return NextResponse.json(
+      { error: "We couldn't confirm your subscription status right now, so we can't safely delete your account. Try again shortly." },
+      { status: 503 }
+    );
+  }
   const subscriptionId = profile?.stripe_subscription_id as string | null | undefined;
 
   if (subscriptionId) {
@@ -60,13 +72,28 @@ export async function POST(req: NextRequest) {
     }
     try {
       const stripe = stripeClient();
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId).catch(() => null);
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId).catch((err) => {
+        // Only Stripe's own "doesn't exist" response (StripeInvalidRequestError
+        // with code 'resource_missing') is actually safe to treat as "no
+        // subscription left to cancel, proceed". Every other failure —
+        // network blip (StripeConnectionError), Stripe outage
+        // (StripeAPIError), rate limit (StripeRateLimitError), a bad/revoked
+        // live key (StripeAuthenticationError) — means we genuinely don't
+        // know the subscription's state, so it must NOT be treated the same
+        // as "confirmed gone". Re-throw so it's caught by the outer
+        // try/catch below, which already correctly fails the request with a
+        // 502 and does not delete the account.
+        if (err instanceof Stripe.errors.StripeInvalidRequestError && err.code === "resource_missing") {
+          return null;
+        }
+        throw err;
+      });
       if (subscription && subscription.status !== "canceled") {
         await stripe.subscriptions.cancel(subscriptionId);
       }
-      // subscription === null means Stripe has no record of this id at all
-      // (e.g. it was already fully removed on Stripe's side) — nothing left
-      // to cancel, safe to proceed.
+      // subscription === null means Stripe confirmed it has no record of
+      // this id at all (e.g. it was already fully removed on Stripe's side)
+      // — nothing left to cancel, safe to proceed.
     } catch (err) {
       const message = err instanceof Error ? err.message : "Couldn't cancel your subscription.";
       return NextResponse.json(

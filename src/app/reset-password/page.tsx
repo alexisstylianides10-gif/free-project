@@ -73,6 +73,12 @@ export default function ResetPasswordPage() {
     function markReady() {
       if (resolvedRef.current || cancelled) return;
       resolvedRef.current = true;
+      // Clear any linkError a previous 4-second timeout may already have
+      // set — a genuine late-arriving recovery success (via the
+      // PASSWORD_RECOVERY/SIGNED_IN auth-event fallback) must always win
+      // over an earlier timeout-driven "link expired" state, since the
+      // render logic checks linkError before sessionReady.
+      setLinkError(null);
       setSessionReady(true);
       setChecking(false);
     }
@@ -97,6 +103,7 @@ export default function ResetPasswordPage() {
         const { data, error: exchangeError } = await client.auth.exchangeCodeForSession(window.location.href);
         if (cancelled) return;
         if (exchangeError) {
+          if (resolvedRef.current || cancelled) return;
           setLinkError(`This reset link is invalid or has expired. ${exchangeError.message}`);
           setChecking(false);
           return;
