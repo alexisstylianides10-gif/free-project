@@ -927,3 +927,20 @@ BLOCKERS: None.
 NEXT TASK: None open from this QA pass. Recommend Cato also independently re-run `tsc`/`next build` before merge per the project's standing "don't take any agent's word for the build" convention, and optionally correct the "46 routes" figure to the reconciled 56 in any future reference to this wave's route count.
 
 DEPLOYMENT STATUS (this QA pass): not deployed — reviewed and committed locally via worktree `agent-ad0a8a7a93cacbec5`, not pushed. CEO/Cato handles merge + push + Render deploy trigger per standing process.
+
+### DEV — Wave 3a build (SEO basics + legal copy + cookie banner) — built by Cato directly, finishing a Dev agent that hit a session rate limit mid-task
+
+The Dev agent assigned Wave 3a hit a session-wide rate limit after most of the work was already written to disk but before it could commit or verify. Cato (orchestrator) reviewed every file in the worktree line-by-line, confirmed correctness, ran the build gates independently, and committed as `b2f6eff`.
+
+**Built:**
+- `src/app/robots.ts`, `src/app/sitemap.ts` — Next.js App Router metadata-route convention. Sitemap covers only public routes (`/`, `/login`, `/signup`, `/choose-plan`, `/privacy`, `/terms`, `/faq`); `/app/**` and `/api/**` disallowed in robots.
+- `src/app/not-found.tsx`, `src/app/error.tsx` — custom 404 and root error boundary, matching the existing branded empty-state visual pattern instead of Next's bare defaults. `error.tsx` never renders raw error/stack text to the user.
+- `src/app/layout.tsx` — added `openGraph`/`twitter` metadata + `alternates.canonical`. Real bug caught and fixed in passing: the `siteUrl` fallback was still `https://futureos.vercel.app`, a pre-rename leftover — now centralized in `src/lib/branding.ts` as `siteUrl`, defaulting to `https://www.alxioum.com`. OG/Twitter image reuses the existing `icon-512.png` PWA asset (verified it exists on disk) rather than pointing at a nonexistent dedicated OG image.
+- `src/components/shared/CookieBanner.tsx` — real functional consent banner (localStorage-persisted). Copy verified accurate: this app has zero analytics/ad cookies wired up anywhere (grepped), only Supabase's auth-session cookie, and the banner says exactly that rather than generic tracking-implying boilerplate.
+- `src/app/privacy/page.tsx`, `src/app/terms/page.tsx` — replaced Wave 2's placeholder text with substantive draft copy covering: what's collected, Supabase (US-hosted) storage, Anthropic AI processing disclosure, Stripe billing, no data sale, minors-as-users handling, and account deletion (cross-referenced with Wave 3b). `[COMPANY NAME]`/`[CONTACT EMAIL]`/`[ADDRESS]` placeholders used for anything only the CEO can provide — never invented. A new `LegalDraftNotice` component in `StaticContentPage.tsx` renders an un-missable on-page "draft pending legal review, not binding" banner at the top of both pages — visible to any visitor, not just a code comment.
+
+**Explicitly not done, by design:** Google Analytics — no real GA4 measurement ID exists; nothing was wired up, not even a stub, per Cato's Wave 3 plan flagging this as a CEO decision.
+
+**Verification (independent, by Cato):** `rm -rf .next && npx tsc --noEmit` clean. `npx next build` clean — confirmed `/robots.txt` and `/sitemap.xml` both compiled as real routes in the build output, confirmed `icon-512.png` exists on disk before trusting the OG-image reference, confirmed the `warning`/`warning-soft` Tailwind tokens used by `LegalDraftNotice` are real (defined in `globals.css`/`tailwind.config.ts`), read every line of new/changed code before committing.
+
+Committed (not pushed) on branch `worktree-agent-a5530f107a0560293`: `b2f6eff`. Ready for QA.
