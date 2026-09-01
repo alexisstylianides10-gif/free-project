@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { TrendingUp, Sparkles, Users, Loader2, Plus, Receipt } from "lucide-react";
+import { TrendingUp, Sparkles, Users, Loader2, Plus, Receipt, TriangleAlert } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useBusinessMetrics, useBusinessContentIdeas, useBusinessCompetitors, useBusinessExpenses } from "@/lib/hooks/domain";
 import { supabase } from "@/lib/supabase/client";
@@ -38,10 +38,13 @@ const EXPENSE_CATEGORY_OPTIONS = [
 
 export default function BusinessGrowHome() {
   const { user } = useAuth();
-  const { data: metrics, refetch: refetchMetrics } = useBusinessMetrics(user?.id);
-  const { data: contentIdeas, refetch: refetchIdeas } = useBusinessContentIdeas(user?.id);
-  const { data: competitors, refetch: refetchCompetitors } = useBusinessCompetitors(user?.id);
-  const { data: expenses, refetch: refetchExpenses } = useBusinessExpenses(user?.id);
+  const { data: metrics, error: metricsError, refetch: refetchMetrics } = useBusinessMetrics(user?.id);
+  const { data: contentIdeas, error: ideasError, refetch: refetchIdeas } = useBusinessContentIdeas(user?.id);
+  const { data: competitors, error: competitorsError, refetch: refetchCompetitors } = useBusinessCompetitors(user?.id);
+  const { data: expenses, error: expensesError, refetch: refetchExpenses } = useBusinessExpenses(user?.id);
+
+  // First non-null error wins, same convention as StudentSchoolHome's pageError.
+  const pageError = metricsError ?? ideasError ?? competitorsError ?? expensesError;
 
   const [metricKey, setMetricKey] = useState(METRIC_OPTIONS[0].key);
   const [metricValue, setMetricValue] = useState("");
@@ -135,6 +138,15 @@ export default function BusinessGrowHome() {
   return (
     <div className="space-y-7 pb-4 animate-fade-in">
       <ScreenHeader title="Grow" subtitle="Track your numbers, draft content, and watch the market." />
+
+      {pageError && (
+        <Card className="border border-danger/40">
+          <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Couldn&rsquo;t load some of your data. {pageError}</span>
+          </CardContent>
+        </Card>
+      )}
 
       <section>
         <div className="mb-3 flex items-center gap-2">

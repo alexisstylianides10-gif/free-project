@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { CalendarClock, ClipboardList, ChevronRight, Sparkles } from "lucide-react";
+import { CalendarClock, ClipboardList, ChevronRight, Sparkles, TriangleAlert } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useTimetable, useStudySessions, useCareerPaths, useUserMissions } from "@/lib/hooks/domain";
@@ -40,12 +40,15 @@ export default function StudentHome() {
   const today = todayISO();
   const todayDow = new Date(today + "T00:00:00").getDay();
 
-  const { data: homework } = useHomework(user?.id);
-  const { data: exams } = useExams(user?.id);
-  const { data: timetable } = useTimetable(user?.id);
-  const { data: studySessions } = useStudySessions(user?.id, mondayOfThisWeek());
-  const { data: careerPaths } = useCareerPaths(user?.id);
-  const { data: userMissions } = useUserMissions(user?.id);
+  const { data: homework, error: homeworkError } = useHomework(user?.id);
+  const { data: exams, error: examsError } = useExams(user?.id);
+  const { data: timetable, error: timetableError } = useTimetable(user?.id);
+  const { data: studySessions, error: studyError } = useStudySessions(user?.id, mondayOfThisWeek());
+  const { data: careerPaths, error: careerError } = useCareerPaths(user?.id);
+  const { data: userMissions, error: missionsError } = useUserMissions(user?.id);
+
+  // First non-null error wins, same convention as StudentSchoolHome's pageError.
+  const pageError = homeworkError ?? examsError ?? timetableError ?? studyError ?? careerError ?? missionsError;
 
   const primaryCareer = useMemo(() => {
     const primary = careerPaths.find((c) => c.is_primary) ?? careerPaths[0];
@@ -82,6 +85,15 @@ export default function StudentHome() {
           <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s your plan for today.</p>
         </div>
       </div>
+
+      {pageError && (
+        <Card className="mb-6 border border-danger/40 lg:mb-8">
+          <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Couldn&rsquo;t load some of your data. {pageError}</span>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="space-y-7 pb-4 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-6 lg:space-y-0 lg:pb-0">
         <Card className="lg:hidden">

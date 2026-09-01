@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, CheckCircle2, Circle, Flame, TrendingUp, Target } from "lucide-react";
+import { ChevronRight, CheckCircle2, Circle, Flame, TrendingUp, Target, TriangleAlert } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useBusinessProfile, useBusinessMilestones, useBusinessMetrics } from "@/lib/hooks/domain";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -25,8 +25,11 @@ function greeting(): string {
 export default function BusinessHome() {
   const { user, profile } = useAuth();
   const { data: businessProfile } = useBusinessProfile(user?.id);
-  const { data: milestones } = useBusinessMilestones(user?.id);
-  const { data: metrics } = useBusinessMetrics(user?.id);
+  const { data: milestones, error: milestonesError } = useBusinessMilestones(user?.id);
+  const { data: metrics, error: metricsError } = useBusinessMetrics(user?.id);
+
+  // First non-null error wins, same convention as StudentHome's pageError.
+  const pageError = milestonesError ?? metricsError;
 
   const nextMilestones = milestones.filter((m) => m.status !== "done").slice(0, 3);
   const [doNext, ...restMilestones] = nextMilestones;
@@ -45,6 +48,15 @@ export default function BusinessHome() {
           <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s where your business stands today.</p>
         </div>
       </div>
+
+      {pageError && (
+        <Card className="mb-6 border border-danger/40 lg:mb-8">
+          <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Couldn&rsquo;t load some of your data. {pageError}</span>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="space-y-7 pb-4 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-6 lg:space-y-0 lg:pb-0">
         <Card className="lg:hidden">

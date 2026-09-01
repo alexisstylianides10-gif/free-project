@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarClock, ClipboardList, Target, CalendarCheck2, type LucideIcon } from "lucide-react";
+import { CalendarClock, ClipboardList, Target, CalendarCheck2, TriangleAlert, type LucideIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useBusinessMilestones } from "@/lib/hooks/domain";
@@ -30,11 +30,12 @@ export default function DeadlinesPage() {
   const isBusiness = profile?.track === "business";
   const today = todayISO();
 
-  const { data: exams, loading: examsLoading } = useExams(isBusiness ? undefined : user?.id);
-  const { data: homework, loading: homeworkLoading } = useHomework(isBusiness ? undefined : user?.id);
-  const { data: milestones, loading: milestonesLoading } = useBusinessMilestones(isBusiness ? user?.id : undefined);
+  const { data: exams, loading: examsLoading, error: examsError } = useExams(isBusiness ? undefined : user?.id);
+  const { data: homework, loading: homeworkLoading, error: homeworkError } = useHomework(isBusiness ? undefined : user?.id);
+  const { data: milestones, loading: milestonesLoading, error: milestonesError } = useBusinessMilestones(isBusiness ? user?.id : undefined);
 
   const loading = isBusiness ? milestonesLoading : examsLoading || homeworkLoading;
+  const error = isBusiness ? milestonesError : examsError ?? homeworkError;
 
   const items: DeadlineItem[] = useMemo(() => {
     if (isBusiness) {
@@ -79,6 +80,15 @@ export default function DeadlinesPage() {
   return (
     <div className="space-y-7 pb-4 animate-fade-in">
       <ScreenHeader title="Deadlines" subtitle="Everything with a due date, in one place." />
+
+      {error && (
+        <Card className="border border-danger/40">
+          <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Couldn&rsquo;t load your deadlines. {error}</span>
+          </CardContent>
+        </Card>
+      )}
 
       {loading ? (
         <LoadingScreen message="Gathering your deadlines…" fullScreen={false} />

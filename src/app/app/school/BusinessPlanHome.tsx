@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Circle, Sparkles, Target, Plus, CalendarClock } from "lucide-react";
+import { CheckCircle2, Circle, Sparkles, Target, Plus, CalendarClock, TriangleAlert } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useBusinessProfile, useBusinessMilestones } from "@/lib/hooks/domain";
 import { supabase } from "@/lib/supabase/client";
@@ -24,7 +24,7 @@ const STAGE_LABEL: Record<string, string> = {
 export default function BusinessPlanHome() {
   const { user, profile, refreshProfile } = useAuth();
   const { data: businessProfile } = useBusinessProfile(user?.id);
-  const { data: milestones, refetch: refetchMilestones } = useBusinessMilestones(user?.id);
+  const { data: milestones, error: milestonesError, refetch: refetchMilestones } = useBusinessMilestones(user?.id);
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
@@ -71,6 +71,15 @@ export default function BusinessPlanHome() {
 
   return (
     <div className="space-y-7">
+      {milestonesError && (
+        <Card className="border border-danger/40">
+          <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Couldn&rsquo;t load your milestones. {milestonesError}</span>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-accent/30">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">

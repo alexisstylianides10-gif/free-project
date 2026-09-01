@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, Sparkles, Plus } from "lucide-react";
+import { CalendarClock, Sparkles, Plus, Trash2, Pencil, TriangleAlert } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useExams } from "@/lib/hooks/domain";
 import { useStudySubjects, useStudyTopics } from "@/lib/hooks/study";
@@ -16,13 +16,17 @@ import { Button } from "@/components/ui/Button";
 
 export default function ExamsPage() {
   const { user } = useAuth();
-  const { data: exams, refetch } = useExams(user?.id);
+  const { data: exams, error, refetch } = useExams(user?.id);
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: topics } = useStudyTopics(user?.id);
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [newSubject, setNewSubject] = useState("");
   const [newDate, setNewDate] = useState("");
   const [adding, setAdding] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingDateId, setEditingDateId] = useState<string | null>(null);
+  const [editDateValue, setEditDateValue] = useState("");
+  const [savingDate, setSavingDate] = useState(false);
 
   const sortedExams = useMemo(() => [...exams].sort((a, b) => a.exam_date.localeCompare(b.exam_date)), [exams]);
 
@@ -52,6 +56,39 @@ export default function ExamsPage() {
       await refetch();
     } finally {
       setAdding(false);
+    }
+  }
+
+  async function deleteExam(examId: string) {
+    // Matches the confirm-then-delete pattern already used for study
+    // subjects/materials (see subjects/[subjectId]/page.tsx deleteSubject) —
+    // this is a seeded item deleted permanently, so a browser confirm is
+    // the right amount of friction, not a full modal.
+    if (!supabase || deletingId) return;
+    if (!confirm("Delete this exam? This can't be undone.")) return;
+    setDeletingId(examId);
+    try {
+      await supabase.from("exams").delete().eq("id", examId);
+      await refetch();
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  function startEditDate(examId: string, currentDate: string) {
+    setEditingDateId(examId);
+    setEditDateValue(currentDate);
+  }
+
+  async function saveExamDate(examId: string) {
+    if (!supabase || !editDateValue || savingDate) return;
+    setSavingDate(true);
+    try {
+      await supabase.from("exams").update({ exam_date: editDateValue }).eq("id", examId);
+      setEditingDateId(null);
+      await refetch();
+    } finally {
+      setSavingDate(false);
     }
   }
 
@@ -85,6 +122,15 @@ export default function ExamsPage() {
         </div>
       </form>
 
+      {error && (
+        <Card className="border border-danger/40">
+          <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Couldn&rsquo;t load your exams. {error}</span>
+          </CardContent>
+        </Card>
+      )}
+
       {sortedExams.length === 0 ? (
         <EmptyState icon={CalendarClock} title="No exams on the horizon yet" subtitle="Add an exam above to start tracking your countdown." />
       ) : (
@@ -99,8 +145,45 @@ export default function ExamsPage() {
                     <p className="truncate text-base font-bold text-foreground">{exam.subject} Exam</p>
                     {exam.title !== exam.subject && <p className="truncate text-xs text-muted-foreground">{exam.title}</p>}
                   </div>
-                  <span className="shrink-0 text-lg font-extrabold text-accent">{formatCountdown(exam.exam_date)}</span>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <span className="text-lg font-extrabold text-accent">{formatCountdown(exam.exam_date)}</span>
+                    <button
+                      type="button"
+                      aria-label="Edit exam date"
+                      onClick={() => startEditDate(exam.id, exam.exam_date)}
+                      className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-accent"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Delete exam"
+                      onClick={() => deleteExam(exam.id)}
+                      disabled={deletingId === exam.id}
+                      className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-40"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
+
+                {editingDateId === exam.id && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={editDateValue}
+                      onChange={(e) => setEditDateValue(e.target.value)}
+                      aria-label="New exam date"
+                      className="h-9 flex-1 rounded-full border border-border bg-surface px-3 text-xs text-foreground outline-none focus:border-accent/60"
+                    />
+                    <Button size="sm" onClick={() => saveExamDate(exam.id)} disabled={!editDateValue || savingDate}>
+                      Save
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => setEditingDateId(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                )}
 
                 {readiness !== null ? (
                   <>

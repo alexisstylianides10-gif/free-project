@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock, Layers, Plus } from "lucide-react";
+import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock, Layers, Plus, Trash2, TriangleAlert } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useTimetable, useStudySessions } from "@/lib/hooks/domain";
@@ -29,20 +29,37 @@ const STUDY_PLAN_DAYS = [
   { day: 5, label: "Friday" },
 ];
 
+// 0 = Sunday .. 6 = Saturday, matching timetable_entries.day_of_week — listed
+// Monday-first to match STUDY_PLAN_DAYS/most school-week conventions.
+const DAY_OF_WEEK_OPTIONS = [
+  { value: 1, label: "Monday" },
+  { value: 2, label: "Tuesday" },
+  { value: 3, label: "Wednesday" },
+  { value: 4, label: "Thursday" },
+  { value: 5, label: "Friday" },
+  { value: 6, label: "Saturday" },
+  { value: 0, label: "Sunday" },
+];
+
 export default function StudentSchoolHome() {
   const { user, profile, refreshProfile } = useAuth();
   const router = useRouter();
   const today = todayISO();
   const todayDow = new Date(today + "T00:00:00").getDay();
 
-  const { data: timetable, loading: timetableLoading } = useTimetable(user?.id);
-  const { data: homework, loading: homeworkLoading, refetch: refetchHomework } = useHomework(user?.id);
-  const { data: exams } = useExams(user?.id);
-  const { data: studySessions, loading: studyLoading, refetch: refetchStudy } = useStudySessions(user?.id, mondayOfThisWeek());
-  const { data: subjects } = useStudySubjects(user?.id);
-  const { data: topics } = useStudyTopics(user?.id);
-  const { data: focusSessions } = useStudyFocusSessions(user?.id);
-  const { data: flashcards } = useStudyFlashcards(user?.id);
+  const { data: timetable, loading: timetableLoading, error: timetableError, refetch: refetchTimetable } = useTimetable(user?.id);
+  const { data: homework, loading: homeworkLoading, error: homeworkError, refetch: refetchHomework } = useHomework(user?.id);
+  const { data: exams, error: examsError } = useExams(user?.id);
+  const { data: studySessions, loading: studyLoading, error: studyError, refetch: refetchStudy } = useStudySessions(user?.id, mondayOfThisWeek());
+  const { data: subjects, error: subjectsError } = useStudySubjects(user?.id);
+  const { data: topics, error: topicsError } = useStudyTopics(user?.id);
+  const { data: focusSessions, error: focusError } = useStudyFocusSessions(user?.id);
+  const { data: flashcards, error: flashcardsError } = useStudyFlashcards(user?.id);
+
+  // First non-null error wins — this page reads through 8 tables via
+  // useTableRows; surfacing all of them at once would be noisy, and a
+  // failure on any one of them is equally worth flagging to the user.
+  const pageError = timetableError ?? homeworkError ?? examsError ?? studyError ?? subjectsError ?? topicsError ?? focusError ?? flashcardsError;
 
   const [busyHomeworkId, setBusyHomeworkId] = useState<string | null>(null);
   const [busySessionId, setBusySessionId] = useState<string | null>(null);
@@ -50,6 +67,14 @@ export default function StudentSchoolHome() {
   const [newHwTitle, setNewHwTitle] = useState("");
   const [newHwDueDate, setNewHwDueDate] = useState("");
   const [addingHw, setAddingHw] = useState(false);
+  const [deletingHwId, setDeletingHwId] = useState<string | null>(null);
+  const [deletingTtId, setDeletingTtId] = useState<string | null>(null);
+  const [newTtDay, setNewTtDay] = useState(todayDow);
+  const [newTtSubject, setNewTtSubject] = useState("");
+  const [newTtStart, setNewTtStart] = useState("");
+  const [newTtEnd, setNewTtEnd] = useState("");
+  const [newTtRoom, setNewTtRoom] = useState("");
+  const [addingTt, setAddingTt] = useState(false);
 
   const todayTimetable = useMemo(
     () => timetable.filter((t) => t.day_of_week === todayDow).sort((a, b) => a.start_time.localeCompare(b.start_time)),
@@ -143,6 +168,53 @@ export default function StudentSchoolHome() {
     }
   }
 
+  async function deleteHomework(hwId: string) {
+    if (!supabase || deletingHwId) return;
+    if (!confirm("Delete this homework item? This can't be undone.")) return;
+    setDeletingHwId(hwId);
+    try {
+      await supabase.from("homework").delete().eq("id", hwId);
+      await refetchHomework();
+    } finally {
+      setDeletingHwId(null);
+    }
+  }
+
+  async function deleteTimetableEntry(entryId: string) {
+    if (!supabase || deletingTtId) return;
+    if (!confirm("Delete this class? This can't be undone.")) return;
+    setDeletingTtId(entryId);
+    try {
+      await supabase.from("timetable_entries").delete().eq("id", entryId);
+      await refetchTimetable();
+    } finally {
+      setDeletingTtId(null);
+    }
+  }
+
+  async function addTimetableEntry(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase || !user || !newTtSubject.trim() || !newTtStart || !newTtEnd || addingTt) return;
+    setAddingTt(true);
+    try {
+      await supabase.from("timetable_entries").insert({
+        user_id: user.id,
+        day_of_week: newTtDay,
+        subject: newTtSubject.trim(),
+        start_time: newTtStart,
+        end_time: newTtEnd,
+        room: newTtRoom.trim() || null,
+      });
+      setNewTtSubject("");
+      setNewTtStart("");
+      setNewTtEnd("");
+      setNewTtRoom("");
+      await refetchTimetable();
+    } finally {
+      setAddingTt(false);
+    }
+  }
+
   async function completeStudySession(session: StudySession) {
     if (!user || !profile || !supabase || session.completed || busySessionId) return;
     setBusySessionId(session.id);
@@ -178,6 +250,15 @@ export default function StudentSchoolHome() {
 
   return (
     <div className="space-y-7">
+      {pageError && (
+        <Card className="border border-danger/40">
+          <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Couldn&rsquo;t load some of your data. {pageError}</span>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardContent className="flex items-stretch gap-4 p-4">
           <div className="flex-1">
@@ -255,11 +336,76 @@ export default function StudentSchoolHome() {
                       <MapPin className="h-3 w-3" /> {entry.room}
                     </span>
                   )}
+                  <button
+                    type="button"
+                    aria-label="Delete class"
+                    onClick={() => deleteTimetableEntry(entry.id)}
+                    disabled={deletingTtId === entry.id}
+                    className="shrink-0 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-40"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
+        <form onSubmit={addTimetableEntry} className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <select
+              value={newTtDay}
+              onChange={(e) => setNewTtDay(Number(e.target.value))}
+              aria-label="Day"
+              className="h-11 shrink-0 rounded-full border border-border bg-surface px-3 text-xs font-medium text-foreground outline-none"
+            >
+              {DAY_OF_WEEK_OPTIONS.map((d) => (
+                <option key={d.value} value={d.value}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+            <input
+              value={newTtSubject}
+              onChange={(e) => setNewTtSubject(e.target.value)}
+              placeholder="Add a class (e.g. Biology)…"
+              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              value={newTtStart}
+              onChange={(e) => setNewTtStart(e.target.value)}
+              aria-label="Start time"
+              required
+              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
+            />
+            <input
+              type="time"
+              value={newTtEnd}
+              onChange={(e) => setNewTtEnd(e.target.value)}
+              aria-label="End time"
+              required
+              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              value={newTtRoom}
+              onChange={(e) => setNewTtRoom(e.target.value)}
+              placeholder="Room (optional)…"
+              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            />
+            <button
+              type="submit"
+              disabled={addingTt || !newTtSubject.trim() || !newTtStart || !newTtEnd}
+              aria-label="Add class"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+        </form>
       </section>
 
       <section>
@@ -304,6 +450,15 @@ export default function StudentSchoolHome() {
                         </Link>
                       </>
                     )}
+                    <button
+                      type="button"
+                      aria-label="Delete homework"
+                      onClick={() => deleteHomework(hw.id)}
+                      disabled={deletingHwId === hw.id}
+                      className="shrink-0 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-40"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </CardContent>
                 </Card>
               );
