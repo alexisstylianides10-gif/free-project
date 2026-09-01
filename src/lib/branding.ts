@@ -19,3 +19,14 @@ export const branding = {
   themeColor: "#0A0C1A",
   backgroundColor: "#0A0C1A",
 } as const;
+
+/**
+ * Canonical production domain — the single source of truth for `layout.tsx`
+ * metadata (canonical URL, OG/Twitter absolute URLs), `robots.ts`, and
+ * `sitemap.ts`. Overridable via `NEXT_PUBLIC_SITE_URL` for preview/staging
+ * deploys. Wave 3 note: the previous hardcoded fallback in `layout.tsx`
+ * (`https://futureos.vercel.app`) predated the FutureOS -> Alxioum rename
+ * and was never updated to a real domain; corrected here rather than left
+ * stale (see PROJECT_STATE.md Wave 3a for the judgment call).
+ */
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.alxioum.com").replace(/\/$/, "");

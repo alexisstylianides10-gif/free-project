@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { StaticContentPage } from "@/components/shared/StaticContentPage";
-import { branding } from "@/lib/branding";
+import { branding, siteUrl } from "@/lib/branding";
 
-export const metadata: Metadata = { title: "FAQ" };
+export const metadata: Metadata = { title: "FAQ", alternates: { canonical: `${siteUrl}/faq` } };
 
 const QUESTIONS: { q: string; a: string }[] = [
   {
