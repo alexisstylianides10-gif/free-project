@@ -1663,4 +1663,39 @@ Full specs: `PRODUCT_SPECS_WAVE5.md` (new file, repo root). Read Cato's Wave 5 f
 
 All three specs hold to this project's ground rules: no new design tokens/primitives (every new UI element is built from an already-shipped pattern — chip pickers, `.glass` dropdown panels, `ScreenHeader`'s existing `action` slot), and schema kept to the minimum unavoidable (zero new tables for items 14/15, one table for item 17). Full code-level detail, exact file lists, and QA verification points are in `PRODUCT_SPECS_WAVE5.md`.
 
+---
+
+## DEV — Wave 5 Spec A build (Notes reframe) — 2026-09-02
+
+Built Spec A of `PRODUCT_SPECS_WAVE5.md` (Item 15, "Notes" reframe) exactly as documented — no deviations from the spec's code were needed. Base: `ebf51e4` (tip of `worktree-agent-ac90aba83d7c6e70c`, Product's Wave 5 spec commit, applied cleanly on top of `4a12190`).
+
+**Pre-build verification against the live codebase (per the task's instruction not to trust the spec blind):** confirmed `useStudyMaterials(userId?, subjectId?)` in `src/lib/hooks/study.ts` only applies `.eq("subject_id", ...)` when `subjectId` is passed — a no-arg call already returns every material for the user, exactly as the spec assumed, zero hook changes needed. Confirmed `useStudySubjects`/`useTableRows` returns `{ data, loading, error, refetch }` — `refetch` is available and is the same plain re-fetch function used elsewhere (e.g. `SubjectsPage`'s own `createSubject` flow). Confirmed the current `materials/new/page.tsx` structure (`SourceTile` grid: Upload PDF / Take Photo / Upload Image / Add Notes, plus a separate "Paste Text" dashed-border button, `mode: "choose" | "text"` toggle, `handleFile`/`handleTextSubmit`/`analyzeAndGo`, `busy: "saving" | "analyzing" | null`) matched the spec's description exactly before extracting it. Confirmed `study_subjects` uses the standard `study_subjects_all_own` RLS policy (not the `profiles`-style column-restricted grant), so the plain `.insert().select().single()` used in `notes/new/page.tsx`'s inline subject-creation is safe.
+
+**Changes, matching "Files touched, Spec A" exactly:**
+- `src/app/app/school/subjects/[subjectId]/page.tsx` — copy only: "Materials" heading → "Notes", "No material yet" → "No notes yet".
+- `src/app/app/school/subjects/[subjectId]/materials/new/page.tsx` — reduced to a thin wrapper around `AddNoteFlow`, identical redirect target (`/app/school/subjects/${subjectId}/materials/${materialId}`) as before.
+- `src/components/study/AddNoteFlow.tsx` (new) — the extracted add-flow component, prop interface exactly as specified (`{ subjectId, onDone }`).
+- `src/app/app/school/SchoolSubNav.tsx` — added the "Notes" tab between Subjects and Exams (8th tab).
+- `src/app/app/school/notes/page.tsx` (new) — flat cross-subject notes list.
+- `src/app/app/school/notes/new/page.tsx` (new) — subject-resolution flow (auto-pick/chip-pick/inline-create).
+
+**AddNoteFlow extraction — Product's flagged engineering risk, verified by line-by-line diff, not eyeballed.** Ran `diff -u` between `git show HEAD:.../materials/new/page.tsx` (pre-extraction) and the new `AddNoteFlow.tsx`. The diff contains exactly four categories of change and nothing else: (1) the `use(params)`/`useRouter` wrapper replaced by the `{ subjectId, onDone }` props, (2) `router.push(...)` → `onDone(materialId)` in `analyzeAndGo` — same call site, same argument, (3) the two spec-mandated copy changes ("Add a material" → "Add a note", the `SourceTile` label "Add Notes" → "Type Notes"), (4) nothing else. `handleFile`, `handleTextSubmit`, `analyzeAndGo`'s try/catch/finally structure, all `busy`/`error` state transitions, the four `SourceTile`s, the three hidden file inputs, and the paste/type-notes textarea mode are byte-identical to the original. Zero behavior drift confirmed.
+
+**Verification:**
+- `rm -rf .next && npx tsc --noEmit` — clean, zero errors.
+- `npx next build` — clean, all 54 routes generated including the two new `/app/school/notes` and `/app/school/notes/new` static routes; no regressions to any other route's build output.
+- The three subject-resolution branches of `notes/new/page.tsx` were verified with a real Chromium render (Playwright, `/opt/pw-browsers/chromium-1194`), not by reading JSX. Since this sandbox has no live Supabase this session, a temporary harness route (`src/app/harness-notes-new/page.tsx`, mocking `useStudySubjects`'s three cardinalities with the exact same JSX/logic as the real page, real `AddNoteFlow` component rendered for real) was used to screenshot and inspect all three cases, then deleted before the final build/tsc pass and before committing — it is not part of this commit (`git status` confirms only the 6 spec-listed files are touched). Results, all matching spec:
+  - **Zero subjects**: inline "what subject is this note for?" prompt with the same emoji-grid pattern as `SubjectsPage`'s inline creation, `Continue` button.
+  - **One subject**: auto-resolves straight past any picker UI directly into `AddNoteFlow`'s upload/paste screen (Upload PDF / Take Photo / Upload Image / Type Notes tiles + Paste Text).
+  - **Several subjects**: chip picker ("Which subject is this note for?"); clicking a chip (tested clicking "Mathematics") resolves into the same `AddNoteFlow` upload screen.
+  - Noted, not a regression: a pre-existing dev-only hydration-mismatch console warning on `<html className>` (light/dark class set by `ThemeProvider`'s init script) appears on every page in this sandbox including unrelated existing routes — unrelated to Notes/AddNoteFlow, not introduced by this change.
+
+**Deviations from the spec:** none. Every file's final content matches the spec's code blocks as written (module paths, prop names, copy strings, tab order).
+
+Not built this pass (per Product's own "Build order recommendation, not a hard requirement" — Spec A first): Spec B (mock exam from a past paper) and Spec C (in-app notifications) remain open for a future Dev pass.
+
+Handing off to QA for review per Product's stated Spec A verification checklist (extracted-flow behavior parity across both entry points; zero/one/many-subject resolution correctness).
+
+Files touched: `src/app/app/school/subjects/[subjectId]/page.tsx`, `src/app/app/school/subjects/[subjectId]/materials/new/page.tsx`, `src/components/study/AddNoteFlow.tsx` (new), `src/app/app/school/SchoolSubNav.tsx`, `src/app/app/school/notes/page.tsx` (new), `src/app/app/school/notes/new/page.tsx` (new).
+
 BLOCKERS: None. NEXT: Dev to build per spec (recommended order: Item 15, then Item 17's schema/hooks, then Item 17's UI + Item 14 together), QA to review per this file's own review cycle.

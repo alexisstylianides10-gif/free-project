@@ -133,13 +133,13 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Materials</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Notes</h2>
           <Link href={`/app/school/subjects/${subjectId}/materials/new`} className="flex items-center gap-1 text-xs font-semibold text-accent">
             <Upload className="h-3.5 w-3.5" /> Add
           </Link>
         </div>
         {materials.length === 0 ? (
-          <EmptyState icon={Upload} title="No material yet" subtitle="Upload a PDF, photo, or your notes to get started." />
+          <EmptyState icon={Upload} title="No notes yet" subtitle="Upload a PDF, photo, or your notes to get started." />
         ) : (
           <div className="space-y-2">
             {materials.map((m) => (
