@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { authedFetch } from "@/lib/api";
 import { todayISO } from "@/lib/utils";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -137,7 +138,7 @@ export default function BusinessGrowHome() {
 
   return (
     <div className="space-y-7 pb-4">
-      <ScreenHeader title="Grow" subtitle="Track your numbers, draft content, and watch the market." />
+      <ScreenHeader title="Grow" subtitle="Track your numbers, draft content, and watch the market." action={<NotificationBell className="md:hidden" />} />
 
       {pageError && (
         <Card className="border border-danger/40">

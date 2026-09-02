@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { SchoolSubNav } from "./SchoolSubNav";
 
 /** The sub-nav (Subjects/Exams/Flashcards/Quizzes/Progress) is the Study
@@ -17,7 +18,7 @@ export default function SchoolLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="space-y-5 pb-4">
-      <ScreenHeader title="My School" subtitle="Class, homework, exams, and your AI study coach." />
+      <ScreenHeader title="My School" subtitle="Class, homework, exams, and your AI study coach." action={<NotificationBell className="md:hidden" />} />
       <SchoolSubNav />
       <div>{children}</div>
     </div>

@@ -1,4 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ROADMAP_LEVELS } from "@/lib/catalog/roadmap";
+
+/** The browser CustomEvent name a future toast/badge listener could use.
+ * Kept as a small shared constant rather than a magic string on both ends. */
+export const ROADMAP_LEVEL_UP_EVENT = "alxioum:roadmap-level-up";
 
 const MAX_LEVEL = 6;
 
@@ -41,6 +46,25 @@ export async function advanceRoadmapLevel(supabase: SupabaseClient, userId: stri
 
   if (toComplete.length) {
     await supabase.from("roadmap_progress").upsert(toComplete, { onConflict: "user_id,level_number" });
+    // Only notify for the specifically-requested level, never for a
+    // silently-backfilled earlier one, so a single call never fires more
+    // than one notification (e.g. requesting level 3 while 1 and 2 were
+    // still incomplete backfills 1, 2, and 3 together, but only level 3 —
+    // the level the caller actually asked to advance to — gets a row).
+    if (toComplete.some((r) => r.level_number === level)) {
+      const def = ROADMAP_LEVELS.find((l) => l.level === level);
+      await supabase.from("notifications").insert({
+        user_id: userId,
+        type: "roadmap_level_up",
+        title: `Roadmap: Level ${level} complete`,
+        body: def?.title ?? `You completed level ${level}.`,
+        related_id: String(level),
+        href: "/app/future",
+      });
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent(ROADMAP_LEVEL_UP_EVENT, { detail: { level } }));
+      }
+    }
   }
 
   if (level < MAX_LEVEL) {

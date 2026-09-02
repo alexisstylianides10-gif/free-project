@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { CalendarClock, ClipboardList, ChevronRight, Sparkles, TriangleAlert } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useTimetable, useStudySessions, useCareerPaths, useUserMissions } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
@@ -78,11 +79,14 @@ export default function StudentHome() {
   return (
     <div>
       <div className="bg-ambient-glow mb-6 lg:mb-8">
-        <div className="relative">
-          <h1 className="text-title font-bold text-foreground lg:text-title-lg">
-            {greeting()}, <span className="text-gradient-brand">{firstName}</span>
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s your plan for today.</p>
+        <div className="relative flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-title font-bold text-foreground lg:text-title-lg">
+              {greeting()}, <span className="text-gradient-brand">{firstName}</span>
+            </h1>
+            <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s your plan for today.</p>
+          </div>
+          <NotificationBell className="md:hidden" />
         </div>
       </div>
 

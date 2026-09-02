@@ -227,3 +227,22 @@ export interface WeeklyReview {
   next_focus: string[];
   created_at: string;
 }
+
+export type NotificationType = "achievement_unlocked" | "roadmap_level_up" | "deadline_exam" | "deadline_homework" | "deadline_milestone";
+
+// `deadline_exam`/`deadline_homework`/`deadline_milestone` rows are only ever
+// inserted already `read: true`, at the moment a student dismisses a
+// live-computed deadline item (see src/lib/notifications.ts) — they exist
+// purely as a suppression marker and are never meant to be rendered as a
+// fresh unread card themselves.
+export interface NotificationRow {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  related_id: string | null;
+  href: string | null;
+  read: boolean;
+  created_at: string;
+}

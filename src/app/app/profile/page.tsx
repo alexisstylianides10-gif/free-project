@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { RoadmapTimeline, RoadmapStep } from "@/components/shared/RoadmapTimeline";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -101,7 +102,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-7 pb-4">
-      <ScreenHeader eyebrow="Profile" title="Your progress" subtitle="Everything you've built, in one place." />
+      <ScreenHeader eyebrow="Profile" title="Your progress" subtitle="Everything you've built, in one place." action={<NotificationBell className="md:hidden" />} />
 
       <Card>
         <CardContent className="flex items-center gap-4 p-5">
