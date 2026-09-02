@@ -162,53 +162,57 @@ export default function HomeworkPage() {
           return (
             <Card key={hw.id}>
               <CardContent className="p-5">
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <button
                     type="button"
                     aria-label="Mark as complete"
                     onClick={() => toggleHomework(hw)}
                     disabled={isCompleted || busyId === hw.id}
-                    className="shrink-0 text-muted-foreground transition-colors hover:text-success disabled:cursor-default disabled:opacity-40"
+                    className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-success disabled:cursor-default disabled:opacity-40"
                   >
                     {isCompleted ? <CheckCircle2 className="h-6 w-6 text-success" /> : <Circle className="h-6 w-6" />}
                   </button>
                   <div className="min-w-0 flex-1">
-                    <p className={cn("truncate text-sm font-semibold text-foreground", isCompleted && "text-muted-foreground line-through")}>
+                    <p className={cn("text-sm font-semibold text-foreground", isCompleted && "text-muted-foreground line-through")}>
                       {hw.subject}: {hw.title}
                     </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{isCompleted ? "Completed" : formatCountdown(hw.due_date)}</p>
-                  </div>
-                  {!isCompleted && <PriorityBadge priority={hw.priority} />}
-                  <div className="flex shrink-0 items-center gap-1">
-                    {!isCompleted && (
-                      <>
-                        <Link
-                          href={`/app/school/homework/${hw.id}/help`}
-                          aria-label="Get AI help with this homework"
-                          title="Get AI help"
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-accent transition-colors hover:bg-border-strong/40"
-                        >
-                          <Sparkles className="h-3.5 w-3.5" />
-                        </Link>
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-xs text-muted-foreground">{isCompleted ? "Completed" : formatCountdown(hw.due_date)}</p>
+                        {!isCompleted && <PriorityBadge priority={hw.priority} />}
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        {!isCompleted && (
+                          <>
+                            <Link
+                              href={`/app/school/homework/${hw.id}/help`}
+                              aria-label="Get AI help with this homework"
+                              title="Get AI help"
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-accent transition-colors hover:bg-border-strong/40"
+                            >
+                              <Sparkles className="h-3.5 w-3.5" />
+                            </Link>
+                            <button
+                              type="button"
+                              aria-label="Edit due date"
+                              onClick={() => startEditDate(hw.id, hw.due_date)}
+                              className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-accent"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                          </>
+                        )}
                         <button
                           type="button"
-                          aria-label="Edit due date"
-                          onClick={() => startEditDate(hw.id, hw.due_date)}
-                          className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-accent"
+                          aria-label="Delete homework"
+                          onClick={() => deleteHomework(hw.id)}
+                          disabled={deletingId === hw.id}
+                          className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-40"
                         >
-                          <Pencil className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      aria-label="Delete homework"
-                      onClick={() => deleteHomework(hw.id)}
-                      disabled={deletingId === hw.id}
-                      className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-40"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

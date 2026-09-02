@@ -1006,3 +1006,28 @@ Reviewed commit `18d1cba` (branch `worktree-agent-a347278a9240f93e8`, based on `
 - **Fix needed from Dev:** the row needs to give the title more breathing room on mobile — options include dropping `PriorityBadge` from the compact list row (it's still visible on the AI-help detail page), moving the icon actions to a second row below the title on narrow viewports, or shrinking icon-button footprint. Whatever the approach, re-verify against realistic-length subject/title strings (not "Biology" alone) at 390px before resubmitting.
 
 **SIGN-OFF: BLOCKED — needs Dev fix for the mobile homework-list truncation bug (item 1 CRUD/paywall logic itself is sound; this is a rendering/UX defect on the same new page).** Everything else in this wave (paywall scoping/RLS, Coach rename, install card, achievement-toast mechanism, age field/schema/grant) is verified solid and would pass on its own. Re-run the Playwright 390px check on the homework list specifically (with realistic content) once fixed, then this is ready for Cato's sign-off.
+
+## DEV FIX (Wave 4a mobile homework-list truncation) — 2026-09-02
+
+Built on `qa-review-wave4a` (`b56fc24`, which already contains Wave 4a `18d1cba` + QA's review commit). Fixes the single blocking bug from QA's Wave 4a review: `src/app/app/school/homework/page.tsx`'s list-item row truncating realistic assignment titles to near-uselessness at 390px.
+
+**Root cause (confirmed, matches QA's analysis):** the row packed checkbox, the `{subject}: {title}` text, `PriorityBadge`, and 3 icon buttons (Sparkles/Pencil/Trash2) into a single `flex items-center gap-3` row inside `p-5` `CardContent`. At ~350px of actual content width the title's `flex-1` share was squeezed down to almost nothing by the badge + 3 icons sitting on the same row, so `truncate` kicked in far too aggressively ("Biol…", "M").
+
+**Fix — restructured to a two-row layout inside the same card, no width-budget sharing with the badge/icons on mobile:**
+- Row 1: checkbox + title/subtitle block only (`min-w-0 flex-1`), full row width available to the title. Removed `truncate` from the title — it now wraps to a second line for long titles instead of clipping, since it no longer has to share a row with anything else.
+- Row 2 (new): `mt-2 flex flex-wrap items-center justify-between gap-2` containing the countdown text + `PriorityBadge` on the left, and the 3 icon buttons on the right. `flex-wrap` means if this row is ever tight (very small viewport or long badge label) it wraps too, rather than truncating text.
+- Checkbox button gets `mt-0.5` (was implicit `items-center`) since the parent flex is now `items-start` to align it with the top of a title that may wrap to 2 lines.
+- Kept `PriorityBadge` in the compact list row (did not drop it) — chose the "second row" option from QA's suggested directions since it preserves all existing information (badge stays visible everywhere, nothing removed) and required the smallest, most surgical diff.
+- No changes to any CRUD logic, RLS-dependent queries, or the edit-due-date inline form — this was purely a layout/markup change to the row structure QA flagged.
+
+**Verification — re-ran with realistic content, not the short placeholders that let this ship in Wave 4a:**
+- Pulled the actual longest real `{subjectLabel}: {title}` combinations directly from `buildDemoData()`'s own `ASSIGNMENT_TITLES` seed table (`src/lib/seed/demoData.ts`) rather than inventing strings — e.g. "Computer Science: Python Functions Exercise" (43 chars, the single longest real combo in the seed data), "Economics: Supply & Demand Case Study", "Science: Energy & Forces Questions", plus a completed item ("Mathematics: Algebra Practice Set") to check the fewer-icons path.
+- Built a temporary, uncommitted static harness page (`src/app/qa-harness-hw/page.tsx`, deleted before this commit — confirmed via `git status` showing only `homework/page.tsx` modified) that renders this exact fixed card markup (copy of the real JSX structure, same `Card`/`CardContent`/`PriorityBadge` components) with the above realistic mock data, wrapped in the same `mx-auto max-w-md px-5` container the real app shell uses.
+- Ran a real production build (`next build`) + `next start`, and screenshotted with Playwright/Chromium (`/opt/pw-browsers/chromium`, `NODE_PATH=/opt/node22/lib/node_modules`) at 390px and 1280px, both light and dark (forced via the same `.light`-class-on-`<html>` mechanism `ThemeProvider` uses — confirmed base/no-class is dark, `.light` is the opt-in light theme).
+- **Result at 390px:** all 4 titles fully readable — "Computer Science: Python Functions Exercise" wraps cleanly to 2 lines, others fit on 1-2 lines as needed. Countdown + badge sit on their own row below, icons wrap to the right of that same row without collision. No truncation, no clipping, no overlap, in either theme.
+- **Result at 1280px:** confirmed no regression — with the extra width, the row-2 content (countdown/badge on the left, icons on the right) sits comfortably `justify-between` on one line, visually equivalent to the pre-fix layout at this width.
+- Deleted the harness route (`rm -rf src/app/qa-harness-hw`) and killed the `next start` process before running the final clean verification pass and before committing.
+
+**Build/type-check — clean, run fresh after harness removal.** `rm -rf .next && npx tsc --noEmit` (exit 0) and `npx next build` (exit 0, all 46 routes present, harness route absent, `/app/school/homework` present as before).
+
+**Handing back to QA** for re-verification of this specific fix (and then Cato's sign-off per QA's note) — everything else in Wave 4a was already independently verified solid by QA and untouched by this diff.
