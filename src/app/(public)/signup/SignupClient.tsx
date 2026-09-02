@@ -204,6 +204,10 @@ export function SignupClient() {
           We sent a 6-digit code to <span className="text-foreground">{email}</span>. Enter it below to confirm your
           account.
         </p>
+        <p className="mt-2 max-w-xs text-xs text-muted-foreground">
+          The email will arrive from Supabase (our account infrastructure provider), not {branding.name} directly.
+          That&rsquo;s expected. Check spam if you don&rsquo;t see it within a minute.
+        </p>
 
         <form onSubmit={handleVerifyCode} className="mt-8 w-full max-w-xs space-y-3.5">
           <input

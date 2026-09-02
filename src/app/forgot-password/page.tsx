@@ -65,6 +65,10 @@ export default function ForgotPasswordPage() {
                 If an account exists for <span className="text-foreground">{email}</span>, we sent a link to reset
                 your password. It expires after a while, so use it soon.
               </p>
+              <p className="mt-1.5 text-center text-xs text-muted-foreground lg:text-left">
+                The email will arrive from Supabase (our account infrastructure provider), not {branding.name}
+                directly. That&rsquo;s expected. Check spam if you don&rsquo;t see it within a minute.
+              </p>
               <Link
                 href="/login"
                 className="mt-8 flex items-center justify-center gap-1.5 text-sm font-semibold text-foreground underline underline-offset-4 lg:justify-start"
