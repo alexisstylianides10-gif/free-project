@@ -2,8 +2,9 @@ import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
-import { callStudyAIForJSON, StudyAIError } from "@/lib/study/ai";
-import type { QuizDifficulty, QuizQuestion, QuizQuestionType, StudyQuiz, StudyTopic, MaterialAnalysisFull } from "@/lib/study/types";
+import { callStudyAIForJSON, StudyAIError, type DocumentInput } from "@/lib/study/ai";
+import { downloadMaterialDocument } from "@/lib/study/materials";
+import type { QuizDifficulty, QuizQuestion, QuizQuestionType, StudyQuiz, StudyTopic, StudyMaterial, MaterialAnalysisFull } from "@/lib/study/types";
 
 export const runtime = "nodejs";
 
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
     let contextText = "";
     let adaptiveGuidance = "";
     let resolvedTopicId: string | null = null;
+    let pastPaperDocument: DocumentInput | undefined;
 
     if (topicId) {
       const { data: topic } = await client.from("study_topics").select("*").eq("id", topicId).maybeSingle();
@@ -110,6 +112,7 @@ export async function POST(req: NextRequest) {
     } else if (materialId) {
       const { data: materialRow } = await client.from("study_materials").select("*").eq("id", materialId).maybeSingle();
       if (!materialRow) return NextResponse.json({ error: "Material not found." }, { status: 404 });
+      const material = materialRow as StudyMaterial;
 
       const { data: materialTopics } = await client.from("study_topics").select("*").eq("material_id", materialId);
       const topics = (materialTopics ?? []) as StudyTopic[];
@@ -129,10 +132,30 @@ export async function POST(req: NextRequest) {
         ? `Sample questions this material could support: ${analysis.potential_questions.join(" | ")}.`
         : "";
 
-      contextText =
-        `The quiz should draw only on this specific material: "${materialRow.title}".\n` +
-        `${topicLines ? `Topics extracted from it:\n${topicLines}\n` : ""}` +
-        `${termsLine}\n${questionsLine}\n`;
+      if (isMockExam) {
+        // Past-paper-grounded mock exam: the model needs to see the actual
+        // source, not just its derived summary, to mimic real structure/style.
+        if (material.status !== "analyzed") {
+          return NextResponse.json({ error: "This material hasn't finished analyzing yet." }, { status: 400 });
+        }
+        if (material.kind === "pdf" || material.kind === "image") {
+          pastPaperDocument = await downloadMaterialDocument(client, material);
+          contextText =
+            `You have been given the actual uploaded past exam paper as an attached document titled "${materialRow.title}". Study it directly.\n` +
+            `${topicLines ? `Topics already identified in it:\n${topicLines}\n` : ""}${termsLine}\n${questionsLine}\n`;
+        } else {
+          contextText =
+            `You have been given the actual text of an uploaded past exam paper titled "${materialRow.title}":\n` +
+            `--- PAST PAPER START ---\n${(materialRow.raw_text ?? "").trim()}\n--- PAST PAPER END ---\n` +
+            `${topicLines ? `Topics already identified in it:\n${topicLines}\n` : ""}${termsLine}\n${questionsLine}\n`;
+        }
+      } else {
+        // Unchanged — regular "quiz me on this material" path.
+        contextText =
+          `The quiz should draw only on this specific material: "${materialRow.title}".\n` +
+          `${topicLines ? `Topics extracted from it:\n${topicLines}\n` : ""}` +
+          `${termsLine}\n${questionsLine}\n`;
+      }
     } else {
       const { data: subjectTopics } = await client.from("study_topics").select("*").eq("subject_id", subjectId);
       const topics = (subjectTopics ?? []) as StudyTopic[];
@@ -147,12 +170,18 @@ export async function POST(req: NextRequest) {
         topics.map((t) => `- ${t.name}${t.summary ? `: ${t.summary}` : ""}${t.key_concepts.length ? ` (key concepts: ${t.key_concepts.join(", ")})` : ""}`).join("\n");
     }
 
+    const pastPaperInstruction =
+      materialId && isMockExam
+        ? "You have been given a real past exam paper (as an attached document or its transcribed text). Study its actual topics, structure, formatting, question types, and command words (e.g. 'Explain', 'Calculate', 'Describe', 'Evaluate') closely, then write a NEW, original mock exam that could plausibly appear on a similar exam by the same course/exam board — matching this paper's real difficulty, phrasing style, and topic coverage. Do not copy any question verbatim from the source paper; every question must be original. "
+        : "";
+
     const systemPrompt =
       `You are an expert study coach writing a quiz for a student studying "${subjectRow.name}". ` +
       `Write exactly ${questionCount} original questions grounded only in the study content provided — never invent facts that aren't implied by it. ` +
       `Difficulty target: ${DIFFICULTY_GUIDANCE[difficulty]} ` +
       `Mix question types across multiple_choice, true_false, short_answer, fill_blank, and scenario — use a genuine variety, not just one type, unless the source content is so thin it only supports one or two types. ` +
-      `${isMockExam ? "This is a full mock exam — questions should read like a real exam paper, formally worded, covering breadth across the material." : ""}`;
+      `${isMockExam ? "This is a full mock exam — questions should read like a real exam paper, formally worded, covering breadth across the material. " : ""}` +
+      `${pastPaperInstruction}`;
 
     const userText =
       `${contextText}${adaptiveGuidance}\n\n` +
@@ -163,6 +192,7 @@ export async function POST(req: NextRequest) {
     const ai = await callStudyAIForJSON<AIQuizResponse>({
       system: systemPrompt,
       userText,
+      document: pastPaperDocument,
       maxTokens: 4096,
       effort: difficulty === "exam" || isMockExam ? "high" : "medium",
     });
