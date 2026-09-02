@@ -68,7 +68,7 @@ export default function WelcomePage() {
 
   return (
     <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background">
-      <MarketingNav />
+      <MarketingNav hideLogoOnMobile />
       <div className="relative flex flex-1 lg:items-stretch">
         <div className="bg-ambient-glow pointer-events-none absolute inset-0 lg:hidden" aria-hidden />
 

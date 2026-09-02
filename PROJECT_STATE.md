@@ -1988,3 +1988,110 @@ Files: `src/components/shared/MarketingNav.tsx`, `src/components/shared/SiteFoot
 `src/app/(public)/page.tsx`, `src/app/sitemap.ts`.
 
 Handing to QA for review.
+
+## QA REVIEW (Marketing site) — 2026-09-02
+
+Reviewed the tip of `worktree-agent-a772ebc1882fd6232` (commit `93c8526`). Read
+`PRODUCT_SPECS_MARKETING_SITE.md` in full and Dev's build report above before touching anything. Verified the
+diff scope itself first (`git diff` against the pre-spec base, `90314d5`): exactly the 8 files Dev listed
+changed, nothing else — `faq/page.tsx`, `privacy/page.tsx`, `terms/page.tsx`, `StaticContentPage.tsx`,
+`(public)/layout.tsx`, `choose-plan/**`, `robots.ts`, and all `supabase/**` migrations are untouched.
+
+**1. Mobile-logo bug — confirmed real, fixed by QA.** Rendered `/` at 390px myself (Playwright) before touching
+code: confirmed two stacked logos exactly as Dev described — `MarketingNav`'s own logo (spec §2a's reference
+code renders it unconditionally, no `md:` guard) plus the hero's own `md:hidden` logo row directly below it.
+Dev was right not to guess at a fix unilaterally, since a naive global `hidden md:flex` on `MarketingNav`'s logo
+would have silently broken `/features`, `/pricing`, and `/about` — those three pages have *no other* mobile
+branding, so `MarketingNav`'s logo is their sole mobile brand mark, not a duplicate to hide.
+
+Fix applied: added an opt-in `hideLogoOnMobile` prop to `MarketingNav` (default `false`, so `/features`,
+`/pricing`, `/about` are byte-for-byte unaffected), and passed `<MarketingNav hideLogoOnMobile />` only from
+`/`'s `page.tsx`. This is page-scoped rather than the literal "just add `hidden md:flex` to the component"
+instruction, because that literal version would have regressed mobile branding on the other three pages — a
+worse bug than the one it fixes. Re-rendered `/` at 390px after the fix: single logo (hero's), nav bar shows
+only the hamburger icon at mobile, exactly matching the spec's original "mobile completely unaffected" intent.
+Re-rendered `/features` at 390px: logo still present in the nav (unaffected, as required). Re-rendered `/` at
+1280px: single logo in the nav, no duplicate below it (desktop was already correct before this fix and remains
+correct after). Screenshots taken via Playwright, Chromium at `/opt/pw-browsers/chromium`.
+Files touched by this fix: `src/components/shared/MarketingNav.tsx`, `src/app/(public)/page.tsx`.
+
+**2. Pricing page accuracy — verified line-by-line against real source, not Dev's summary.**
+- Savings-% formula: `PricingClient.tsx` computes `Math.round((1 - yearlyOption.priceUsd / (monthlyOption.priceUsd * 12)) * 100)`
+  independently for student and business, read live from `PLAN_OPTIONS` in `src/lib/billing/plans.ts` — same
+  formula (algebraically identical) as `ChoosePlanClient.tsx` line 48 and `upgrade/page.tsx` line 52. Confirmed
+  nothing is a hardcoded `"17%"` literal — diffed all three files myself.
+- `PERKS_BY_TRACK` and `FREE_TAGLINE_BY_TRACK` in `PricingClient.tsx` diffed word-for-word against
+  `src/app/app/upgrade/page.tsx`'s copies — identical, both tracks, both objects.
+- Toggle interaction tested live (Playwright click, not just static read): clicking "Yearly" recomputes the
+  Student card (`$9.99/mo` → `$99/yr`) and the Business card (`$19.99/mo` → `$199/yr`, own `-17%` badge)
+  independently and simultaneously, no page reload, no stale state. Confirmed via DOM text assertions and a
+  full-page screenshot (`pricing_yearly.png`) — Business card's badge is a separately computed
+  `businessSavingsPercent`, not a copy of the student toggle-pill badge (2 independent `-17%` badges rendered:
+  one on the shared toggle pill, one on the Business card itself).
+- Business-track "Coming soon" card: `opacity-60` on the `Card`, `Badge tone="neutral"` "Coming soon" label, and
+  a `<Button disabled>` with no `href`/`onClick` — matches `ChoosePlanClient.tsx`'s exact treatment for the same
+  state (`opacity-60` Card, disabled `Button`, same "Coming soon" wording). No clickable path anywhere on
+  `/pricing` or `/features` that could start a business-track checkout — confirmed by reading every `Link`/
+  `Button` on both pages; the only interactive elements pointing at business content are the disabled button and
+  plain text.
+
+**Minor, non-blocking finding — footer link order.** Spec §2b's own prose states the new links are inserted
+"before the existing three, not scrambling the existing three's relative order" (original order was
+Privacy → Terms → FAQ). But the spec's own literal `FOOTER_LINKS` reference code — copied verbatim by Dev —
+actually orders the existing three as FAQ → Privacy → Terms, which *does* scramble the original relative order
+(FAQ moved from last to first among the three). This is a spec-authoring inconsistency that Dev faithfully
+carried forward, not a Dev-introduced bug. Cosmetic only, does not affect functionality or the No-BS/security
+posture. Flagging for Product to decide whether it's worth a follow-up; not blocking sign-off.
+
+**3. `MarketingNav`/`SiteFooter` scope** — confirmed via `grep` across `src/app`: the two components are
+imported and mounted in exactly `page.tsx` (`/`), `features/page.tsx`, `pricing/PricingClient.tsx`, and
+`about/page.tsx`. Not present anywhere else in the tree (no `/faq`, `/privacy`, `/terms`, `/login`, `/signup`,
+`/choose-plan`, or `/app/**` matches).
+
+**4. Regression check** — started the built app (`next start`), hit `/faq`, `/privacy`, `/terms`, `/choose-plan`
+directly: all 200, and `git diff` confirms zero byte changes to any of those pages, `StaticContentPage.tsx`, or
+`(public)/layout.tsx` (still the only place `CookieBanner` mounts — confirmed the banner still renders on `/`
+and the new pages since they're all inside the `(public)` route group, and does not render on `/app/**`).
+
+**5. Sitemap/robots** — fetched the real, running `/sitemap.xml` output (not just read the source): all 10
+routes present, `/pricing` at priority 0.9/monthly, `/features` at 0.8/monthly, `/about` at 0.5/yearly, matching
+spec exactly. `robots.ts` diffed against base: zero changes, confirmed unnecessary since it already
+`allow: "/"` and only disallows `/app/` and `/api/` — Product's and Dev's claim holds.
+
+**6. About-page placeholders** — grepped `privacy/page.tsx` and `terms/page.tsx` for their existing
+`[COMPANY NAME]`/`[CONTACT EMAIL]`/`[ADDRESS]` convention and confirmed `about/page.tsx` reuses the identical
+bracket convention (`[COMPANY NAME]`, `[FOUNDING STORY / TEAM PLACEHOLDER]`, `[CONTACT EMAIL]`) — nothing
+invented as if it were real.
+
+**7. Build gate — run fresh by QA, not trusted from Dev's report.**
+- `rm -rf .next && npx tsc --noEmit`: clean, zero errors.
+- `npx next build`: clean, all 61 routes generated, `/features`, `/pricing`, `/about` present with reasonable
+  bundle sizes (~122-125 kB first load JS for the three new pages).
+- `npx next start` + live HTTP checks: `/`, `/features`, `/pricing`, `/about`, `/faq`, `/privacy`, `/terms`,
+  `/choose-plan` all 200.
+
+**8. Playwright rendering** — all 4 changed/new pages at 390px and 1280px, light and dark (forced via
+`localStorage.alxioum_theme = "dark"`, same technique Dev used, confirmed correct since `ThemeProvider` only
+honors `prefers-color-scheme` in `"system"` mode and defaults to `"light"`), 16 renders total. Zero horizontal
+overflow (`document.documentElement.scrollWidth - clientWidth === 0`) on every render, dark mode genuinely
+applied (not just class-toggled with no visual effect — screenshots show real dark backgrounds/text). Also
+exercised live interaction: mobile hamburger menu opens (links + Log in/Get Started visible) and closes cleanly
+on `/`; pricing Monthly/Yearly toggle recomputes correctly (see §2).
+
+**Security/entitlement note (in-scope check, applied even though this diff is markup/copy-only):** confirmed no
+new database tables, migrations, RLS policies, or API routes were added by this diff — grep of the diff stat
+against `supabase/**` and `src/app/api/**` shows zero matches, consistent with the spec's claim. No new
+`profiles` writes, no new client-writable entitlement columns. This diff is genuinely markup + copy on top of
+existing, already-reviewed data sources (`plans.ts`, `branding.ts`).
+
+**SIGN-OFF: GIVEN.**
+
+The one real bug in this diff (mobile duplicate-logo on `/`) was fixed by QA directly per the task's explicit
+mechanical-call authorization, using a page-scoped prop rather than the literal global-hide instruction because
+the literal version would have regressed mobile branding on `/features`/`/pricing`/`/about`. Verified the fix
+by rendering, not just reading code. One cosmetic footer-order inconsistency (inherited from the spec's own
+reference code, not Dev's doing) is flagged for Product but does not block sign-off. Everything else — pricing
+math, perk/tagline fidelity, coming-soon treatment consistency, nav/footer scope, sitemap/robots, and the
+regression surface — checked against real running output, not trusted from either agent's report.
+
+Files touched by QA: `src/components/shared/MarketingNav.tsx`, `src/app/(public)/page.tsx` (mobile-logo fix).

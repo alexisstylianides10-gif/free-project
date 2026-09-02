@@ -21,15 +21,27 @@ const LINKS = [
  * auth/onboarding screen; those keep their existing minimal chrome on
  * purpose (see PRODUCT_SPECS_MARKETING_SITE.md §2a for why). Sticky-bar
  * classes mirror TopBar.tsx's own so in-app and marketing chrome feel like
- * the same product, not two different skins. */
-export function MarketingNav() {
+ * the same product, not two different skins.
+ *
+ * `hideLogoOnMobile` — QA fix (2026-09-02): `/` already renders its own
+ * mobile-only logo row (`md:hidden`) in its hero. Spec §2a's reference code
+ * renders MarketingNav's logo unconditionally, which — combined with the
+ * hero's own mobile logo — produced two stacked logos on `/` at mobile
+ * widths (confirmed by rendering the page). `/` passes this prop so its nav
+ * logo only appears at `md:`+, where the hero's own mobile logo has already
+ * disappeared (matching spec §3a's original "mobile completely unaffected"
+ * intent). `/features`, `/pricing`, and `/about` have no other mobile brand
+ * mark, so they must NOT pass this prop — MarketingNav's logo is their only
+ * mobile branding and losing it there would be a worse regression than the
+ * duplicate-logo bug this fixes. */
+export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background/75 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5 md:px-10 lg:px-16">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className={cn("items-center gap-2", hideLogoOnMobile ? "hidden md:flex" : "flex")}>
           <LogoMark size={28} />
           <span className="text-sm font-semibold tracking-wide text-foreground">{branding.name}</span>
         </Link>
