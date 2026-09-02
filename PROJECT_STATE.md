@@ -2215,3 +2215,57 @@ both. Non-issue, but flagging since it's exactly the kind of thing that looks br
 
 No schema changes, no new API routes, no new dependencies. Commit is on top of `7aea618`
 (`worktree-agent-a056f159b57d0d803`, fast-forward merged), not pushed.
+
+## DEV FIX (scroll landing heading hierarchy)
+
+**Bug (QA-blocked, `412b82f`):** `/` rendered **four `<h1>` elements** — the Hero's own `<h1>`, plus
+`FeaturesSection`, `PricingSection`, and `AboutSection` each rendering their own `<h1>` too. Correct in isolation
+(each is the sole heading on its standalone route), wrong once all four mount inline on the same page. QA
+confirmed via `document.querySelectorAll("h1")` in a real Playwright render returning 4, not by reading JSX.
+`FaqSection` already used `<h2>` correctly — the pattern to match.
+
+**Root cause:** `FeaturesSection`, `PricingSection`, `AboutSection` each hardcoded their main heading as a
+literal `<h1>` tag with no way to opt into a different level depending on where they're mounted, unlike
+`withSectionBreak`/`sectionBreak` which were already prop-driven for exactly this "same component, different
+context" reason.
+
+**Fix:** added a `headingLevel?: "h1" | "h2"` prop (default `"h1"`) to all three components, same opt-in-prop
+pattern as `withSectionBreak`/`sectionBreak` — not a pathname check, so there's no way for the component to
+silently diverge if mounted somewhere new later. The literal `<h1>`/`<h2>` tag became `const Heading =
+headingLevel;` then `<Heading>...</Heading>`.
+- `src/app/(public)/features/page.tsx`, `pricing/PricingClient.tsx`, `about/page.tsx` — all three call their
+  section with the prop omitted, so they keep rendering `<h1>` unchanged. Zero change to their already-QA'd
+  (`ba9001d`) output.
+- `src/app/(public)/page.tsx` — now passes `headingLevel="h2"` to all three, so on `/` each section's main
+  heading renders as `<h2>`, matching `FaqSection`'s existing convention, leaving the Hero's `<h1>` as the
+  page's sole one.
+
+**Secondary fix (also QA-flagged):** `AboutSection`'s three internal subheadings ("Why one app, two tracks",
+"What we actually believe", "Who's behind it") were hardcoded `<h2>`, which is correct standalone (nested one
+level below the section's own `<h1>`) but would skip nowhere/duplicate-level once the section's own main heading
+demotes to `<h2>` on `/`. Added `const SubHeading = headingLevel === "h2" ? "h3" : "h2";` in `AboutSection` so
+the three subheadings track one level below whatever the section's main heading is — `<h2>` on standalone
+`/about`, `<h3>` when inline on `/` — keeping a valid, non-skipping hierarchy in both contexts. Same
+conditional-level approach as the main fix, one level down, scoped to this one component only (`FeaturesSection`
+and `PricingSection`'s own internal `<h2>`/`<h3>` subheadings were left untouched — QA did not flag them, and
+their existing level sequence, e.g. `h1→h2→h3→h2→h2` becoming `h2→h2→h3→h2→h2` when the parent demotes, has no
+skipped levels either way, confirmed by re-reading both components after the change, not assumed).
+
+**Verification performed:**
+- `rm -rf .next && npx tsc --noEmit && npx next build` — both clean.
+- Playwright render (Chromium at `/opt/pw-browsers/chromium`, via `NODE_PATH=/opt/node22/lib/node_modules`)
+  of all four routes against a real `next start` server, `document.querySelectorAll` for `h1`/`h2`/`h3`:
+  - `/` — **1** `h1` ("Build your future..." — the Hero's), **7** `h2` (Features' "One plan...", "Student
+    track", "For founders", "Pick your track...", Pricing's "Simple pricing...", About's "Built for the two
+    groups...", Faq's "Frequently asked questions"), **5** `h3` (Features' "A coach that actually knows...",
+    "Everything above, rebuilt...", About's three demoted subheadings "Why one app, two tracks", "What we
+    actually believe", "Who's behind it").
+  - `/features` — **1** `h1` ("One plan. Built around what you're actually doing.") — unchanged from `ba9001d`.
+  - `/pricing` — **1** `h1` ("Simple pricing. The organizing tools are always free.") — unchanged.
+  - `/about` — **1** `h1` ("Built for the two groups everyone else designs around."), subheadings confirmed
+    still `h2` (not demoted) on this standalone route — unchanged.
+
+Base: fast-forward merged `worktree-agent-aa6bf2735100d642c` (`412b82f`) onto this worktree's prior branch tip
+(`ba9001d`, a clean ancestor — no conflicts). Files changed: `src/components/marketing/FeaturesSection.tsx`,
+`src/components/marketing/PricingSection.tsx`, `src/components/marketing/AboutSection.tsx`,
+`src/app/(public)/page.tsx`. No schema changes, no new API routes, no new dependencies. Not pushed.

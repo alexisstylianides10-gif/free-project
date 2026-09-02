@@ -161,8 +161,23 @@ function FeatureGrid({ items }: { items: FeatureCard[] }) {
  * band is scoped to this section wherever it's mounted — required so the glow
  * appears at Features' own position when scrolled to on `/`, not pinned to
  * the top of the whole homepage behind the Hero.
+ *
+ * `headingLevel` (default `"h1"`) — same opt-in-prop pattern as
+ * `withSectionBreak`. Standalone `/features` renders with it omitted, so its
+ * main heading stays an `<h1>` (the page's sole one, unchanged). Inline on
+ * `/`, the Hero already owns the page's one `<h1>`, so `/` passes
+ * `headingLevel="h2"` here to avoid a second `<h1>` on the same document —
+ * matching `FaqSection`'s existing `<h2>` convention (QA-flagged, see
+ * PROJECT_STATE.md "DEV FIX (scroll landing heading hierarchy)").
  */
-export function FeaturesSection({ withSectionBreak = false }: { withSectionBreak?: boolean }) {
+export function FeaturesSection({
+  withSectionBreak = false,
+  headingLevel = "h1",
+}: {
+  withSectionBreak?: boolean;
+  headingLevel?: "h1" | "h2";
+}) {
+  const Heading = headingLevel;
   return (
     <section
       id="features"
@@ -172,9 +187,9 @@ export function FeaturesSection({ withSectionBreak = false }: { withSectionBreak
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Features</p>
-        <h1 className="mt-2 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
+        <Heading className="mt-2 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
           One plan. Built around what you&rsquo;re actually doing.
-        </h1>
+        </Heading>
         <p className="mt-4 max-w-2xl text-body leading-relaxed text-muted-foreground">
           Alxioum tracks the real details of school or your business, then turns them into a daily plan, an AI Coach
           that knows your context, and a long-term roadmap you can watch move. Two tracks, one app &mdash; you pick

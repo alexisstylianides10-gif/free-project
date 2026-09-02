@@ -17,15 +17,34 @@ import { cn } from "@/lib/utils";
  * `ba9001d` version. Inner content stays the existing narrow `max-w-2xl`
  * centered column regardless — a deliberate width contrast against the
  * `max-w-6xl` grid sections around it when inline on `/`.
+ *
+ * `headingLevel` (default `"h1"`) — same opt-in-prop pattern as
+ * `sectionBreak`/`withSectionBreak`. Standalone `/about` renders with it
+ * omitted, so its main heading stays an `<h1>` (unchanged). Inline on `/`,
+ * the Hero already owns the page's one `<h1>`, so `/` passes
+ * `headingLevel="h2"` to avoid a second `<h1>` on the same document. The
+ * three internal subheadings ("Why one app, two tracks", "What we actually
+ * believe", "Who's behind it") demote from `<h2>` to `<h3>` in lockstep —
+ * they must stay one level below whatever this section's main heading is, to
+ * keep a valid, non-skipping hierarchy either way (QA-flagged, see
+ * PROJECT_STATE.md "DEV FIX (scroll landing heading hierarchy)").
  */
-export function AboutSection({ sectionBreak = false }: { sectionBreak?: boolean }) {
+export function AboutSection({
+  sectionBreak = false,
+  headingLevel = "h1",
+}: {
+  sectionBreak?: boolean;
+  headingLevel?: "h1" | "h2";
+}) {
+  const Heading = headingLevel;
+  const SubHeading = headingLevel === "h2" ? "h3" : "h2";
   return (
     <section id="about" className={cn("scroll-mt-20", sectionBreak && "border-t border-border bg-surface")}>
       <div className="mx-auto flex w-full max-w-2xl flex-col px-6 py-12 md:px-10 md:py-16">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">About</p>
-        <h1 className="mt-2 text-heading font-extrabold tracking-tight text-foreground">
+        <Heading className="mt-2 text-heading font-extrabold tracking-tight text-foreground">
           Built for the two groups everyone else designs around.
-        </h1>
+        </Heading>
 
         <div className="mt-4 space-y-4 text-body leading-relaxed text-muted-foreground">
           <p>
@@ -35,7 +54,7 @@ export function AboutSection({ sectionBreak = false }: { sectionBreak?: boolean 
             next, and early founders still building a business with no one telling them what to do next either.
           </p>
 
-          <h2 className="!mt-8 text-body font-bold text-foreground">Why one app, two tracks</h2>
+          <SubHeading className="!mt-8 text-body font-bold text-foreground">Why one app, two tracks</SubHeading>
           <p>
             We didn&rsquo;t want a generic to-do list with a school skin and a business skin bolted on. So{" "}
             {branding.name} asks you, once, at signup: are you building a transcript or a business? Whichever you
@@ -49,7 +68,7 @@ export function AboutSection({ sectionBreak = false }: { sectionBreak?: boolean 
             for details.)
           </p>
 
-          <h2 className="!mt-8 text-body font-bold text-foreground">What we actually believe</h2>
+          <SubHeading className="!mt-8 text-body font-bold text-foreground">What we actually believe</SubHeading>
           <ul className="list-disc space-y-2 pl-5">
             <li>
               <strong className="font-semibold text-foreground">No tracking, no ads.</strong> {branding.name}{" "}
@@ -75,7 +94,7 @@ export function AboutSection({ sectionBreak = false }: { sectionBreak?: boolean 
             </li>
           </ul>
 
-          <h2 className="!mt-8 text-body font-bold text-foreground">Who&rsquo;s behind it</h2>
+          <SubHeading className="!mt-8 text-body font-bold text-foreground">Who&rsquo;s behind it</SubHeading>
           <p>
             {branding.name} is built by [COMPANY NAME]. [FOUNDING STORY / TEAM PLACEHOLDER &mdash; add real detail
             here once there&rsquo;s a public-facing story to tell; nothing in this codebase currently establishes a

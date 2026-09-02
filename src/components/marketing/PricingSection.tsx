@@ -52,14 +52,24 @@ const FREE_TAGLINE_BY_TRACK = {
  * PRODUCT_SPECS_SCROLL_LANDING.md §4. This is the one place a section's
  * sub-content is conditional on where it's rendered; flagged here via prop +
  * comment, not a silent pathname branch.
+ *
+ * `headingLevel` (default `"h1"`) — same opt-in-prop pattern as
+ * `withSectionBreak`. Standalone `/pricing` renders with it omitted, so its
+ * main heading stays an `<h1>` (unchanged). Inline on `/`, the Hero already
+ * owns the page's one `<h1>`, so `/` passes `headingLevel="h2"` to avoid a
+ * second `<h1>` on the same document (QA-flagged, see PROJECT_STATE.md "DEV
+ * FIX (scroll landing heading hierarchy)").
  */
 export function PricingSection({
   withSectionBreak = false,
   showFaqStrip = true,
+  headingLevel = "h1",
 }: {
   withSectionBreak?: boolean;
   showFaqStrip?: boolean;
+  headingLevel?: "h1" | "h2";
 }) {
+  const Heading = headingLevel;
   const [interval, setInterval] = useState<BillingInterval>("monthly");
 
   const studentMonthly = PLAN_OPTIONS.find((o) => o.track === "student" && o.interval === "monthly")!;
@@ -85,9 +95,9 @@ export function PricingSection({
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Pricing</p>
-        <h1 className="mt-2 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
+        <Heading className="mt-2 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
           Simple pricing. The organizing tools are always free.
-        </h1>
+        </Heading>
         <p className="mt-4 max-w-xl text-body leading-relaxed text-muted-foreground">
           Pay only if you want the AI on top.
         </p>

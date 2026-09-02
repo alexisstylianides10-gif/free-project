@@ -138,10 +138,18 @@ export default function WelcomePage() {
           renders standalone at /features, /pricing, /about, opted into the
           inline-on-/ visual treatment (top divider + its own background
           band) via withSectionBreak/sectionBreak. See
-          PRODUCT_SPECS_SCROLL_LANDING.md §5, §7. */}
-      <FeaturesSection withSectionBreak />
-      <PricingSection withSectionBreak showFaqStrip={false} />
-      <AboutSection sectionBreak />
+          PRODUCT_SPECS_SCROLL_LANDING.md §5, §7.
+
+          headingLevel="h2" on all three: the Hero's <h1> above is the page's
+          one and only <h1> once these sections are mounted inline here, so
+          each section's own main heading demotes to <h2> — matching
+          FaqSection's existing <h2> convention. Standalone /features,
+          /pricing, /about all omit this prop and keep their <h1> unchanged.
+          See PROJECT_STATE.md "DEV FIX (scroll landing heading
+          hierarchy)". */}
+      <FeaturesSection withSectionBreak headingLevel="h2" />
+      <PricingSection withSectionBreak showFaqStrip={false} headingLevel="h2" />
+      <AboutSection sectionBreak headingLevel="h2" />
       <FaqSection />
 
       <SiteFooter />
