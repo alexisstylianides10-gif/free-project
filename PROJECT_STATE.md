@@ -2095,3 +2095,52 @@ math, perk/tagline fidelity, coming-soon treatment consistency, nav/footer scope
 regression surface — checked against real running output, not trusted from either agent's report.
 
 Files touched by QA: `src/components/shared/MarketingNav.tsx`, `src/app/(public)/page.tsx` (mobile-logo fix).
+
+## PRODUCT — SCROLL LANDING PAGE SPECS — 2026-09-02
+
+CEO feedback on the just-shipped 4-route marketing site above: it should be one long scrollable landing page
+("scroll down and find [everything], like online apps do" — Notion/Linear/Stripe), not click-between pages.
+Full spec: `PRODUCT_SPECS_SCROLL_LANDING.md`. Base: `ba9001d` (this branch tip at time of writing).
+
+**Decisions made, and why (short version — full reasoning in the spec):**
+
+1. **Standalone `/features`, `/pricing`, `/about` routes stay live, unchanged in substance, unlinked from
+   primary nav.** `/` becomes the primary one-page scrolling experience; the standalone routes become
+   secondary direct-link/SEO/ads destinations. Real reasoning, not a default: zero risk to the just-QA'd
+   `ba9001d` content, a dedicated `/pricing` URL has real standalone value (ads, search, sharing), and this is
+   literally what Notion/Linear/Stripe — the CEO's own reference points — actually do (a scrolling `/` *and*
+   live standalone pages, not one or the other).
+
+2. **Content reused, not rewritten.** Each standalone page's body extracted into a presentational component
+   (`FeaturesSection`, `PricingSection`, `AboutSection` — new `src/components/marketing/`) rendered both on its
+   original route and inline on `/`, from one source. A `withSectionBreak`/`sectionBreak` opt-in prop
+   (default `false`) means the standalone routes render pixel-identical to what QA already signed off — the
+   `/`-only visual dividers (§5 of the spec) only appear when explicitly opted in.
+
+3. **Navigation = plain `<Link href="/#features">`**, no scroll-spy, no new library — Next.js App Router
+   already scrolls to the matching `id` natively whether you're on `/` or navigating in from elsewhere.
+   `scroll-mt-20` on every section id (clears the sticky nav) + `scroll-smooth` added to the root `<html>`
+   (`src/app/layout.tsx`) for the animated jump. **Flagged, not hidden:** `MarketingNav`'s active-link
+   underline can't work with hash-only hrefs (`pathname` never contains a `#`) — removed rather than shipped
+   silently-always-false; a correct fix needs an `IntersectionObserver` scroll-spy, out of scope for this pass.
+
+4. **FAQ gets a real section on `/`, but reusing `PricingSection`'s existing 4-question `PRICING_FAQ`
+   (promoted to `src/lib/marketing/faq.ts`), not `/faq`'s own 3 questions.** Two of `/faq`'s three questions
+   are near-verbatim repeats of what `PricingSection` already answers a few hundred pixels above on the same
+   scroll — stacking both would mean reading "Can I switch tracks?" twice in one page. `PricingSection`'s own
+   embedded FAQ strip is suppressed on `/` (`showFaqStrip={false}`) so it doesn't also duplicate the new
+   dedicated section. `/faq/page.tsx` itself is completely untouched — still real, still linked from
+   `PricingSection`'s own strip on the standalone `/pricing` route (the one link that stays a real route
+   instead of an anchor, since `/#faq` only exists on `/`).
+
+5. **Section order on `/`:** Hero (unchanged) → Features (`border-t` + own `bg-ambient-glow`) → Pricing
+   (`border-t` + own `bg-ambient-glow`) → About (`border-t` + `bg-surface` full-bleed band, narrow prose column
+   inside it) → FAQ (`border-t`, plain background — third divider style would over-decorate) → Footer. Every
+   separator technique reused from the existing design system (`border-t border-border`, `bg-surface`,
+   `bg-ambient-glow`, stock Tailwind `scroll-mt-*`) — nothing new invented.
+
+**No schema changes, no new API routes, no new design tokens.** Full file list (5 new, 7 modified) is in
+§7 of `PRODUCT_SPECS_SCROLL_LANDING.md`. Handing to Dev to implement; flagged for Dev/QA to empirically verify
+the anchor-scroll offset/timing and the two pre-existing `scrollIntoView` call sites (`coach/page.tsx`,
+`school/subjects/[subjectId]/session/page.tsx`) still feel right under the new global `scroll-smooth` — reasoned
+through from docs, not run in a browser by Product.
