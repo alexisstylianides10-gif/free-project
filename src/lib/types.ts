@@ -18,6 +18,7 @@ export interface Profile {
   longest_streak: number;
   last_active_date: string | null;
   onboarding_completed: boolean;
+  tutorial_seen: boolean;
   track: "student" | "business";
   billing_interval: "monthly" | "yearly" | null;
   plan: "free" | "plus";

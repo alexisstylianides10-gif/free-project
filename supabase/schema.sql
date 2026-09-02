@@ -67,6 +67,16 @@ create trigger lock_track_after_onboarding
   for each row
   execute function public.prevent_track_change_after_onboarding();
 
+-- One-time "here's where everything lives" interstitial tour, shown once per
+-- account right after onboarding completes (see NewUserTutorial.tsx). Added
+-- via `alter table` (same pattern as exams.study_subject_id below) rather
+-- than folded into the `create table if not exists public.profiles` block
+-- above, because that statement is a no-op against the already-deployed
+-- production table -- only this alter actually reaches it. Must run before
+-- the `grant update (...)` block below, since that grant references this
+-- column by name and Postgres requires it to already exist at that point.
+alter table public.profiles add column if not exists tutorial_seen boolean not null default false;
+
 -- Billing columns (plan, plan_status, trial_ends_at, stripe_customer_id,
 -- stripe_subscription_id) are deliberately excluded from the client's
 -- UPDATE grant below — the update-own RLS policy above only checks row
@@ -80,7 +90,7 @@ revoke update on public.profiles from authenticated;
 grant update (
   full_name, year_group, country, avatar_emoji, xp_school, xp_career,
   xp_skill, xp_project, streak_count, longest_streak, last_active_date,
-  onboarding_completed, track, billing_interval
+  onboarding_completed, track, billing_interval, tutorial_seen
 ) on public.profiles to authenticated;
 
 -- ---------------------------------------------------------------------------
