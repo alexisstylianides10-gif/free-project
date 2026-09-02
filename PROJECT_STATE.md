@@ -1143,3 +1143,102 @@ Committed locally on this branch (`worktree-agent-ac56bf95a06a27d69`), not pushe
 BLOCKERS: None.
 
 NEXT TASK: QA review of this Wave 4b build.
+
+---
+
+## QA REVIEW (Wave 4b) — commit `47772f2` (branch `worktree-agent-ac56bf95a06a27d69`)
+
+Reviewed by re-reading every touched file directly (not taking Dev's report on trust), empirically testing the schema-ordering deviation against a real local Postgres instance, running `tsc`/`next build` fresh against the exact commit's file state, and rendering both new UI surfaces with a real Playwright browser (via a temporary, unauthenticated harness route importing the real `NewUserTutorial`/`RoadmapTimeline` components verbatim — deleted before this write-up, confirmed absent afterward).
+
+### BLOCKING BUG FOUND: `supabase/schema.sql` statement ordering breaks the migration Dev's own deviation was trying to fix
+
+Dev's stated (and correct) reasoning: `tutorial_seen` must be added via a standalone `alter table ... add column if not exists` rather than folded into the `create table if not exists` column list, because the latter is a no-op against the already-deployed production `profiles` table. Agreed, that half is right.
+
+But the fix as written puts the `alter table public.profiles add column if not exists tutorial_seen ...` statement **after** the `revoke update on public.profiles from authenticated; grant update (..., tutorial_seen) on public.profiles to authenticated;` block that references the new column by name. `GRANT UPDATE (column_list)` requires the referenced columns to already exist at the time the statement runs — it is not deferred/forward-declared like some DDL. Since `schema.sql` is this project's only source of truth (no `supabase/migrations` directory, confirmed by listing `supabase/`) and is applied to production top-to-bottom as one script, this ordering means the `GRANT` statement fails before the `ALTER TABLE` that would have added the column ever runs.
+
+**Verified empirically, not just reasoned about:** stood up a local Postgres 16 instance, created `authenticated`/`anon` roles, and ran the exact `create table` → `revoke/grant (..., tutorial_seen)` → `alter table add column tutorial_seen` sequence from the diff against a fresh database (simulating either a brand-new deploy or the first application of this migration to the real, already-deployed `profiles` table that doesn't have the column yet):
+
+```
+CREATE TABLE
+REVOKE
+ERROR:  column "tutorial_seen" of relation "profiles" does not exist
+ALTER TABLE
+```
+
+With `ON_ERROR_STOP=1` (the standard flag for any non-interactive deploy script), the whole run halts at the `GRANT` line — exit code 3, and the `ALTER TABLE` that would add the column is never reached at all:
+
+```
+CREATE TABLE
+REVOKE
+ERROR:  column "tutorial_seen" of relation "profiles" does not exist
+EXIT CODE: 3
+```
+
+**Why this matters:** this isn't a cosmetic ordering nit. If this `schema.sql` is applied to production as-is (which is exactly how this project applies schema changes — no migrations directory, single idempotent script, same mechanism every prior schema change in this project's history has used), the deploy either aborts outright (transactional runner) or silently never adds `tutorial_seen` while also never successfully re-granting update on the rest of the column list depending on how the failure is handled by whatever wraps the script — either way, the tutorial feature cannot ship to production in its current form. This is precisely the kind of gotcha the standing project convention flags ("a new boolean column on `profiles` is invisible to client writes until it's added to this explicit list") taken one step further: here the column isn't just missing from the grant, the grant statement referencing it is what breaks the whole apply.
+
+**Root cause:** wrong statement order. The `alter table ... add column if not exists tutorial_seen ...` must run **before** the `revoke/grant` block that names it, not after.
+
+**Fix for Dev:** move the `alter table public.profiles add column if not exists tutorial_seen boolean not null default false;` statement (with its explanatory comment) to immediately after the `create table if not exists public.profiles (...)` block and its RLS policies/trigger, and **before** the `revoke update on public.profiles from authenticated; grant update (...)` block. (`exams.study_subject_id` never hit this problem because `exams` uses the plain `for all ... using/with check` RLS pattern with no column-restricted `GRANT` referencing it — it's the first time this project has added a new column to `profiles` specifically, the one table with a column-restricted grant, via a post-initial-deploy `alter table`. Not a precedent violation on Dev's part, genuinely a new combination that wasn't exercised before.)
+
+Confirmed via the same local-Postgres method that the corrected order (`alter table` before `revoke/grant`) applies cleanly with no error — this is a one-line move, not a rewrite.
+
+### Tutorial (`NewUserTutorial.tsx` + `app/app/layout.tsx`) — verified, no other issues found
+
+- **Guard ordering, traced in `layout.tsx`:** the `useEffect` that sets `showTutorial = true` only fires when `profile && profile.onboarding_completed && !profile.tutorial_seen`, and — critically — `<NewUserTutorial>` is only ever rendered in the final JSX branch of the component, which is unreachable unless `profile` exists and `profile.onboarding_completed` is true (both the `!profile` early-return and the `!profile.onboarding_completed` early-return sit above it in the same render). It is structurally impossible for the tutorial to mount mid-onboarding or before a profile row exists — confirmed by reading the file directly, not assumed from the spec's description.
+- **Dismissal wiring, traced through `Modal.tsx`:** `Modal` wraps Radix `Dialog.Root` in fully controlled mode (`open`/`onOpenChange`), and its `X` button is a real `Dialog.Close`, so X/overlay-click/Escape all route through the same `onOpenChange(false)` Radix already fires for a controlled dialog. `NewUserTutorial`'s `handleOpenChange` treats any `next === false` as a "seen it" signal → calls `onFinish()` → `layout.tsx`'s `dismissTutorial()`, which flips local state immediately and fires `supabase.from("profiles").update({ tutorial_seen: true })` (a plain `.update()`, correctly **not** `.upsert()` — this project's `profiles`-upsert gotcha does not apply here). **Live-verified with Playwright**, not just read: scripted all 4 dismissal paths (X click, Escape key, overlay click, "Get started" on the last card) against the real component in a temporary harness and confirmed the dialog closes (DOM node count 0) in every case.
+- **Schema/grant:** `tutorial_seen` genuinely is in the client `UPDATE` grant list (confirmed by reading `schema.sql` directly) — see the blocking bug above for the one real problem with how it gets there.
+- **Shows-once behavior:** purely a boolean-gate read (`!profile.tutorial_seen`), no additional state to trace — once the DB row is `true` and `refreshProfile()` has re-fetched it, the effect's condition is false on every subsequent mount/load. No issue.
+- **Rendered with Playwright** (real component, not copy-pasted JSX) at 390px/1280px, light/dark (dark mode driven by the app's actual `localStorage` theme key — confirmed the app's `ThemeProvider` literally ignores `prefers-color-scheme` unless `mode === "system"`, defaulting to `"light"`, so Playwright's `colorScheme` context option alone does nothing here and I drove it via `page.addInitScript` setting `alxioum_theme` directly, same key the app reads): all 5 student-track cards, dot-progress indicator advancing correctly card-to-card, Back button correctly `invisible` (not `hidden`, no layout shift) on card 1 and reappearing on card 2+, "Get started" correctly replacing "Next" only on the last card. Business-track copy read directly in source; all 10 titles (5+5) use the `·` separator correctly and read naturally, not mechanically swapped (see em-dash section below).
+
+### Roadmap mechanism — all 4 edge cases independently re-traced against the real code, all correct
+
+- **(a) Out-of-order completion:** traced `advanceRoadmapLevel(supabase, userId, 3)` against the real seeded state from `completeOnboarding.ts` (confirmed lines 137-142: Level 1 `completed_at` set, Level 2 `unlocked: true, completed_at: null`). The backfill loop (`for n = 1..3`) skips Level 1 (already has `completed_at`), and pushes **both** Level 2 and Level 3 into the same `upsert` call. Also independently confirmed PostgREST's actual upsert-with-`onConflict` semantics: columns omitted from the payload (e.g. `completed_at` on the "unlock next level" call) are left untouched on conflict, not nulled — this is real Postgres/PostgREST behavior, not just the code comment's assertion, and it's what makes the "don't clobber an already-completed next level" guard actually work. Confirmed correct.
+- **(b) Double-completion/idempotency:** traced a second call for an already-completed level — the `continue` guard on `existing?.completed_at` skips re-adding it, original timestamp untouched. Confirmed the function is idempotent even under a true concurrent race (two overlapping calls both read "not completed," both write "completed" with slightly different timestamps — final state is still correct, just a redundant write, no data corruption), independent of the UI-level `pending` guard.
+- **(c) Level 6 terminal:** `if (level < MAX_LEVEL)` with `MAX_LEVEL = 6` correctly short-circuits (`6 < 6` is false) — no Level 7 write attempted, and `ROADMAP_LEVELS`/the manual-frontier computation has no Level 7 entry to reference regardless. Confirmed.
+- **(d) Existing users' pre-existing rows:** confirmed `completeOnboarding.ts` (unchanged by this diff) genuinely seeds Level 1 completed / Level 2 unlocked at signup for every account, and traced a first-ever `advanceRoadmapLevel(..., 2)` call against that real starting state — correctly fills in Level 2's `completed_at` and unlocks Level 3, no migration/backfill needed. Confirmed.
+
+**Manual "Mark as done" — single frontier level, race-safe:** `Math.min(...manualUnlockedLevels)` correctly guarantees only one level's step ever gets an `action`. The `pending`-disabled state is confirmed genuinely belt-and-suspenders (not load-bearing) — `advanceRoadmapLevel` is idempotent by construction even under a true concurrent double-call, per (b) above — but it's still correct defense-in-depth and, live-verified via Playwright, renders and disables as expected (`Saving…` label swap confirmed in a rendered screenshot at both viewport widths, both themes).
+
+**Business-track tradeoff — confirmed genuinely harmless:** grepped the actual `BusinessGrowHome.tsx` (and every other business-track file) directly for "roadmap" — zero hits. There is no code path on the business track that ever reads `roadmap_progress`. The invisible rows Product's spec explicitly accepted are exactly that: invisible.
+
+**RLS/upsert safety:** confirmed directly in `schema.sql` that `roadmap_progress` uses the plain `roadmap_progress_all_own` `for all ... using (user_id = auth.uid()) with check (user_id = auth.uid())` policy (no column-restricted grant), which is genuinely upsert-safe — Dev's claim checks out against the schema, not just the report's word. Also confirmed the RLS `with check` backstops `advanceRoadmapLevel` even if a client tried to pass an arbitrary `userId`: the read is scoped to `.eq("user_id", userId)` and RLS additionally filters rows to `auth.uid()` regardless, and any write with a mismatched `user_id` is rejected server-side by `with check`.
+
+### Both deviations verified
+
+1. **Schema-statement placement:** correct diagnosis of the underlying problem (the spec's literal snippet, if merged into `create table`, would be a no-op against production), but the fix as landed introduces the ordering bug above — see BLOCKING BUG. Not a full pass.
+2. **Em-dash rewrites:** read every rewritten string directly, not just Dev's before/after claims. All 10 tutorial card titles (`"Home · your daily snapshot"`, etc., both tracks) and the roadmap caption (`"Be honest. This one's on you to confirm."`) read naturally, consistent with the project's own established `·`/period conventions (`BrandPanel.tsx`, `missions/[id]/page.tsx`) — not mechanical dash-to-punctuation swaps, confirmed via live Playwright render (copy displays correctly, no leftover em-dashes, no awkward phrasing). The remaining em-dashes in this diff are exclusively inside `/**...*/`/`//` code comments (`roadmap.ts`, `RoadmapTimeline.tsx`, `PROJECT_STATE.md` prose) — grepped the full diff to confirm none are in rendered strings, and this project's own prior em-dash sign-off (`3ae4b01`/`81875a8`) explicitly scoped the purge to genuine user-facing strings, excluding code comments by name. Consistent with precedent, not a regression.
+
+### Build gates — run fresh, against the exact reviewed commit's file state
+
+Ran directly in the worktree that already had `47772f2` checked out with real `node_modules` (not symlinked/trusted from Dev's report):
+
+```
+rm -rf .next && npx tsc --noEmit   → exit 0, clean
+npx next build                     → exit 0, clean, no lint warnings beyond the
+                                      pre-existing, unrelated "multiple lockfiles"
+                                      workspace-root notice (present on every
+                                      worktree in this multi-worktree setup,
+                                      not caused by this diff)
+```
+
+Non-blocking note, not a regression from this diff specifically: Dev's "same 46-page-route-file count" claim is off using my own count (63 lines in the printed route table) — this is the same pre-existing route-count-vs-route-table-line-count reconciliation this project's own QA already flagged as a stale-counting-convention artifact in the em-dash round (`81875a8`), not something new here.
+
+### Verdict
+
+**SIGN-OFF: BLOCKED — needs Dev fix.**
+
+One real, empirically-confirmed blocking bug: `supabase/schema.sql`'s new `alter table public.profiles add column if not exists tutorial_seen ...` statement is placed **after** the `grant update (..., tutorial_seen)` statement that references it, which breaks applying this migration to the real, already-deployed production database (and any fresh deploy) — the `GRANT` errors because the column doesn't exist yet at that point in the script. Reproduced against a real local Postgres instance, both with and without `ON_ERROR_STOP=1`.
+
+**Required fix:** move the `alter table public.profiles add column if not exists tutorial_seen boolean not null default false;` statement (and its comment) to before the `revoke update on public.profiles from authenticated; grant update (...) on public.profiles to authenticated;` block, immediately after the `create table if not exists public.profiles (...)` block/RLS policies/trigger. One-line reorder, not a rewrite.
+
+Everything else reviewed clean: both tutorial dismissal paths (all 4, live-Playwright-verified), the tutorial's onboarding-guard ordering, all 4 roadmap edge cases (independently re-traced, not taken on Dev's word), `roadmap_progress` RLS/upsert-safety (confirmed against `schema.sql` directly), the business-track tradeoff (confirmed zero roadmap references anywhere in business-track files), the single-frontier-level manual button and its race behavior, both em-dash-copy deviations (read naturally, consistent with precedent, and confirmed the remaining em-dashes are all in code comments per this project's own established purge scope), and both `tsc --noEmit`/`next build` gates (run fresh, exit 0).
+
+No security issues found beyond the blocking bug (which is a deploy-breakage, not an exploit — no data exposure, no privilege escalation, no client-writable entitlement column). No mobile-regression risk (`RoadmapTimeline.tsx` is a plain vertical list, not a CSS Grid dashboard — none of the `col-start`/two-column-grid bug class applies here; `NewUserTutorial.tsx`'s modal is portal-rendered and independent of the sidebar/bottom-nav layout).
+
+**Files reviewed:** `supabase/schema.sql`, `src/lib/types.ts`, `src/components/shared/NewUserTutorial.tsx`, `src/app/app/layout.tsx`, `src/lib/actions/roadmap.ts`, `src/lib/catalog/roadmap.ts`, `src/lib/actions/missions.ts`, `src/components/shared/RoadmapTimeline.tsx`, `src/app/app/future/StudentFutureHome.tsx`, `src/lib/onboarding/completeOnboarding.ts` (read for the seeded-rows precondition), `src/lib/hooks/domain.ts`/`useTableRows.ts` (read for `useRoadmapProgress`'s return shape).
+
+BLOCKERS: `supabase/schema.sql` statement-ordering bug above — Dev must fix and re-request QA re-verification before this can go to Cato.
+
+NEXT TASK: Dev — fix the schema statement order; re-request QA re-verification once done.
+
+DEPLOYMENT STATUS (this QA pass): not deployed — reviewed against commit `47772f2` directly (its own worktree's `node_modules`, not symlinked/trusted), and separately merged into this QA worktree (`agent-a34bb0715fb6ccb9d`, merge commit `ea07851`) solely to have a git-tracked home for this write-up per this project's standing QA-worktree-merge convention. Not pushed.
