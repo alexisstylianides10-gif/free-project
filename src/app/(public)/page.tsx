@@ -13,6 +13,7 @@ import { FeaturesSection } from "@/components/marketing/FeaturesSection";
 import { PricingSection } from "@/components/marketing/PricingSection";
 import { AboutSection } from "@/components/marketing/AboutSection";
 import { FaqSection } from "@/components/marketing/FaqSection";
+import { InstallAppCard } from "@/components/shared/InstallAppCard";
 import { branding } from "@/lib/branding";
 
 const PROOF = [
@@ -113,6 +114,7 @@ export default function WelcomePage() {
                   Log in
                 </Link>
               </p>
+              <InstallAppCard />
             </div>
 
             {/* Proof strip — real, checkable claims about the product, not stats.
