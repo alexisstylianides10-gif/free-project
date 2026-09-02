@@ -1902,3 +1902,89 @@ No schema changes, no new API routes, no new design tokens. Full route list, exa
 copy for every new page are in `PRODUCT_SPECS_MARKETING_SITE.md`. Handing to Dev to build; flagging for QA
 once built that the `/pricing` yearly-savings % must be computed live from `PLAN_OPTIONS` (same formula as
 `/choose-plan` and `/app/upgrade`), not hardcoded, so it can't go stale if pricing changes.
+
+---
+
+## DEV — Marketing site build — 2026-09-02
+
+Built the full marketing site expansion from `PRODUCT_SPECS_MARKETING_SITE.md` (Product's spec, commit
+`65cd4c6`, cherry-picked into this branch as its base since it's docs-only). Verified every referenced file
+against the actual current code before copying anything (`PLAN_OPTIONS` shape, `PERKS_BY_TRACK`/
+`FREE_TAGLINE_BY_TRACK` exact text, `ChoosePlanClient.tsx`'s toggle markup, `Badge`'s `tone` prop, `Card`/
+`Button`/`StaticContentPage` APIs) rather than trusting the spec's prose blind.
+
+**New files:**
+- `src/components/shared/MarketingNav.tsx` — built verbatim from spec §2a's reference code.
+- `src/components/shared/SiteFooter.tsx` — built verbatim from spec §2b's reference code, extracted from the
+  old inline footer in `page.tsx`.
+- `src/app/(public)/features/page.tsx` — student capability grid (12 cards), AI Coach callout, business
+  "Coming soon" section (`Badge tone="neutral"`), closing CTA. Copy and icon choices per spec §3b.
+- `src/app/(public)/pricing/page.tsx` + `src/app/(public)/pricing/PricingClient.tsx` — split server/client
+  the same way `choose-plan/page.tsx` wraps `ChoosePlanClient.tsx` (client component can't export `metadata`).
+  3-card layout: Free, Plus·Student (live), Plus·Business (`opacity-60`, disabled, `Badge tone="neutral"`
+  "Coming soon" — matches `ChoosePlanClient`'s exact treatment for the same state). Perks and free taglines
+  copied verbatim from `upgrade/page.tsx`'s `PERKS_BY_TRACK`/`FREE_TAGLINE_BY_TRACK`. Yearly-savings % is
+  computed live per card from `PLAN_OPTIONS` with the exact formula already used in `ChoosePlanClient.tsx`/
+  `upgrade/page.tsx` (`Math.round((1 - yearlyTotal / (monthlyTotal * 12)) * 100)`) — nowhere hardcoded. 4-item
+  pricing FAQ strip: 2 answers reused verbatim from `/faq`'s real copy ("free plan", "switch tracks"), 2 new
+  short factual answers grounded in actual billing behavior (`isEntitled`/trial mechanics in
+  `src/lib/billing/entitlement.ts`, the portal-based interval switch in `upgrade/page.tsx`'s `openPortal`).
+- `src/app/(public)/about/page.tsx` — bespoke page reusing `StaticContentPage`'s internal h1/prose markup
+  pattern directly (not a shared-component change) with `MarketingNav` + `SiteFooter` instead of the minimal
+  "Back to home" treatment, per spec §3d. `[COMPANY NAME]`/`[FOUNDING STORY / TEAM PLACEHOLDER]`/`[CONTACT
+  EMAIL]` placeholders copied verbatim — same convention as `/privacy`/`/terms`, nothing invented.
+
+**Modified files:**
+- `src/app/(public)/page.tsx` — 3 additive changes only, exactly per spec §3a: mounted `<MarketingNav />` as
+  the first child of `<main>`; added `md:hidden` to the existing inline hero logo row; replaced the inlined
+  footer block with `<SiteFooter />`. Hero copy, proof strip, redirect `useEffect`, and `BrandPanel` untouched.
+- `src/app/sitemap.ts` — added `/pricing` (0.9, monthly), `/features` (0.8, monthly), `/about` (0.5, yearly)
+  per spec §4. `robots.ts` confirmed to need no change (already `allow: "/"`, only disallows `/app/` and
+  `/api/`).
+
+**One deviation from spec, flagged explicitly:** spec §2a's own reference code for `MarketingNav` renders its
+logo unconditionally (not `hidden md:flex`) — confirmed by the code and by the intro prose's "compact
+logo-plus-menu-button below `md:`" line. But spec §3a separately claims "Mobile is completely unaffected —
+`MarketingNav`'s only mobile-visible content is the compact bar, and the hero's own logo row is still the sole
+branding mobile users see" — that claim is false given the code as written: on `/` at mobile widths, both
+`MarketingNav`'s logo and the hero's own (`md:hidden`) logo row render, stacked. Built exactly to the literal
+instructions in both §2a (reference code, unchanged) and §3a (mount nav, `md:hidden` on hero logo, swap
+footer) since those are unambiguous and desktop is correctly de-duplicated (confirmed via screenshot — single
+logo instance at 1280px). The mobile stacked-logo redundancy is real but minor (not a broken/overlapping
+duplicate, just two brand marks in sequence at the top of one page) — flagging for Product to decide whether
+it's worth a follow-up fix (e.g. hiding `MarketingNav`'s logo below `md:` specifically on `/`, since
+`/features`/`/pricing`/`/about` rely on `MarketingNav`'s logo being their *only* mobile branding and can't lose
+it). Did not unilaterally change `MarketingNav`'s logo visibility since that would affect all 4 pages, not just
+the one where the redundancy shows up.
+
+**One minor enhancement beyond spec's literal text, not a deviation from its intent:** on `/pricing`, the
+Business·Plus card shows its own live-computed `-{businessSavingsPercent}%` badge next to its yearly price (in
+addition to the single global toggle-pill badge, computed from student pricing, that mirrors
+`ChoosePlanClient`/`upgrade/page.tsx` exactly). Both values happen to be 17% at today's `plans.ts` numbers, but
+the business-card badge is independently computed from `PLAN_OPTIONS` business entries, not copied from the
+student one — so if business pricing ever diverges from student pricing, the business card still displays its
+own correct number instead of silently reusing the wrong track's badge.
+
+**Verification:**
+- `rm -rf .next && npx tsc --noEmit` — clean, zero errors.
+- `npx next build` — clean, all 61 routes generated (58 previous + `/features`, `/pricing`, `/about`), no
+  new/missing routes elsewhere.
+- Playwright (Chromium at `/opt/pw-browsers/chromium-1194`, launched via `NODE_PATH=/opt/node22/lib/node_modules
+  node`) rendered `/`, `/features`, `/pricing`, `/about` at 390px and 1280px, in both real light mode (default)
+  and real dark mode (forced via `localStorage.alxioum_theme = "dark"` before navigation — confirmed the app's
+  `ThemeProvider` doesn't key off `prefers-color-scheme` unless `mode === "system"`, and default `mode` is
+  hardcoded `"light"`, so a Playwright `colorScheme` context option alone does nothing here). Confirmed
+  `document.documentElement.scrollWidth <= clientWidth` (zero horizontal overflow) on all 16 renders.
+- Confirmed via live interaction (not just static render): `MarketingNav`'s mobile menu opens (link list +
+  Log in/Get Started appear) and closes (returns to hamburger icon, panel unmounts) correctly; the `/pricing`
+  Monthly/Yearly toggle correctly recomputes both the toggle-pill badge and both card prices/badges live
+  (`$9.99/mo` → `$99/yr` with `-17%`, `$19.99/mo` → `$199/yr` with `-17%`) with no page reload.
+- Regression check: `/faq`, `/privacy`, `/terms`, `/choose-plan` all still 200 and visually unchanged;
+  `/sitemap.xml` contains all 10 expected routes including the 3 new ones with correct priorities.
+
+Files: `src/components/shared/MarketingNav.tsx`, `src/components/shared/SiteFooter.tsx`,
+`src/app/(public)/features/page.tsx`, `src/app/(public)/pricing/page.tsx`,
+`src/app/(public)/pricing/PricingClient.tsx`, `src/app/(public)/about/page.tsx`,
+`src/app/(public)/page.tsx`, `src/app/sitemap.ts`.
+
+Handing to QA for review.

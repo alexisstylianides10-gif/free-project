@@ -17,10 +17,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/", priority: 1, changeFrequency: "weekly" },
     { path: "/login", priority: 0.5, changeFrequency: "monthly" },
     { path: "/signup", priority: 0.8, changeFrequency: "monthly" },
+    { path: "/pricing", priority: 0.9, changeFrequency: "monthly" },
+    { path: "/features", priority: 0.8, changeFrequency: "monthly" },
     { path: "/choose-plan", priority: 0.6, changeFrequency: "monthly" },
+    { path: "/about", priority: 0.5, changeFrequency: "yearly" },
+    { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
     { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },
     { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
-    { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
   ];
 
   return routes.map((route) => ({

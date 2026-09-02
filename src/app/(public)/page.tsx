@@ -7,6 +7,8 @@ import { ArrowRight, CheckCircle2, X } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { BrandPanel } from "@/components/shared/BrandPanel";
+import { MarketingNav } from "@/components/shared/MarketingNav";
+import { SiteFooter } from "@/components/shared/SiteFooter";
 import { branding } from "@/lib/branding";
 
 const PROOF = [
@@ -66,6 +68,7 @@ export default function WelcomePage() {
 
   return (
     <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background">
+      <MarketingNav />
       <div className="relative flex flex-1 lg:items-stretch">
         <div className="bg-ambient-glow pointer-events-none absolute inset-0 lg:hidden" aria-hidden />
 
@@ -75,7 +78,7 @@ export default function WelcomePage() {
               <Suspense fallback={null}>
                 <DeletedAccountBanner />
               </Suspense>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 md:hidden">
                 <LogoMark size={36} className="shadow-glow-accent" />
                 <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>
               </div>
@@ -126,30 +129,7 @@ export default function WelcomePage() {
         <BrandPanel variant="landing" />
       </div>
 
-      <footer className="relative z-10 border-t border-border px-6 py-8 md:px-10 lg:px-16 xl:px-20">
-        <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-5 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div className="flex items-center gap-2">
-            <LogoMark size={20} />
-            <span className="text-sm font-semibold text-muted-foreground">{branding.name}</span>
-          </div>
-
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <Link href="/privacy" className="transition-colors hover:text-foreground">
-              Privacy
-            </Link>
-            <Link href="/terms" className="transition-colors hover:text-foreground">
-              Terms
-            </Link>
-            <Link href="/faq" className="transition-colors hover:text-foreground">
-              FAQ
-            </Link>
-          </nav>
-
-          <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} {branding.name}. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
