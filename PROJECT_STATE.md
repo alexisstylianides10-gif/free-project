@@ -1866,3 +1866,39 @@ Both of Dev's claimed bug fixes are real, correctly fixed, and independently re-
 One real, non-blocking finding for the team to decide on, not a bug: dismissal suppression is keyed on entity id only, so a legitimately-changed due date on an already-dismissed item stays silently suppressed forever. Flagging to Product/Cato as a product-design question for a future wave, not blocking this one.
 
 **SIGN-OFF: GIVEN.**
+
+---
+
+## PRODUCT — Marketing site specs — 2026-09-02
+
+CEO asked for "a good landing page with 4-5 pages and all the info," expanding beyond the single hero page.
+Full spec written to `PRODUCT_SPECS_MARKETING_SITE.md`. Read the real product surface first (School, Future,
+Coach, both tracks' home screens, `billing/plans.ts`, `branding.ts`) so nothing below is invented.
+
+**Final page set (5 pages, all real):** `/` (existing hero, small surgical changes only — no copy/logic
+changes), `/features` (new — real capability walkthrough grounded in shipped code, both tracks, business
+section clearly labeled "Coming soon" consistent with `/choose-plan`'s existing gate), `/pricing` (new — real
+numbers from `plans.ts`: student $9.99/mo or $99/yr live, business $19.99/mo or $199/yr shown but disabled;
+perks copy reused verbatim from `upgrade/page.tsx`'s `PERKS_BY_TRACK`/`FREE_TAGLINE_BY_TRACK` so the marketing
+promise can never drift from the actual in-app upsell), `/about` (new — mission/values framing, `[COMPANY
+NAME]`/`[CONTACT EMAIL]` placeholders matching the exact convention already in `/privacy` and `/terms`, no
+invented founding story), `/faq` (existing, unchanged — counts as the 5th page).
+
+**Judgment call flagged explicitly in the spec:** did *not* build a Contact page as the 5th page. There's no
+real support email/company identity anywhere in this codebase yet (`/privacy`/`/terms` both still say
+`[CONTACT EMAIL]`), so a Contact page today would either ship a placeholder-only stub or invent a support
+mechanism that doesn't exist — both worse than not having it. FAQ is real and reviewed; using it as page 5
+instead. Recommended `/contact` as a real future page once the placeholder identity info is resolved.
+
+**Nav/footer gap this also fixes:** today nothing links anywhere except a 3-link footer on `/` — adding pages
+without adding real navigation would just be more dead ends. Spec adds two new shared components:
+`MarketingNav` (sticky top nav, `/`, `/features`, `/pricing`, `/about` only — deliberately not on
+`/faq`/`/privacy`/`/terms`/auth screens, which keep their existing minimal chrome on purpose) and `SiteFooter`
+(the existing footer markup from `page.tsx`, extracted and reused across all 4, with the 3 new links added
+ahead of the existing Privacy/Terms/FAQ order). Both reuse only shipped classes/patterns (`TopBar`'s sticky-bar
+treatment, the coach page's `glass` dropdown-panel interaction for the mobile menu) — no new design tokens.
+
+No schema changes, no new API routes, no new design tokens. Full route list, exact file diffs, and verbatim
+copy for every new page are in `PRODUCT_SPECS_MARKETING_SITE.md`. Handing to Dev to build; flagging for QA
+once built that the `/pricing` yearly-savings % must be computed live from `PLAN_OPTIONS` (same formula as
+`/choose-plan` and `/app/upgrade`), not hardcoded, so it can't go stale if pricing changes.
