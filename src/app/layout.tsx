@@ -4,7 +4,7 @@ import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider, themeInitScript } from "@/components/providers/ThemeProvider";
-import { branding } from "@/lib/branding";
+import { branding, siteUrl } from "@/lib/branding";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -13,7 +13,13 @@ const inter = Inter({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://futureos.vercel.app";
+// Reused as the OG/Twitter share image — there's no dedicated 1200x630 OG
+// asset in this project yet, and inventing a path to an image that doesn't
+// exist would just produce a broken share-card image. `icon-512.png` is a
+// real, existing, on-brand square asset (already shipped for the PWA
+// manifest) that at least renders something correct on share; swap for a
+// purpose-made OG image later if/when one exists.
+const ogImage = "/icons/icon-512.png";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -22,6 +28,21 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: { apple: "/icons/apple-touch-icon.png" },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: branding.name },
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: branding.name,
+    title: `${branding.name} · ${branding.tagline}`,
+    description: branding.description,
+    images: [{ url: ogImage, width: 512, height: 512, alt: `${branding.name} logo` }],
+  },
+  twitter: {
+    card: "summary",
+    title: `${branding.name} · ${branding.tagline}`,
+    description: branding.description,
+    images: [ogImage],
+  },
 };
 
 export const viewport: Viewport = {

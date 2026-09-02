@@ -24,7 +24,7 @@ const TRACK_COPY: Record<Track, { icon: typeof GraduationCap; tagline: string; p
   },
 };
 
-export default function ChoosePlanPage() {
+export function ChoosePlanClient() {
   const { user, profile, loading, refreshProfile } = useAuth();
   const router = useRouter();
   const [interval, setInterval] = useState<BillingInterval>("monthly");
