@@ -9,6 +9,10 @@ import { LogoMark } from "@/components/shared/LogoMark";
 import { BrandPanel } from "@/components/shared/BrandPanel";
 import { MarketingNav } from "@/components/shared/MarketingNav";
 import { SiteFooter } from "@/components/shared/SiteFooter";
+import { FeaturesSection } from "@/components/marketing/FeaturesSection";
+import { PricingSection } from "@/components/marketing/PricingSection";
+import { AboutSection } from "@/components/marketing/AboutSection";
+import { FaqSection } from "@/components/marketing/FaqSection";
 import { branding } from "@/lib/branding";
 
 const PROOF = [
@@ -128,6 +132,17 @@ export default function WelcomePage() {
 
         <BrandPanel variant="landing" />
       </div>
+
+      {/* Scrolling landing page sections — Hero above is unchanged; each
+          section below is the same extracted, QA-approved content that
+          renders standalone at /features, /pricing, /about, opted into the
+          inline-on-/ visual treatment (top divider + its own background
+          band) via withSectionBreak/sectionBreak. See
+          PRODUCT_SPECS_SCROLL_LANDING.md §5, §7. */}
+      <FeaturesSection withSectionBreak />
+      <PricingSection withSectionBreak showFaqStrip={false} />
+      <AboutSection sectionBreak />
+      <FaqSection />
 
       <SiteFooter />
     </main>

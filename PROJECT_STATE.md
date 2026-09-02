@@ -2144,3 +2144,74 @@ Full spec: `PRODUCT_SPECS_SCROLL_LANDING.md`. Base: `ba9001d` (this branch tip a
 the anchor-scroll offset/timing and the two pre-existing `scrollIntoView` call sites (`coach/page.tsx`,
 `school/subjects/[subjectId]/session/page.tsx`) still feel right under the new global `scroll-smooth` — reasoned
 through from docs, not run in a browser by Product.
+
+## DEV — Scroll landing page build — 2026-09-02
+
+Implemented `PRODUCT_SPECS_SCROLL_LANDING.md` exactly as documented, on top of `7aea618` (Product's spec commit,
+fast-forwarded onto this branch from `worktree-agent-a056f159b57d0d803` since that's where the spec lived).
+
+**New files:**
+- `src/components/marketing/FeaturesSection.tsx`, `PricingSection.tsx`, `AboutSection.tsx`, `FaqSection.tsx` —
+  extracted verbatim from `features/page.tsx`, `pricing/PricingClient.tsx`, `about/page.tsx`'s bodies (same
+  copy/markup, not rewritten). `withSectionBreak`/`sectionBreak` props (default `false`) gate the `/`-only top
+  divider + background band; standalone routes render with no props → identical output to `ba9001d`.
+  `PricingSection` additionally takes `showFaqStrip` (default `true`) to suppress its embedded FAQ strip when
+  inline on `/` (avoids showing the same 4 questions twice back-to-back with the new `FaqSection`).
+- `src/lib/marketing/faq.ts` — `PRICING_FAQ` (4 Q&As) moved verbatim out of `PricingClient.tsx`, now the single
+  shared source for `PricingSection`'s embedded strip and the new `FaqSection`.
+
+**Modified:**
+- `src/app/(public)/page.tsx` — Hero unchanged; mounts `<FeaturesSection withSectionBreak />`,
+  `<PricingSection withSectionBreak showFaqStrip={false} />`, `<AboutSection sectionBreak />`, `<FaqSection />`,
+  `<SiteFooter />` after it, in that order.
+- `src/app/(public)/features/page.tsx`, `about/page.tsx`, `pricing/PricingClient.tsx` — now thin wrappers
+  (`<main><MarketingNav/><XSection/><SiteFooter/></main>`), no props → same rendered output as before
+  extraction. `pricing/page.tsx` (the metadata wrapper) untouched, still works unchanged.
+- `src/components/shared/MarketingNav.tsx` — `LINKS` hrefs → `/#features` / `/#pricing` / `/#about` / `/#faq`;
+  removed the `pathname === l.href` active-state ternary (structurally incapable of being true once every href
+  is a hash fragment — dropped per spec §3 rather than shipped silently-always-false) and the now-unused
+  `usePathname` import. Links render `text-muted-foreground` always, `hover:text-foreground` unchanged.
+- `src/components/shared/SiteFooter.tsx` — same 4-link href swap; Privacy/Terms untouched.
+- `src/app/layout.tsx` — added `scroll-smooth` to the root `<html>` `className` (plain string concat, no new
+  dependency).
+
+**Assumption verified while building (spec was written from a read, not a compile):** the spec's "each section
+owns its own `bg-ambient-glow` band" (§5) made me worried the extracted `FeaturesSection`/`PricingSection`
+would shift where the glow renders on the standalone routes, since their absolute-positioned glow div now needs
+its own local `relative` wrapper (previously `<main>` on the standalone page provided that positioning
+context). Checked empirically instead of guessing: `.bg-ambient-glow` in `globals.css` sets `position: relative`
+on itself as unlayered CSS, which beats Tailwind's layered `.absolute` utility in the cascade — so the glow div
+was never actually absolutely-pinned to `<main>`'s top edge in the first place, old or new; it's always rendered
+in normal flow directly under the nav. Confirmed via `getBoundingClientRect()` on both the pre-refactor
+(`ba9001d`, run from a temporary `git worktree`) and the new build: glow top/bottom identical (61px/349px) in
+both. Non-issue, but flagging since it's exactly the kind of thing that looks broken on paper and isn't.
+
+**Verification performed (not just "should work"):**
+- `rm -rf .next && npx tsc --noEmit && npx next build` — both clean, confirmed twice (once mid-build, once on
+  the final diff before this note).
+- Playwright-rendered `/` full-page at 390px/1280px × light/dark (forced via `localStorage.alxioum_theme`,
+  since the site defaults to light regardless of OS `prefers-color-scheme` — confirmed `colorScheme` context
+  option alone does nothing here). All 4 sections present, in order, with the documented dividers
+  (`border-t` + `bg-ambient-glow` on Features/Pricing, `border-t` + `bg-surface` band on About, plain `border-t`
+  on FAQ) at every combination.
+- Clicked all 4 nav links while already on `/`: URL updates to `/#section`, no full navigation/reload, page
+  scrolls with `scrollY` landing ~80px below each section's top (matching `scroll-mt-20`) except FAQ, which is
+  clamped by document height since it's the last section before a short footer — expected, not a bug.
+- Clicked "Pricing" from `/about`: navigated to `/#pricing` and landed scrolled to the right position — the
+  "navigate then scroll" cross-page case works, not just the same-page case.
+- Verified `hideLogoOnMobile` still works on `/` at 390px (no duplicate logo — the QA fix from `ba9001d` wasn't
+  disturbed).
+- Verified the inline Pricing section's monthly/yearly toggle works standalone on `/` (`$9.99/mo` → `$99/yr`
+  with the `-17%` badge), confirming `PricingSection`'s client state works identically when mounted inline.
+- Pixel-diffed `/features`, `/pricing`, `/about` against a real `ba9001d` build (checked out into a temporary
+  `git worktree`, built and served on a second port, `node_modules` hardlinked to avoid a slow reinstall) using
+  PIL. Result: **zero pixel difference** on all three routes except a ~57×14px region at the nav's own label
+  text (y≈24–37) — exactly the deliberately-dropped active-link color, and nothing else. No copy/layout/spacing
+  regression anywhere on any of the three standalone routes.
+- Confirmed the two pre-existing `scrollIntoView`/`scrollTo` call sites Product flagged (`app/coach/page.tsx`,
+  `app/school/subjects/[subjectId]/session/page.tsx`) both call `.scrollTo()` on a local ref-scoped chat
+  container with their own explicit `behavior: "smooth"` JS option — not on `document`/`html` — so the new
+  global `scroll-smooth` CSS class has no effect on them either way, confirmed by reading, no conflict.
+
+No schema changes, no new API routes, no new dependencies. Commit is on top of `7aea618`
+(`worktree-agent-a056f159b57d0d803`, fast-forward merged), not pushed.

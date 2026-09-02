@@ -2,18 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { Button } from "@/components/ui/Button";
 import { branding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
+// Hrefs point at the merged sections on the scrolling / page (§3), not the
+// standalone routes — Next.js App Router's <Link> already handles both
+// "navigate to / then scroll" (clicked from another page) and "scroll in
+// place" (already on /) natively for /#section hrefs, no scroll-spy library
+// needed. See PRODUCT_SPECS_SCROLL_LANDING.md §3.
 const LINKS = [
-  { href: "/features", label: "Features" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/about", label: "About" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/#features", label: "Features" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/#about", label: "About" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 /** Sticky top nav for the marketing pages only (/, /features, /pricing,
@@ -35,7 +39,6 @@ const LINKS = [
  * mobile branding and losing it there would be a worse regression than the
  * duplicate-logo bug this fixes. */
 export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: boolean }) {
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
@@ -48,14 +51,22 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
 
         {/* md:+ full link row */}
         <nav className="hidden items-center gap-7 md:flex">
+          {/* Active-link underline dropped (2026-09-02, scroll-landing
+              restructure): now that every href is /#section, pathname never
+              includes a hash fragment, so `pathname === l.href` would always
+              be false — a silent "every link looks inactive forever" bug, not
+              a working active-state. A correct fix needs an
+              IntersectionObserver scroll-spy, which is new interaction
+              complexity out of scope here; see
+              PRODUCT_SPECS_SCROLL_LANDING.md §3 for the reasoning. Links
+              render as text-muted-foreground always, matching their existing
+              "not the active page" look, with hover:text-foreground doing
+              the only state work. */}
           {LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-foreground",
-                pathname === l.href ? "text-foreground" : "text-muted-foreground"
-              )}
+              className={cn("text-sm font-medium text-muted-foreground transition-colors hover:text-foreground")}
             >
               {l.label}
             </Link>

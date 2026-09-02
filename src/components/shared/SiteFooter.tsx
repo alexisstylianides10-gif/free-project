@@ -2,11 +2,15 @@ import Link from "next/link";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { branding } from "@/lib/branding";
 
+// Features/Pricing/About/FAQ now point at the merged sections on the
+// scrolling / page (§3) instead of the standalone routes; Privacy/Terms are
+// real, unaffected routes — never candidates for merging (legal pages, not
+// marketing content). See PRODUCT_SPECS_SCROLL_LANDING.md §1, §3.
 const FOOTER_LINKS = [
-  { href: "/features", label: "Features" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/about", label: "About" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/#features", label: "Features" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/#about", label: "About" },
+  { href: "/#faq", label: "FAQ" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
 ];
