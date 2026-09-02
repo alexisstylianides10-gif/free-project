@@ -1694,3 +1694,7 @@ Built Spec B (Item 14) from `PRODUCT_SPECS_WAVE5.md` exactly as documented, on t
 Files touched: `src/lib/study/materials.ts` (new), `src/app/api/study/generate-quiz/route.ts`, `src/app/app/school/quizzes/exam-mode/page.tsx`.
 
 BLOCKERS: None. NEXT: QA review of Spec B. Spec A (Notes reframe) and Spec C (in-app notifications) remain unbuilt.
+
+### CATO — Wave 5 Spec B em-dash fix (QA-flagged, trivial)
+
+QA blocked Spec B over one leftover em-dash in the new "Past paper" helper text on `exam-mode/page.tsx` (line 209), copied verbatim from `PRODUCT_SPECS_WAVE5.md`'s own inline code snippet — reintroducing the exact pattern this project already spent two Dev/QA rounds purging in Wave 2. Fixed directly (comma instead of em-dash, matching the established convention) rather than round-tripping through another Dev dispatch for a one-line text swap. Confirmed no other em-dashes were introduced in this diff's rendered/user-facing strings — the handful of em-dashes elsewhere in `generate-quiz/route.ts` are all pre-existing or new Claude system-prompt text (never rendered to a user), consistent with this project's already-established purge scope. `rm -rf .next && npx tsc --noEmit && npx next build` re-run clean after the fix.

@@ -206,7 +206,7 @@ export default function ExamModeSetupPage() {
                 )}
                 {materialId && (
                   <p className="mt-2 text-xs text-muted-foreground">
-                    The exam will be grounded in this paper&apos;s real topics, format, and difficulty — not just the subject&apos;s general curriculum.
+                    The exam will be grounded in this paper&apos;s real topics, format, and difficulty, not just the subject&apos;s general curriculum.
                   </p>
                 )}
               </div>
