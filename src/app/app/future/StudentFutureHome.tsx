@@ -9,6 +9,7 @@ import { ROADMAP_LEVELS } from "@/lib/catalog/roadmap";
 import { advanceRoadmapLevel } from "@/lib/actions/roadmap";
 import { supabase } from "@/lib/supabase/client";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { CareerMatchRow } from "@/components/shared/CareerMatchRow";
 import { RoadmapTimeline, type RoadmapStep } from "@/components/shared/RoadmapTimeline";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -61,7 +62,7 @@ export default function StudentFutureHome() {
 
   return (
     <div className="space-y-7 pb-4">
-      <ScreenHeader title="Your Future" subtitle="Top career matches, based on you." />
+      <ScreenHeader title="Your Future" subtitle="Top career matches, based on you." action={<NotificationBell className="md:hidden" />} />
 
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Your Top Career Matches</h2>

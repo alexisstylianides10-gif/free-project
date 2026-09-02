@@ -598,3 +598,29 @@ create index if not exists business_metrics_user_date_idx on public.business_met
 create index if not exists business_content_ideas_user_idx on public.business_content_ideas (user_id, created_at);
 create index if not exists business_competitors_user_idx on public.business_competitors (user_id, created_at);
 create index if not exists business_expenses_user_date_idx on public.business_expenses (user_id, logged_date);
+
+-- ---------------------------------------------------------------------------
+-- notifications
+-- ---------------------------------------------------------------------------
+-- One flexible `related_id text` column instead of three nullable typed FK
+-- columns for three different source tables. `deadline_exam`/`deadline_
+-- homework`/`deadline_milestone` rows are only ever inserted already
+-- `read: true`, at the moment a student dismisses a live-computed deadline
+-- item (see src/lib/notifications.ts) — they exist purely as a suppression
+-- marker, never as a row meant to be rendered as a fresh unread card itself.
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  type text not null check (type in ('achievement_unlocked', 'roadmap_level_up', 'deadline_exam', 'deadline_homework', 'deadline_milestone')),
+  title text not null,
+  body text not null,
+  related_id text, -- achievement_key, roadmap level_number (as text), or the source exam/homework/milestone id
+  href text,
+  read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists notifications_user_idx on public.notifications (user_id, created_at desc);
+
+alter table public.notifications enable row level security;
+create policy "notifications_all_own" on public.notifications for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());

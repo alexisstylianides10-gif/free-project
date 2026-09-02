@@ -7,6 +7,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useTheme, type ThemeMode } from "@/components/providers/ThemeProvider";
 import { STUDENT_TABS, BUSINESS_TABS } from "@/lib/navTabs";
 import { Badge } from "@/components/ui/Badge";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { initials } from "@/lib/utils";
 import { levelFromXP, totalXP } from "@/lib/xp";
 
@@ -39,6 +40,8 @@ export function TopBar() {
         <h1 className="text-base font-semibold tracking-tight text-foreground">{activeTab?.label ?? "Overview"}</h1>
 
         <div className="flex items-center gap-2">
+          <NotificationBell />
+
           <button
             type="button"
             onClick={cycleTheme}
