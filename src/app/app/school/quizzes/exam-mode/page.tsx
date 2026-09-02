@@ -6,7 +6,7 @@ import { ArrowLeft, GraduationCap, TriangleAlert, BookOpen } from "lucide-react"
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
-import { useStudySubjects } from "@/lib/hooks/study";
+import { useStudySubjects, useStudyMaterials } from "@/lib/hooks/study";
 import { useExams } from "@/lib/hooks/domain";
 import type { QuizDifficulty } from "@/lib/study/types";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -36,12 +36,16 @@ export default function ExamModeSetupPage() {
 
   const [subjectId, setSubjectId] = useState("");
   const [examId, setExamId] = useState("");
+  const [materialId, setMaterialId] = useState("");
+
+  const { data: materials } = useStudyMaterials(user?.id, subjectId);
   const [preset, setPreset] = useState<(typeof PRESETS)[number]>(PRESETS[1]);
   const [difficulty, setDifficulty] = useState<QuizDifficulty>("exam");
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const linkedExams = exams.filter((e) => e.study_subject_id === subjectId);
+  const analyzedMaterials = materials.filter((m) => m.status === "analyzed");
 
   async function startExam() {
     if (!user || !subjectId || starting) return;
@@ -56,6 +60,7 @@ export default function ExamModeSetupPage() {
           difficulty,
           isMockExam: true,
           timeLimitMin: preset.timeMin,
+          materialId: materialId || undefined,
         }),
       });
       const json = await res.json();
@@ -116,6 +121,7 @@ export default function ExamModeSetupPage() {
                     onClick={() => {
                       setSubjectId(s.id);
                       setExamId("");
+                      setMaterialId("");
                     }}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
@@ -157,6 +163,52 @@ export default function ExamModeSetupPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {subjectId && (
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Past paper (optional)</p>
+                {analyzedMaterials.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No uploaded materials yet for this subject.{" "}
+                    <Link href={`/app/school/subjects/${subjectId}/materials/new`} className="font-semibold text-accent">
+                      Upload one
+                    </Link>
+                    , then come back here.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMaterialId("")}
+                      className={cn(
+                        "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
+                        materialId === "" ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      None
+                    </button>
+                    {analyzedMaterials.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setMaterialId(m.id)}
+                        className={cn(
+                          "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
+                          materialId === m.id ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {m.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {materialId && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    The exam will be grounded in this paper&apos;s real topics, format, and difficulty — not just the subject&apos;s general curriculum.
+                  </p>
+                )}
               </div>
             )}
 

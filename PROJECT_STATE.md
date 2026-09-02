@@ -1664,3 +1664,33 @@ Full specs: `PRODUCT_SPECS_WAVE5.md` (new file, repo root). Read Cato's Wave 5 f
 All three specs hold to this project's ground rules: no new design tokens/primitives (every new UI element is built from an already-shipped pattern — chip pickers, `.glass` dropdown panels, `ScreenHeader`'s existing `action` slot), and schema kept to the minimum unavoidable (zero new tables for items 14/15, one table for item 17). Full code-level detail, exact file lists, and QA verification points are in `PRODUCT_SPECS_WAVE5.md`.
 
 BLOCKERS: None. NEXT: Dev to build per spec (recommended order: Item 15, then Item 17's schema/hooks, then Item 17's UI + Item 14 together), QA to review per this file's own review cycle.
+
+---
+
+## DEV — Wave 5 Spec B build (past-paper mock exam) — 2026-09-02
+
+Built Spec B (Item 14) from `PRODUCT_SPECS_WAVE5.md` exactly as documented, on top of Product's `ebf51e4` commit. Spec A and Spec C are **not** built — this pass was scoped to Spec B only, per task.
+
+**Verified before writing code** (all held up, no surprises):
+- `generate-quiz/route.ts`'s existing `materialId` branch (pre-change, lines 110-135) matched the spec's description exactly — derived-analysis-only, no document attachment.
+- `callStudyAIForJSON`'s `document?: DocumentInput` param (`src/lib/study/ai.ts`) exists with the exact shape the spec assumes (`{ mediaType, base64 }`), and `analyze-material/route.ts`'s download-then-base64 logic (lines 57-64) is the verbatim pattern the new `downloadMaterialDocument` helper extracts — confirmed byte-for-byte before extracting.
+- `useStudyMaterials(userId?, subjectId?)` (`src/lib/hooks/study.ts`) only filters by subject when `subjectId` is passed — matches the spec's usage on `exam-mode/page.tsx`.
+- `quizzes/layout.tsx` wraps all of `quizzes/*` (including `exam-mode/page.tsx`) in `PaywallGate`, untouched by this diff — paywall gating for the new past-paper path is confirmed genuinely identical to today's Exam Mode, exactly as the spec claimed.
+- Storage RLS on the `study-materials` bucket (`supabase/schema.sql` lines 502-512) is per-user-folder, same policy `analyze-material` already relies on via the same `requireUser`-scoped client — the new helper carries no new RLS exposure.
+
+**Built, matching the spec's code almost verbatim:**
+- `src/lib/study/materials.ts` (new) — `downloadMaterialDocument(client, material)`, extracted from `analyze-material/route.ts`'s download logic, unchanged behavior. `analyze-material/route.ts` itself was left untouched (spec explicitly said this dedup is optional/out of scope this wave).
+- `src/app/api/study/generate-quiz/route.ts` — the existing `else if (materialId)` block now splits on `isMockExam`: the new past-paper path rejects `material.status !== "analyzed"` with 400 **before** attempting any download, then attaches the real PDF/image bytes (via the new helper) or `raw_text` as `pastPaperDocument`, a `DocumentInput | undefined` local passed through to `callStudyAIForJSON`'s new `document` param. The old "quiz me on this material" path (`isMockExam` false) is untouched. System prompt gets one additive `pastPaperInstruction` line, only appended when `materialId && isMockExam`.
+- `src/app/app/school/quizzes/exam-mode/page.tsx` — new "Past paper (optional)" chip-picker section between "Linked exam" and "Length", using `useStudyMaterials(user?.id, subjectId)` filtered to `status === "analyzed"`. `startExam()`'s POST body now sends `materialId: materialId || undefined`.
+
+**One real bug in the spec's own inline code, caught and fixed, not reproduced as-is**: the spec's snippet for section 3 called `useStudyMaterials(user?.id, subjectId)` before `subjectId`'s `useState` declaration in the same component. `const` bindings are in the temporal dead zone before their declaration, so this would have thrown a "used before its declaration" error at both `tsc` and runtime. Fixed by moving the `useStudyMaterials` call after the `subjectId` state declaration (functionally identical, just correctly ordered) — no other deviation from the spec's code. Also added `setMaterialId("")` to the existing subject-switch handler (alongside its existing `setExamId("")` reset) since a stale `materialId` from a previously-selected subject's materials would otherwise silently persist across a subject switch; this wasn't in the spec's snippet but follows the same pattern already applied to `examId` one line above it.
+
+**Verification:**
+- `rm -rf .next && npx tsc --noEmit` — clean, zero errors.
+- `npx next build` — clean, compiled successfully, all 52 routes generated, `/app/school/quizzes/exam-mode` and `/api/study/generate-quiz` both built without warnings.
+- Manually traced both required paths: (1) `materialId` + `isMockExam: true` → branches into the new past-paper block (`if (isMockExam) { ... } else { /* old path, untouched */ }`), never falls through to the old "quiz me on this material" contextText. (2) A `material.status !== "analyzed"` request hits the 400 guard as the very first statement inside the `isMockExam` block, strictly before `downloadMaterialDocument` is ever called — no wasted download or Storage call on an unanalyzed/failed material.
+- Did not run a live Claude call against a real uploaded past paper (no test Supabase project/storage object available in this environment) — the JSON parsing, question-type validation, and `study_quizzes` insert logic downstream are all unchanged from the already-shipped code path, so this is a prompt/attachment change layered on a working, previously-verified pipeline, not new untested plumbing. Flagging this so QA knows a real end-to-end "upload a past paper, generate a mock exam, spot-check the questions actually reflect the paper" pass is still the outstanding manual check per the spec's own QA section 2.
+
+Files touched: `src/lib/study/materials.ts` (new), `src/app/api/study/generate-quiz/route.ts`, `src/app/app/school/quizzes/exam-mode/page.tsx`.
+
+BLOCKERS: None. NEXT: QA review of Spec B. Spec A (Notes reframe) and Spec C (in-app notifications) remain unbuilt.
