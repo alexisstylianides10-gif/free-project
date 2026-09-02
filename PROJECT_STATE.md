@@ -1028,3 +1028,72 @@ Verified via real `next start` + curl, not source-reading: `<link rel="canonical
 **Scope discipline:** `git status --short` shows exactly the files this fix needed — 7 `git mv` renames into `(public)/`, 3 new thin server `page.tsx` wrappers, 1 new `(public)/layout.tsx`, 1 edit to root `layout.tsx` (removing the `CookieBanner` import/mount), 1 wording edit to `terms/page.tsx`. No changes to `supabase/schema.sql`, no `.upsert()` introduced, no touches to billing columns, RLS, the track-lock trigger, `StudentHome.tsx`/`BusinessHome.tsx` grid structure, or `error.tsx`/`not-found.tsx`/`robots.ts`/`sitemap.ts` (all QA already signed off clean).
 
 Committed (not pushed) on branch `worktree-agent-ae84c2b6636334ffa`, built from QA's review commit `b73617e`. Ready for QA re-review — render the fix (per QA's own note that this is the second render-only-catchable bug in this project's history), not just read the source.
+
+---
+
+### QA RE-VERIFY (Wave 3a route-group fix, commit `418c90a`) — SIGN-OFF GIVEN
+
+Reviewed Dev's fix in a detached checkout of `418c90a` (worktree `agent-a427f01c1d3c109c9`; the branch itself, `worktree-agent-ae84c2b6636334ffa`, is checked out elsewhere so I worked from the commit hash directly). Did not take Dev's "structurally impossible" or "route groups don't affect URLs" claims on faith — re-verified every load-bearing claim independently against a real `next build`/`next start`, plus fresh Playwright renders. Also re-read every prior claim in Dev's own report line by line before trusting any of it.
+
+**Route-group move — confirmed real, no URL leak, no route-count change.** `find src/app -maxdepth 3 -type d` confirms the 7 pages actually live under `src/app/(public)/**` now, with no stray duplicate `page.tsx` left behind at the old top-level paths (`git mv` was genuinely clean, not a copy). Ran `rm -rf .next && npx next build && npx next start` fresh (own server, port 3417/3418, not reusing any cached artifact) and curled every moved route directly:
+```
+/            -> 200      /(public)         -> 404 (route-group folder name correctly not a real URL)
+/login       -> 200      /(public)/login   -> 404
+/signup      -> 200
+/choose-plan -> 200
+/privacy     -> 200
+/terms       -> 200
+/faq         -> 200
+/app         -> 200
+```
+Went a level deeper than curling status codes: diffed the actual route-file inventory, not just the rendered table. `git ls-tree -r b73617e --name-only` vs `git ls-tree -r 418c90a --name-only`, both filtered to `src/app/**/{page.tsx,route.ts}`: **54 route files before, 54 after — identical count**. Stripped the `src/app/` and `(public)/` prefixes from both lists and diffed them again: **zero differences** — every single route file maps to the exact same effective URL pre- and post-fix, not just "the ones I thought to check." This is stronger evidence than curling the known 7 URLs, since it rules out any route silently added/removed/renamed elsewhere in the move that curling a fixed list wouldn't have caught.
+
+**Dev's own headline route-count figure is off, same pattern flagged before — not blocking.** Dev's report says "47 real routes (48 minus the deleted `/qa-nav-verify` test route)," referencing QA's own prior stated baseline of 48 (`b7944cd` review). My fresh, direct build-output count is **58 routes**, both before and after this diff (confirmed identical via the 54-route-file reconciliation above: 54 real files + `/_not-found` + `/icon.png` + `/robots.txt` + `/sitemap.xml` = 58). This is the exact same "self-reported number doesn't match the real build output" class already flagged twice in this project's history (Wave 2 fix review, `3ae4b01`, and referenced again in that entry). Not blocking — the actual claim that matters ("route groups don't change any URL, zero routes added/removed") is independently confirmed true by the file-inventory diff above, which is a stronger check than any headline number. Noting for the record so a stale count doesn't propagate into a third round.
+
+**Login/Signup/ChoosePlan split — confirmed mechanical, nothing dropped.** `git diff -M b73617e 418c90a` on all three shows Git's own rename-similarity detector at **99% similarity** for each (`src/app/login/page.tsx` → `src/app/(public)/login/LoginClient.tsx`, and the same pattern for signup/choose-plan) — the only line-level change in each file is `export default function XPage()` → `export function XClient()`. Read the full diff for each, not just the similarity score: zero logic touched, zero imports dropped, zero JSX changed. The new thin `page.tsx` wrappers are genuinely thin (metadata export + a single-line render of the client component), read in full above. Exercised the split components live, not just confirmed they compile:
+- `/login`: fresh Playwright context, real `next start` server. Email input, password input, and submit button all present and queryable. Clicked through the actual Accept flow on the co-located cookie banner (see below) to confirm the page is genuinely interactive, not a static shell.
+- `/signup`: name input (unstyled `<input>` with no explicit `type` attribute — confirmed present via `input[autocomplete="given-name"]`, not a bug, just means my first `input[type="text"]` selector attempt was wrong, not the app), email input, password input, submit button all present.
+- `/choose-plan`: renders the real plan-selection UI (Student card live, Business card still correctly gated `Coming soon`/`opacity-60`, matching the unchanged `comingSoon = track === "business"` logic), no horizontal overflow at 390px (`scrollWidth === clientWidth`, checked programmatically), full-page screenshot reviewed directly.
+
+**CookieBanner/BottomNav fix — confirmed structurally sound and empirically re-verified, not just source-read.** `grep -rn "CookieBanner" src/` shows exactly one import site, `src/app/(public)/layout.tsx` — root `layout.tsx`'s import and mount are both genuinely gone (diffed directly). Built two temporary Playwright test harnesses (both deleted before this section was written; `git status --short` confirmed clean immediately after), same technique as my original block:
+- `src/app/(public)/qa-nav-verify1/page.tsx` — forced `BottomNav` to co-mount inside the `(public)` group (the only place `CookieBanner` still lives), to confirm neither component's own CSS changed. Measured bounding boxes at 390px: `BottomNav` `y:[745,844]`, `CookieBanner` `y:[672,844]` — **matches the original bug's numbers almost exactly**, confirming this fix is genuinely about mount scope, not a disguised CSS tweak that might not generalize.
+- `src/app/qa-nav-verify2/page.tsx` — mounted `BottomNav` directly under root layout only (mirrors the same layout-nesting topology as `/app/**`, which is also just a child of root layout, sibling to `(public)`, without needing to fake a real authenticated session). Result: `BottomNav` renders fully and cleanly (screenshot confirms all 5 tabs — Home/School/Future/Coach/Profile — completely unobscured, nothing behind them), and `CookieBanner` is **not present in the DOM at all** (`document.querySelector('[aria-label="Cookie notice"]')` → null, and `'aria-label="Cookie notice"'` does not appear anywhere in `page.content()`). Not just hidden — structurally absent, exactly as the disjoint-subtree design promises.
+- Real `/login` (inside the actual `(public)` route): fresh context, cleared `localStorage`, reloaded — banner appears at `y:[672,844]`, `aria-label="Cookie notice"` present, no `BottomNav` on this page (correct, it's a public/marketing page). Clicked the real Accept button: banner immediately disappears; reloaded the page again — banner correctly does **not** reappear (real reload, not assumed from the original Wave 3a claim).
+- Real `/app` route (curled directly): initial HTML contains zero occurrences of `aria-label="Cookie notice"`.
+
+Both original Bug 2 symptoms (visual bounding-box overlap, and the underlying mount-scope root cause) are independently confirmed fixed, via the same render-based method that originally caught the bug — not a source read that would have missed it the first time too.
+
+**Canonical tags — confirmed fixed, all three distinct and correct.** Curled all 7 public routes against the real production server:
+```
+/            -> https://www.alxioum.com
+/login       -> https://www.alxioum.com/login
+/signup      -> https://www.alxioum.com/signup
+/choose-plan -> https://www.alxioum.com/choose-plan
+/privacy     -> https://www.alxioum.com/privacy
+/terms       -> https://www.alxioum.com/terms
+/faq         -> https://www.alxioum.com/faq
+```
+Cross-checked against `/sitemap.xml`'s 7 `<loc>` entries (also curled fresh) — every canonical now matches its own sitemap entry exactly, resolving the self-contradictory signal my original block flagged. Read the mechanism, not just the output: each of `/login`, `/signup`, `/choose-plan` is a genuine server component (`export const metadata`) rendering its client counterpart, matching the pre-existing `/privacy`/`/terms`/`/faq` pattern exactly — this isn't a one-off hack, it's the same pattern already proven correct on 3 of the 7 routes.
+
+**Terms-page nit — confirmed accurately fixed.** Diff shows the exact wording added: "Note: the founder track is currently paused for new signups while we polish it, so new accounts are on the student track for now," inserted into the existing track-selection paragraph, matching the phrasing already used on `/faq`. Still gated correctly against the live `comingSoon` logic (re-confirmed above via the `/choose-plan` render). Not a copy-paste error, not a placeholder.
+
+**Regression/scope discipline — confirmed via diff, not Dev's claim.** `git diff --stat b73617e 418c90a` touches exactly 13 files (12 code + `PROJECT_STATE.md`): 7 `git mv` renames (3 of them also renaming the exported function), 3 new thin server wrappers, 1 new `(public)/layout.tsx`, 1 edit to root `layout.tsx`, 1 wording edit to terms. Zero touches to `supabase/schema.sql`, zero `.upsert()` introduced, zero touches to RLS/grants, the track-lock trigger, billing/entitlement columns, or `StudentHome.tsx`/`BusinessHome.tsx`'s grid structure — none of these are anywhere near this diff, and I didn't just take that on Dev's word, `git diff --stat` confirms the file list directly.
+
+**Build gates — run fresh on the final clean tree, both clean.** Symlinked `node_modules` from the sibling checkout (same convention every prior QA pass in this project has used). After deleting both temporary test harness pages and confirming `git status --short` was clean: `rm -rf .next && npx tsc --noEmit` — clean, exit 0. `npx next build` — clean, exit 0, same 58-route table as the pre-cleanup build (harness routes gone, nothing else changed), no `(public)` prefix leaked into any route path, no duplicate/orphaned route.
+
+**Verdict: SIGN-OFF GIVEN.** Both bugs from my original block (`b73617e`) are genuinely fixed, independently re-verified by rendering (not reading) the fix, using the same or stronger methodology that caught the originals:
+1. `CookieBanner`/`BottomNav` mobile overlap — fixed via a real structural guarantee (disjoint route-group subtrees), not a runtime pathname check. Confirmed both that the components' own CSS is unchanged (co-mount harness reproduces the exact original overlap numbers) and that the real fix holds (root-layout-only harness shows zero overlap, `CookieBanner` literally absent from the DOM; real `/app` curl confirms the same; real `/login` still shows and functions correctly).
+2. `/login`/`/signup`/`/choose-plan` canonical tags — each now has its own correct, distinct, absolute canonical matching its sitemap entry, via the same server/client-split pattern already proven correct on `/privacy`/`/terms`/`/faq`.
+3. Terms-page founder-track wording nit — accurately fixed, matches `/faq`'s existing correct phrasing and the live `comingSoon` gate.
+
+The split of `/login`/`/signup`/`/choose-plan` into server+client pairs is a genuinely mechanical rename (99% Git-similarity, single-line diffs) with zero logic dropped or altered, and all three pages render and function correctly (form fields present, cookie-consent flow works end to end, choose-plan's live gating unaffected). Route-group move confirmed to introduce zero URL changes and zero route-count changes via direct file-inventory diffing, not just spot-checking the known 7 paths. `tsc --noEmit` and `next build` both run fresh on the final tree and both clean.
+
+One non-blocking note for the record, consistent with two prior instances of the same pattern in this project's history: Dev's self-reported route count ("47") doesn't match the real build output (58, unchanged pre/post-fix) — the underlying claim that matters (no routes added or removed) is independently confirmed true by a stronger check (file-inventory diff), so this doesn't affect the verdict, but the stale-counting-convention should stop being restated as fact in future waves.
+
+Handing to Cato for final sign-off. Recommend Cato also independently re-run `tsc`/`next build` before merge per the project's standing convention, same as every prior wave.
+
+BLOCKERS: None.
+
+NEXT TASK: None open from this QA pass.
+
+DEPLOYMENT STATUS (this QA pass): not deployed — reviewed in worktree `agent-a427f01c1d3c109c9` against Dev's commit `418c90a`, committed locally (not pushed). CEO/Cato handles merge + push + Render deploy trigger per standing process.
