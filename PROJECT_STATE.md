@@ -2269,3 +2269,75 @@ Base: fast-forward merged `worktree-agent-aa6bf2735100d642c` (`412b82f`) onto th
 (`ba9001d`, a clean ancestor — no conflicts). Files changed: `src/components/marketing/FeaturesSection.tsx`,
 `src/components/marketing/PricingSection.tsx`, `src/components/marketing/AboutSection.tsx`,
 `src/app/(public)/page.tsx`. No schema changes, no new API routes, no new dependencies. Not pushed.
+
+## QA RE-VERIFY (scroll landing heading fix)
+
+Re-verified Dev's fix on `d589fa8` (built on `412b82f`, the commit I originally blocked for the 4-`<h1>` bug on
+`/`). Did not take Dev's report on trust — rebuilt from scratch, ran a real `next start` server, and drove
+Chromium via Playwright myself against all four routes, plus spot-checked the functional/mobile behavior around
+the change.
+
+**Worktree isolation note:** same as last round, my sandbox refused any git operation that `cd`s into another
+worktree's directory (including the shared checkout `/home/user/free-project` and
+`.claude/worktrees/agent-a6e3a7b7df4004685`, which is where `worktree-agent-a6e3a7b7df4004685` — Dev's actual
+branch — is checked out). I could not check that branch out in my own worktree for the same reason (branch
+already checked out elsewhere). Workaround: `git checkout -b qa-verify-scroll-heading-fix d589fa8` inside my own
+worktree, which git permitted since it's a different branch name pointing at the same commit, not a directory
+change. This let me test the exact target commit's tree. This review commit is going onto
+`qa-verify-scroll-heading-fix` (this worktree, `aa4d15d70cfee2135`) as a fallback — orchestrator needs to relay/
+reconcile it onto `worktree-agent-a6e3a7b7df4004685` manually, same as last round.
+
+**Build gate:** `rm -rf .next && npx tsc --noEmit && npx next build` — both clean, ran fresh myself, not reused
+from Dev's report.
+
+**Heading count/content verification (Playwright, real `next start` on :4173, Chromium headless via
+`/opt/pw-browsers/chromium`):**
+- `/` — exactly **1** `<h1>`: `"Build your future while you build your grades."` — confirmed this is genuinely
+  the Hero's own heading (matches Hero copy, not any section's), not a false-positive count. **7** `<h2>`, **5**
+  `<h3>`, all matching Dev's claimed list verbatim (Features' "One plan...", "Student track", "For founders",
+  "Pick your track...", Pricing's "Simple pricing...", About's "Built for the two groups...", Faq's "Frequently
+  asked questions" for `<h2>`; Features' "A coach that actually knows...", "Everything above, rebuilt...", and
+  About's three demoted subheadings for `<h3>`).
+- `/features` — exactly **1** `<h1>`: `"One plan. Built around what you're actually doing."` — text identical to
+  what I verified at `ba9001d` last round.
+- `/pricing` — exactly **1** `<h1>`: `"Simple pricing. The organizing tools are always free."` — identical to
+  `ba9001d`.
+- `/about` — exactly **1** `<h1>`: `"Built for the two groups everyone else designs around."` — identical to
+  `ba9001d`. Subheadings ("Why one app, two tracks", "What we actually believe", "Who's behind it") confirmed
+  still rendering as `<h2>` (3 found), **not** demoted to `<h3>` — correct, standalone route only omits
+  `headingLevel`.
+
+**`AboutSection` subheading demotion, both directions confirmed correct:**
+- Standalone `/about`: main heading `<h1>`, subheadings `<h2>` (3 found) — non-skipping (h1→h2), matches
+  pre-fix behavior exactly.
+- Inline on `/`: main heading `<h2>`, subheadings `<h3>` (3 found, part of the 5 total `<h3>` on `/`) —
+  non-skipping (h2→h3), no level jump, no accidental leftover `<h2>` subheadings sitting at the same level as
+  the section's own now-demoted `<h2>` main heading.
+
+**Regression / narrow-scope check (`git diff 412b82f d589fa8` + `git diff ba9001d d589fa8` on the wrapper
+pages):** confirmed only `src/app/(public)/page.tsx`, `AboutSection.tsx`, `FeaturesSection.tsx`,
+`PricingSection.tsx` changed since `412b82f` — the standalone wrapper pages (`features/page.tsx`,
+`pricing/PricingClient.tsx`, `about/page.tsx`) are untouched by this fix and still just call their section
+component with no `headingLevel` prop, so they keep the `h1`-default. Since the fix only swaps the JSX tag
+(`<h1>`→dynamic `<Heading>`) and never touches `className`, standalone-route rendering is provably
+pixel-identical, not just "should be" — confirmed computed style on `/features`' `<h1>` (`text-display
+font-extrabold leading-[1.15] tracking-tight text-foreground`, 34px/800) matches the unchanged className exactly.
+
+**Spot-checks (should be untouched by a heading-level-only prop change, confirmed briefly rather than assumed):**
+- Anchor scroll on `/`: `#pricing` and `#about` both scroll into view correctly (`scroll-mt-20` on the `<section>`
+  elements, untouched by this diff).
+- Pricing toggle on `/`: Monthly → Yearly click correctly switches `$9.99/$19.99` → `$99/$199` (functional, not
+  just visual).
+- FAQ content on `/`: `FaqSection` is static content (no accordion/buttons in this app — confirmed by reading the
+  component, not assumed), heading already `<h2>` pre-fix and untouched by this diff; all 4 `PRICING_FAQ`
+  question/answer pairs render.
+- Mobile (375×812 viewport): all four routes — `/`, `/features`, `/pricing`, `/about` — render with **0px**
+  horizontal overflow. Expected, since the diff touches zero `className`/Tailwind values, only the JSX tag name;
+  confirmed rather than assumed given this app's history of two-column-grid regressions (not applicable here —
+  this diff has no grid/column changes).
+
+**Verdict:** Dev's fix is correctly scoped, verified independently end-to-end, and resolves the exact bug I
+blocked last round without introducing new issues. `/` now has exactly one `<h1>` (Hero's), heading hierarchy is
+non-skipping in both standalone and inline contexts, and nothing else regressed.
+
+SIGN-OFF: GIVEN
