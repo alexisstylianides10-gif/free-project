@@ -1242,3 +1242,42 @@ BLOCKERS: `supabase/schema.sql` statement-ordering bug above — Dev must fix an
 NEXT TASK: Dev — fix the schema statement order; re-request QA re-verification once done.
 
 DEPLOYMENT STATUS (this QA pass): not deployed — reviewed against commit `47772f2` directly (its own worktree's `node_modules`, not symlinked/trusted), and separately merged into this QA worktree (`agent-a34bb0715fb6ccb9d`, merge commit `ea07851`) solely to have a git-tracked home for this write-up per this project's standing QA-worktree-merge convention. Not pushed.
+
+## DEV FIX (Wave 4b schema statement order)
+
+Built directly on QA's worktree branch (`worktree-agent-a34bb0715fb6ccb9d`, tip `f73d0b1`, which already contains Wave 4b + QA's review).
+
+**Fix applied:** in `supabase/schema.sql`, moved the `alter table public.profiles add column if not exists tutorial_seen boolean not null default false;` statement (and its explanatory comment) from after the `revoke update on public.profiles from authenticated; grant update (...) on public.profiles to authenticated;` block to immediately before it — right after the `create table if not exists public.profiles (...)` block, its RLS policies, and the `lock_track_after_onboarding` trigger. Pure statement reorder, no content change to any statement, no other file touched.
+
+**Why this was the right (and only) fix:** `GRANT UPDATE (column_list)` in Postgres requires every named column to already exist at the moment the statement executes — it is not forward-declared/deferred the way some other DDL is. Since `schema.sql` is this project's sole source of truth (no `supabase/migrations` directory) and gets applied top-to-bottom as one script against the real, already-deployed `profiles` table, the old ordering meant the `grant update (..., tutorial_seen)` line ran before the `alter table` that would have created the column, so the script errored out on that line every time. Moving the `alter table` earlier — to right after `profiles` is created/policied/triggered, same general pattern this file already uses for `exams.study_subject_id` — means the column exists by the time the grant references it. No other logic changed: comment content, default value (`false`), and the "not folded into `create table`" rationale are all preserved verbatim.
+
+**Verification performed (empirical, not just re-reading the diff):**
+
+1. **Traced every `grant update (column_list)` in the file.** Confirmed via `grep -n '^grant update|^alter table.*add column|^create table if not exists'` that there is exactly one column-restricted grant in the entire file — the `profiles` one at (now) line 90 — and that the `tutorial_seen` column-adding `alter table` (now line 78) precedes it. No other table in the file has a column-restricted grant, so no other ordering hazard of this kind exists anywhere else in `schema.sql` right now.
+2. **Stood up a real local Postgres 16 instance** (`pg_ctlcluster 16 main start`, same major version QA used) and created a fresh test database with minimal Supabase-shaped stubs (`auth.users` table, `auth.uid()` function, `authenticated`/`anon`/`service_role` roles) to simulate the real deploy target.
+3. **Reproduced the old bug first, to confirm it was real and my fix actually addresses it** — ran a minimal extract of the pre-fix ordering (`create table` → `revoke/grant (tutorial_seen)` → `alter table add column tutorial_seen`) against the fresh database:
+   ```
+   CREATE SCHEMA
+   CREATE TABLE
+   CREATE TABLE
+   REVOKE
+   ERROR:  column "tutorial_seen" of relation "t_profiles" does not exist
+   EXIT CODE: 3
+   ```
+   This matches QA's reported error message exactly.
+4. **Applied the full, corrected `schema.sql` top-to-bottom** against the same fresh database with `ON_ERROR_STOP=1`. The `profiles` section (create table → RLS → trigger → `alter table add column tutorial_seen` → `revoke`/`grant update (..., tutorial_seen)`) applied with no error. Confirmed directly via `\d public.profiles` that the `tutorial_seen boolean not null default false` column exists, and via `information_schema.column_privileges` that `authenticated` genuinely holds `UPDATE` on `tutorial_seen` (alongside all the other previously-granted columns — the grant list itself is unchanged, only its position moved). The run did hit one unrelated error later in the script (`relation "storage.buckets" does not exist`, from an `insert into storage.buckets` statement) — this is Supabase Storage extension infrastructure that doesn't exist in a plain Postgres instance and is unrelated to this diff or to `profiles`; it is not part of the bug QA reported and not something this fix needed to touch.
+
+**Build gates:** ran fresh per standing process even though this is a schema-only change:
+```
+rm -rf .next && npx tsc --noEmit   → exit 0, clean
+npx next build                     → exit 0, clean, all 49 static pages generated,
+                                      no new warnings
+```
+
+**Files changed:** `supabase/schema.sql` only (one comment block + one statement moved earlier in the file; zero statements added, removed, or edited in content).
+
+**Regression check:** every other table's statement order in the file was re-traced (see point 1 above) — no other new ordering hazard introduced or found. Tutorial and roadmap logic (`NewUserTutorial.tsx`, `app/app/layout.tsx`, `src/lib/actions/roadmap.ts`, `src/lib/catalog/roadmap.ts`, `RoadmapTimeline.tsx`) was not touched and was already signed off clean by QA in the section above — no re-verification of that logic was needed, only the schema fix.
+
+NEXT TASK: QA — re-verify this fix (confirm the corrected `schema.sql` applies cleanly against a fresh/pre-existing-profiles-table Postgres instance) and re-request sign-off; if clean, hand to Cato.
+
+DEPLOYMENT STATUS: not deployed. Fixed locally in this worktree, verified against a local Postgres 16 instance as described above, not pushed.
