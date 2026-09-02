@@ -8,6 +8,7 @@ const TABS = [
   { href: "/app/school", label: "Home", match: (p: string) => p === "/app/school" },
   { href: "/app/school/subjects", label: "Subjects", match: (p: string) => p.startsWith("/app/school/subjects") },
   { href: "/app/school/exams", label: "Exams", match: (p: string) => p.startsWith("/app/school/exams") },
+  { href: "/app/school/homework", label: "Homework", match: (p: string) => p.startsWith("/app/school/homework") },
   { href: "/app/school/flashcards", label: "Flashcards", match: (p: string) => p.startsWith("/app/school/flashcards") },
   { href: "/app/school/quizzes", label: "Quizzes", match: (p: string) => p.startsWith("/app/school/quizzes") },
   { href: "/app/school/progress", label: "Progress", match: (p: string) => p.startsWith("/app/school/progress") },

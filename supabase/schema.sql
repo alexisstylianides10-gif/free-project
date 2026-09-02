@@ -16,6 +16,11 @@ create table if not exists public.profiles (
   full_name text not null default 'Student',
   year_group text not null default '',
   country text not null default '',
+  -- Purely informational/analytics — collected at onboarding, never read by
+  -- any gating/conditional logic anywhere in the app. Whether this should
+  -- ever gate something (e.g. an under-13 handling policy) is an explicit
+  -- open CEO decision, not decided by this column's existence.
+  age int check (age is null or (age between 5 and 100)),
   avatar_emoji text not null default '🚀',
   xp_school int not null default 0,
   xp_career int not null default 0,
@@ -77,6 +82,15 @@ create trigger lock_track_after_onboarding
 -- column by name and Postgres requires it to already exist at that point.
 alter table public.profiles add column if not exists tutorial_seen boolean not null default false;
 
+-- Adds `age` to an already-existing profiles table (the `create table if
+-- not exists`/inline column, if one exists, only takes effect on a fresh
+-- install). Informational/analytics only — not read by any gating logic
+-- anywhere in the app. Must also run before the `grant update (...)` block
+-- below, same reasoning and same bug class as `tutorial_seen` above (QA
+-- caught this ordering hazard once already this wave; fixing it here too
+-- rather than reintroducing the identical bug for a second column).
+alter table public.profiles add column if not exists age int check (age is null or (age between 5 and 100));
+
 -- Billing columns (plan, plan_status, trial_ends_at, stripe_customer_id,
 -- stripe_subscription_id) are deliberately excluded from the client's
 -- UPDATE grant below — the update-own RLS policy above only checks row
@@ -90,7 +104,7 @@ revoke update on public.profiles from authenticated;
 grant update (
   full_name, year_group, country, avatar_emoji, xp_school, xp_career,
   xp_skill, xp_project, streak_count, longest_streak, last_active_date,
-  onboarding_completed, track, billing_interval, tutorial_seen
+  onboarding_completed, track, billing_interval, tutorial_seen, age
 ) on public.profiles to authenticated;
 
 -- ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@ import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock, TriangleAlert, XCircle } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useAchievementToast } from "@/components/providers/AchievementToastProvider";
 import { supabase } from "@/lib/supabase/client";
 import { authedFetch } from "@/lib/api";
 import { useStudySubjects, useStudyTopics } from "@/lib/hooks/study";
@@ -24,6 +25,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
   const { quizId } = use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const { notify } = useAchievementToast();
 
   const [quiz, setQuiz] = useState<StudyQuiz | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,6 +97,15 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
           }
         }
 
+        // This route runs server-side, so awardAchievementOnce's own
+        // browser-event toast trigger can't fire there — the route returns
+        // whichever keys it newly awarded instead, and AchievementToastProvider
+        // (mounted above this page in app/layout.tsx) keeps rendering the
+        // toast across this navigation, same as a normal global toast.
+        if (Array.isArray(json.unlocked_achievements)) {
+          for (const key of json.unlocked_achievements) notify(key);
+        }
+
         router.push(`/app/school/quizzes/${quiz.id}/results/${json.attempt.id}`);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong submitting your answers.");
@@ -102,7 +113,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
         setSubmitting(false);
       }
     },
-    [quiz, router]
+    [quiz, router, notify]
   );
 
   // Mock-exam countdown — auto-submits whatever's been answered when it hits zero.

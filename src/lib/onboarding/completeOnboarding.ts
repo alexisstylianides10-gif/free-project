@@ -15,6 +15,20 @@ export interface FullOnboardingAnswers {
   freeTime: string;
   biggestGoal: string;
   biggestProblem: string;
+  // Purely informational/analytics (see profiles.age's schema comment) —
+  // optional, never used to gate anything below.
+  age: number | null;
+}
+
+// profiles.age has a `check (age between 5 and 100)` constraint — this
+// field is optional free typing (a plain <input type="number">, not a
+// select), so guard against a stray out-of-range value here rather than
+// letting it fail the whole onboarding write (which shares this Promise.all
+// with the required profile/onboarding_responses rows).
+function sanitizeAge(age: number | null): number | null {
+  if (age === null || !Number.isFinite(age)) return null;
+  const rounded = Math.round(age);
+  return rounded >= 5 && rounded <= 100 ? rounded : null;
 }
 
 function baselineSkills(strengths: string[]): { skill_key: string; proficiency: number }[] {
@@ -77,6 +91,7 @@ export async function completeOnboarding(
         full_name: fullName,
         year_group: answers.yearGroup,
         country: answers.country,
+        age: sanitizeAge(answers.age),
         onboarding_completed: true,
         streak_count: 1,
         longest_streak: 1,
