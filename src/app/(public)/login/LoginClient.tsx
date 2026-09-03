@@ -60,7 +60,7 @@ export function LoginClient() {
     <main className="flex min-h-dvh bg-background">
       <div className="flex flex-1 flex-col justify-center px-6 py-10 lg:px-16 xl:px-20">
         <div className="mx-auto w-full max-w-sm">
-          <LogoMark size={44} className="mx-auto shadow-glow-accent lg:mx-0" />
+          <LogoMark size={44} className="mx-auto lg:mx-0" />
           <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground lg:text-left">
             Welcome back
           </h1>

@@ -22,7 +22,7 @@ export function StaticContentPage({
     <main className="min-h-dvh bg-background">
       <div className="mx-auto flex w-full max-w-2xl flex-col px-6 py-12 md:px-10 md:py-16">
         <Link href="/" className="flex w-fit items-center gap-2">
-          <LogoMark size={32} className="shadow-glow-accent" />
+          <LogoMark size={32} />
           <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>
         </Link>
 

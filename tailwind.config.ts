@@ -38,6 +38,9 @@ const config: Config = {
         title: "22px", // mobile page/section h1s
         "title-lg": "28px", // desktop variant of `title` (StudentHome/BusinessHome lg:)
         heading: "26px", // ScreenHeader and onboarding/choose-plan success headlines
+        subsection: "19px", // a heading *inside* a section (e.g. "Student track"
+        // inside Features), one real tier below a section's own heading —
+        // not the same size/weight as the section heading it lives under.
         display: "34px", // landing page hero only
       },
       colors: {

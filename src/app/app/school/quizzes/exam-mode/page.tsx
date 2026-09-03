@@ -125,7 +125,7 @@ export default function ExamModeSetupPage() {
                     }}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                      subjectId === s.id ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                      subjectId === s.id ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <span>{s.icon}</span>
@@ -144,7 +144,7 @@ export default function ExamModeSetupPage() {
                     onClick={() => setExamId("")}
                     className={cn(
                       "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                      examId === "" ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                      examId === "" ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                     )}
                   >
                     None
@@ -156,7 +156,7 @@ export default function ExamModeSetupPage() {
                       onClick={() => setExamId(e.id)}
                       className={cn(
                         "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                        examId === e.id ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                        examId === e.id ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                       )}
                     >
                       {e.title}
@@ -184,7 +184,7 @@ export default function ExamModeSetupPage() {
                       onClick={() => setMaterialId("")}
                       className={cn(
                         "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                        materialId === "" ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                        materialId === "" ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                       )}
                     >
                       None
@@ -196,7 +196,7 @@ export default function ExamModeSetupPage() {
                         onClick={() => setMaterialId(m.id)}
                         className={cn(
                           "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                          materialId === m.id ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                          materialId === m.id ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                         )}
                       >
                         {m.title}
@@ -222,7 +222,7 @@ export default function ExamModeSetupPage() {
                     onClick={() => setPreset(p)}
                     className={cn(
                       "rounded-xl py-3 text-center transition-colors",
-                      preset.count === p.count ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                      preset.count === p.count ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <span className="block text-sm font-bold">{p.count} Qs</span>
@@ -242,7 +242,7 @@ export default function ExamModeSetupPage() {
                     onClick={() => setDifficulty(d.value)}
                     className={cn(
                       "rounded-xl py-2.5 text-sm font-bold transition-colors",
-                      difficulty === d.value ? "bg-gradient-mission text-white shadow-glow-mission" : "bg-muted text-muted-foreground hover:text-foreground"
+                      difficulty === d.value ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {d.label}

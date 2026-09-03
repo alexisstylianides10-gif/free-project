@@ -68,7 +68,7 @@ export function BrandPanel({ variant, className }: { variant: Variant; className
           </div>
         </div>
 
-        <div className="rounded-3xl bg-gradient-mission p-5 text-white shadow-glow-mission">
+        <div className="rounded-3xl bg-gradient-mission p-5 text-white">
           <p className="text-2xs font-bold uppercase tracking-wide text-white/80">{c.cardEyebrow}</p>
           <p className="mt-2 text-body font-bold leading-snug">{c.cardTitle}</p>
           <p className="mt-1 text-caption text-white/80">{c.cardBody}</p>

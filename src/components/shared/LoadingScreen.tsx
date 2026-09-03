@@ -42,7 +42,7 @@ export function LoadingScreen({
       }
     >
       <div className="relative z-10 flex w-full max-w-xs flex-col items-center">
-        <LogoMark size={56} className="rounded-2xl shadow-glow-accent animate-pulse-glow" />
+        <LogoMark size={56} className="rounded-2xl animate-pulse-glow" />
 
         <p className="mt-8 text-3xl font-bold tabular-nums tracking-tight text-foreground">{Math.round(percent)}%</p>
 

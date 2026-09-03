@@ -18,7 +18,7 @@ export function FaqSection() {
     <section id="faq" className="scroll-mt-20 border-t border-border bg-background">
       <div className="mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
         <SectionKicker>FAQ</SectionKicker>
-        <h2 className="mt-3 text-heading font-extrabold tracking-tight text-foreground">
+        <h2 className="mt-3 text-display font-extrabold tracking-tight text-foreground">
           Frequently asked questions
         </h2>
         <div className="mt-6 grid gap-4 md:grid-cols-2">

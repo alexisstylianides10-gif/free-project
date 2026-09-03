@@ -32,7 +32,7 @@ export function SelectableCard({
         "flex w-full items-center gap-3 rounded-2xl border px-4 text-left transition-all duration-150 active:scale-[0.99]",
         compact ? "py-3" : "py-3.5",
         selected
-          ? "border-accent/70 bg-accent-soft/60 shadow-glow-accent"
+          ? "border-accent/70 bg-accent-soft/60"
           : "border-border bg-surface hover:border-border-strong"
       )}
     >

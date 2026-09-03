@@ -13,7 +13,7 @@ export default function NotFound() {
   return (
     <main className="bg-ambient-glow relative flex min-h-dvh flex-col items-center justify-center bg-background px-8">
       <div className="relative z-10 flex w-full max-w-xs flex-col items-center text-center">
-        <LogoMark size={56} className="rounded-2xl shadow-glow-accent" />
+        <LogoMark size={56} className="rounded-2xl" />
 
         <p className="mt-8 text-display font-extrabold tracking-tight text-gradient-brand">404</p>
 

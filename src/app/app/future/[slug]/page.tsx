@@ -64,7 +64,7 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
       </button>
 
       <div className="mt-2 flex items-center gap-3">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-2xl shadow-glow-accent">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-2xl">
           {career.icon}
         </span>
         <div className="min-w-0">

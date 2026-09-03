@@ -108,7 +108,7 @@ export function NewUserTutorial({
       description="Here's where everything lives. Takes about 20 seconds."
     >
       <div className="flex flex-col items-center py-2 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand shadow-glow-accent">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand">
           <Icon className="h-6 w-6 text-white" />
         </span>
         <h3 className="mt-4 text-base font-bold text-foreground">{step.title}</h3>

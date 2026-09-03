@@ -30,7 +30,7 @@ export default function GlobalError({
   return (
     <main className="bg-ambient-glow relative flex min-h-dvh flex-col items-center justify-center bg-background px-8">
       <div className="relative z-10 flex w-full max-w-xs flex-col items-center text-center">
-        <LogoMark size={56} className="rounded-2xl shadow-glow-accent" />
+        <LogoMark size={56} className="rounded-2xl" />
 
         <h1 className="mt-8 text-heading font-extrabold tracking-tight text-foreground">Something went wrong</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

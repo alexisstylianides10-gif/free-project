@@ -170,7 +170,7 @@ function ReviewInner() {
       <div className="space-y-5">
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-glow-accent">
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white">
               <PartyPopper className="h-6 w-6" />
             </span>
             <p className="text-lg font-bold text-foreground">Review complete</p>

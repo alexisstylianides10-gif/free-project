@@ -134,23 +134,53 @@ const BUSINESS_FEATURES: FeatureCard[] = [
   },
 ];
 
-function FeatureGrid({ items }: { items: FeatureCard[] }) {
+// Per PRODUCT_SPECS_DEVIBE.md §5: eighteen identical icon-chip cards in one
+// flat grid is the "statistically average AI aesthetic" the audit names
+// verbatim — nothing draws the eye anywhere in particular. The three titles
+// per track that most differentiate Alxioum from a plain checklist app get
+// promoted into a larger, chip-free card; the rest render as a denser list,
+// not a second uniform card grid, so the section has two real tiers instead
+// of one flat one.
+const STUDENT_HEADLINE_TITLES = new Set(["AI study plans", "Weak topics", "Career matches"]);
+const BUSINESS_HEADLINE_TITLES = new Set(["AI business snapshot", "Metrics log", "AI content helper"]);
+
+function FeatureGrid({ items, headline }: { items: FeatureCard[]; headline: Set<string> }) {
+  const headlineItems = items.filter((item) => headline.has(item.title));
+  const listItems = items.filter((item) => !headline.has(item.title));
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {items.map((item) => {
-        const Icon = item.icon;
-        return (
-          <Card key={item.title} className={cn("group", HOVER_LIFT)}>
-            <CardContent className="p-5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-brand text-white shadow-subtle transition-shadow duration-200 group-hover:shadow-glow-accent">
-                <Icon className="h-4 w-4" />
-              </span>
-              <p className="mt-4 text-body font-bold text-foreground">{item.title}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
-            </CardContent>
-          </Card>
-        );
-      })}
+    <div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {headlineItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Card key={item.title} className={HOVER_LIFT}>
+              <CardContent className="p-5">
+                <Icon className="h-5 w-5 text-accent" strokeWidth={2.25} />
+                <p className="mt-4 text-body font-bold text-foreground">{item.title}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {listItems.length > 0 && (
+        <div className="mt-2 grid gap-x-8 md:grid-cols-2">
+          {listItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="flex items-start gap-3 border-b border-border/50 py-3">
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2.25} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -164,11 +194,12 @@ function FeatureGrid({ items }: { items: FeatureCard[] }) {
  * pathname check, so the component can't silently diverge if rendered
  * somewhere new later.
  *
- * The section also owns its own local `relative overflow-hidden` wrapping
- * (rather than relying on a shared ancestor `<main>`) so its `bg-ambient-glow`
- * band is scoped to this section wherever it's mounted — required so the glow
- * appears at Features' own position when scrolled to on `/`, not pinned to
- * the top of the whole homepage behind the Hero.
+ * The section keeps its own local `relative overflow-hidden` wrapping
+ * (rather than relying on a shared ancestor `<main>`) — previously this
+ * scoped a `bg-ambient-glow` band to the section; per the de-vibe audit
+ * (PRODUCT_SPECS_DEVIBE.md §2.4) that glow was removed here (kept only
+ * behind the page's own Hero) since four radial blooms stacked down one
+ * scroll reads as wallpaper, not a real "welcome" moment.
  *
  * `headingLevel` (default `"h1"`) — same opt-in-prop pattern as
  * `withSectionBreak`. Standalone `/features` renders with it omitted, so its
@@ -191,8 +222,6 @@ export function FeaturesSection({
       id="features"
       className={cn("relative scroll-mt-20 overflow-hidden", withSectionBreak && "border-t border-border")}
     >
-      <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
-
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
         <SectionKicker>Features</SectionKicker>
         <Heading className="mt-3 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
@@ -205,21 +234,17 @@ export function FeaturesSection({
         </p>
 
         <section className="mt-14">
-          <h2 className="text-heading font-extrabold tracking-tight text-foreground">Student track</h2>
+          <h2 className="text-subsection font-bold tracking-tight text-foreground">Student track</h2>
           <p className="mt-1 text-sm text-muted-foreground">Live today.</p>
           <div className="mt-6">
-            <FeatureGrid items={STUDENT_FEATURES} />
+            <FeatureGrid items={STUDENT_FEATURES} headline={STUDENT_HEADLINE_TITLES} />
           </div>
         </section>
 
         <section className="mt-16">
           <Card className="relative overflow-hidden border-accent/30 shadow-raised">
-            <div
-              className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-gradient-brand opacity-20 blur-3xl"
-              aria-hidden
-            />
             <CardContent className="relative p-6 md:p-8">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-white shadow-glow-accent">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-white">
                 <Sparkles className="h-4 w-4" />
               </span>
               <p className="mt-4 text-xs font-bold uppercase tracking-widest text-accent">AI Coach</p>
@@ -237,7 +262,7 @@ export function FeaturesSection({
 
         <section className="mt-16">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-heading font-extrabold tracking-tight text-foreground">For founders</h2>
+            <h2 className="text-subsection font-bold tracking-tight text-foreground">For founders</h2>
             <Badge tone="neutral">Coming soon</Badge>
           </div>
           <h3 className="mt-3 max-w-2xl text-body font-semibold text-foreground">
@@ -248,12 +273,11 @@ export function FeaturesSection({
             builds:
           </p>
           <div className="mt-6">
-            <FeatureGrid items={BUSINESS_FEATURES} />
+            <FeatureGrid items={BUSINESS_FEATURES} headline={BUSINESS_HEADLINE_TITLES} />
           </div>
         </section>
 
         <section className="relative mt-20 overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 text-center shadow-raised md:px-12 md:py-14">
-          <div className="bg-ambient-glow pointer-events-none absolute inset-0" aria-hidden />
           <h2 className="relative z-10 text-heading font-extrabold tracking-tight text-foreground">
             Pick your track. We&rsquo;ll build around it.
           </h2>

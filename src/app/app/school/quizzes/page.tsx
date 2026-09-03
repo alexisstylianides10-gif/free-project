@@ -134,7 +134,7 @@ function QuizzesPageInner() {
                       }}
                       className={cn(
                         "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                        subjectId === s.id ? "bg-gradient-brand text-white shadow-glow-accent" : "bg-muted text-muted-foreground hover:text-foreground"
+                        subjectId === s.id ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                       )}
                     >
                       <span>{s.icon}</span>
@@ -153,7 +153,7 @@ function QuizzesPageInner() {
                       onClick={() => setTopicId("")}
                       className={cn(
                         "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                        topicId === "" ? "bg-gradient-brand text-white shadow-glow-accent" : "bg-muted text-muted-foreground hover:text-foreground"
+                        topicId === "" ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                       )}
                     >
                       All topics
@@ -165,7 +165,7 @@ function QuizzesPageInner() {
                         onClick={() => setTopicId(t.id)}
                         className={cn(
                           "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                          topicId === t.id ? "bg-gradient-brand text-white shadow-glow-accent" : "bg-muted text-muted-foreground hover:text-foreground"
+                          topicId === t.id ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                         )}
                       >
                         {t.name}
@@ -185,7 +185,7 @@ function QuizzesPageInner() {
                       onClick={() => setQuestionCount(n)}
                       className={cn(
                         "rounded-xl py-2.5 text-sm font-bold transition-colors",
-                        questionCount === n ? "bg-gradient-brand text-white shadow-glow-accent" : "bg-muted text-muted-foreground hover:text-foreground"
+                        questionCount === n ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                       )}
                     >
                       {n}
@@ -204,7 +204,7 @@ function QuizzesPageInner() {
                       onClick={() => setDifficulty(d.value)}
                       className={cn(
                         "rounded-xl py-2.5 text-sm font-bold transition-colors",
-                        difficulty === d.value ? "bg-gradient-brand text-white shadow-glow-accent" : "bg-muted text-muted-foreground hover:text-foreground"
+                        difficulty === d.value ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                       )}
                     >
                       {d.label}

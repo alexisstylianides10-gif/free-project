@@ -13,7 +13,7 @@ export function AchievementToast({ achievement, onDismiss }: { achievement: Achi
       onClick={onDismiss}
       className="animate-fade-up glass flex w-full max-w-sm cursor-pointer items-center gap-3 rounded-2xl border border-accent/30 p-3.5 shadow-pop"
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-xl shadow-glow-accent">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-xl">
         {achievement.icon}
       </span>
       <div className="min-w-0 flex-1">

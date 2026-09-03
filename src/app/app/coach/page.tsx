@@ -174,7 +174,7 @@ export default function CoachPage() {
             onClick={newChat}
             disabled={creatingThread}
             aria-label="New chat"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent disabled:opacity-40"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised disabled:opacity-40"
           >
             {creatingThread ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           </button>
@@ -323,7 +323,7 @@ export default function CoachPage() {
           type="submit"
           disabled={sending || !input.trim()}
           aria-label="Send"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised transition-opacity disabled:opacity-40"
         >
           <Send className="h-4 w-4" />
         </button>

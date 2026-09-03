@@ -56,7 +56,7 @@ export default function MissionDetailPage({ params }: { params: Promise<{ id: st
         <ChevronLeft className="h-5 w-5" />
       </button>
 
-      <div className="mt-2 rounded-3xl bg-gradient-mission p-5 text-white shadow-glow-mission">
+      <div className="mt-2 rounded-3xl bg-gradient-mission p-5 text-white">
         <p className="text-xs font-bold uppercase tracking-wide text-white/85">{mission.category} mission</p>
         <h1 className="mt-2 text-xl font-bold leading-snug">{mission.title}</h1>
         <div className="mt-3 flex items-center gap-2 text-xs font-semibold">

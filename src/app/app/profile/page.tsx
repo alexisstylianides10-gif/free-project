@@ -106,7 +106,7 @@ export default function ProfilePage() {
 
       <Card>
         <CardContent className="flex items-center gap-4 p-5">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-brand p-[2.5px] shadow-glow-accent">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-brand p-[2.5px]">
             <div className="flex h-full w-full items-center justify-center rounded-full bg-surface text-2xl">
               {profile.avatar_emoji || initials(profile.full_name)}
             </div>

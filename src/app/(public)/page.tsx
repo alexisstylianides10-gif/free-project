@@ -85,7 +85,7 @@ export default function WelcomePage() {
                 <DeletedAccountBanner />
               </Suspense>
               <div className="flex items-center gap-2 md:hidden">
-                <LogoMark size={36} className="shadow-glow-accent" />
+                <LogoMark size={36} />
                 <span className="text-sm font-semibold tracking-wide text-muted-foreground">{branding.name}</span>
               </div>
 
@@ -104,7 +104,7 @@ export default function WelcomePage() {
             <div className="mt-16 space-y-4 lg:mt-0">
               <Link
                 href="/signup"
-                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-body font-semibold text-white shadow-glow-accent transition-all duration-150 hover:brightness-110 active:scale-[0.98] lg:w-auto lg:px-10"
+                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-body font-semibold text-white shadow-raised transition-all duration-150 hover:brightness-110 active:scale-[0.98] lg:w-auto lg:px-10"
               >
                 Get Started
                 <ArrowRight className="h-4 w-4" />

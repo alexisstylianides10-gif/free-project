@@ -98,8 +98,6 @@ export function PricingSection({
       id="pricing"
       className={cn("relative scroll-mt-20 overflow-hidden", withSectionBreak && "border-t border-border")}
     >
-      <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
-
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
         <SectionKicker>Pricing</SectionKicker>
         <Heading className="mt-3 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
@@ -173,22 +171,19 @@ export function PricingSection({
 
           {/* Plus — Student (live) — the only live paid tier, so it's the
               one deliberately given visual weight: raised above its
-              siblings, a brand-gradient wash, and the accent glow the
-              design system already uses for "this is the one" emphasis
-              (same shadow-glow-accent token as the primary Button/hero
-              CTA), not a fabricated "most popular" claim. */}
+              siblings, a brand-gradient wash, and a "Live now" badge, not a
+              fabricated "most popular" claim. Per the de-vibe audit
+              (PRODUCT_SPECS_DEVIBE.md §2.2c), the accent glow shadow was
+              dropped — the lift + border + badge already carry the emphasis
+              without a colored blur-shadow stacked on top. */}
           <Card
             className={cn(
-              "relative overflow-hidden border-accent/50 shadow-glow-accent md:-translate-y-3",
+              "relative overflow-hidden border-accent/50 shadow-raised md:-translate-y-3",
               "transition-all duration-200 hover:-translate-y-4"
             )}
           >
             <div
               className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-accent-end/10"
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-brand opacity-25 blur-3xl"
               aria-hidden
             />
             <CardContent className="relative flex h-full flex-col p-6">

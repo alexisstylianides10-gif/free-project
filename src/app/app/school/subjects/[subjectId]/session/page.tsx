@@ -415,7 +415,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
                 onClick={() => setMode(m.key)}
                 className={cn(
                   "flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors",
-                  active ? "bg-gradient-brand text-white shadow-glow-accent" : "bg-muted text-muted-foreground hover:text-foreground"
+                  active ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Icon className="h-3.5 w-3.5" /> {m.label}
@@ -491,7 +491,7 @@ export default function StudySessionPage({ params }: { params: Promise<{ subject
                   type="submit"
                   disabled={learnSending || !learnInput.trim()}
                   aria-label="Send"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised transition-opacity disabled:opacity-40"
                 >
                   <Send className="h-4 w-4" />
                 </button>

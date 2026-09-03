@@ -115,7 +115,7 @@ export default function ExamsPage() {
             type="submit"
             disabled={adding || !newSubject.trim() || !newDate}
             aria-label="Add exam"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-glow-accent transition-opacity disabled:opacity-40"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised transition-opacity disabled:opacity-40"
           >
             <Plus className="h-4 w-4" />
           </button>

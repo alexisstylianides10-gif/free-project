@@ -41,16 +41,14 @@ export default function BusinessHome() {
 
   return (
     <div>
-      <div className="bg-ambient-glow mb-6 lg:mb-8">
-        <div className="relative flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-title font-bold text-foreground lg:text-title-lg">
-              {greeting()}, <span className="text-gradient-brand">{firstName}</span>
-            </h1>
-            <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s where your business stands today.</p>
-          </div>
-          <NotificationBell className="md:hidden" />
+      <div className="mb-6 flex items-start justify-between gap-3 lg:mb-8">
+        <div>
+          <h1 className="text-title font-bold text-foreground lg:text-title-lg">
+            {greeting()}, <span className="text-gradient-brand">{firstName}</span>
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s where your business stands today.</p>
         </div>
+        <NotificationBell className="md:hidden" />
       </div>
 
       {pageError && (
@@ -73,7 +71,6 @@ export default function BusinessHome() {
 
         <Card className="hidden overflow-hidden border-accent/20 lg:col-start-2 lg:row-start-1 lg:block">
           <CardContent className="relative p-5">
-            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-mission opacity-20 blur-2xl" />
             <div className="relative flex items-center justify-center">
               <RadialStat label="Milestones" value={milestonePercent} tone="future" size={128} strokeWidth={10} />
             </div>
@@ -101,7 +98,7 @@ export default function BusinessHome() {
 
         <section className="lg:col-start-1 lg:row-start-1">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Do this next</h2>
+            <h2 className="text-base font-bold text-foreground">Do this next</h2>
             <Link href="/app/school" className="flex items-center gap-0.5 text-xs font-semibold text-accent">
               Plan <ChevronRight className="h-3.5 w-3.5" />
             </Link>

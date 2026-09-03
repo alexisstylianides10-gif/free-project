@@ -29,7 +29,7 @@ export function RoadmapTimeline({ steps }: { steps: RoadmapStep[] }) {
           <span
             className={cn(
               "z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-              step.status === "completed" && "bg-gradient-brand text-white shadow-glow-accent",
+              step.status === "completed" && "bg-gradient-brand text-white",
               step.status === "unlocked" && "border-2 border-accent bg-surface text-accent",
               step.status === "locked" && "bg-muted text-muted-foreground"
             )}
