@@ -1,11 +1,33 @@
 import { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+type CardVariant = "glass" | "flat";
+
+// Default ("glass") is unchanged from before this prop existed — every
+// existing call site (38 files, mostly the authenticated /app product) keeps
+// its exact current look. "flat" is opt-in only, used by the marketing
+// landing sections (src/components/marketing/*) where the de-vibe-coding
+// pass swapped the translucent-blur + multi-layer shadow-card recipe for a
+// plain bordered surface + single-layer shadow-subtle — the "1-2 restrained
+// card styles" language a polished reference site uses, instead of every
+// static content card reading as an elevated glass panel. Scoped to a prop
+// rather than a global token change so the authenticated app (which this
+// pass explicitly does not touch/screenshot) keeps its exact current look.
+const VARIANT_CLASSES: Record<CardVariant, string> = {
+  glass: "glass shadow-card",
+  flat: "border border-border bg-surface shadow-subtle",
+};
+
+export function Card({
+  className,
+  variant = "glass",
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { variant?: CardVariant }) {
   return (
     <div
       className={cn(
-        "glass rounded-2xl shadow-card transition-shadow duration-200",
+        "rounded-2xl transition-shadow duration-200",
+        VARIANT_CLASSES[variant],
         className
       )}
       {...props}

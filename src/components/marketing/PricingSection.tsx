@@ -14,8 +14,10 @@ import { cn } from "@/lib/utils";
 // Same hover-lift recipe as FeaturesSection's cards — kept as a local
 // duplicate (not shared) since these two files intentionally have no
 // import relationship, matching the rest of this component's existing
-// pattern of self-contained sections.
-const HOVER_LIFT = "transition-all duration-200 hover:-translate-y-1 hover:shadow-float";
+// pattern of self-contained sections. Hover shadow dialed back from
+// shadow-float to shadow-raised for the same reason as FeaturesSection's
+// HOVER_LIFT — see that file's comment.
+const HOVER_LIFT = "transition-all duration-200 hover:-translate-y-1 hover:shadow-raised";
 
 // Extracted verbatim from pricing/PricingClient.tsx's body ("use client" —
 // owns the monthly/yearly toggle state, unchanged) so the exact same
@@ -98,9 +100,9 @@ export function PricingSection({
       id="pricing"
       className={cn("relative scroll-mt-20 overflow-hidden", withSectionBreak && "border-t border-border")}
     >
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-24 pt-20 md:px-10 lg:px-16">
         <SectionKicker>Pricing</SectionKicker>
-        <Heading className="mt-3 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
+        <Heading className="mt-3 max-w-2xl text-title-lg font-bold leading-tight tracking-tight text-foreground">
           Simple pricing. The organizing tools are always free.
         </Heading>
         <p className="mt-4 max-w-xl text-body leading-relaxed text-muted-foreground">
@@ -134,7 +136,7 @@ export function PricingSection({
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {/* Free */}
-          <Card className={HOVER_LIFT}>
+          <Card variant="flat" className={HOVER_LIFT}>
             <CardContent className="flex h-full flex-col p-6">
               <p className="text-body font-bold text-foreground">Free</p>
               <p className="mt-2 text-3xl font-extrabold text-foreground">$0</p>
@@ -171,21 +173,25 @@ export function PricingSection({
 
           {/* Plus — Student (live) — the only live paid tier, so it's the
               one deliberately given visual weight: raised above its
-              siblings, a brand-gradient wash, and a "Live now" badge, not a
-              fabricated "most popular" claim. Per the de-vibe audit
-              (PRODUCT_SPECS_DEVIBE.md §2.2c), the accent glow shadow was
-              dropped — the lift + border + badge already carry the emphasis
-              without a colored blur-shadow stacked on top. */}
+              siblings and a "Live now" badge, not a fabricated "most
+              popular" claim. Per the de-vibe audit (PRODUCT_SPECS_DEVIBE.md
+              §2.2c), the accent glow shadow was already dropped. This pass
+              (round 3) goes one step further and drops the diagonal
+              gradient-wash overlay too — a raised position + accent border +
+              badge is already three distinct emphasis cues; a fourth
+              (colored wash) stacked on top read as more "AI-generated SaaS
+              template" than "one deliberate accent," per the reference-site
+              audit (a restrained site uses 1-2 card treatments, not layered
+              effects on its one emphasized card). Card is still visually the
+              odd one out among the three tiers — just via position + border
+              + badge instead of position + border + badge + shadow + wash. */}
           <Card
+            variant="flat"
             className={cn(
-              "relative overflow-hidden border-accent/50 shadow-raised md:-translate-y-3",
+              "relative overflow-hidden border-accent/50 md:-translate-y-3",
               "transition-all duration-200 hover:-translate-y-4"
             )}
           >
-            <div
-              className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-accent-end/10"
-              aria-hidden
-            />
             <CardContent className="relative flex h-full flex-col p-6">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-body font-bold text-foreground">Alxioum Plus &middot; {TRACK_LABEL.student}</p>
@@ -213,7 +219,7 @@ export function PricingSection({
           </Card>
 
           {/* Plus — Business (coming soon) */}
-          <Card className="opacity-60">
+          <Card variant="flat" className="opacity-60">
             <CardContent className="flex h-full flex-col p-6">
               <div className="flex items-center gap-1.5">
                 <p className="text-body font-bold text-foreground">Alxioum Plus &middot; {TRACK_LABEL.business}</p>
@@ -245,7 +251,7 @@ export function PricingSection({
 
         {showFaqStrip && (
           <section className="mt-20">
-            <h2 className="text-heading font-extrabold tracking-tight text-foreground">Pricing questions</h2>
+            <h2 className="text-heading font-bold tracking-tight text-foreground">Pricing questions</h2>
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               {PRICING_FAQ.map((item) => (
                 <div key={item.q}>

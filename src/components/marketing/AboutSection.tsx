@@ -44,9 +44,9 @@ export function AboutSection({
       id="about"
       className={cn("relative scroll-mt-20 overflow-hidden", sectionBreak && "border-t border-border bg-surface")}
     >
-      <div className="relative mx-auto flex w-full max-w-2xl flex-col px-6 py-12 md:px-10 md:py-16">
+      <div className="relative mx-auto flex w-full max-w-2xl flex-col px-6 py-16 md:px-10 md:py-24">
         <SectionKicker>About</SectionKicker>
-        <Heading className="mt-3 text-display font-extrabold tracking-tight text-foreground">
+        <Heading className="mt-3 text-title-lg font-bold tracking-tight text-foreground">
           Built for the two groups everyone else designs around.
         </Heading>
 

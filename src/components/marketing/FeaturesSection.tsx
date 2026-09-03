@@ -32,9 +32,13 @@ type FeatureCard = { icon: LucideIcon; title: string; description: string };
 // Shared hover-lift micro-interaction — same recipe already used for
 // interactive cards on the in-app dashboards (StudentHome/BusinessHome's
 // own local HOVER_LIFT), reused here rather than invented fresh so cards
-// across the product share one physical "lift" language.
+// across the product share one physical "lift" language. Hover shadow
+// dialed back from shadow-float (the heaviest, multi-layer token) to
+// shadow-raised — these cards now rest on the flat Card variant's single
+// shadow-subtle, so the hover state only needs to read as "slightly more
+// elevated," not jump straight to the app's heaviest floating-panel shadow.
 const HOVER_LIFT =
-  "transition-all duration-200 hover:-translate-y-1 hover:border-accent/40 hover:shadow-float";
+  "transition-all duration-200 hover:-translate-y-1 hover:border-accent/40 hover:shadow-raised";
 
 const STUDENT_FEATURES: FeatureCard[] = [
   {
@@ -154,7 +158,7 @@ function FeatureGrid({ items, headline }: { items: FeatureCard[]; headline: Set<
         {headlineItems.map((item) => {
           const Icon = item.icon;
           return (
-            <Card key={item.title} className={HOVER_LIFT}>
+            <Card key={item.title} variant="flat" className={HOVER_LIFT}>
               <CardContent className="p-5">
                 <Icon className="h-5 w-5 text-accent" strokeWidth={2.25} />
                 <p className="mt-4 text-body font-bold text-foreground">{item.title}</p>
@@ -222,9 +226,9 @@ export function FeaturesSection({
       id="features"
       className={cn("relative scroll-mt-20 overflow-hidden", withSectionBreak && "border-t border-border")}
     >
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-24 pt-20 md:px-10 lg:px-16">
         <SectionKicker>Features</SectionKicker>
-        <Heading className="mt-3 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
+        <Heading className="mt-3 max-w-2xl text-title-lg font-bold leading-tight tracking-tight text-foreground">
           One plan. Built around what you&rsquo;re actually doing.
         </Heading>
         <p className="mt-4 max-w-2xl text-body leading-relaxed text-muted-foreground">
@@ -242,13 +246,13 @@ export function FeaturesSection({
         </section>
 
         <section className="mt-16">
-          <Card className="relative overflow-hidden border-accent/30 shadow-raised">
+          <Card variant="flat" className="relative overflow-hidden border-accent/30">
             <CardContent className="relative p-6 md:p-8">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-white">
                 <Sparkles className="h-4 w-4" />
               </span>
               <p className="mt-4 text-xs font-bold uppercase tracking-widest text-accent">AI Coach</p>
-              <h3 className="mt-2 text-heading font-extrabold tracking-tight text-foreground">
+              <h3 className="mt-2 text-heading font-bold tracking-tight text-foreground">
                 A coach that actually knows what&rsquo;s on your plate
               </h3>
               <p className="mt-3 max-w-2xl text-body leading-relaxed text-muted-foreground">
@@ -277,8 +281,8 @@ export function FeaturesSection({
           </div>
         </section>
 
-        <section className="relative mt-20 overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 text-center shadow-raised md:px-12 md:py-14">
-          <h2 className="relative z-10 text-heading font-extrabold tracking-tight text-foreground">
+        <section className="relative mt-20 overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 text-center shadow-subtle md:px-12 md:py-14">
+          <h2 className="relative z-10 text-heading font-bold tracking-tight text-foreground">
             Pick your track. We&rsquo;ll build around it.
           </h2>
           <p className="relative z-10 mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
