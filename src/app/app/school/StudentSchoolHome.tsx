@@ -3,10 +3,10 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock, Layers, Plus, Trash2, TriangleAlert } from "lucide-react";
+import { CalendarClock, MapPin, CheckCircle2, Circle, ClipboardCheck, BookOpen, Sparkles, Flame, Clock, Layers, Plus, Trash2, TriangleAlert, GraduationCap } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { useHomework, useExams, useTimetable, useStudySessions } from "@/lib/hooks/domain";
+import { useHomework, useExams, useTimetable, useStudySessions, useOnboardingResponse } from "@/lib/hooks/domain";
 import { useStudySubjects, useStudyTopics, useStudyFocusSessions, useStudyFlashcards } from "@/lib/hooks/study";
 import { supabase } from "@/lib/supabase/client";
 import { awardXP } from "@/lib/actions/xp";
@@ -52,6 +52,7 @@ export default function StudentSchoolHome() {
   const { data: topics, error: topicsError } = useStudyTopics(user?.id);
   const { data: focusSessions, error: focusError } = useStudyFocusSessions(user?.id);
   const { data: flashcards, error: flashcardsError } = useStudyFlashcards(user?.id);
+  const { data: onboardingResponse } = useOnboardingResponse(user?.id);
 
   // First non-null error wins — this page reads through 8 tables via
   // useTableRows; surfacing all of them at once would be noisy, and a
@@ -229,6 +230,20 @@ export default function StudentSchoolHome() {
           )}
         </CardContent>
       </Card>
+
+      {onboardingResponse?.curriculum_summary && (
+        <Card className="border-accent/25 bg-accent-soft/40">
+          <CardContent className="flex items-start gap-3 p-4">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+              <GraduationCap className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Your program</p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{onboardingResponse.curriculum_summary}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {nextExam && (
         <Link href="/app/school/exams">

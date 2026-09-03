@@ -21,10 +21,19 @@ import type {
   BusinessContentIdea,
   BusinessCompetitor,
   BusinessExpense,
+  OnboardingResponse,
 } from "@/lib/types";
 
 export function useHomework(userId?: string) {
   return useTableRows<Homework>("homework", userId, { orderBy: { column: "due_date", ascending: true } });
+}
+
+/** One row per user — used to surface the AI-researched curriculum summary
+ * from onboarding (School tab), which was previously written but never
+ * displayed anywhere. */
+export function useOnboardingResponse(userId?: string) {
+  const { data, ...rest } = useTableRows<OnboardingResponse>("onboarding_responses", userId);
+  return { data: data[0] ?? null, ...rest };
 }
 
 export function useExams(userId?: string) {

@@ -55,7 +55,16 @@ export async function researchSchoolData(params: {
     !Array.isArray(body.homework) ||
     !Array.isArray(body.exams) ||
     !Array.isArray(body.studySessions) ||
-    body.timetable.length === 0
+    // Every list needs at least one item, not just "is an array" — the
+    // prompt asks for 2 exams specifically, but nothing previously
+    // enforced that, so a response that dropped the exams array to []
+    // (seen in production: a real account got a fully-researched
+    // curriculum/timetable/homework but zero exams, silently) still
+    // passed this check and got seeded with a permanent gap.
+    body.timetable.length === 0 ||
+    body.homework.length === 0 ||
+    body.exams.length === 0 ||
+    body.studySessions.length === 0
   ) {
     throw new Error("Malformed research response.");
   }
