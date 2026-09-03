@@ -20,6 +20,7 @@ import {
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { SectionKicker } from "@/components/marketing/SectionKicker";
 import { cn } from "@/lib/utils";
 
 // Extracted verbatim from features/page.tsx's body (eyebrow through closing
@@ -27,6 +28,13 @@ import { cn } from "@/lib/utils";
 // route and inline on / — see PRODUCT_SPECS_SCROLL_LANDING.md §2, §7.
 
 type FeatureCard = { icon: LucideIcon; title: string; description: string };
+
+// Shared hover-lift micro-interaction — same recipe already used for
+// interactive cards on the in-app dashboards (StudentHome/BusinessHome's
+// own local HOVER_LIFT), reused here rather than invented fresh so cards
+// across the product share one physical "lift" language.
+const HOVER_LIFT =
+  "transition-all duration-200 hover:-translate-y-1 hover:border-accent/40 hover:shadow-float";
 
 const STUDENT_FEATURES: FeatureCard[] = [
   {
@@ -132,12 +140,12 @@ function FeatureGrid({ items }: { items: FeatureCard[] }) {
       {items.map((item) => {
         const Icon = item.icon;
         return (
-          <Card key={item.title}>
+          <Card key={item.title} className={cn("group", HOVER_LIFT)}>
             <CardContent className="p-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-white">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-brand text-white shadow-subtle transition-shadow duration-200 group-hover:shadow-glow-accent">
                 <Icon className="h-4 w-4" />
               </span>
-              <p className="mt-3 text-body font-bold text-foreground">{item.title}</p>
+              <p className="mt-4 text-body font-bold text-foreground">{item.title}</p>
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
             </CardContent>
           </Card>
@@ -186,8 +194,8 @@ export function FeaturesSection({
       <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">Features</p>
-        <Heading className="mt-2 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
+        <SectionKicker>Features</SectionKicker>
+        <Heading className="mt-3 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
           One plan. Built around what you&rsquo;re actually doing.
         </Heading>
         <p className="mt-4 max-w-2xl text-body leading-relaxed text-muted-foreground">
@@ -205,9 +213,16 @@ export function FeaturesSection({
         </section>
 
         <section className="mt-16">
-          <Card className="border-accent/30">
-            <CardContent className="p-6 md:p-8">
-              <p className="text-xs font-semibold uppercase tracking-wide text-accent">AI Coach</p>
+          <Card className="relative overflow-hidden border-accent/30 shadow-raised">
+            <div
+              className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-gradient-brand opacity-20 blur-3xl"
+              aria-hidden
+            />
+            <CardContent className="relative p-6 md:p-8">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-white shadow-glow-accent">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-accent">AI Coach</p>
               <h3 className="mt-2 text-heading font-extrabold tracking-tight text-foreground">
                 A coach that actually knows what&rsquo;s on your plate
               </h3>
@@ -237,15 +252,16 @@ export function FeaturesSection({
           </div>
         </section>
 
-        <section className="mt-20 rounded-3xl border border-border bg-surface px-6 py-10 text-center md:px-12 md:py-14">
-          <h2 className="text-heading font-extrabold tracking-tight text-foreground">
+        <section className="relative mt-20 overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 text-center shadow-raised md:px-12 md:py-14">
+          <div className="bg-ambient-glow pointer-events-none absolute inset-0" aria-hidden />
+          <h2 className="relative z-10 text-heading font-extrabold tracking-tight text-foreground">
             Pick your track. We&rsquo;ll build around it.
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
+          <p className="relative z-10 mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
             Alxioum is a planning and study tool that helps you stay organized and explore your options &mdash;
             it&rsquo;s not a guarantee of grades, a job, or a business outcome.
           </p>
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="relative z-10 mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/signup">
               <Button size="lg">
                 Get Started

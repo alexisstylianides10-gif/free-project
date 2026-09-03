@@ -66,9 +66,10 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
             <Link
               key={l.href}
               href={l.href}
-              className={cn("text-sm font-medium text-muted-foreground transition-colors hover:text-foreground")}
+              className="group relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {l.label}
+              <span className="absolute inset-x-0 -bottom-1 h-px scale-x-0 bg-gradient-brand transition-transform duration-200 group-hover:scale-x-100" />
             </Link>
           ))}
         </nav>

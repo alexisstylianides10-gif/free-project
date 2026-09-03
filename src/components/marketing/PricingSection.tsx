@@ -6,9 +6,16 @@ import { Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { SectionKicker } from "@/components/marketing/SectionKicker";
 import { PLAN_OPTIONS, TRACK_LABEL, type BillingInterval } from "@/lib/billing/plans";
 import { PRICING_FAQ } from "@/lib/marketing/faq";
 import { cn } from "@/lib/utils";
+
+// Same hover-lift recipe as FeaturesSection's cards — kept as a local
+// duplicate (not shared) since these two files intentionally have no
+// import relationship, matching the rest of this component's existing
+// pattern of self-contained sections.
+const HOVER_LIFT = "transition-all duration-200 hover:-translate-y-1 hover:shadow-float";
 
 // Extracted verbatim from pricing/PricingClient.tsx's body ("use client" —
 // owns the monthly/yearly toggle state, unchanged) so the exact same
@@ -94,8 +101,8 @@ export function PricingSection({
       <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">Pricing</p>
-        <Heading className="mt-2 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
+        <SectionKicker>Pricing</SectionKicker>
+        <Heading className="mt-3 max-w-2xl text-display font-extrabold leading-[1.15] tracking-tight text-foreground">
           Simple pricing. The organizing tools are always free.
         </Heading>
         <p className="mt-4 max-w-xl text-body leading-relaxed text-muted-foreground">
@@ -129,7 +136,7 @@ export function PricingSection({
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {/* Free */}
-          <Card>
+          <Card className={HOVER_LIFT}>
             <CardContent className="flex h-full flex-col p-6">
               <p className="text-body font-bold text-foreground">Free</p>
               <p className="mt-2 text-3xl font-extrabold text-foreground">$0</p>
@@ -164,10 +171,31 @@ export function PricingSection({
             </CardContent>
           </Card>
 
-          {/* Plus — Student (live) */}
-          <Card className="border-accent/30">
-            <CardContent className="flex h-full flex-col p-6">
-              <p className="text-body font-bold text-foreground">Alxioum Plus &middot; {TRACK_LABEL.student}</p>
+          {/* Plus — Student (live) — the only live paid tier, so it's the
+              one deliberately given visual weight: raised above its
+              siblings, a brand-gradient wash, and the accent glow the
+              design system already uses for "this is the one" emphasis
+              (same shadow-glow-accent token as the primary Button/hero
+              CTA), not a fabricated "most popular" claim. */}
+          <Card
+            className={cn(
+              "relative overflow-hidden border-accent/50 shadow-glow-accent md:-translate-y-3",
+              "transition-all duration-200 hover:-translate-y-4"
+            )}
+          >
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-accent-end/10"
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-brand opacity-25 blur-3xl"
+              aria-hidden
+            />
+            <CardContent className="relative flex h-full flex-col p-6">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-body font-bold text-foreground">Alxioum Plus &middot; {TRACK_LABEL.student}</p>
+                <Badge tone="accent">Live now</Badge>
+              </div>
               <p className="mt-2 text-3xl font-extrabold text-foreground">
                 ${studentPrice}
                 <span className="text-sm font-medium text-muted-foreground">/{interval === "monthly" ? "mo" : "yr"}</span>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { SectionKicker } from "@/components/marketing/SectionKicker";
 import { branding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
@@ -39,10 +40,14 @@ export function AboutSection({
   const Heading = headingLevel;
   const SubHeading = headingLevel === "h2" ? "h3" : "h2";
   return (
-    <section id="about" className={cn("scroll-mt-20", sectionBreak && "border-t border-border bg-surface")}>
-      <div className="mx-auto flex w-full max-w-2xl flex-col px-6 py-12 md:px-10 md:py-16">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">About</p>
-        <Heading className="mt-2 text-heading font-extrabold tracking-tight text-foreground">
+    <section
+      id="about"
+      className={cn("relative scroll-mt-20 overflow-hidden", sectionBreak && "border-t border-border bg-surface")}
+    >
+      {sectionBreak && <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />}
+      <div className="relative mx-auto flex w-full max-w-2xl flex-col px-6 py-12 md:px-10 md:py-16">
+        <SectionKicker>About</SectionKicker>
+        <Heading className="mt-3 text-heading font-extrabold tracking-tight text-foreground">
           Built for the two groups everyone else designs around.
         </Heading>
 

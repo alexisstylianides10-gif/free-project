@@ -1,3 +1,5 @@
+import { Card, CardContent } from "@/components/ui/Card";
+import { SectionKicker } from "@/components/marketing/SectionKicker";
 import { PRICING_FAQ } from "@/lib/marketing/faq";
 
 // `/`-only section (not used on any standalone route). Content = PRICING_FAQ
@@ -15,13 +17,18 @@ export function FaqSection() {
   return (
     <section id="faq" className="scroll-mt-20 border-t border-border bg-background">
       <div className="mx-auto w-full max-w-6xl px-6 pb-20 pt-14 md:px-10 lg:px-16">
-        <h2 className="text-heading font-extrabold tracking-tight text-foreground">Frequently asked questions</h2>
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
+        <SectionKicker>FAQ</SectionKicker>
+        <h2 className="mt-3 text-heading font-extrabold tracking-tight text-foreground">
+          Frequently asked questions
+        </h2>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
           {PRICING_FAQ.map((item) => (
-            <div key={item.q}>
-              <p className="font-semibold text-foreground">{item.q}</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
-            </div>
+            <Card key={item.q} className="transition-colors duration-200 hover:border-accent/30">
+              <CardContent className="p-5">
+                <p className="font-semibold text-foreground">{item.q}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
         <p className="mt-6 text-sm text-muted-foreground">

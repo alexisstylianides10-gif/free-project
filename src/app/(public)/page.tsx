@@ -15,6 +15,7 @@ import { AboutSection } from "@/components/marketing/AboutSection";
 import { FaqSection } from "@/components/marketing/FaqSection";
 import { InstallAppCard } from "@/components/shared/InstallAppCard";
 import { branding } from "@/lib/branding";
+import { cn } from "@/lib/utils";
 
 const PROOF = [
   { value: "Student · Founder", label: "Two tracks, one app" },
@@ -103,7 +104,7 @@ export default function WelcomePage() {
             <div className="mt-16 space-y-4 lg:mt-0">
               <Link
                 href="/signup"
-                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-body font-semibold text-white shadow-glow-accent transition-transform active:scale-[0.98] lg:w-auto lg:px-10"
+                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand text-body font-semibold text-white shadow-glow-accent transition-all duration-150 hover:brightness-110 active:scale-[0.98] lg:w-auto lg:px-10"
               >
                 Get Started
                 <ArrowRight className="h-4 w-4" />
@@ -121,9 +122,9 @@ export default function WelcomePage() {
                 Fills what used to be a large empty gap on every viewport (most
                 severe on desktop, present on mobile too) between the pitch and
                 the CTA. */}
-            <div className="flex items-start justify-between gap-3 border-t border-border pt-6 lg:pt-7">
-              {PROOF.map((p) => (
-                <div key={p.label} className="min-w-0">
+            <div className="flex items-stretch justify-between gap-3 border-t border-border pt-6 lg:pt-7">
+              {PROOF.map((p, i) => (
+                <div key={p.label} className={cn("min-w-0", i > 0 && "border-l border-border pl-3")}>
                   <p className="text-xs font-extrabold leading-snug text-foreground lg:text-body">{p.value}</p>
                   <p className="mt-1 text-2xs text-muted-foreground lg:text-caption">{p.label}</p>
                 </div>
