@@ -3,33 +3,28 @@ import { cn } from "@/lib/utils";
 
 type CardVariant = "glass" | "flat";
 
-// Default ("glass") is unchanged from before this prop existed — every
-// existing call site (38 files, mostly the authenticated /app product) keeps
-// its exact current look. "flat" is opt-in only, used by the marketing
-// landing sections (src/components/marketing/*) where the de-vibe-coding
-// pass swapped the translucent-blur + multi-layer shadow-card recipe for a
-// plain bordered surface + single-layer shadow-subtle — the "1-2 restrained
-// card styles" language a polished reference site uses, instead of every
-// static content card reading as an elevated glass panel. Scoped to a prop
-// rather than a global token change so the authenticated app (which this
-// pass explicitly does not touch/screenshot) keeps its exact current look.
+// Glassmorphism RETIRED (spec §12: "do not use glassmorphism everywhere ...
+// only when they have a clear UX purpose") — no call site in the app passes
+// variant="glass" explicitly (grepped: zero matches), every one of the ~38
+// existing <Card> usages just relies on the default, so this pass changes
+// what that default renders rather than requiring any page edit. "glass" is
+// kept in the type/map only so nothing breaks if some call site somewhere
+// does pass it explicitly; both variants now produce the identical spec-
+// compliant flat treatment: 12-16px radius (the new `card` token), a
+// subtle 1px border, minimal/no shadow, no blur, no translucency.
 const VARIANT_CLASSES: Record<CardVariant, string> = {
-  glass: "glass shadow-card",
-  flat: "border border-border bg-surface shadow-subtle",
+  glass: "border border-border bg-surface shadow-card",
+  flat: "border border-border bg-surface shadow-card",
 };
 
 export function Card({
   className,
-  variant = "glass",
+  variant = "flat",
   ...props
 }: HTMLAttributes<HTMLDivElement> & { variant?: CardVariant }) {
   return (
     <div
-      className={cn(
-        "rounded-2xl transition-shadow duration-200",
-        VARIANT_CLASSES[variant],
-        className
-      )}
+      className={cn("rounded-card transition-shadow duration-200", VARIANT_CLASSES[variant], className)}
       {...props}
     />
   );

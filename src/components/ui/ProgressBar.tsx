@@ -21,7 +21,7 @@ export function ProgressBar({
   return (
     <div
       className={cn(
-        "h-2 w-full overflow-hidden rounded-full bg-muted shadow-[inset_0_1px_2px_hsl(var(--shadow-color)/0.35)]",
+        "h-2 w-full overflow-hidden rounded-full bg-muted shadow-[inset_0_1px_2px_hsl(var(--shadow-color)/0.12)]",
         className
       )}
     >

@@ -42,7 +42,7 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/60 bg-background/75 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-border bg-background">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5 md:px-10 lg:px-16">
         <Link href="/" className={cn("items-center gap-2", hideLogoOnMobile ? "hidden md:flex" : "flex")}>
           <LogoMark size={28} />
@@ -69,7 +69,7 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
               className="group relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {l.label}
-              <span className="absolute inset-x-0 -bottom-1 h-px scale-x-0 bg-gradient-brand transition-transform duration-200 group-hover:scale-x-100" />
+              <span className="absolute inset-x-0 -bottom-1 h-px scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
             </Link>
           ))}
         </nav>
@@ -94,7 +94,7 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
       </div>
 
       {open && (
-        <div className="glass mx-4 mb-4 space-y-1 rounded-2xl p-2 shadow-raised md:hidden">
+        <div className="mx-4 mb-4 space-y-1 rounded-card border border-border bg-surface p-2 shadow-raised md:hidden">
           {LINKS.map((l) => (
             <Link
               key={l.href}

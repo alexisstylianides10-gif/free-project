@@ -18,30 +18,39 @@ const config: Config = {
           "sans-serif",
         ],
       },
-      // Named tiers for the sizes the app was already reaching for via
-      // arbitrary `text-[Npx]` values (round 2 of the visual pass: audited
-      // 51 arbitrary usages across ~30 files). Every value here is copied
-      // verbatim from what was already in use — this renames the scale,
-      // it doesn't change it, so there's zero visual diff, just less risk
-      // of the next screen picking 12px where the rest of the app uses 11.
-      // Deliberately plain strings (font-size only, no bundled line-height)
-      // so these always compose safely with whatever `leading-*` class a
-      // call site already has, instead of the two fighting over which
-      // line-height wins in the cascade — the same class of bug the
-      // `.glass`/`shadow-card` box-shadow collision was, last pass.
+      // Named type-scale tiers (spec §3: Display 48-64/650-700, Page title
+      // 32-40/650-700, Section title 20-24/600-650, Body 15-16/400-450,
+      // Secondary 13-14). This tier system already existed pre-spec
+      // (reverse-engineered from ~51 arbitrary text-[Npx] usages across the
+      // app) and is relied on by 41 files, most of them in the
+      // authenticated /app product this pass cannot screenshot/verify.
+      //
+      // DECISION: only `display` — used in exactly one place app-wide (the
+      // public landing hero, per its own existing comment, confirmed via
+      // grep) — has been resized into the spec's stated range, since it's
+      // the one tier this pass can actually verify with Playwright.
+      // `title`/`title-lg`/`heading`/`subsection` sit close to but not
+      // exactly on the spec's page-title/section-title ranges (e.g.
+      // title-lg=28px vs. spec's page-title 32-40px); resizing them here
+      // would cascade into 40 files of authenticated pages sight-unseen —
+      // real risk of overflow/wrapping regressions this pass can't confirm
+      // or deny. Flagged explicitly for Phase 2: re-tune those tiers to the
+      // spec ranges page-by-page, verified visually as each page is swept
+      // (font *weight* has the same problem — weights are applied via
+      // Tailwind utilities at each call site, not bundled into these
+      // size-only tokens, so enforcing spec's 650-700/600-650/400-450
+      // weight ranges is inherently a per-page-file job, not a token one).
       fontSize: {
         "2xs": "10px", // nav labels, tiny inline badge counters
         caption: "11px", // eyebrow labels, disclaimers, small badges — the single most-used tier
         tooltip: "12px", // Tooltip primitive only
-        label: "13px", // tab pills, small buttons
-        body: "15px", // onboarding copy, card titles, large buttons
+        label: "13px", // tab pills, small buttons — spec "secondary" tier (13-14px)
+        body: "15px", // onboarding copy, card titles, large buttons — spec "body" tier (15-16px)
         title: "22px", // mobile page/section h1s
-        "title-lg": "28px", // desktop variant of `title` (StudentHome/BusinessHome lg:)
-        heading: "26px", // ScreenHeader and onboarding/choose-plan success headlines
-        subsection: "19px", // a heading *inside* a section (e.g. "Student track"
-        // inside Features), one real tier below a section's own heading —
-        // not the same size/weight as the section heading it lives under.
-        display: "34px", // landing page hero only
+        "title-lg": "28px", // desktop variant of `title` (StudentHome/BusinessHome lg:) — Phase 2: spec wants 32-40px
+        heading: "26px", // ScreenHeader and onboarding/choose-plan success headlines — Phase 2: spec wants 20-24px (or reclassify as page-title)
+        subsection: "19px", // a heading *inside* a section, one tier below a section's own heading
+        display: "52px", // landing page hero only — resized into spec's 48-64px range (was 34px); verified via Playwright render
       },
       colors: {
         background: "hsl(var(--background))",
@@ -52,6 +61,9 @@ const config: Config = {
         "border-strong": "hsl(var(--border-strong))",
         muted: "hsl(var(--muted))",
         "muted-foreground": "hsl(var(--muted-foreground))",
+        // Spec's third ("muted") text tier — additive, not yet consumed by
+        // any existing call site. See globals.css header note.
+        "muted-foreground-subtle": "hsl(var(--muted-foreground-subtle))",
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
@@ -78,35 +90,70 @@ const config: Config = {
         school: "hsl(var(--school))",
         future: "hsl(var(--future))",
       },
+      // Spacing: Tailwind's default rem-based scale already satisfies the
+      // spec's preferred 4/8/12/16/20/24/32/40/48/64/80px values 1:1
+      // (4=spacing-1, 8=spacing-2, 12=spacing-3, 16=spacing-4, 20=spacing-5,
+      // 24=spacing-6, 32=spacing-8, 40=spacing-10, 48=spacing-12,
+      // 64=spacing-16, 80=spacing-20) — verified against Tailwind v3's
+      // default theme. No custom spacing scale needed; nothing added here.
       borderRadius: {
-        sm: "10px",
-        md: "14px",
-        lg: "18px",
-        xl: "22px",
-        "2xl": "28px",
-        "3xl": "34px",
+        // Spec §6 named tiers, transcribed directly:
+        sm: "8px", // spec "small"
+        md: "12px", // spec "medium"
+        lg: "16px", // spec "large"
+        // Spec doesn't define tiers past "large" — these three are this
+        // codebase's own pre-existing bigger tiers (hero panels, big
+        // illustration blocks), reeled in from their previous, more
+        // exaggerated values (22/28/34px) to fit the calmer overall scale
+        // without a page-by-page radius audit.
+        xl: "20px",
+        "2xl": "24px",
+        "3xl": "28px",
+        // Explicit semantic tokens for the component-specific radii the
+        // spec calls out by name (§6/§7), so Button/Input/Select/Card/Modal
+        // reach for a named token instead of a magic arbitrary value:
+        button: "9px", // spec "buttons: 8-10px"
+        input: "9px", // spec "inputs: 8-10px"
+        card: "14px", // spec "cards: 12-16px" — mid-range default
+        modal: "16px", // upper end of the card-like range for the one tier of surface bigger than a card
       },
       boxShadow: {
-        // Multi-layer elevation recipe (crisp near-shadow + soft diffuse
-        // far-shadow) instead of a single soft blur — the near layer is
-        // what actually reads as "this surface is lifted," which the
-        // single-shadow version was missing, especially on the near-white
-        // light theme where there's little luminance gap to rely on.
-        subtle: "0 1px 2px hsl(var(--shadow-color) / 0.22)",
-        card: "inset 0 1px 0 var(--card-highlight), 0 1px 1px hsl(var(--shadow-color) / 0.22), 0 4px 10px -4px hsl(var(--shadow-color) / 0.32), 0 20px 40px -20px hsl(var(--shadow-color) / 0.55)",
-        raised: "inset 0 1px 0 var(--card-highlight), 0 2px 6px -1px hsl(var(--shadow-color) / 0.3), 0 10px 24px -8px hsl(var(--shadow-color) / 0.45)",
-        pop: "inset 0 1px 0 var(--card-highlight), 0 8px 16px -6px hsl(var(--shadow-color) / 0.35), 0 28px 56px -16px hsl(var(--shadow-color) / 0.55)",
-        // Neutral elevated hover shadow for interactive cards that aren't
-        // inherently accent-branded (a plain career-progress or CTA card
-        // shouldn't glow purple on hover just because it's clickable).
-        float: "inset 0 1px 0 var(--card-highlight), 0 12px 24px -8px hsl(var(--shadow-color) / 0.35), 0 32px 64px -24px hsl(var(--shadow-color) / 0.5)",
-        "glow-accent": "0 12px 32px -10px hsl(var(--accent) / 0.55)",
-        "glow-mission": "0 12px 32px -10px hsl(var(--mission-via) / 0.5)",
+        // Spec §10: "no shadow or extremely subtle" for default UI, subtle
+        // only for dropdowns/modals/elevated elements. This replaces the
+        // previous multi-layer elevation recipe (crisp near-shadow + soft
+        // diffuse far-shadow + an inset top-edge "glass" highlight) — that
+        // recipe was intensity-tuned for a translucent/glass surface
+        // treatment that no longer exists (see globals.css `.glass` note);
+        // every tier below is meaningfully lower-opacity than before, and
+        // the inset highlight layer has been dropped entirely.
+        subtle: "0 1px 2px hsl(var(--shadow-color) / 0.08)",
+        // Cards should rely on their border for definition, not a shadow
+        // (spec §5: "subtle border, minimal or no shadow") — this is
+        // intentionally close to imperceptible, kept only so call sites
+        // that explicitly opt into `shadow-card` don't get zero elevation.
+        card: "0 1px 2px hsl(var(--shadow-color) / 0.04)",
+        // Dropdowns / floating nav / tooltips — "subtle shadow" per spec.
+        raised: "0 4px 12px -2px hsl(var(--shadow-color) / 0.12), 0 2px 4px -2px hsl(var(--shadow-color) / 0.08)",
+        // Modals / toasts — the single most-elevated tier, still restrained.
+        pop: "0 16px 32px -12px hsl(var(--shadow-color) / 0.18), 0 4px 8px -4px hsl(var(--shadow-color) / 0.10)",
+        // Hover-elevated interactive cards.
+        float: "0 8px 20px -6px hsl(var(--shadow-color) / 0.14)",
+        // `glow-accent` / `glow-mission` removed — grepped zero call sites
+        // across src/, and a glowing colored shadow is exactly the §10/§11
+        // anti-pattern this pass is removing, not one to keep on standby.
       },
       backgroundImage: {
+        // Gradient stops are equal (--accent-end == --accent) — see
+        // globals.css file-header note. Kept as a two-stop gradient
+        // mechanically (not hardcoded to a flat color) so nothing breaks if
+        // a future token pass reintroduces a deliberate two-tone accent.
         "gradient-brand": "linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--accent-end)) 100%)",
-        "gradient-mission": "linear-gradient(135deg, hsl(var(--mission-from)) 0%, hsl(var(--mission-via)) 55%, hsl(var(--mission-to)) 100%)",
-        "gradient-radial-glow": "radial-gradient(60% 60% at 50% 0%, hsl(var(--accent) / 0.25) 0%, transparent 70%)",
+        // Flattened to a single mission-via stop — the old 3-stop coral/
+        // pink/purple gradient is gone from every `bg-gradient-mission`
+        // call site; --mission-from/--mission-to remain distinct, muted
+        // tokens elsewhere (category tag colors). See globals.css note.
+        "gradient-mission": "linear-gradient(135deg, hsl(var(--mission-via)) 0%, hsl(var(--mission-via)) 100%)",
+        // `gradient-radial-glow` removed — zero call sites in src/.
       },
       keyframes: {
         "fade-in": {

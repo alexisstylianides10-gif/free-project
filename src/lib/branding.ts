@@ -16,8 +16,10 @@ export const branding = {
   tagline: "Build your future while you build your grades.",
   description:
     "Alxioum helps students stay on top of school while discovering and building their future career: school, skills, projects, and career, all in one place.",
-  themeColor: "#0A0C1A",
-  backgroundColor: "#0A0C1A",
+  // Matches the new dark-mode --background token (globals.css) — was
+  // #0A0C1A, a leftover from the previous palette.
+  themeColor: "#0B0D10",
+  backgroundColor: "#0B0D10",
 } as const;
 
 /**

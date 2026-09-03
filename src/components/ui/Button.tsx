@@ -11,22 +11,29 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
 }
 
+// Spec §7: primary = brand background, white text, 8-10px radius, 40-44px
+// height, subtle hover — no gradient, no heavy shadow. `bg-gradient-brand`
+// is kept rather than swapped to `bg-accent` (functionally identical now
+// that --accent-end == --accent, see globals.css) so this stays a no-op
+// change for every existing call site's visual output.
 const variantClasses: Record<Variant, string> = {
-  primary:
-    "bg-gradient-brand text-white shadow-raised hover:brightness-110",
-  mission:
-    "bg-gradient-mission text-white shadow-raised hover:brightness-110",
-  secondary: "bg-muted text-foreground hover:bg-border-strong/40",
+  primary: "bg-gradient-brand text-white shadow-subtle hover:brightness-110",
+  mission: "bg-gradient-mission text-white shadow-subtle hover:brightness-110",
+  // Spec §7: secondary = neutral/light background, subtle border, dark text.
+  secondary: "border border-border bg-surface text-foreground hover:bg-muted",
   ghost: "text-foreground hover:bg-muted",
   outline: "border border-border text-foreground hover:bg-muted bg-transparent",
   danger: "bg-danger text-white hover:opacity-90",
 };
 
+// Spec §6/§7: buttons use the dedicated 8-10px `button` radius token, not a
+// pill. Heights: sm stays compact (32px) for tight inline controls; md/lg
+// sit inside the spec's 40-44px primary-button range (was 40/48px).
 const sizeClasses: Record<Size, string> = {
-  sm: "h-8 px-3 text-label rounded-full gap-1.5",
-  md: "h-10 px-4 text-sm rounded-full gap-2",
-  lg: "h-12 px-6 text-body rounded-full gap-2",
-  icon: "h-10 w-10 rounded-full justify-center",
+  sm: "h-8 px-3 text-label rounded-button gap-1.5",
+  md: "h-10 px-4 text-sm rounded-button gap-2",
+  lg: "h-11 px-6 text-body rounded-button gap-2",
+  icon: "h-10 w-10 rounded-button justify-center",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

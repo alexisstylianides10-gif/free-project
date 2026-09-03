@@ -15,7 +15,11 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 md:hidden">
       <div className="mx-auto flex max-w-md items-center justify-between gap-1 px-3">
-        <div className="glass flex w-full items-center justify-between rounded-full px-1.5 py-1.5 shadow-pop">
+        {/* Persistent floating nav chrome — the one nav-shell element that
+            legitimately warrants the "elevated" shadow tier (spec §10). No
+            blur/translucency (glassmorphism retired, spec §12): a plain
+            bordered surface reads just as "floating" without it. */}
+        <div className="flex w-full items-center justify-between rounded-full border border-border bg-surface px-1.5 py-1.5 shadow-raised">
           {TABS.map((tab) => {
             const active = tab.match(pathname);
             const Icon = tab.icon;
@@ -25,14 +29,17 @@ export function BottomNav() {
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
+                  // Spec §8: subtle brand-tinted background + brand-colored
+                  // icon/text for the active state, not a solid white-on-
+                  // block treatment.
                   "flex flex-1 flex-col items-center gap-0.5 rounded-full py-2 text-2xs font-medium transition-colors",
-                  active ? "text-white" : "text-muted-foreground hover:text-foreground"
+                  active ? "text-accent" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <span
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full transition-all",
-                    active && "bg-gradient-brand"
+                    "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+                    active && "bg-accent-soft"
                   )}
                 >
                   <Icon className="h-[18px] w-[18px]" strokeWidth={2.25} />

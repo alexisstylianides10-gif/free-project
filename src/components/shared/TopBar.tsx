@@ -35,7 +35,7 @@ export function TopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-30 hidden border-b border-border/60 bg-background/75 backdrop-blur-xl md:block">
+    <header className="sticky top-0 z-30 hidden border-b border-border bg-background md:block">
       <div className="mx-auto flex max-w-3xl items-center justify-between px-10 py-4 lg:max-w-5xl xl:max-w-6xl">
         <h1 className="text-base font-semibold tracking-tight text-foreground">{activeTab?.label ?? "Overview"}</h1>
 
@@ -47,20 +47,17 @@ export function TopBar() {
             onClick={cycleTheme}
             aria-label={`Theme: ${mode}. Click to change.`}
             title={`Theme: ${mode}`}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground hover:rotate-12"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
           >
             <ThemeIcon className="h-4 w-4" />
           </button>
 
           <Link
             href="/app/profile"
-            className="group flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-muted"
+            className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-muted"
           >
-            <span className="relative flex h-7 w-7 shrink-0 items-center justify-center">
-              <span className="absolute inset-0 rounded-full bg-gradient-brand opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-60" />
-              <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-gradient-brand text-xs font-semibold text-white">
-                {profile.avatar_emoji || initials(profile.full_name)}
-              </span>
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
+              {profile.avatar_emoji || initials(profile.full_name)}
             </span>
             <span className="text-sm font-medium text-foreground">{profile.full_name?.split(" ")[0] || "You"}</span>
             <Badge tone="accent">Lvl {level}</Badge>
