@@ -1,12 +1,29 @@
+import {
+  Code2,
+  Rocket,
+  Bot,
+  BarChart3,
+  Clapperboard,
+  Stethoscope,
+  Scale,
+  Palette,
+  Cog,
+  DollarSign,
+  Trophy,
+  type LucideIcon,
+} from "lucide-react";
+
 export interface SubjectRating {
   subject: string;
   stars: 1 | 2 | 3 | 4 | 5;
 }
 
+// Icons are lucide-react components (spec §9: one icon system app-wide) —
+// a fixed, non-user-chosen catalog identity per career, not user content.
 export interface Career {
   slug: string;
   name: string;
-  icon: string;
+  icon: LucideIcon;
   tagline: string;
   whyItMatches: string;
   subjects: SubjectRating[];
@@ -26,7 +43,7 @@ export const CAREERS: Career[] = [
   {
     slug: "software-engineer",
     name: "Software Engineer",
-    icon: "💻",
+    icon: Code2,
     tagline: "Build the apps and systems people use every day.",
     whyItMatches: "You're drawn to technology and problem solving, and you like building things that actually work.",
     subjects: [
@@ -46,7 +63,7 @@ export const CAREERS: Career[] = [
   {
     slug: "entrepreneur",
     name: "Entrepreneur",
-    icon: "🚀",
+    icon: Rocket,
     tagline: "Spot real problems and build something that solves them.",
     whyItMatches: "You're interested in business and money, and you like the idea of building something of your own.",
     subjects: [
@@ -67,7 +84,7 @@ export const CAREERS: Career[] = [
   {
     slug: "ai-engineer",
     name: "AI Engineer",
-    icon: "🤖",
+    icon: Bot,
     tagline: "Design and train the models behind modern AI products.",
     whyItMatches: "You're curious about AI and enjoy math and computer science, the two subjects that matter most here.",
     subjects: [
@@ -88,7 +105,7 @@ export const CAREERS: Career[] = [
   {
     slug: "data-scientist",
     name: "Data Scientist",
-    icon: "📊",
+    icon: BarChart3,
     tagline: "Turn messy data into decisions people actually act on.",
     whyItMatches: "You like maths and problem solving, and you're interested in how data drives technology and business.",
     subjects: [
@@ -109,7 +126,7 @@ export const CAREERS: Career[] = [
   {
     slug: "digital-creator",
     name: "Digital Creator",
-    icon: "🎬",
+    icon: Clapperboard,
     tagline: "Build an audience and tell stories people want to watch.",
     whyItMatches: "You enjoy content creation and social media, and you like expressing ideas creatively.",
     subjects: [
@@ -130,7 +147,7 @@ export const CAREERS: Career[] = [
   {
     slug: "doctor",
     name: "Doctor",
-    icon: "🩺",
+    icon: Stethoscope,
     tagline: "Diagnose, treat, and care for people through science.",
     whyItMatches: "You're interested in medicine and science, and you like working with and helping people.",
     subjects: [
@@ -150,7 +167,7 @@ export const CAREERS: Career[] = [
   {
     slug: "lawyer",
     name: "Lawyer",
-    icon: "⚖️",
+    icon: Scale,
     tagline: "Argue, negotiate, and use the law to solve real disputes.",
     whyItMatches: "You're interested in law, and you're strong at communication and structured argument.",
     subjects: [
@@ -171,7 +188,7 @@ export const CAREERS: Career[] = [
   {
     slug: "product-designer",
     name: "Product Designer",
-    icon: "🎨",
+    icon: Palette,
     tagline: "Design the look and feel of the products people use.",
     whyItMatches: "You're interested in design and creativity, and you like making things that look and feel good to use.",
     subjects: [
@@ -192,7 +209,7 @@ export const CAREERS: Career[] = [
   {
     slug: "mechanical-engineer",
     name: "Mechanical Engineer",
-    icon: "⚙️",
+    icon: Cog,
     tagline: "Design and build the machines and systems that power the world.",
     whyItMatches: "You're interested in engineering, and you like understanding how things work and building them.",
     subjects: [
@@ -212,7 +229,7 @@ export const CAREERS: Career[] = [
   {
     slug: "finance-analyst",
     name: "Finance Analyst",
-    icon: "💰",
+    icon: DollarSign,
     tagline: "Understand money, markets, and how businesses make decisions.",
     whyItMatches: "You're interested in money and business, and you're comfortable with numbers.",
     subjects: [
@@ -233,7 +250,7 @@ export const CAREERS: Career[] = [
   {
     slug: "sports-professional",
     name: "Sports Professional",
-    icon: "🏅",
+    icon: Trophy,
     tagline: "Turn discipline and performance into a career in sport.",
     whyItMatches: "You're interested in sport, and you already put in the discipline it takes to compete and improve.",
     subjects: [

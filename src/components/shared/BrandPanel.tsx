@@ -1,3 +1,4 @@
+import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Variant = "landing" | "login" | "signup" | "onboarding-student" | "onboarding-business";
@@ -63,7 +64,9 @@ export function BrandPanel({ variant, className }: { variant: Variant; className
           <MiniRing pct={64} />
           <MiniRing pct={37} />
           <div className="ml-auto text-right">
-            <p className="text-lg font-bold text-white">🔥 6</p>
+            <p className="flex items-center justify-end gap-1.5 text-lg font-bold text-white">
+              <Flame className="h-4 w-4" aria-hidden /> 6
+            </p>
             <p className="text-2xs font-semibold uppercase tracking-wide text-white/70">day streak</p>
           </div>
         </div>

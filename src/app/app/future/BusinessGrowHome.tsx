@@ -12,6 +12,8 @@ import { NotificationBell } from "@/components/shared/NotificationBell";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 
 const METRIC_OPTIONS = [
@@ -157,24 +159,14 @@ export default function BusinessGrowHome() {
         <Card>
           <CardContent className="p-4">
             <form onSubmit={logMetric} className="flex items-center gap-2">
-              <select
-                value={metricKey}
-                onChange={(e) => setMetricKey(e.target.value)}
-                className="h-11 rounded-full border border-border bg-surface px-3 text-xs font-medium text-foreground outline-none"
-              >
+              <Select value={metricKey} onChange={(e) => setMetricKey(e.target.value)} className="h-11 w-auto shrink-0 pr-8 text-xs font-medium">
                 {METRIC_OPTIONS.map((o) => (
                   <option key={o.key} value={o.key}>
                     {o.label}
                   </option>
                 ))}
-              </select>
-              <input
-                value={metricValue}
-                onChange={(e) => setMetricValue(e.target.value)}
-                type="number"
-                placeholder="Value"
-                className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-              />
+              </Select>
+              <Input value={metricValue} onChange={(e) => setMetricValue(e.target.value)} type="number" placeholder="Value" className="flex-1" />
               <Button size="sm" type="submit" disabled={loggingMetric || !metricValue.trim()}>
                 {loggingMetric ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Log"}
               </Button>
@@ -230,33 +222,29 @@ export default function BusinessGrowHome() {
           <CardContent className="p-4">
             <form onSubmit={logExpense} className="space-y-2.5">
               <div className="flex gap-2">
-                <select
-                  value={expenseCategory}
-                  onChange={(e) => setExpenseCategory(e.target.value)}
-                  className="h-11 rounded-full border border-border bg-surface px-3 text-xs font-medium text-foreground outline-none"
-                >
+                <Select value={expenseCategory} onChange={(e) => setExpenseCategory(e.target.value)} className="h-11 w-auto shrink-0 pr-8 text-xs font-medium">
                   {EXPENSE_CATEGORY_OPTIONS.map((o) => (
                     <option key={o.key} value={o.key}>
                       {o.label}
                     </option>
                   ))}
-                </select>
-                <input
+                </Select>
+                <Input
                   value={expenseAmount}
                   onChange={(e) => setExpenseAmount(e.target.value)}
                   type="number"
                   min="0"
                   step="0.01"
                   placeholder="Amount ($)"
-                  className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+                  className="flex-1"
                 />
               </div>
               <div className="flex gap-2">
-                <input
+                <Input
                   value={expenseDescription}
                   onChange={(e) => setExpenseDescription(e.target.value)}
                   placeholder="What was it for? (optional)"
-                  className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+                  className="flex-1"
                 />
                 <Button size="sm" type="submit" disabled={loggingExpense || !expenseAmount.trim()}>
                   {loggingExpense ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Log"}
@@ -304,23 +292,14 @@ export default function BusinessGrowHome() {
           <CardContent className="p-4">
             <form onSubmit={generateContent} className="space-y-2.5">
               <div className="flex gap-2">
-                <select
-                  value={platform}
-                  onChange={(e) => setPlatform(e.target.value)}
-                  className="h-11 rounded-full border border-border bg-surface px-3 text-xs font-medium text-foreground outline-none"
-                >
+                <Select value={platform} onChange={(e) => setPlatform(e.target.value)} className="h-11 w-auto shrink-0 pr-8 text-xs font-medium">
                   {PLATFORM_OPTIONS.map((o) => (
                     <option key={o.key} value={o.key}>
                       {o.label}
                     </option>
                   ))}
-                </select>
-                <input
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="What's it about?"
-                  className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-                />
+                </Select>
+                <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What's it about?" className="flex-1" />
               </div>
               <Button size="md" type="submit" className="w-full" disabled={generating || !topic.trim()}>
                 {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Generate draft"}
@@ -373,18 +352,8 @@ export default function BusinessGrowHome() {
             )}
 
             <form onSubmit={addCompetitor} className="mt-3 flex items-center gap-2">
-              <input
-                value={competitorName}
-                onChange={(e) => setCompetitorName(e.target.value)}
-                placeholder="Name"
-                className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-              />
-              <input
-                value={competitorUrl}
-                onChange={(e) => setCompetitorUrl(e.target.value)}
-                placeholder="URL (optional)"
-                className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-              />
+              <Input value={competitorName} onChange={(e) => setCompetitorName(e.target.value)} placeholder="Name" className="flex-1" />
+              <Input value={competitorUrl} onChange={(e) => setCompetitorUrl(e.target.value)} placeholder="URL (optional)" className="flex-1" />
               <button
                 type="submit"
                 disabled={addingCompetitor || !competitorName.trim()}

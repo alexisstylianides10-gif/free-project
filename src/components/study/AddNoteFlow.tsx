@@ -275,7 +275,7 @@ function SourceTile({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "glass flex flex-col items-start gap-3 rounded-2xl p-4 text-left shadow-card transition-colors",
+        "bg-surface border border-border flex flex-col items-start gap-3 rounded-2xl p-4 text-left shadow-card transition-colors",
         "hover:border-accent/40 disabled:opacity-40 disabled:pointer-events-none"
       )}
     >

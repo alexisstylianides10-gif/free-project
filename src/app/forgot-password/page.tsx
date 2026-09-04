@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Loader2, ArrowRight, ArrowLeft, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { BrandPanel } from "@/components/shared/BrandPanel";
@@ -84,7 +85,7 @@ export default function ForgotPasswordPage() {
               <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</span>
-                  <input
+                  <Input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -92,7 +93,6 @@ export default function ForgotPasswordPage() {
                     autoComplete="email"
                     required
                     autoFocus
-                    className="input"
                   />
                 </label>
 
@@ -115,26 +115,6 @@ export default function ForgotPasswordPage() {
       </div>
 
       <BrandPanel variant="login" />
-
-      <style jsx global>{`
-        .input {
-          height: 46px;
-          width: 100%;
-          border-radius: 14px;
-          border: 1px solid hsl(var(--border));
-          background: hsl(var(--surface));
-          padding: 0 16px;
-          font-size: 14px;
-          color: hsl(var(--foreground));
-          outline: none;
-        }
-        .input:focus {
-          border-color: hsl(var(--accent) / 0.6);
-        }
-        .input::placeholder {
-          color: hsl(var(--muted-foreground));
-        }
-      `}</style>
     </main>
   );
 }

@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { NotificationBell } from "@/components/shared/NotificationBell";
@@ -141,11 +142,19 @@ export default function ProfilePage() {
         <div className="grid grid-cols-2 gap-3">
           {ACHIEVEMENTS.filter((a) => !a.track || a.track === profile.track).map((a) => {
             const earned = earnedKeys.has(a.key);
+            const AchievementIcon = a.icon;
             return (
               <Card key={a.key} className={cn(!earned && "opacity-55")}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className={cn("text-2xl", !earned && "grayscale")}>{a.icon}</span>
+                    <span
+                      className={cn(
+                        "flex h-9 w-9 items-center justify-center rounded-full",
+                        earned ? "bg-accent-soft text-accent" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <AchievementIcon className="h-4 w-4" aria-hidden />
+                    </span>
                     {!earned && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
                   </div>
                   <p className="mt-2 text-sm font-semibold text-foreground">{a.title}</p>
@@ -263,7 +272,7 @@ export default function ProfilePage() {
             <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
               Type <span className="font-bold text-foreground">{DELETE_CONFIRM_PHRASE}</span> to confirm
             </span>
-            <input
+            <Input
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder={DELETE_CONFIRM_PHRASE}
@@ -271,7 +280,7 @@ export default function ProfilePage() {
               autoCapitalize="off"
               autoCorrect="off"
               disabled={deleting}
-              className="h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-danger/60"
+              className="focus:border-danger/60"
             />
           </label>
 

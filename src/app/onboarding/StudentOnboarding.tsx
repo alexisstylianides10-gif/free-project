@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { SelectableCard } from "@/components/shared/SelectableCard";
 import { CountrySelect } from "@/components/shared/CountrySelect";
 import { OnboardingShell } from "./OnboardingShell";
@@ -163,12 +165,12 @@ export default function StudentOnboarding() {
 
       {step === 2 && (
         <Question title="What school do you go to?" subtitle="This helps us match your real timetable and curriculum" context={personalizedContext(2, answers)}>
-          <input
+          <Input
             autoFocus
             value={answers.schoolName}
             onChange={(e) => setAnswers({ ...answers, schoolName: e.target.value })}
             placeholder="e.g. Lincoln High School"
-            className="h-12 w-full rounded-2xl border border-border bg-surface px-4 text-body text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            className="h-12 text-body"
           />
         </Question>
       )}
@@ -261,7 +263,7 @@ export default function StudentOnboarding() {
 
       {step === 10 && (
         <Question title="How old are you?" subtitle="Optional. This just helps us understand our students better.">
-          <input
+          <Input
             autoFocus
             type="number"
             inputMode="numeric"
@@ -273,7 +275,7 @@ export default function StudentOnboarding() {
               setAnswers({ ...answers, age: raw === "" ? null : Number(raw) });
             }}
             placeholder="e.g. 15"
-            className="h-12 w-full rounded-2xl border border-border bg-surface px-4 text-body text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            className="h-12 text-body"
           />
         </Question>
       )}
@@ -345,16 +347,18 @@ function ResultsScreen({ matches, slugs, onContinue }: { matches: number[]; slug
 
         <div className="mt-8 space-y-3">
           {careers.map((career, i) => (
-            <div key={career.slug} className="glass rounded-2xl p-4 shadow-card">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2.5 text-body font-semibold text-foreground">
-                  <span className="text-xl">{career.icon}</span>
-                  {career.name}
-                </span>
-                <span className="text-sm font-bold text-accent">{matches[i]}% match</span>
-              </div>
-              <ProgressBar value={matches[i]} className="mt-3" />
-            </div>
+            <Card key={career.slug}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2.5 text-body font-semibold text-foreground">
+                    <career.icon className="h-5 w-5 text-accent" aria-hidden />
+                    {career.name}
+                  </span>
+                  <span className="text-sm font-bold text-accent">{matches[i]}% match</span>
+                </div>
+                <ProgressBar value={matches[i]} className="mt-3" />
+              </CardContent>
+            </Card>
           ))}
         </div>
 

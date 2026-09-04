@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Rocket, BookOpen, Brain, Briefcase, Palette, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Mission } from "@/lib/catalog/missions";
 import { Button } from "@/components/ui/Button";
@@ -19,7 +20,7 @@ export function MissionHomeCard({ mission, eyebrow = "Future Mission" }: { missi
     <div className="rounded-3xl border border-border bg-surface p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-mission-via">
-          <span aria-hidden>🚀</span> {eyebrow}
+          <Rocket className="h-3.5 w-3.5" aria-hidden /> {eyebrow}
         </p>
         <span className="rounded-full bg-mission-via/15 px-2.5 py-1 text-xs font-bold text-mission-via">+{mission.xp} XP</span>
       </div>
@@ -37,12 +38,12 @@ export function MissionHomeCard({ mission, eyebrow = "Future Mission" }: { missi
   );
 }
 
-const categoryMeta: Record<Mission["category"], { label: string; icon: string; className: string }> = {
-  school: { label: "School mission", icon: "📚", className: "bg-school/15 text-school" },
-  skill: { label: "Skill mission", icon: "🧠", className: "bg-accent-soft text-accent" },
-  career: { label: "Career mission", icon: "🚀", className: "bg-future/15 text-future" },
-  business: { label: "Business mission", icon: "💼", className: "bg-mission-via/15 text-mission-via" },
-  creative: { label: "Creative mission", icon: "🎨", className: "bg-mission-from/15 text-mission-from" },
+const categoryMeta: Record<Mission["category"], { label: string; icon: LucideIcon; className: string }> = {
+  school: { label: "School mission", icon: BookOpen, className: "bg-school/15 text-school" },
+  skill: { label: "Skill mission", icon: Brain, className: "bg-accent-soft text-accent" },
+  career: { label: "Career mission", icon: Rocket, className: "bg-future/15 text-future" },
+  business: { label: "Business mission", icon: Briefcase, className: "bg-mission-via/15 text-mission-via" },
+  creative: { label: "Creative mission", icon: Palette, className: "bg-mission-from/15 text-mission-from" },
 };
 
 export function MissionListItem({
@@ -64,8 +65,8 @@ export function MissionListItem({
         status === "completed" && "opacity-60"
       )}
     >
-      <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg", meta.className)}>
-        {meta.icon}
+      <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", meta.className)}>
+        <meta.icon className="h-5 w-5" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-foreground">{mission.title}</span>

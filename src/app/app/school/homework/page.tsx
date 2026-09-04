@@ -12,6 +12,7 @@ import type { Homework } from "@/lib/types";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { PriorityBadge } from "@/components/ui/PriorityBadge";
 
 const HOMEWORK_XP: Record<Homework["priority"], number> = { high: 15, medium: 10, low: 8 };
@@ -111,28 +112,23 @@ export default function HomeworkPage() {
     <div className="space-y-5">
       <form onSubmit={addHomework} className="space-y-2">
         <div className="flex items-center gap-2">
-          <input
+          <Input
             value={newSubject}
             onChange={(e) => setNewSubject(e.target.value)}
             placeholder="Subject…"
-            className="h-11 w-28 shrink-0 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60 sm:w-32"
+            className="w-28 shrink-0 sm:w-32"
           />
-          <input
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Add homework…"
-            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-          />
+          <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Add homework…" className="min-w-0 flex-1" />
         </div>
         <div className="flex items-center gap-2">
-          <input
+          <Input
             type="date"
             value={newDueDate}
             onChange={(e) => setNewDueDate(e.target.value)}
             aria-label="Due date"
             required
             min={todayISO()}
-            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
+            className="min-w-0 flex-1"
           />
           <button
             type="submit"
@@ -218,12 +214,12 @@ export default function HomeworkPage() {
 
                 {editingDateId === hw.id && (
                   <div className="mt-3 flex items-center gap-2">
-                    <input
+                    <Input
                       type="date"
                       value={editDateValue}
                       onChange={(e) => setEditDateValue(e.target.value)}
                       aria-label="New due date"
-                      className="h-9 flex-1 rounded-full border border-border bg-surface px-3 text-xs text-foreground outline-none focus:border-accent/60"
+                      className="h-9 flex-1 text-xs"
                     />
                     <Button size="sm" onClick={() => saveDueDate(hw.id)} disabled={!editDateValue || savingDate}>
                       Save

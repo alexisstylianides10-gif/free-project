@@ -16,6 +16,8 @@ import { formatCountdown, formatTime12, mondayOfThisWeek, todayISO, cn } from "@
 import type { StudySession } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
 const STUDY_PLAN_DAYS = [
@@ -309,49 +311,35 @@ export default function StudentSchoolHome() {
         )}
         <form onSubmit={addTimetableEntry} className="mt-3 space-y-2">
           <div className="flex items-center gap-2">
-            <select
+            <Select
               value={newTtDay}
               onChange={(e) => setNewTtDay(Number(e.target.value))}
               aria-label="Day"
-              className="h-11 shrink-0 rounded-full border border-border bg-surface px-3 text-xs font-medium text-foreground outline-none"
+              className="h-11 w-auto shrink-0 pr-8 text-xs font-medium"
             >
               {DAY_OF_WEEK_OPTIONS.map((d) => (
                 <option key={d.value} value={d.value}>
                   {d.label}
                 </option>
               ))}
-            </select>
-            <input
+            </Select>
+            <Input
               value={newTtSubject}
               onChange={(e) => setNewTtSubject(e.target.value)}
               placeholder="Add a class (e.g. Biology)…"
-              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+              className="min-w-0 flex-1"
             />
           </div>
           <div className="flex items-center gap-2">
-            <input
-              type="time"
-              value={newTtStart}
-              onChange={(e) => setNewTtStart(e.target.value)}
-              aria-label="Start time"
-              required
-              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
-            />
-            <input
-              type="time"
-              value={newTtEnd}
-              onChange={(e) => setNewTtEnd(e.target.value)}
-              aria-label="End time"
-              required
-              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
-            />
+            <Input type="time" value={newTtStart} onChange={(e) => setNewTtStart(e.target.value)} aria-label="Start time" required className="min-w-0 flex-1" />
+            <Input type="time" value={newTtEnd} onChange={(e) => setNewTtEnd(e.target.value)} aria-label="End time" required className="min-w-0 flex-1" />
           </div>
           <div className="flex items-center gap-2">
-            <input
+            <Input
               value={newTtRoom}
               onChange={(e) => setNewTtRoom(e.target.value)}
               placeholder="Room (optional)…"
-              className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+              className="min-w-0 flex-1"
             />
             <button
               type="submit"

@@ -12,6 +12,7 @@ import { useExams } from "@/lib/hooks/domain";
 import { todayISO, daysBetween, formatCountdown } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import type { StudyPlan, StudyPlanItem } from "@/lib/study/types";
 
 export default function NewPlanPage({ params }: { params: Promise<{ subjectId: string }> }) {
@@ -161,27 +162,25 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
             {examId === "none" && (
               <div>
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted-foreground">Days available</label>
-                <input
+                <Input
                   type="number"
                   min={1}
                   max={60}
                   value={daysAvailable}
                   onChange={(e) => setDaysAvailable(Math.max(1, Math.min(60, Number(e.target.value) || 1)))}
-                  className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground outline-none focus:border-accent/60"
                 />
               </div>
             )}
 
             <div>
               <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted-foreground">Minutes per day</label>
-              <input
+              <Input
                 type="number"
                 min={10}
                 max={240}
                 step={5}
                 value={minutesPerDay}
                 onChange={(e) => setMinutesPerDay(Math.max(10, Math.min(240, Number(e.target.value) || 10)))}
-                className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground outline-none focus:border-accent/60"
               />
             </div>
 
@@ -216,18 +215,18 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
                       <div key={item.id} className="flex items-center gap-3">
                         {editing ? (
                           <>
-                            <input
+                            <Input
                               value={item.label}
                               onChange={(e) => updateItem(item.id, { label: e.target.value })}
-                              className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-sm text-foreground outline-none focus:border-accent/60"
+                              className="h-10 min-w-0 flex-1"
                             />
-                            <input
+                            <Input
                               type="number"
                               min={5}
                               max={240}
                               value={item.duration_min}
                               onChange={(e) => updateItem(item.id, { duration_min: Math.max(5, Math.min(240, Number(e.target.value) || 5)) })}
-                              className="h-10 w-20 shrink-0 rounded-lg border border-border bg-surface px-2 text-center text-sm text-foreground outline-none focus:border-accent/60"
+                              className="h-10 w-20 shrink-0 text-center"
                             />
                           </>
                         ) : (

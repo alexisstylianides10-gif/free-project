@@ -1,3 +1,4 @@
+import { BookOpen, Rocket, Brain, Compass, type LucideIcon } from "lucide-react";
 import type { Exam, Homework } from "@/lib/types";
 import { daysBetween, todayISO } from "@/lib/utils";
 import type { Career } from "@/lib/catalog/careers";
@@ -34,7 +35,7 @@ export function buildAIRecommendation(input: { exams: Exam[]; homework: Homework
 }
 
 export interface RecommendationChip {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   minutes: number;
 }
@@ -56,16 +57,16 @@ export function buildRecommendationChips(input: {
   const chips: RecommendationChip[] = [];
 
   if (soonExam) {
-    chips.push({ icon: "📚", label: soonExam.subject, minutes: 45 });
-    if (input.primaryCareer) chips.push({ icon: "🚀", label: input.primaryCareer.name.split(" ")[0], minutes: 20 });
+    chips.push({ icon: BookOpen, label: soonExam.subject, minutes: 45 });
+    if (input.primaryCareer) chips.push({ icon: Rocket, label: input.primaryCareer.name.split(" ")[0], minutes: 20 });
   } else if (highPriorityHomework) {
-    chips.push({ icon: "📚", label: highPriorityHomework.subject, minutes: 30 });
-    if (input.primaryCareer) chips.push({ icon: "🚀", label: input.primaryCareer.name.split(" ")[0], minutes: 30 });
+    chips.push({ icon: BookOpen, label: highPriorityHomework.subject, minutes: 30 });
+    if (input.primaryCareer) chips.push({ icon: Rocket, label: input.primaryCareer.name.split(" ")[0], minutes: 30 });
   } else if (input.primaryCareer) {
-    chips.push({ icon: "🚀", label: input.primaryCareer.name, minutes: 30 });
-    chips.push({ icon: "🧠", label: "Skill building", minutes: 20 });
+    chips.push({ icon: Rocket, label: input.primaryCareer.name, minutes: 30 });
+    chips.push({ icon: Brain, label: "Skill building", minutes: 20 });
   } else {
-    chips.push({ icon: "🧭", label: "Explore a career", minutes: 20 });
+    chips.push({ icon: Compass, label: "Explore a career", minutes: 20 });
   }
 
   return chips;

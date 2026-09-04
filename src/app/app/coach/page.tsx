@@ -8,6 +8,7 @@ import { getCareer } from "@/lib/catalog/careers";
 import { buildRecommendationChips } from "@/lib/recommendation";
 import { authedFetch } from "@/lib/api";
 import { supabase } from "@/lib/supabase/client";
+import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 
 const SUGGESTED_PROMPTS = [
@@ -182,14 +183,14 @@ export default function CoachPage() {
       </div>
 
       {threadPanelOpen && (
-        <div className="glass mt-3 max-h-56 shrink-0 space-y-1 overflow-y-auto rounded-2xl p-2 shadow-raised">
+        <div className="bg-surface border border-border mt-3 max-h-56 shrink-0 space-y-1 overflow-y-auto rounded-2xl p-2 shadow-raised">
           {threads.length === 0 ? (
             <p className="p-3 text-center text-xs text-muted-foreground">No conversations yet.</p>
           ) : (
             threads.map((t) =>
               renamingId === t.id ? (
                 <div key={t.id} className="flex items-center gap-1.5 px-1 py-1">
-                  <input
+                  <Input
                     autoFocus
                     value={renameValue}
                     onChange={(e) => setRenameValue(e.target.value)}
@@ -198,7 +199,7 @@ export default function CoachPage() {
                       if (e.key === "Escape") setRenamingId(null);
                     }}
                     placeholder="Chat name…"
-                    className="h-9 min-w-0 flex-1 rounded-full border border-border bg-surface px-3 text-sm text-foreground outline-none focus:border-accent/60"
+                    className="h-9 min-w-0 flex-1"
                   />
                   <button
                     type="button"
@@ -246,7 +247,7 @@ export default function CoachPage() {
 
       <div ref={scrollRef} className="scrollbar-none mt-5 flex-1 space-y-3 overflow-y-auto pb-3">
         {messages.length === 0 && !sending && (
-          <div className="glass rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
+          <div className="bg-surface border border-border rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
             {profile?.track === "business"
               ? "Ask me anything about building your business. I'll keep it real, not hype."
               : "Ask me anything about school, skills, or your future. I'll always make sure school comes first."}
@@ -257,7 +258,7 @@ export default function CoachPage() {
             <div
               className={cn(
                 "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                m.role === "user" ? "bg-gradient-brand text-white shadow-subtle" : "glass text-foreground shadow-subtle"
+                m.role === "user" ? "bg-gradient-brand text-white shadow-subtle" : "bg-surface border border-border text-foreground shadow-subtle"
               )}
             >
               {m.content}
@@ -266,7 +267,7 @@ export default function CoachPage() {
         ))}
         {sending && (
           <div className="flex justify-start">
-            <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
+            <div className="bg-surface border border-border flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
             </div>
           </div>
@@ -274,7 +275,7 @@ export default function CoachPage() {
         {error && <p className="text-xs text-danger">{error}</p>}
 
         {(chips.length > 0 || profile) && messages.length < 2 && (
-          <div className="glass rounded-2xl p-4 shadow-card">
+          <div className="bg-surface border border-border rounded-2xl p-4 shadow-card">
             <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-accent">
               <Sparkles className="h-3.5 w-3.5" /> Today&rsquo;s Recommendation
             </p>
@@ -282,7 +283,7 @@ export default function CoachPage() {
               {chips.map((chip, i) => (
                 <div key={i} className="flex items-center justify-between rounded-xl bg-muted px-3.5 py-2.5">
                   <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span>{chip.icon}</span> {chip.label}
+                    <chip.icon className="h-4 w-4 text-accent" aria-hidden /> {chip.label}
                   </span>
                   <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-foreground">{chip.minutes} min</span>
                 </div>
@@ -313,11 +314,11 @@ export default function CoachPage() {
         }}
         className="flex shrink-0 items-center gap-2"
       >
-        <input
+        <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask Future Coach anything…"
-          className="h-12 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+          className="h-12 flex-1 rounded-full"
         />
         <button
           type="submit"

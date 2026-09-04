@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { supabase } from "@/lib/supabase/client";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { BrandPanel } from "@/components/shared/BrandPanel";
@@ -235,7 +236,7 @@ export default function ResetPasswordPage() {
             <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
               <label className="block">
                 <span className="mb-1.5 block text-xs font-medium text-muted-foreground">New password</span>
-                <input
+                <Input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -244,12 +245,11 @@ export default function ResetPasswordPage() {
                   minLength={8}
                   required
                   autoFocus
-                  className="input"
                 />
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Confirm password</span>
-                <input
+                <Input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -257,7 +257,6 @@ export default function ResetPasswordPage() {
                   autoComplete="new-password"
                   minLength={8}
                   required
-                  className="input"
                 />
               </label>
 
@@ -272,26 +271,6 @@ export default function ResetPasswordPage() {
       </div>
 
       <BrandPanel variant="login" />
-
-      <style jsx global>{`
-        .input {
-          height: 46px;
-          width: 100%;
-          border-radius: 14px;
-          border: 1px solid hsl(var(--border));
-          background: hsl(var(--surface));
-          padding: 0 16px;
-          font-size: 14px;
-          color: hsl(var(--foreground));
-          outline: none;
-        }
-        .input:focus {
-          border-color: hsl(var(--accent) / 0.6);
-        }
-        .input::placeholder {
-          color: hsl(var(--muted-foreground));
-        }
-      `}</style>
     </main>
   );
 }

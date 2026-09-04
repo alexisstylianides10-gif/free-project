@@ -22,34 +22,29 @@ const config: Config = {
       // 32-40/650-700, Section title 20-24/600-650, Body 15-16/400-450,
       // Secondary 13-14). This tier system already existed pre-spec
       // (reverse-engineered from ~51 arbitrary text-[Npx] usages across the
-      // app) and is relied on by 41 files, most of them in the
-      // authenticated /app product this pass cannot screenshot/verify.
+      // app) and is relied on by 41 files across the authenticated /app
+      // product.
       //
-      // DECISION: only `display` — used in exactly one place app-wide (the
-      // public landing hero, per its own existing comment, confirmed via
-      // grep) — has been resized into the spec's stated range, since it's
-      // the one tier this pass can actually verify with Playwright.
-      // `title`/`title-lg`/`heading`/`subsection` sit close to but not
-      // exactly on the spec's page-title/section-title ranges (e.g.
-      // title-lg=28px vs. spec's page-title 32-40px); resizing them here
-      // would cascade into 40 files of authenticated pages sight-unseen —
-      // real risk of overflow/wrapping regressions this pass can't confirm
-      // or deny. Flagged explicitly for Phase 2: re-tune those tiers to the
-      // spec ranges page-by-page, verified visually as each page is swept
-      // (font *weight* has the same problem — weights are applied via
-      // Tailwind utilities at each call site, not bundled into these
-      // size-only tokens, so enforcing spec's 650-700/600-650/400-450
-      // weight ranges is inherently a per-page-file job, not a token one).
+      // Phase 2: resized `heading`/`title-lg`/`title`/`subsection` into (or
+      // right up against) the spec's ranges, verified with real renders —
+      // authenticated screens (StudentHome, BusinessHome, Profile, Missions,
+      // Coach) via a mocked-Supabase-session Playwright pass (localStorage-
+      // seeded session + intercepted REST calls, run against `next dev`
+      // locally; no trace of the mock ships in this repo — see commit
+      // message), and marketing/onboarding-adjacent screens directly. Every
+      // call site already applies bold/extrabold (700/800) at each usage, so
+      // the spec's 650-700 weight requirement was already met before this
+      // resize — only size needed to move.
       fontSize: {
         "2xs": "10px", // nav labels, tiny inline badge counters
         caption: "11px", // eyebrow labels, disclaimers, small badges — the single most-used tier
         tooltip: "12px", // Tooltip primitive only
         label: "13px", // tab pills, small buttons — spec "secondary" tier (13-14px)
         body: "15px", // onboarding copy, card titles, large buttons — spec "body" tier (15-16px)
-        title: "22px", // mobile page/section h1s
-        "title-lg": "28px", // desktop variant of `title` (StudentHome/BusinessHome lg:) — Phase 2: spec wants 32-40px
-        heading: "26px", // ScreenHeader and onboarding/choose-plan success headlines — Phase 2: spec wants 20-24px (or reclassify as page-title)
-        subsection: "19px", // a heading *inside* a section, one tier below a section's own heading
+        title: "26px", // mobile page/section h1s (was 22px) — StudentHome/BusinessHome greeting, onboarding Question headline, Coach thread title
+        "title-lg": "34px", // desktop variant of `title` (StudentHome/BusinessHome lg:) + marketing section titles (was 28px) — now in spec's 32-40px page-title range
+        heading: "32px", // ScreenHeader (Profile/Missions/School/Future/etc h1) and onboarding/choose-plan success headlines (was 26px) — spec's page-title low end
+        subsection: "20px", // a heading *inside* a section, one tier below a section's own heading (was 19px) — spec's section-title low end
         display: "52px", // landing page hero only — resized into spec's 48-64px range (was 34px); verified via Playwright render
       },
       colors: {

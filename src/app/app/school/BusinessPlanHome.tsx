@@ -12,6 +12,7 @@ import { bucketForDate, badgeToneForBucket } from "@/lib/deadlines";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 
 const STAGE_LABEL: Record<string, string> = {
@@ -145,12 +146,7 @@ export default function BusinessPlanHome() {
 
         <form onSubmit={addMilestone} className="mt-3 space-y-2">
           <div className="flex items-center gap-2">
-            <input
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Add a milestone…"
-              className="h-11 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-            />
+            <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Add a milestone…" className="flex-1" />
             <button
               type="submit"
               disabled={adding || !newTitle.trim()}
@@ -165,12 +161,12 @@ export default function BusinessPlanHome() {
             <label htmlFor="milestone-due-date" className="text-xs text-muted-foreground">
               Due date <span className="text-muted-foreground/60">(optional)</span>
             </label>
-            <input
+            <Input
               id="milestone-due-date"
               type="date"
               value={newDueDate}
               onChange={(e) => setNewDueDate(e.target.value)}
-              className="h-8 rounded-full border border-border bg-surface px-3 text-xs text-foreground outline-none focus:border-accent/60"
+              className="h-8 w-auto text-xs"
             />
           </div>
         </form>

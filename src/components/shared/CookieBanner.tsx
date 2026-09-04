@@ -49,7 +49,7 @@ export function CookieBanner() {
 
   return (
     <div className="animate-fade-in fixed inset-x-0 bottom-0 z-50 px-4 pb-4 sm:px-6 sm:pb-6" role="region" aria-label="Cookie notice">
-      <div className="glass mx-auto flex w-full max-w-2xl flex-col items-start gap-3 rounded-2xl border border-border p-4 shadow-pop sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+      <div className="bg-surface border border-border mx-auto flex w-full max-w-2xl flex-col items-start gap-3 rounded-2xl border border-border p-4 shadow-pop sm:flex-row sm:items-center sm:gap-4 sm:p-5">
         <p className="flex-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
           {branding.name} only uses strictly necessary cookies, the ones that keep you signed in. We don&rsquo;t
           use analytics or advertising cookies today. See our{" "}

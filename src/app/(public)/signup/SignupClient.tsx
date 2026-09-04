@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, ArrowRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { BrandPanel } from "@/components/shared/BrandPanel";
@@ -205,14 +206,14 @@ export function SignupClient() {
           account.
         </p>
         <form onSubmit={handleVerifyCode} className="mt-8 w-full max-w-xs space-y-3.5">
-          <input
+          <Input
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={6}
             placeholder="000000"
-            className="input text-center text-lg tracking-[0.5em]"
+            className="text-center text-lg tracking-[0.5em]"
             autoFocus
           />
 
@@ -242,25 +243,6 @@ export function SignupClient() {
           straight into the app.
         </p>
 
-        <style jsx global>{`
-          .input {
-            height: 46px;
-            width: 100%;
-            border-radius: 14px;
-            border: 1px solid hsl(var(--border));
-            background: hsl(var(--surface));
-            padding: 0 16px;
-            font-size: 14px;
-            color: hsl(var(--foreground));
-            outline: none;
-          }
-          .input:focus {
-            border-color: hsl(var(--accent) / 0.6);
-          }
-          .input::placeholder {
-            color: hsl(var(--muted-foreground));
-          }
-        `}</style>
       </main>
     );
   }
@@ -279,27 +261,25 @@ export function SignupClient() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
             <Field label="First name">
-              <input
+              <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Alex"
                 autoComplete="given-name"
-                className="input"
               />
             </Field>
             <Field label="Email">
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
-                className="input"
               />
             </Field>
             <Field label="Password">
-              <input
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -307,7 +287,6 @@ export function SignupClient() {
                 autoComplete="new-password"
                 minLength={8}
                 required
-                className="input"
               />
             </Field>
 
@@ -332,26 +311,6 @@ export function SignupClient() {
       </div>
 
       <BrandPanel variant="signup" />
-
-      <style jsx global>{`
-        .input {
-          height: 46px;
-          width: 100%;
-          border-radius: 14px;
-          border: 1px solid hsl(var(--border));
-          background: hsl(var(--surface));
-          padding: 0 16px;
-          font-size: 14px;
-          color: hsl(var(--foreground));
-          outline: none;
-        }
-        .input:focus {
-          border-color: hsl(var(--accent) / 0.6);
-        }
-        .input::placeholder {
-          color: hsl(var(--muted-foreground));
-        }
-      `}</style>
     </main>
   );
 }

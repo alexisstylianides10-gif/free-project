@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Input";
+import { Card, CardContent } from "@/components/ui/Card";
 import { SelectableCard } from "@/components/shared/SelectableCard";
 import { OnboardingShell } from "./OnboardingShell";
 import {
@@ -119,13 +121,13 @@ export default function BusinessOnboarding() {
           title="What's your business idea?"
           subtitle="A sentence or two is plenty. No idea yet? Leave this blank and we'll suggest one based on your strengths."
         >
-          <textarea
+          <Textarea
             autoFocus
             value={answers.businessIdea}
             onChange={(e) => setAnswers({ ...answers, businessIdea: e.target.value })}
             placeholder="e.g. A subscription box for... (or leave blank)"
             rows={5}
-            className="w-full resize-none rounded-2xl border border-border bg-surface p-4 text-body text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            className="resize-none text-body"
           />
         </Question>
       )}
@@ -147,13 +149,13 @@ export default function BusinessOnboarding() {
 
       {step === 2 && (
         <Question title="Who's your target customer?" subtitle="Be as specific as you can, or leave blank if you're not sure yet">
-          <textarea
+          <Textarea
             autoFocus
             value={answers.targetCustomer}
             onChange={(e) => setAnswers({ ...answers, targetCustomer: e.target.value })}
             placeholder="e.g. Busy parents of toddlers in the US (or leave blank)"
             rows={4}
-            className="w-full resize-none rounded-2xl border border-border bg-surface p-4 text-body text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            className="resize-none text-body"
           />
         </Question>
       )}
@@ -259,18 +261,22 @@ function ResultsScreen({ answers, onContinue }: { answers: Answers; onContinue: 
             : `${branding.name} will suggest a business direction based on your strengths, then set up a starter milestone checklist for it.`}
         </p>
 
-        <div className="mt-8 glass rounded-2xl p-4 shadow-card">
-          <p className="text-sm font-semibold text-foreground">Your idea</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {answers.businessIdea.trim() || "Not sure yet? We'll suggest one based on your strengths."}
-          </p>
-        </div>
-        <div className="mt-3 glass rounded-2xl p-4 shadow-card">
-          <p className="text-sm font-semibold text-foreground">Target customer</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {answers.targetCustomer.trim() || "Not sure yet? We'll figure this out together."}
-          </p>
-        </div>
+        <Card className="mt-8">
+          <CardContent className="p-4">
+            <p className="text-sm font-semibold text-foreground">Your idea</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {answers.businessIdea.trim() || "Not sure yet? We'll suggest one based on your strengths."}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="mt-3">
+          <CardContent className="p-4">
+            <p className="text-sm font-semibold text-foreground">Target customer</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {answers.targetCustomer.trim() || "Not sure yet? We'll figure this out together."}
+            </p>
+          </CardContent>
+        </Card>
 
         <div className="mt-auto pt-10">
           <Button size="lg" className="w-full" onClick={onContinue}>

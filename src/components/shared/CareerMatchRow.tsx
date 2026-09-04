@@ -3,13 +3,14 @@ import { ChevronRight } from "lucide-react";
 import type { Career } from "@/lib/catalog/careers";
 
 export function CareerMatchRow({ career, percent }: { career: Career; percent: number }) {
+  const CareerIcon = career.icon;
   return (
     <Link
       href={`/app/future/${career.slug}`}
       className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3.5 transition-colors hover:border-border-strong"
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand text-xl">
-        {career.icon}
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand">
+        <CareerIcon className="h-5 w-5 text-white" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-foreground">{career.name}</span>

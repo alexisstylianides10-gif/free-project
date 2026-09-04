@@ -80,7 +80,7 @@ export default function BusinessHome() {
               </p>
             )}
             <div className="relative mt-4 flex items-center justify-center gap-1.5 border-t border-border pt-4 text-sm font-bold text-foreground">
-              <span aria-hidden>🔥</span>
+              <Flame className="h-4 w-4 text-warning" aria-hidden />
               {profile?.streak_count ?? 0}
               <span className="text-xs font-medium text-muted-foreground">day streak</span>
             </div>

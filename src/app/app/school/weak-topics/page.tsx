@@ -10,13 +10,19 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { cn } from "@/lib/utils";
 
 const NEEDS_ATTENTION_CUTOFF = 75;
 
-function band(mastery: number): { emoji: string; tone: "warning" | "danger" | "success" } {
-  if (mastery < 50) return { emoji: "🔴", tone: "danger" };
-  if (mastery < 75) return { emoji: "🟠", tone: "warning" };
-  return { emoji: "🟢", tone: "success" };
+// Was a red/orange/green circle emoji — pure decoration duplicating the
+// `tone` value already used to color the ProgressBar below it (spec §9:
+// don't mix emoji and the real icon/color system for the same signal).
+// A plain tone-colored dot communicates the same tier without a second,
+// inconsistent icon language.
+function band(mastery: number): { tone: "warning" | "danger" | "success" } {
+  if (mastery < 50) return { tone: "danger" };
+  if (mastery < 75) return { tone: "warning" };
+  return { tone: "success" };
 }
 
 /** A short, honest sentence built from the topic's own real attempt
@@ -63,7 +69,7 @@ export default function WeakTopicsPage() {
         <div className="space-y-3">
           {weakTopics.map((topic) => {
             const subject = subjectMap.get(topic.subject_id);
-            const { emoji, tone } = band(topic.mastery);
+            const { tone } = band(topic.mastery);
             return (
               <Card key={topic.id}>
                 <CardContent className="p-4">
@@ -72,8 +78,17 @@ export default function WeakTopicsPage() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         {subject ? `${subject.icon} ${subject.name}` : "Subject"}
                       </p>
-                      <p className="mt-0.5 truncate text-base font-bold text-foreground">
-                        {emoji} {topic.name}
+                      <p className="mt-0.5 flex items-center gap-2 truncate text-base font-bold text-foreground">
+                        <span
+                          className={cn(
+                            "inline-block h-2 w-2 shrink-0 rounded-full",
+                            tone === "danger" && "bg-danger",
+                            tone === "warning" && "bg-warning",
+                            tone === "success" && "bg-success"
+                          )}
+                          aria-hidden
+                        />
+                        {topic.name}
                       </p>
                     </div>
                     <span className="shrink-0 text-lg font-extrabold text-foreground">{topic.mastery}%</span>

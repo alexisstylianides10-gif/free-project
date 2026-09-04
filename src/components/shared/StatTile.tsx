@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
@@ -30,7 +31,7 @@ export function StreakStat({ days }: { days: number }) {
     <div className="flex-1">
       <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">Streak</p>
       <p className={cn("mt-1 flex items-center gap-1 text-lg font-bold text-foreground")}>
-        <span aria-hidden>🔥</span>
+        <Flame className="h-4 w-4 text-warning" aria-hidden />
         {days}
         <span className="text-xs font-medium text-muted-foreground">days</span>
       </p>

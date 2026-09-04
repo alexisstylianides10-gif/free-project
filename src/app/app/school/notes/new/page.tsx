@@ -8,6 +8,7 @@ import { useStudySubjects } from "@/lib/hooks/study";
 import { AddNoteFlow } from "@/components/study/AddNoteFlow";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 
 const EMOJI_CHOICES = ["📘", "🔢", "🔬", "🧪", "📖", "🌍", "💻", "🎨", "🗣️", "📜", "⚗️", "🧬"]; // same list as SubjectsPage
@@ -60,13 +61,7 @@ export default function NewNotePage() {
       <Card>
         <CardContent className="space-y-3 p-4">
           <p className="text-sm text-muted-foreground">Quick one before we start — what subject is this note for? You can add more subjects later.</p>
-          <input
-            autoFocus
-            value={creatingName}
-            onChange={(e) => setCreatingName(e.target.value)}
-            placeholder="e.g. Biology"
-            className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-          />
+          <Input autoFocus value={creatingName} onChange={(e) => setCreatingName(e.target.value)} placeholder="e.g. Biology" />
           <div className="flex flex-wrap gap-1.5">
             {EMOJI_CHOICES.map((e) => (
               <button

@@ -8,6 +8,7 @@ import { authedFetch } from "@/lib/api";
 import { useStudySubjects } from "@/lib/hooks/study";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Textarea } from "@/components/ui/Input";
 
 interface LocalMessage {
   role: "user" | "assistant";
@@ -92,12 +93,12 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ subject
 
       <Card>
         <CardContent className="space-y-3 p-4">
-          <textarea
+          <Textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Type or paste your homework question here…"
             rows={4}
-            className="w-full resize-none rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+            className="resize-none"
           />
           <div className="grid grid-cols-2 gap-2">
             {ACTIONS.map((action) => {
@@ -125,7 +126,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ subject
               <div
                 className={cn(
                   "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                  m.role === "user" ? "bg-gradient-brand text-white shadow-subtle" : "glass text-foreground shadow-subtle"
+                  m.role === "user" ? "bg-gradient-brand text-white shadow-subtle" : "bg-surface border border-border text-foreground shadow-subtle"
                 )}
               >
                 {m.content}
@@ -134,7 +135,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ subject
           ))}
           {sending && (
             <div className="flex justify-start">
-              <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
+              <div className="bg-surface border border-border flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
               </div>
             </div>

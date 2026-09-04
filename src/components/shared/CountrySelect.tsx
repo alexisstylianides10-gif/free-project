@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search, Check } from "lucide-react";
 import { COUNTRIES } from "@/lib/catalog/countries";
+import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 
 export function CountrySelect({ value, onChange }: { value: string; onChange: (country: string) => void }) {
@@ -18,11 +19,11 @@ export function CountrySelect({ value, onChange }: { value: string; onChange: (c
     <div className="flex h-full flex-col">
       <div className="relative mb-3 shrink-0">
         <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search countries"
-          className="h-11 w-full rounded-2xl border border-border bg-surface pl-10 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+          className="pl-10"
         />
       </div>
       <div className="scrollbar-none flex-1 space-y-1.5 overflow-y-auto pb-2">

@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useStudySubjects, useStudyTopics, useStudyFocusSessions, useStudyQuizzes, useStudyQuizAttempts } from "@/lib/hooks/study";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
 const EMOJI_CHOICES = ["📘", "🔢", "🔬", "🧪", "📖", "🌍", "💻", "🎨", "🗣️", "📜", "⚗️", "🧬"];
@@ -96,13 +97,7 @@ export default function SubjectsPage() {
       {creating ? (
         <Card>
           <CardContent className="space-y-3 p-4">
-            <input
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Subject name (e.g. Mathematics)"
-              className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-            />
+            <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Subject name (e.g. Mathematics)" />
             <div className="flex flex-wrap gap-1.5">
               {EMOJI_CHOICES.map((e) => (
                 <button

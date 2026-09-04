@@ -11,6 +11,7 @@ import { useStudySubjects, useStudyTopics } from "@/lib/hooks/study";
 import type { StudyQuiz } from "@/lib/study/types";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Input";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
 import { cn } from "@/lib/utils";
@@ -277,13 +278,13 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
           )}
 
           {(question.type === "short_answer" || question.type === "fill_blank" || question.type === "scenario") && (
-            <textarea
+            <Textarea
               autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={question.type === "fill_blank" ? "Fill in the blank…" : "Type your answer…"}
               rows={question.type === "scenario" ? 5 : 3}
-              className="w-full resize-y rounded-2xl border border-border bg-surface px-4 py-3.5 text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
+              className="resize-y leading-relaxed"
             />
           )}
 

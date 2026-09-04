@@ -1,10 +1,11 @@
+import { School, BookOpen, Coffee, Brain, Rocket, type LucideIcon } from "lucide-react";
 import type { Homework, TimetableEntry, StudySession, Priority } from "@/lib/types";
 import type { Mission } from "@/lib/catalog/missions";
 import { formatTime12 } from "@/lib/utils";
 
 export interface PlanItem {
   time: string; // "HH:MM" 24h, for sorting
-  icon: string;
+  icon: LucideIcon;
   label: string;
   meta?: string;
   kind: "school" | "homework" | "free" | "study" | "mission";
@@ -27,26 +28,26 @@ export function buildTodaysPlan(input: {
 
   if (input.todayTimetable.length > 0) {
     const first = [...input.todayTimetable].sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
-    items.push({ time: first.start_time, icon: "🏫", label: "School", kind: "school" });
+    items.push({ time: first.start_time, icon: School, label: "School", kind: "school" });
   }
 
   const homework = input.todayHomework.filter((h) => h.status === "pending")[0];
   if (homework) {
     items.push({
       time: "15:30",
-      icon: "📚",
+      icon: BookOpen,
       label: `${homework.subject} homework`,
       meta: `${PRIORITY_MINUTES[homework.priority]} min`,
       kind: "homework",
     });
   }
 
-  items.push({ time: "17:00", icon: "🎾", label: "Activity / free time", kind: "free" });
+  items.push({ time: "17:00", icon: Coffee, label: "Activity / free time", kind: "free" });
 
   for (const session of input.todayStudySessions) {
     items.push({
       time: "18:30",
-      icon: "🧠",
+      icon: Brain,
       label: `${session.subject} revision`,
       meta: `${session.duration_min} min`,
       kind: "study",
@@ -56,7 +57,7 @@ export function buildTodaysPlan(input: {
   if (input.mission) {
     items.push({
       time: "19:15",
-      icon: "🚀",
+      icon: Rocket,
       label: "Future Mission",
       meta: `${input.mission.minutes} min`,
       kind: "mission",

@@ -13,6 +13,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 
 export default function ExamsPage() {
   const { user } = useAuth();
@@ -95,21 +97,16 @@ export default function ExamsPage() {
   return (
     <div className="space-y-5">
       <form onSubmit={addExam} className="space-y-2">
-        <input
-          value={newSubject}
-          onChange={(e) => setNewSubject(e.target.value)}
-          placeholder="Add an exam (e.g. Biology)…"
-          className="h-11 w-full rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
-        />
+        <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="Add an exam (e.g. Biology)…" />
         <div className="flex items-center gap-2">
-          <input
+          <Input
             type="date"
             value={newDate}
             onChange={(e) => setNewDate(e.target.value)}
             aria-label="Exam date"
             required
             min={todayISO()}
-            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 text-sm text-foreground outline-none focus:border-accent/60"
+            className="min-w-0 flex-1"
           />
           <button
             type="submit"
@@ -169,12 +166,12 @@ export default function ExamsPage() {
 
                 {editingDateId === exam.id && (
                   <div className="mt-3 flex items-center gap-2">
-                    <input
+                    <Input
                       type="date"
                       value={editDateValue}
                       onChange={(e) => setEditDateValue(e.target.value)}
                       aria-label="New exam date"
-                      className="h-9 flex-1 rounded-full border border-border bg-surface px-3 text-xs text-foreground outline-none focus:border-accent/60"
+                      className="h-9 flex-1 text-xs"
                     />
                     <Button size="sm" onClick={() => saveExamDate(exam.id)} disabled={!editDateValue || savingDate}>
                       Save
@@ -203,11 +200,11 @@ export default function ExamsPage() {
                       </Button>
                     </Link>
                   ) : linkingId === exam.id ? (
-                    <select
+                    <Select
                       autoFocus
                       onBlur={() => setLinkingId(null)}
                       onChange={(e) => linkSubject(exam.id, e.target.value)}
-                      className="h-9 flex-1 rounded-full border border-border bg-surface px-3 text-xs text-foreground outline-none"
+                      className="h-9 flex-1 text-xs"
                       defaultValue=""
                     >
                       <option value="" disabled>
@@ -218,7 +215,7 @@ export default function ExamsPage() {
                           {s.icon} {s.name}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   ) : (
                     <Button size="sm" variant="secondary" className="flex-1" onClick={() => setLinkingId(exam.id)}>
                       Link a subject

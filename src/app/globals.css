@@ -225,29 +225,6 @@ h3 {
   display: none;
 }
 
-/*
- * `.glass` — RETIRED as an actual glass/blur effect (spec §12: "do not use
- * glassmorphism everywhere ... only when they have a clear UX purpose").
- * ~20 call sites across the app (bottom nav pill, notification dropdown,
- * achievement toast, selectable cards, etc.) reference this class directly
- * via `className="glass"`, most of them in files outside this pass's named
- * scope. Rather than leave those call sites broken or silently hope a
- * global removal doesn't regress them, the class is kept defined but
- * redefined here to the same flat, bordered surface treatment as
- * `Card`'s "flat" variant — no blur, no translucency, no gradient
- * highlight. Every remaining `.glass` call site now automatically renders
- * the spec-compliant flat surface without needing a single page edit.
- * Phase 2 should still do the mechanical cleanup of replacing
- * `className="glass"` with `bg-surface border border-border` (or the
- * `Card` component) directly and deleting this class once nothing
- * references it, since it's now dead weight that happens to produce the
- * right output rather than a real utility.
- */
-.glass {
-  background: hsl(var(--surface));
-  border: 1px solid hsl(var(--border));
-}
-
 .text-gradient-brand {
   background-image: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-end)));
   -webkit-background-clip: text;

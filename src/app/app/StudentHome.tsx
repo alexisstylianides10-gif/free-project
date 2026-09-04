@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { CalendarClock, ClipboardList, ChevronRight, Sparkles, TriangleAlert } from "lucide-react";
+import { CalendarClock, ClipboardList, ChevronRight, Sparkles, TriangleAlert, Flame } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -115,7 +115,7 @@ export default function StudentHome() {
               <RadialStat label="Future" value={futurePercent} tone="future" />
             </div>
             <div className="relative mt-4 flex items-center justify-center gap-1.5 border-t border-border pt-4 text-sm font-bold text-foreground">
-              <span aria-hidden>🔥</span>
+              <Flame className="h-4 w-4 text-warning" aria-hidden />
               {profile?.streak_count ?? 0}
               <span className="text-xs font-medium text-muted-foreground">day streak</span>
             </div>
@@ -147,7 +147,7 @@ export default function StudentHome() {
               {plan.map((item, i) => (
                 <li key={i} className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
                   <span className="w-12 shrink-0 text-xs font-semibold text-muted-foreground">{formatPlanTime(item.time)}</span>
-                  <span className="text-base leading-none">{item.icon}</span>
+                  <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                   <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{item.label}</span>
                   {item.meta && <span className="shrink-0 text-xs text-muted-foreground">{item.meta}</span>}
                 </li>
@@ -217,8 +217,8 @@ export default function StudentHome() {
           <Link href={`/app/future/${primaryCareer.slug}`} className="lg:col-start-1 lg:row-start-3">
             <Card className={HOVER_LIFT}>
               <CardContent className="flex items-center gap-3 p-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand text-xl">
-                  {primaryCareer.icon}
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand">
+                  <primaryCareer.icon className="h-5 w-5 text-white" aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Career progress</p>
