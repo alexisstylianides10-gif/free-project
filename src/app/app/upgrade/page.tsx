@@ -41,6 +41,7 @@ export default function UpgradePage() {
   const [startingCheckout, setStartingCheckout] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentSucceeded, setPaymentSucceeded] = useState(false);
+  const [activationTimedOut, setActivationTimedOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
@@ -54,12 +55,18 @@ export default function UpgradePage() {
   // Once the card is confirmed, the webhook is what actually flips the
   // profile to plan="plus" — poll refreshProfile a few times so the UI
   // catches up without the customer having to hit "Refresh" themselves.
+  // If every attempt runs out with no webhook update, activationTimedOut
+  // surfaces a manual way forward instead of spinning forever.
   useEffect(() => {
     if (!paymentSucceeded || onPlus) return;
     let cancelled = false;
     let attempts = 0;
     const tick = async () => {
-      if (cancelled || attempts >= 8) return;
+      if (cancelled) return;
+      if (attempts >= 8) {
+        setActivationTimedOut(true);
+        return;
+      }
       attempts += 1;
       await refreshProfile();
       if (!cancelled) setTimeout(tick, 1500);
@@ -70,6 +77,15 @@ export default function UpgradePage() {
       clearTimeout(t);
     };
   }, [paymentSucceeded, onPlus, refreshProfile]);
+
+  // Confirmed active — give the customer a moment to see the confirmation,
+  // then take them into the app rather than leaving them stranded on the
+  // upgrade screen with no next step.
+  useEffect(() => {
+    if (!onPlus || !paymentSucceeded) return;
+    const t = setTimeout(() => router.push("/app"), 1500);
+    return () => clearTimeout(t);
+  }, [onPlus, paymentSucceeded, router]);
 
   async function startCheckout() {
     setError(null);
@@ -113,11 +129,39 @@ export default function UpgradePage() {
 
       {paymentSucceeded && (
         <Card className="border-success/40">
-          <CardContent className="flex items-center gap-3 p-4">
-            {!onPlus && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-success" />}
-            <p className="text-sm text-foreground">
-              {onPlus ? "You're on Alxioum Plus. Enjoy!" : "Payment received. Activating your plan…"}
-            </p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              {!onPlus && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-success" />}
+              <p className="text-sm text-foreground">
+                {onPlus
+                  ? "You're on Alxioum Plus. Enjoy!"
+                  : activationTimedOut
+                    ? "Payment received, but activation is taking longer than usual."
+                    : "Payment received. Activating your plan…"}
+              </p>
+            </div>
+            {onPlus ? (
+              <Button size="sm" className="mt-3 w-full" onClick={() => router.push("/app")}>
+                Continue to app
+              </Button>
+            ) : (
+              activationTimedOut && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Your card was charged successfully. This is just a delay confirming it on our side. Try refreshing,
+                    or head into the app now; it&rsquo;ll unlock as soon as it catches up.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => refreshProfile()}>
+                      Refresh
+                    </Button>
+                    <Button size="sm" variant="ghost" className="flex-1" onClick={() => router.push("/app")}>
+                      Go to app
+                    </Button>
+                  </div>
+                </div>
+              )
+            )}
           </CardContent>
         </Card>
       )}
