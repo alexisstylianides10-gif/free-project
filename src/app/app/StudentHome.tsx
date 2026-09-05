@@ -1,0 +1,248 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo } from "react";
+import { CalendarClock, ClipboardList, ChevronRight, Sparkles, TriangleAlert, Flame } from "lucide-react";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { NotificationBell } from "@/components/shared/NotificationBell";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useHomework, useExams, useTimetable, useStudySessions, useCareerPaths, useUserMissions } from "@/lib/hooks/domain";
+import { getCareer } from "@/lib/catalog/careers";
+import { buildTodaysPlan, formatPlanTime } from "@/lib/planner";
+import { pickTodaysMission } from "@/lib/missionPicker";
+import { buildAIRecommendation } from "@/lib/recommendation";
+import { xpToPercent, totalXP, levelFromXP } from "@/lib/xp";
+import { formatCountdown, mondayOfThisWeek, todayISO, cn } from "@/lib/utils";
+import { bucketForDate } from "@/lib/deadlines";
+import { Card, CardContent } from "@/components/ui/Card";
+import { StatTile, StreakStat } from "@/components/shared/StatTile";
+import { RadialStat } from "@/components/shared/RadialStat";
+import { MissionHomeCard } from "@/components/shared/MissionCard";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { PriorityDot } from "@/components/ui/PriorityDot";
+
+const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-float";
+
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function isUrgent(dateISO: string): boolean {
+  const bucket = bucketForDate(dateISO);
+  return bucket === "overdue" || bucket === "today";
+}
+
+export default function StudentHome() {
+  const { user, profile } = useAuth();
+  const today = todayISO();
+  const todayDow = new Date(today + "T00:00:00").getDay();
+
+  const { data: homework, error: homeworkError } = useHomework(user?.id);
+  const { data: exams, error: examsError } = useExams(user?.id);
+  const { data: timetable, error: timetableError } = useTimetable(user?.id);
+  const { data: studySessions, error: studyError } = useStudySessions(user?.id, mondayOfThisWeek());
+  const { data: careerPaths, error: careerError } = useCareerPaths(user?.id);
+  const { data: userMissions, error: missionsError } = useUserMissions(user?.id);
+
+  // First non-null error wins, same convention as StudentSchoolHome's pageError.
+  const pageError = homeworkError ?? examsError ?? timetableError ?? studyError ?? careerError ?? missionsError;
+
+  const primaryCareer = useMemo(() => {
+    const primary = careerPaths.find((c) => c.is_primary) ?? careerPaths[0];
+    return primary ? getCareer(primary.career_slug) : undefined;
+  }, [careerPaths]);
+
+  const completedMissionIds = useMemo(
+    () => new Set(userMissions.filter((m) => m.status === "completed").map((m) => m.mission_id)),
+    [userMissions]
+  );
+  const mission = useMemo(() => (user ? pickTodaysMission(user.id, completedMissionIds) : undefined), [user, completedMissionIds]);
+
+  const todayTimetable = timetable.filter((t) => t.day_of_week === todayDow);
+  const todayHomework = homework.filter((h) => h.status === "pending");
+  const todayStudySessions = studySessions.filter((s) => s.day_of_week === todayDow && !s.completed);
+
+  const plan = buildTodaysPlan({ todayTimetable, todayHomework, todayStudySessions, mission });
+
+  const nextExam = [...exams].sort((a, b) => a.exam_date.localeCompare(b.exam_date))[0];
+  const nextHomework = homework.filter((h) => h.status === "pending").sort((a, b) => a.due_date.localeCompare(b.due_date))[0];
+  const recommendation = buildAIRecommendation({ exams, homework, primaryCareer });
+
+  const schoolPercent = xpToPercent(profile?.xp_school ?? 0, 220);
+  const futurePercent = xpToPercent(profile?.xp_career ?? 0, 260);
+  const firstName = profile?.full_name?.split(" ")[0] || "there";
+
+  return (
+    <div>
+      <div className="mb-6 flex items-start justify-between gap-3 lg:mb-8">
+        <div>
+          <h1 className="text-title font-bold text-foreground lg:text-title-lg">
+            {greeting()}, <span className="text-gradient-brand">{firstName}</span>
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s your plan for today.</p>
+        </div>
+        <NotificationBell className="md:hidden" />
+      </div>
+
+      {pageError && (
+        <Card className="mb-6 border border-danger/40 lg:mb-8">
+          <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Couldn&rsquo;t load some of your data. {pageError}</span>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-7 pb-4 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-6 lg:space-y-0 lg:pb-0">
+        <Card className="lg:hidden">
+          <CardContent className="flex items-stretch gap-4 p-4">
+            <StatTile label="School" value={schoolPercent} tone="school" />
+            <div className="w-px bg-border" />
+            <StatTile label="Future" value={futurePercent} tone="future" />
+            <div className="w-px bg-border" />
+            <StreakStat days={profile?.streak_count ?? 0} />
+          </CardContent>
+        </Card>
+
+        <Card className="hidden overflow-hidden border-accent/20 lg:col-start-2 lg:row-start-1 lg:block">
+          <CardContent className="relative p-5">
+            <div className="relative flex items-center justify-around">
+              <RadialStat label="School" value={schoolPercent} tone="school" />
+              <RadialStat label="Future" value={futurePercent} tone="future" />
+            </div>
+            <div className="relative mt-4 flex items-center justify-center gap-1.5 border-t border-border pt-4 text-sm font-bold text-foreground">
+              <Flame className="h-4 w-4 text-warning" aria-hidden />
+              {profile?.streak_count ?? 0}
+              <span className="text-xs font-medium text-muted-foreground">day streak</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {mission && (
+          <div className="lg:col-start-2 lg:row-start-2">
+            <MissionHomeCard mission={mission} />
+          </div>
+        )}
+
+        <section className="lg:col-start-1 lg:row-start-1">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-base font-bold text-foreground">Today&rsquo;s Plan</h2>
+            <Link href="/app/school" className="flex items-center gap-0.5 text-xs font-semibold text-accent">
+              School <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          {plan.length === 0 ? (
+            <EmptyState
+              icon={CalendarClock}
+              title="Nothing scheduled yet"
+              subtitle="Add homework and exams in School to build today's plan."
+              cta={{ label: "Go to School", href: "/app/school" }}
+            />
+          ) : (
+            <ol className="space-y-2">
+              {plan.map((item, i) => (
+                <li key={i} className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
+                  <span className="w-12 shrink-0 text-xs font-semibold text-muted-foreground">{formatPlanTime(item.time)}</span>
+                  <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{item.label}</span>
+                  {item.meta && <span className="shrink-0 text-xs text-muted-foreground">{item.meta}</span>}
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+
+        <section className="lg:col-start-1 lg:row-start-2">
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/app/school">
+              <Card className={cn("h-full", HOVER_LIFT)}>
+                <CardContent className="p-4">
+                  <CalendarClock className="h-5 w-5 text-school" />
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Upcoming exam</p>
+                  {nextExam ? (
+                    <>
+                      <p className="mt-1 truncate text-sm font-bold text-foreground">{nextExam.subject}</p>
+                      <p className={cn("text-xs", isUrgent(nextExam.exam_date) ? "font-semibold text-danger" : "text-muted-foreground")}>
+                        {formatCountdown(nextExam.exam_date)}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-1 text-sm text-muted-foreground">No exams yet</p>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/app/school">
+              <Card className={cn("h-full", HOVER_LIFT)}>
+                <CardContent className="p-4">
+                  <ClipboardList className="h-5 w-5 text-accent" />
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Homework due</p>
+                  {nextHomework ? (
+                    <>
+                      <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-bold text-foreground">
+                        <PriorityDot priority={nextHomework.priority} />
+                        {nextHomework.subject}
+                      </p>
+                      <p
+                        className={cn(
+                          "text-xs",
+                          isUrgent(nextHomework.due_date) ? "font-semibold text-danger" : "text-muted-foreground"
+                        )}
+                      >
+                        {formatCountdown(nextHomework.due_date)}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-1 text-sm text-muted-foreground">All caught up</p>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          <Link href="/app/deadlines" className="mt-2 block">
+            <Button variant="outline" size="md" className="w-full">
+              View all deadlines
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </section>
+
+        {primaryCareer && (
+          <Link href={`/app/future/${primaryCareer.slug}`} className="lg:col-start-1 lg:row-start-3">
+            <Card className={HOVER_LIFT}>
+              <CardContent className="flex items-center gap-3 p-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-brand">
+                  <primaryCareer.icon className="h-5 w-5 text-white" aria-hidden />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Career progress</p>
+                  <p className="truncate text-sm font-bold text-foreground">{primaryCareer.name}</p>
+                </div>
+                <Badge tone="accent">Level {levelFromXP(totalXP(profile ?? { xp_school: 0, xp_career: 0, xp_skill: 0, xp_project: 0 }))}</Badge>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+
+        <Card className="border-accent/30 lg:col-start-2 lg:row-start-3">
+          <CardContent className="flex gap-3 p-4">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft">
+              <Sparkles className="h-4 w-4 text-accent" />
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-accent">AI recommendation</p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{recommendation}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

@@ -21,26 +21,11 @@ export function newId(): string {
   });
 }
 
-export function formatMoney(n: number): string {
-  const sign = n < 0 ? "-" : "";
-  return `${sign}€${Math.abs(n).toFixed(2)}`;
-}
-
 /** Today's date in the *local* timezone (never UTC — toISOString() would be
  * wrong for roughly half the day in most timezones). */
 export function todayISO(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-/** Today's date in an arbitrary IANA timezone — for server code, which has
- * no "local" timezone of its own and must use the user's stored one. */
-export function todayISOInTimezone(timeZone: string): string {
-  try {
-    return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  } catch {
-    return todayISO();
-  }
 }
 
 export function addDaysISO(iso: string, days: number): string {
@@ -55,15 +40,6 @@ export function daysBetween(fromISO: string, toISO: string): number {
   return Math.round((b - a) / (1000 * 60 * 60 * 24));
 }
 
-/**
- * `referenceTodayISO` defaults to the browser's own local date, which is
- * correct for every client-rendered call site (the browser's local time IS
- * the user's local time). Server code has no such luck — the Node process
- * runs in its own timezone (UTC on Railway), which can be a different
- * calendar day than the user's right now — so every AI-tool call site
- * (calendar/business/study/tasks descriptions the model reads or shows the
- * user) MUST pass ctx.today explicitly rather than relying on the default.
- */
 export function formatDayLabel(iso: string, referenceTodayISO: string = todayISO()): string {
   const diff = daysBetween(referenceTodayISO, iso);
   if (diff === 0) return "Today";
@@ -76,6 +52,15 @@ export function formatDayLabel(iso: string, referenceTodayISO: string = todayISO
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+/** "12 days" / "Tomorrow" / "Today" style countdown label for exams etc. */
+export function formatCountdown(iso: string, referenceTodayISO: string = todayISO()): string {
+  const diff = daysBetween(referenceTodayISO, iso);
+  if (diff < 0) return "Passed";
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  return `${diff} days`;
+}
+
 export function formatTime12(hhmm: string): string {
   const [h, m] = hhmm.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
@@ -83,47 +68,24 @@ export function formatTime12(hhmm: string): string {
   return m === 0 ? `${hour} ${period}` : `${hour}:${String(m).padStart(2, "0")} ${period}`;
 }
 
-export function priorityWeight(p: "critical" | "high" | "medium" | "low"): number {
-  return { critical: 3, high: 2, medium: 1, low: 0 }[p];
-}
-
 export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
-export function nextWeekday(fromISO: string, targetDay: number, includeToday = false): string {
-  const d = new Date(fromISO + "T00:00:00");
-  const current = d.getDay();
-  let delta = (targetDay - current + 7) % 7;
-  if (delta === 0 && !includeToday) delta = 7;
-  return addDaysISO(fromISO, delta);
+/** Monday of the current week, as an ISO date — the key every weekly study
+ * plan is stored and queried under, so "this week" means the same thing
+ * everywhere regardless of what day it is when a screen loads. */
+export function mondayOfThisWeek(): string {
+  const d = new Date(todayISO() + "T00:00:00");
+  const day = d.getDay(); // 0 = Sun
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diffToMonday);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-/**
- * Whether a (possibly recurring) event occurs on the given date — the seed
- * date itself, or a matching daily/weekly repeat within recurrenceUntil.
- * Views that list events for a specific date must use this instead of a
- * literal `date === ` check, or recurring events only ever show up on the
- * one day they were created on.
- */
-export function eventOccursOn(event: { date: string; recurrence: "none" | "daily" | "weekly"; recurrenceUntil?: string }, dateISO: string): boolean {
-  if (event.date === dateISO) return true;
-  if (event.recurrence === "none") return false;
-  if (dateISO < event.date) return false;
-  if (event.recurrenceUntil && dateISO > event.recurrenceUntil) return false;
-  if (event.recurrence === "daily") return true;
-  return new Date(dateISO + "T00:00:00").getDay() === new Date(event.date + "T00:00:00").getDay();
-}
-
-export function timeOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
-  return aStart < bEnd && bStart < aEnd;
-}
-
-/**
- * A routine step reads as "done" only for the day it was actually
- * completed — otherwise it would stay checked forever. There's no reset
- * job; this is purely computed from the persisted done + lastCompletedDate.
- */
-export function isStepDoneToday(step: { done: boolean; lastCompletedDate?: string }, today: string): boolean {
-  return step.done && step.lastCompletedDate === today;
+export function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }

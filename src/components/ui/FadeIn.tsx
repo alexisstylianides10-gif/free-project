@@ -10,7 +10,8 @@ export function FadeIn({ children, index = 0, className }: { children: ReactNode
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28, delay: Math.min(index, 8) * 0.04, ease: [0.16, 1, 0.3, 1] }}
+      // Spec §16: "preferred duration 150-250ms" for motion (was 280ms).
+      transition={{ duration: 0.22, delay: Math.min(index, 8) * 0.04, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
       {children}

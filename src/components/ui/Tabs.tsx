@@ -18,7 +18,7 @@ export function TabsTrigger({ className, ...props }: RadixTabs.TabsTriggerProps)
   return (
     <RadixTabs.Trigger
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-subtle",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-label font-medium text-muted-foreground transition-colors data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-subtle",
         className
       )}
       {...props}

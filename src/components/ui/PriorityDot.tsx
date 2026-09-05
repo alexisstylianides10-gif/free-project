@@ -2,9 +2,8 @@ import { Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const toneClass: Record<Priority, string> = {
-  critical: "bg-danger",
-  high: "bg-warning",
-  medium: "bg-accent",
+  high: "bg-danger",
+  medium: "bg-warning",
   low: "bg-muted-foreground/40",
 };
 

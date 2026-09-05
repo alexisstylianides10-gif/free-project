@@ -19,7 +19,10 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium leading-4",
+        // Pill shape is a deliberate exception here, not a holdover — spec
+        // §6 explicitly allows a 999px "pill" tier, and small status/count
+        // chips are the canonical case for it.
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-caption font-semibold leading-4",
         toneClasses[tone],
         className
       )}
