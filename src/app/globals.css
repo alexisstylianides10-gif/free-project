@@ -67,17 +67,20 @@
      into any existing call site — purely additive. */
   --muted-foreground-subtle: 220 8% 48%;
 
-  /* Accent — spec keeps the same brand hue in dark mode but says "adjust
-     when necessary for readability." The literal light-mode hex (#635BFF,
-     hsl(243 100% 68%)) against #0B0D10 measures ~4.15:1 contrast — under
-     the 4.5:1 AA text threshold. Brightened + slightly desaturated to
-     hsl(243 90% 72%), which measures ~5.45:1 against the dark background
-     (computed via WCAG relative luminance), while staying clearly the same
-     indigo/violet brand hue, not washed out. */
-  --accent: 243 90% 72%;
+  /* Accent — replaced the initial #635BFF (Stripe's own brand color,
+     correctly flagged as looking "generic/borrowed") with a deep emerald
+     green: distinctive, on-theme for a "build your future/growth" product,
+     and not the default indigo/violet every AI-scaffolded SaaS reaches for.
+     Same WCAG-driven dark-mode adjustment method as the color it replaces:
+     the light-mode hex (#0F7B5C, hsl(163 78% 27%)) against #0B0D10 measures
+     well under 4.5:1, so dark mode is brightened + desaturated to
+     hsl(163 58% 34%) (~#24896D), which measures ~4.5:1 text-on-background
+     and ~4.3:1 white-on-accent for button labels (computed via WCAG
+     relative luminance) — comparable margins to the token it replaces. */
+  --accent: 163 58% 34%;
   --accent-foreground: 0 0% 100%;
-  --accent-soft: 243 45% 20%;
-  --accent-end: 243 90% 72%; /* == --accent, see file-header note */
+  --accent-soft: 163 40% 16%;
+  --accent-end: 163 58% 34%; /* == --accent, see file-header note */
 
   /* Mission tag colors — desaturated/muted from the previous coral/pink/
      purple trio (was 92%/82%/78% saturation) but kept as three distinct
@@ -127,10 +130,10 @@
   --muted-foreground: 221 9% 42%;  /* #626875 — spec's "secondary text" */
   --muted-foreground-subtle: 220 8% 58%; /* #8B919D — spec's "muted text" */
 
-  --accent: 243 100% 68%;          /* #635BFF */
+  --accent: 163 78% 27%;           /* #0F7B5C — deep emerald, see dark-mode block for rationale */
   --accent-foreground: 0 0% 100%;
-  --accent-soft: 243 100% 96%;
-  --accent-end: 243 100% 68%;      /* == --accent, see file-header note */
+  --accent-soft: 163 78% 96%;
+  --accent-end: 163 78% 27%;       /* == --accent, see file-header note */
 
   --mission-from: 14 55% 55%;
   --mission-via: 336 45% 55%;
