@@ -25,6 +25,11 @@ export interface Profile {
   tutorial_seen: boolean;
   track: "student" | "business";
   billing_interval: "monthly" | "yearly" | null;
+  // Source of truth for the student/founder's preferred UI + AI language
+  // once signed in (overrides the pre-auth localStorage/cookie guess on
+  // login — see LocaleBridge.tsx). Kept in sync with src/lib/i18n/locales.ts's
+  // SUPPORTED_LOCALES and the `language` check constraint in schema.sql.
+  language: "en" | "es" | "fr" | "el";
   plan: "free" | "plus";
   plan_status: "trialing" | "active" | "canceled" | "past_due";
   trial_ends_at: string;

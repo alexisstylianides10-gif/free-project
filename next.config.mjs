@@ -1,3 +1,12 @@
+import createNextIntlPlugin from "next-intl/plugin";
+
+// Points next-intl at our request config (src/i18n/request.ts) rather than
+// the default `./i18n/request.ts` location, since this project keeps
+// framework config under src/. No middleware.ts is registered for this
+// plugin — see src/i18n/request.ts's top comment for why this app uses
+// next-intl's cookie-based setup instead of locale-prefixed routing.
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
 const supabaseOrigin = (() => {
   try {
     return process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin : "";
@@ -54,4 +63,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -1,5 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import { languageInstruction } from "@/lib/i18n/aiInstruction";
+import type { Locale } from "@/lib/i18n/locales";
 
 const MODEL = process.env.FUTUREOS_MODEL || "claude-opus-5";
 
@@ -73,6 +75,12 @@ export async function callStudyAIForJSON<T>(params: {
   document?: DocumentInput;
   maxTokens?: number;
   effort?: "low" | "medium" | "high";
+  /** The student/founder's `profiles.language` — every Study AI route
+   * fetches this via getUserLanguage() and passes it through so the
+   * generated content (quiz questions, flashcards, plans, feedback, etc.)
+   * comes back in their language, not just the app's menus. Omitted ==
+   * English, same as not calling languageInstruction() at all. */
+  language?: Locale;
 }): Promise<T> {
   const content: Anthropic.Messages.ContentBlockParam[] = [];
   if (params.document) {
@@ -97,7 +105,7 @@ export async function callStudyAIForJSON<T>(params: {
   const response = await studyAnthropicClient().messages.create({
     model: MODEL,
     max_tokens: params.maxTokens ?? 4096,
-    system: `${params.system}\n\nRespond with ONLY valid JSON. No prose before or after it, no markdown code fences.`,
+    system: `${params.system}\n\nRespond with ONLY valid JSON. No prose before or after it, no markdown code fences.${languageInstruction(params.language)}`,
     messages: [{ role: "user", content }],
     output_config: { effort: params.effort ?? "medium" },
   });
@@ -114,11 +122,14 @@ export async function callStudyAIForText(params: {
   messages: { role: "user" | "assistant"; content: string }[];
   maxTokens?: number;
   effort?: "low" | "medium" | "high";
+  /** See callStudyAIForJSON's `language` doc above — same deal, for the
+   * plain-text callers (AI Tutor, Homework Help, Business content helper). */
+  language?: Locale;
 }): Promise<string> {
   const response = await studyAnthropicClient().messages.create({
     model: MODEL,
     max_tokens: params.maxTokens ?? 1024,
-    system: params.system,
+    system: `${params.system}${languageInstruction(params.language)}`,
     messages: params.messages,
     output_config: { effort: params.effort ?? "low" },
   });

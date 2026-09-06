@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON } from "@/lib/study/ai";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
 import { todayISO, daysBetween, clamp } from "@/lib/utils";
 import type { StudyTopic } from "@/lib/study/types";
 
@@ -123,6 +124,7 @@ Return JSON: {"days": [{"day_index": number, "topic_name": string, "duration_min
       userText,
       maxTokens: 2048,
       effort: "medium",
+      language: await getUserLanguage(client, user.id),
     });
   } catch {
     return NextResponse.json({ error: "Couldn't generate a study plan right now. Try again in a moment." }, { status: 502 });

@@ -1,0 +1,6 @@
+{
+  "LanguageSwitcher": {
+    "label": "Language",
+    "srCurrentLanguage": "Current language: {language}. Click to change."
+  }
+}

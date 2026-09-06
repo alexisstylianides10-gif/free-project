@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { buildCoachSystemPrompt } from "@/lib/coach/systemPrompt";
+import { languageInstruction } from "@/lib/i18n/aiInstruction";
 import type { Homework, Exam, OnboardingResponse, Profile, CareerPath, BusinessProfile, BusinessMilestone } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -124,7 +125,7 @@ export async function POST(req: NextRequest) {
       const titleResponse = await anthropicClient().messages.create({
         model: MODEL,
         max_tokens: 20,
-        system: "Give a 3-6 word title summarizing this conversation. No quotes, no punctuation at the end, no markdown.",
+        system: `Give a 3-6 word title summarizing this conversation. No quotes, no punctuation at the end, no markdown.${languageInstruction(profile.language)}`,
         messages: [
           { role: "user", content: message },
           { role: "assistant", content: replyText },

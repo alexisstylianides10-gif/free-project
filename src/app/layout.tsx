@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { LocaleBridge } from "@/components/providers/LocaleBridge";
+import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import { ThemeProvider, themeInitScript } from "@/components/providers/ThemeProvider";
 import { branding, siteUrl } from "@/lib/branding";
 
@@ -53,16 +55,29 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // `lang` starts as "en" and is corrected client-side by LocaleProvider
+  // once the real locale resolves — see that file's top comment for why
+  // this app resolves locale entirely client-side (no cookies()/getLocale()
+  // call here) rather than the more "obvious" server-resolved approach:
+  // that would force every route through this layout to render dynamically
+  // instead of prerendering, a real regression for this app's static
+  // marketing pages, for zero benefit while Phase 1 doesn't translate any
+  // UI copy yet.
   return (
     <html lang="en" className={`${inter.variable} scroll-smooth`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="antialiased">
-        <ThemeProvider>
-          <ServiceWorkerRegister />
-          <AuthProvider>{children}</AuthProvider>
-        </ThemeProvider>
+        <LocaleProvider>
+          <ThemeProvider>
+            <ServiceWorkerRegister />
+            <AuthProvider>
+              <LocaleBridge />
+              {children}
+            </AuthProvider>
+          </ThemeProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

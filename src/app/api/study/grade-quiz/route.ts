@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON } from "@/lib/study/ai";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
 import { logFocusSession, updateTopicMastery } from "@/lib/study/actions";
 import { awardAchievementOnce } from "@/lib/actions/achievements";
 import type { AnswerVerdict, QuizQuestion, QuizResultItem, StudyQuiz, StudyTopic } from "@/lib/study/types";
@@ -75,6 +76,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "quizId and answers are required." }, { status: 400 });
   }
 
+  const language = await getUserLanguage(client, user.id);
+
   const { data: quizRow, error: quizError } = await client.from("study_quizzes").select("*").eq("id", quizId).maybeSingle();
   if (quizError || !quizRow) return NextResponse.json({ error: "Quiz not found." }, { status: 404 });
   const quiz = quizRow as StudyQuiz;
@@ -117,6 +120,7 @@ export async function POST(req: NextRequest) {
           userText: batchPrompt,
           maxTokens: 2048,
           effort: "medium",
+          language,
         });
 
         const verdictMap = new Map((ai.results ?? []).map((r) => [r.question_id, r]));
@@ -248,6 +252,7 @@ export async function POST(req: NextRequest) {
           `Respond with ONLY JSON: { "next_focus_note": string } — one sentence, in the style of: "Based on your recent practice results, genetics should be your next focus." Reference the weakest topic if there is one; if there isn't, give an encouraging one-liner instead.`,
         maxTokens: 300,
         effort: "low",
+        language,
       });
       nextFocusNote = noteResponse.next_focus_note;
     } catch {

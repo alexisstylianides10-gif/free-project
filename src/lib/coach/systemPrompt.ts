@@ -2,6 +2,7 @@ import type { Profile, Homework, Exam, OnboardingResponse, BusinessProfile, Busi
 import { getCareer } from "@/lib/catalog/careers";
 import { formatCountdown } from "@/lib/utils";
 import { branding } from "@/lib/branding";
+import { languageInstruction } from "@/lib/i18n/aiInstruction";
 
 export interface CoachContext {
   profile: Profile;
@@ -17,7 +18,8 @@ export interface CoachContext {
  * track, since a student and a founder need genuinely different advice, not
  * just a relabeled version of the same prompt. */
 export function buildCoachSystemPrompt(ctx: CoachContext): string {
-  return ctx.profile.track === "business" ? buildBusinessCoachPrompt(ctx) : buildStudentCoachPrompt(ctx);
+  const base = ctx.profile.track === "business" ? buildBusinessCoachPrompt(ctx) : buildStudentCoachPrompt(ctx);
+  return `${base}${languageInstruction(ctx.profile.language)}`;
 }
 
 /**

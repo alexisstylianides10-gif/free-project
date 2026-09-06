@@ -4,6 +4,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/supabase/server";
 import { extractJSON, StudyAIError } from "@/lib/study/ai";
 import { SUBJECT_OPTIONS } from "@/lib/catalog/onboarding-options";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
+import { withLanguageInstruction } from "@/lib/i18n/aiInstruction";
 import type { Priority } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -62,8 +64,8 @@ function anthropicClient(): Anthropic {
  * buildDemoData on any failure here, so onboarding never breaks on this.
  */
 export async function POST(req: NextRequest) {
-  const { user, error } = await requireUser(req);
-  if (!user) return NextResponse.json({ error }, { status: 401 });
+  const { client, user, error } = await requireUser(req);
+  if (!client || !user) return NextResponse.json({ error }, { status: 401 });
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: "Not configured." }, { status: 503 });
@@ -101,10 +103,11 @@ Include 8-12 timetable entries, 4 homework items, 2 exams, and 5-7 study session
   const userText = `Country: ${country}\nSchool: ${schoolName || "not provided"}\nYear group: ${yearGroup}\nSubjects the student picked: ${subjectLabels.join(", ")}`;
 
   try {
+    const language = await getUserLanguage(client, user.id);
     const response = await anthropicClient().messages.create({
       model: MODEL,
       max_tokens: 4096,
-      system,
+      system: withLanguageInstruction(system, language),
       messages: [{ role: "user", content: userText }],
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3 }],
       output_config: { effort: "medium" },

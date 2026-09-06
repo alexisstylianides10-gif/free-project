@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON } from "@/lib/study/ai";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
 import type { AnswerVerdict } from "@/lib/study/types";
 
 export const runtime = "nodejs";
@@ -72,7 +73,13 @@ The explanation should be brief (1-3 sentences), say specifically why, and if th
 
   let result: EvaluateResult;
   try {
-    result = await callStudyAIForJSON<EvaluateResult>({ system, userText, maxTokens: 500, effort: "low" });
+    result = await callStudyAIForJSON<EvaluateResult>({
+      system,
+      userText,
+      maxTokens: 500,
+      effort: "low",
+      language: await getUserLanguage(client, user.id),
+    });
   } catch {
     return NextResponse.json({ error: "Couldn't grade that answer right now. Try again in a moment." }, { status: 502 });
   }

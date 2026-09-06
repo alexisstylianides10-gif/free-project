@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { LogoMark } from "@/components/shared/LogoMark";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { Button } from "@/components/ui/Button";
 import { branding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
@@ -74,6 +75,7 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
+          <LanguageSwitcher variant="compact" />
           <Link href="/login" className="px-3 text-sm font-semibold text-muted-foreground hover:text-foreground">
             Log in
           </Link>
@@ -83,14 +85,17 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
         </div>
 
         {/* below md: compact toggle */}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-foreground md:hidden"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <LanguageSwitcher variant="compact" />
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {open && (

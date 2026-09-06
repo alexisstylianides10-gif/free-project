@@ -22,6 +22,7 @@ import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { RoadmapTimeline, RoadmapStep } from "@/components/shared/RoadmapTimeline";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { InstallAppCard } from "@/components/shared/InstallAppCard";
 import { branding } from "@/lib/branding";
@@ -207,6 +208,12 @@ export default function ProfilePage() {
           <CardContent className="p-4">
             <p className="mb-2.5 text-sm font-medium text-foreground">Appearance</p>
             <ThemeToggle />
+          </CardContent>
+        </Card>
+        <Card className="mt-3">
+          <CardContent className="flex items-center justify-between gap-3 p-4">
+            <p className="text-sm font-medium text-foreground">Language</p>
+            <LanguageSwitcher />
           </CardContent>
         </Card>
         <Card className="mt-3">

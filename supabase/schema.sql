@@ -91,6 +91,17 @@ alter table public.profiles add column if not exists tutorial_seen boolean not n
 -- rather than reintroducing the identical bug for a second column).
 alter table public.profiles add column if not exists age int check (age is null or (age between 5 and 100));
 
+-- i18n Phase 1: the signed-in source of truth for a student/founder's
+-- preferred language, overriding the pre-auth localStorage/cookie guess on
+-- login (see src/components/providers/LocaleBridge.tsx) so the preference
+-- follows the account across devices. Also read server-side by every AI
+-- route (Coach, Study/Tutor, onboarding research) to instruct the model to
+-- respond in it — see src/lib/i18n/aiInstruction.ts. Values match
+-- SUPPORTED_LOCALES in src/lib/i18n/locales.ts exactly; keep both in sync
+-- if a language is ever added/removed. Same "must run before the grant
+-- update (...) block" ordering requirement as tutorial_seen/age above.
+alter table public.profiles add column if not exists language text not null default 'en' check (language in ('en', 'es', 'fr', 'el'));
+
 -- Billing columns (plan, plan_status, trial_ends_at, stripe_customer_id,
 -- stripe_subscription_id) are deliberately excluded from the client's
 -- UPDATE grant below — the update-own RLS policy above only checks row
@@ -104,7 +115,7 @@ revoke update on public.profiles from authenticated;
 grant update (
   full_name, year_group, country, avatar_emoji, xp_school, xp_career,
   xp_skill, xp_project, streak_count, longest_streak, last_active_date,
-  onboarding_completed, track, billing_interval, tutorial_seen, age
+  onboarding_completed, track, billing_interval, tutorial_seen, age, language
 ) on public.profiles to authenticated;
 
 -- ---------------------------------------------------------------------------

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON } from "@/lib/study/ai";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
 
 export const runtime = "nodejs";
 
@@ -54,7 +55,13 @@ Key concepts: ${topic.key_concepts.length ? topic.key_concepts.join(", ") : "(no
   const userText = `${asked.length ? `Already asked (don't repeat these):\n${asked.map((q) => `- ${q}`).join("\n")}\n\n` : ""}Write one new active-recall question about this topic. Return JSON: {"question": string}`;
 
   try {
-    const result = await callStudyAIForJSON<{ question: string }>({ system, userText, maxTokens: 300, effort: "low" });
+    const result = await callStudyAIForJSON<{ question: string }>({
+      system,
+      userText,
+      maxTokens: 300,
+      effort: "low",
+      language: await getUserLanguage(client, user.id),
+    });
     if (!result.question) throw new Error("empty");
     return NextResponse.json({ question: result.question });
   } catch {

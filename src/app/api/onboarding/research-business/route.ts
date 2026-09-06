@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/supabase/server";
 import { extractJSON, StudyAIError } from "@/lib/study/ai";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
+import { withLanguageInstruction } from "@/lib/i18n/aiInstruction";
 
 export const runtime = "nodejs";
 
@@ -34,8 +36,8 @@ function anthropicClient(): Anthropic {
  * list on any failure here, so onboarding never breaks on this.
  */
 export async function POST(req: NextRequest) {
-  const { user, error } = await requireUser(req);
-  if (!user) return NextResponse.json({ error }, { status: 401 });
+  const { client, user, error } = await requireUser(req);
+  if (!client || !user) return NextResponse.json({ error }, { status: 401 });
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: "Not configured." }, { status: 503 });
@@ -86,10 +88,11 @@ Include 4-6 milestones.`;
     : `No business idea yet.\nStrengths: ${strengths.join(", ") || "not specified"}\nWants to focus on: ${focusAreas.join(", ") || "not specified"}\nTarget customer (if any thoughts): ${targetCustomer || "not specified"}`;
 
   try {
+    const language = await getUserLanguage(client, user.id);
     const response = await anthropicClient().messages.create({
       model: MODEL,
       max_tokens: 2048,
-      system,
+      system: withLanguageInstruction(system, language),
       messages: [{ role: "user", content: userText }],
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3 }],
       output_config: { effort: "medium" },

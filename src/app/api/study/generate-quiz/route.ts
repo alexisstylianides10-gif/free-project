@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON, StudyAIError, type DocumentInput } from "@/lib/study/ai";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
 import { downloadMaterialDocument } from "@/lib/study/materials";
 import type { QuizDifficulty, QuizQuestion, QuizQuestionType, StudyQuiz, StudyTopic, StudyMaterial, MaterialAnalysisFull } from "@/lib/study/types";
 
@@ -195,6 +196,7 @@ export async function POST(req: NextRequest) {
       document: pastPaperDocument,
       maxTokens: 4096,
       effort: difficulty === "exam" || isMockExam ? "high" : "medium",
+      language: await getUserLanguage(client, user.id),
     });
 
     const rawQuestions = Array.isArray(ai.questions) ? ai.questions : [];

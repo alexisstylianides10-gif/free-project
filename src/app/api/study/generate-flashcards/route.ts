@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON, StudyAIError } from "@/lib/study/ai";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
 import type { StudyFlashcard, StudyTopic, MaterialAnalysisFull } from "@/lib/study/types";
 
 export const runtime = "nodejs";
@@ -116,6 +117,7 @@ export async function POST(req: NextRequest) {
       userText,
       maxTokens: 4096,
       effort: "medium",
+      language: await getUserLanguage(client, user.id),
     });
 
     const rawCards = Array.isArray(ai.cards) ? ai.cards : [];

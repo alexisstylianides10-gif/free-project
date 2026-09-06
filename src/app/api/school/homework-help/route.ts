@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForText } from "@/lib/study/ai";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
 
 export const runtime = "nodejs";
 
@@ -71,7 +72,13 @@ Never claim a guaranteed exam outcome or grade. Keep your tone premium and matur
 
   let replyText: string;
   try {
-    replyText = await callStudyAIForText({ system, messages: [{ role: "user", content: message }], maxTokens: 900, effort: "low" });
+    replyText = await callStudyAIForText({
+      system,
+      messages: [{ role: "user", content: message }],
+      maxTokens: 900,
+      effort: "low",
+      language: await getUserLanguage(client, user.id),
+    });
   } catch {
     return NextResponse.json({ error: "Homework Help is having trouble responding right now. Try again in a moment." }, { status: 502 });
   }
