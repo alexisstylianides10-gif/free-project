@@ -2341,3 +2341,78 @@ blocked last round without introducing new issues. `/` now has exactly one `<h1>
 non-skipping in both standalone and inline contexts, and nothing else regressed.
 
 SIGN-OFF: GIVEN
+
+## CATO — catch-up entry for shipped work not previously logged here — 2026-09-07
+
+A run of CEO-directed work landed and shipped between the scroll-landing sign-off above and now, entirely via
+direct CEO<->Cato exchanges rather than the Product/Dev/QA wave pipeline — hence no entries until now. Logging it
+here in one pass so the board matches `git log`, per a gap a QA agent flagged this round. All of the below is
+merged onto `claude/futureos-student-app-3ewdz6` and deployed live.
+
+**Domain/infra:** custom domain moved from the original `alxioum.com` (Wix, DNS friction) to `alxioum.net`
+(Namecheap) — both apex and `www` correctly pointed at Render (A record `216.24.57.1` / CNAME to
+`alxioum-app.onrender.com`). Resend domain verification for `alxioum.net` succeeded (DKIM/SPF green) — but wiring
+Supabase Auth's Custom SMTP to actually use it has NOT been resolved despite several rounds of debugging (fresh
+API key, port 465→587, retyped credentials, confirmed correct project) — a direct Resend API test send succeeded
+instantly, proving the domain/account are fine, so the fault is isolated to whatever's in the Supabase SMTP
+settings form itself, which needs a screenshot from the CEO to diagnose further since no tool can read that
+screen. Auth currently still falls back to Supabase's own sender when Custom SMTP is toggled off.
+
+**Design — three sequential passes, commits `5f6fac3`→`f0837d3`→`ba1819f`→`def1f9e`→`055885f`:** (1) an initial
+landing-page "premium" pass added glow/gradient hover treatments; (2) a "de-vibe" pass researched actual
+vibe-coded-UI signals (overused glow, competing saturated colors, decorative repetition) and reversed course —
+retired `shadow-glow-*` everywhere, flattened the multi-stop mission gradient, restructured the 18 identical
+landing feature cards into a 3-headline/9-list split; (3) a full **Premium Design System** rewrite per a
+CEO-supplied written spec (`PREMIUM_DESIGN_SYSTEM.md`, Linear/Stripe/Vercel-inspired restraint) done in two
+phases — Phase 1 rewrote every color/typography/radius/shadow token and the shared component library
+(`Button`/`Card`/`Badge`/`Modal`/nav shell), Phase 2 swept every remaining page (icon consistency, `Input`/
+`Select` primitives adopted app-wide, typography-tier resizing, `ThemeToggle` deduplication) — followed by a
+CEO-requested accent-color swap from the spec's literal `#635BFF` (correctly flagged as "generic, that's Stripe's
+own brand color") to a distinctive deep emerald (`#0F7B5C` light / `~#24896D` dark, WCAG-contrast-checked for
+both themes).
+
+**i18n Phase 1 (commit `a7c6490`):** `next-intl` installed; locale resolved client-side via cookie/localStorage
+(`LocaleProvider.tsx`) rather than server `cookies()`, specifically to avoid regressing this app's static
+marketing pages to dynamic (verified via `next build` route-type diffing before committing to the approach).
+`profiles.language` (`en`/`es`/`fr`/`el`) added to schema and applied directly to the live DB by Cato (the
+building agent's sandbox had no bound Supabase tool this round). Every AI system-prompt call in the app (Coach,
+both onboarding research routes, all 10 Study/homework-help/business-content routes via the shared
+`callStudyAIForJSON`/`callStudyAIForText` helper) now appends a "respond in {language}" instruction sourced from
+`profiles.language` — confirmed additive, not replacing any existing prompt logic. UI copy itself is NOT yet
+translated (Phase 2, translating the marketing/auth pages, in progress as of this entry; Phase 3, the full
+authenticated app, still pending).
+
+**Billing:** (1) fixed a real bug where a successful payment left the customer stranded on `/app/upgrade` —
+the success card hid its own only navigation button once payment succeeded, and the webhook-confirmation poll
+had no timeout/escape hatch if the webhook was ever slow; now auto-redirects to `/app` once confirmed (with a
+manual "Continue to app" button) and shows a Refresh/Go-to-app fallback if polling times out. (2) removed a
+hardcoded `payment_method_types: ["card"]` restriction on subscription creation that silently blocked Google
+Pay/Apple Pay from ever appearing regardless of Stripe Dashboard settings — code-side prerequisite done; the
+CEO still needs to toggle Google Pay/Apple Pay on in the Stripe Dashboard itself (Settings > Payment methods),
+which no tool can do remotely. Stripe remains in **test mode** — confirmed via the CEO's own test-card attempts
+and never switched to live; doing so is a deliberate step for the CEO to request explicitly, not something to
+flip proactively.
+
+**QA pass (this round, full report on file, not reproduced here):** confirmed working — no fake/AI-looking data
+ever appears before onboarding completes (genuine empty states only); the previously-fixed "empty AI-research
+array silently accepted" bug stays fixed; i18n Phase 1 additivity; `profiles.language` RLS/grant ordering;
+two-column dashboard grid layout (empirically re-verified via Playwright render against real compiled CSS, not
+just re-reading old notes); no retired design tokens crept back in; the business/student onboarding catalog
+separation hasn't regressed; no `profiles.upsert()` calls exist anywhere (the known PostgREST column-grant
+restriction bug class). **Two real bugs found and fixed same-session:** (1) `InstallAppCard`'s platform
+detection missed the vast majority of real iPads (Safari on iPadOS 13+ reports as desktop macOS Safari with no
+"iPad" substring in the user agent) — added the standard `navigator.platform === "MacIntel" &&
+navigator.maxTouchPoints > 1` fallback check; (2) when onboarding's AI research fails and falls back to
+`buildDemoData`'s generic starter content, there was zero indication to the student/founder that the seeded
+homework/exams/milestones are a placeholder rather than something the app actually researched — added a visible
+"starter template" notice on `StudentSchoolHome`/`BusinessPlanHome`, keyed off the existing
+`curriculum_summary`/`ai_snapshot` null signal.
+
+**Still outstanding, not yet actioned:**
+- Legal pages (`/terms`, `/privacy`) still have literal `[COMPANY NAME]` / `[CONTACT EMAIL]` / `[ADDRESS]`
+  placeholders — needs real values from the CEO.
+- Resend/Supabase SMTP wiring (see above) — needs a screenshot to diagnose further.
+- A redundant second Render service (`alxioum`, `srv-da6p7p0u01pc738s4pt0`) pointing at the same repo — never
+  deleted.
+- i18n Phases 2 (marketing/auth translation) and 3 (full authenticated-app translation).
+- Stripe live-mode switch — deliberately not done pending explicit CEO request.
