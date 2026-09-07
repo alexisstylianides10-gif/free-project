@@ -54,7 +54,7 @@ export default function StudentSchoolHome() {
   const { data: topics, error: topicsError } = useStudyTopics(user?.id);
   const { data: focusSessions, error: focusError } = useStudyFocusSessions(user?.id);
   const { data: flashcards, error: flashcardsError } = useStudyFlashcards(user?.id);
-  const { data: onboardingResponse } = useOnboardingResponse(user?.id);
+  const { data: onboardingResponse, loading: onboardingResponseLoading } = useOnboardingResponse(user?.id);
 
   // First non-null error wins — this page reads through 8 tables via
   // useTableRows; surfacing all of them at once would be noisy, and a
@@ -242,6 +242,29 @@ export default function StudentSchoolHome() {
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Your program</p>
               <p className="mt-1 text-sm leading-relaxed text-foreground">{onboardingResponse.curriculum_summary}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* onboardingResponse existing but curriculum_summary null means the AI
+          research call failed/timed out at signup and completeOnboarding
+          fell back to buildDemoData's generic starter content (see
+          researchSchool.ts) — without this notice a student has no way to
+          tell "AI Coach exam in 12 days" from a real researched deadline. */}
+      {!onboardingResponseLoading && onboardingResponse && !onboardingResponse.curriculum_summary && (
+        <Card className="border-warning/30 bg-warning-soft/40">
+          <CardContent className="flex items-start gap-3 p-4">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning-soft text-warning">
+              <GraduationCap className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Starter template</p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">
+                We couldn&rsquo;t research your school&rsquo;s real curriculum when you signed up, so your timetable,
+                homework, and exams below are a generic starting point, not deadlines we found for you. Edit or
+                delete anything that doesn&rsquo;t match your real schedule.
+              </p>
             </div>
           </CardContent>
         </Card>

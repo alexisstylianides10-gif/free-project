@@ -24,7 +24,7 @@ const STAGE_LABEL: Record<string, string> = {
 
 export default function BusinessPlanHome() {
   const { user, profile, refreshProfile } = useAuth();
-  const { data: businessProfile } = useBusinessProfile(user?.id);
+  const { data: businessProfile, loading: businessProfileLoading } = useBusinessProfile(user?.id);
   const { data: milestones, error: milestonesError, refetch: refetchMilestones } = useBusinessMilestones(user?.id);
 
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -92,6 +92,19 @@ export default function BusinessPlanHome() {
             <div className="mt-3 flex items-start gap-2 rounded-xl bg-accent-soft/40 p-3">
               <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
               <p className="text-xs leading-relaxed text-foreground">{businessProfile.ai_snapshot}</p>
+            </div>
+          )}
+          {/* businessProfile existing but ai_snapshot null means onboarding's
+              AI research call failed/timed out and fell back to a generic
+              starter milestone list — without this notice a founder can't
+              tell that from a real AI-researched snapshot. */}
+          {!businessProfileLoading && businessProfile && !businessProfile.ai_snapshot && (
+            <div className="mt-3 flex items-start gap-2 rounded-xl bg-warning-soft/40 p-3">
+              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
+              <p className="text-xs leading-relaxed text-foreground">
+                We couldn&rsquo;t generate a personalized snapshot when you signed up, so your milestones below are a
+                generic starting point. Edit them to match your actual plan.
+              </p>
             </div>
           )}
         </CardContent>

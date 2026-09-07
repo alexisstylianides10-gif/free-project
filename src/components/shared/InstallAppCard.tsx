@@ -13,6 +13,12 @@ function detectPlatform(): Platform {
   if (typeof navigator === "undefined") return "other";
   const ua = navigator.userAgent;
   if (/iPhone|iPad|iPod/i.test(ua)) return "ios";
+  // Safari on iPadOS 13+ dropped "iPad" from its default user-agent string
+  // (it reports as desktop macOS Safari instead), so the regex above misses
+  // the vast majority of real iPads. The standard workaround: a "MacIntel"
+  // platform that also reports touch points is actually an iPad, since real
+  // Macs never report touch points.
+  if (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) return "ios";
   if (/Android/i.test(ua)) return "android";
   return "other";
 }
