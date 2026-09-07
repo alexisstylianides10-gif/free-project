@@ -83,7 +83,12 @@ export async function POST(req: NextRequest) {
       customer: customerId,
       items: [{ price: priceId }],
       payment_behavior: "default_incomplete",
-      payment_settings: { save_default_payment_method: "on_subscription", payment_method_types: ["card"] },
+      // No payment_method_types restriction: leaving it unset lets Stripe
+      // dynamically offer whatever's enabled in the Dashboard's Payment
+      // methods settings (cards, Google Pay, Apple Pay, Link, etc.) instead
+      // of hardcoding "card" only, which silently hid wallet options from
+      // the Payment Element no matter what was toggled on in the Dashboard.
+      payment_settings: { save_default_payment_method: "on_subscription" },
       expand: ["latest_invoice.confirmation_secret"],
       metadata: { supabase_user_id: user.id, track: profile.track, interval },
     });
