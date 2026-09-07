@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck, Trophy, Compass, CalendarClock, type LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useExams, useHomework, useBusinessMilestones } from "@/lib/hooks/domain";
 import { useNotifications } from "@/lib/hooks/useNotifications";
@@ -21,6 +22,7 @@ const TYPE_ICON: Record<NotificationType, LucideIcon> = {
 
 export function NotificationBell({ className }: { className?: string } = {}) {
   const { user, profile } = useAuth();
+  const t = useTranslations("NotificationBell");
   const isBusiness = profile?.track === "business";
   const [open, setOpen] = useState(false);
 
@@ -47,12 +49,23 @@ export function NotificationBell({ className }: { className?: string } = {}) {
   );
 
   const items: NotificationItem[] = useMemo(() => {
-    const deadlineItems = buildDeadlineNotifications({ exams, homework, milestones, isBusiness, dismissedIds, today: todayISO() });
+    const deadlineItems = buildDeadlineNotifications({
+      exams,
+      homework,
+      milestones,
+      isBusiness,
+      dismissedIds,
+      today: todayISO(),
+      labels: {
+        due: (date) => t("dueDate", { date }),
+        examTitle: (subject) => t("examTitle", { subject }),
+      },
+    });
     const eventItems: NotificationItem[] = stored
       .filter((r) => r.type === "achievement_unlocked" || r.type === "roadmap_level_up")
       .map((r) => ({ id: r.id, type: r.type, title: r.title, body: r.body, href: r.href ?? "/app", read: r.read, createdAt: r.created_at, dismissible: false }));
     return [...deadlineItems, ...eventItems].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }, [stored, exams, homework, milestones, isBusiness, dismissedIds]);
+  }, [stored, exams, homework, milestones, isBusiness, dismissedIds, t]);
 
   const unreadCount = items.filter((i) => !i.read).length;
 
@@ -100,7 +113,7 @@ export function NotificationBell({ className }: { className?: string } = {}) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+        aria-label={unreadCount > 0 ? t("notificationsUnread", { count: unreadCount }) : t("notifications")}
         className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <Bell className="h-4 w-4" />
@@ -114,15 +127,15 @@ export function NotificationBell({ className }: { className?: string } = {}) {
       {open && (
         <div className="bg-surface border border-border absolute right-0 top-11 z-50 w-80 max-h-96 overflow-y-auto rounded-2xl p-2 shadow-raised">
           <div className="flex items-center justify-between px-2 py-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notifications</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("notifications")}</p>
             {unreadCount > 0 && (
               <button type="button" onClick={handleMarkAllRead} className="flex items-center gap-1 text-xs font-semibold text-accent">
-                <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                <CheckCheck className="h-3.5 w-3.5" /> {t("markAllRead")}
               </button>
             )}
           </div>
           {items.length === 0 ? (
-            <p className="p-4 text-center text-xs text-muted-foreground">You&apos;re all caught up.</p>
+            <p className="p-4 text-center text-xs text-muted-foreground">{t("allCaughtUp")}</p>
           ) : (
             items.map((item) => {
               const Icon = TYPE_ICON[item.type];

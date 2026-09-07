@@ -2,16 +2,12 @@
 
 import Link from "next/link";
 import { Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { isEntitled } from "@/lib/billing/entitlement";
 import { getPlanOption } from "@/lib/billing/plans";
 import { Button } from "@/components/ui/Button";
 import { branding } from "@/lib/branding";
-
-const DESCRIPTION_BY_TRACK = {
-  student: "AI Coach and the full Study system (material analysis, AI study plans, quizzes, flashcards, and your AI tutor) are part of",
-  business: "AI Coach, your business snapshot, milestone AI, and the marketing/content helper are part of",
-} as const;
 
 /**
  * Wraps an AI-cost feature (AI Coach, the Study/Business-OS system) and
@@ -25,6 +21,7 @@ const DESCRIPTION_BY_TRACK = {
  */
 export function PaywallGate({ children }: { children: React.ReactNode }) {
   const { profile } = useAuth();
+  const t = useTranslations("PaywallGate");
   if (!profile) return null;
   if (isEntitled(profile)) return <>{children}</>;
 
@@ -38,14 +35,14 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
         <Lock className="h-6 w-6 text-white" />
       </span>
       <h2 className="mt-6 text-xl font-bold text-foreground">
-        {trialExpired ? "Your free trial has ended" : `Activate ${branding.name} Plus`}
+        {trialExpired ? t("trialEnded") : t("activatePlus", { name: branding.name })}
       </h2>
       <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-        {DESCRIPTION_BY_TRACK[track]} {branding.name} Plus.
+        {t(track === "business" ? "businessDescription" : "studentDescription", { name: branding.name })}
       </p>
       <Link href="/app/upgrade" className="mt-6 w-full max-w-xs">
         <Button size="lg" className="w-full">
-          Activate for ${monthlyPrice}/mo
+          {t("activateFor", { price: monthlyPrice })}
         </Button>
       </Link>
     </div>

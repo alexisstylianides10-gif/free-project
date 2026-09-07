@@ -19,16 +19,17 @@ export function subjectReadiness(topics: StudyTopic[]): number | null {
   return Math.round(topics.reduce((sum, t) => sum + t.mastery, 0) / topics.length);
 }
 
-export interface StudyRecommendation {
-  text: string;
-  subjectId: string | null;
-  topicId: string | null;
-  /** Where "Start Study" should go. Defaults to "topic" behavior (a
-   * subject/topic session) when omitted — added so the flashcards-due
-   * case can point at a review session instead without every existing
-   * caller needing to branch on a new required field. */
-  action?: "topic" | "flashcards" | "explore";
-}
+/** Discriminated result instead of a pre-built English sentence — the
+ * caller (StudentSchoolHome) resolves the final text via
+ * useTranslations("StudentSchoolHome"), since it needs ICU pluralization
+ * for the flashcards-due count that this pure data-shaping function
+ * intentionally doesn't depend on. */
+export type StudyRecommendation =
+  | { kind: "examWeakTopic"; topicName: string; examSubject: string; subjectId: string; topicId: string; action?: undefined }
+  | { kind: "weakTopic"; topicName: string; subjectId: string; topicId: string; action?: undefined }
+  | { kind: "flashcardsDue"; count: number; subjectId: null; topicId: null; action: "flashcards" }
+  | { kind: "noSubjects"; subjectId: null; topicId: null; action?: undefined }
+  | { kind: "uploadMaterial"; subjectId: null; topicId: null; action?: undefined };
 
 /**
  * The Study tab's "one clear next action" — deliberately singular per the
@@ -53,7 +54,9 @@ export function buildStudyRecommendation(input: {
 
   if (soonExam && input.allWeakestTopic) {
     return {
-      text: `Practice ${input.allWeakestTopic.name} for 30 minutes: it's your weakest topic with the ${soonExam.subject} exam coming up.`,
+      kind: "examWeakTopic",
+      topicName: input.allWeakestTopic.name,
+      examSubject: soonExam.subject,
       subjectId: input.allWeakestTopic.subject_id,
       topicId: input.allWeakestTopic.id,
     };
@@ -61,7 +64,8 @@ export function buildStudyRecommendation(input: {
 
   if (input.allWeakestTopic) {
     return {
-      text: `Practice ${input.allWeakestTopic.name} for 30 minutes: your recent results show this is currently your weakest topic.`,
+      kind: "weakTopic",
+      topicName: input.allWeakestTopic.name,
       subjectId: input.allWeakestTopic.subject_id,
       topicId: input.allWeakestTopic.id,
     };
@@ -71,18 +75,12 @@ export function buildStudyRecommendation(input: {
   // material but no quiz/session history) — due flashcards are still a
   // legitimate, low-friction "one clear next action" in that gap.
   if ((input.flashcardsDueCount ?? 0) > 0) {
-    const n = input.flashcardsDueCount as number;
-    return {
-      text: `You have ${n} flashcard${n === 1 ? "" : "s"} due for review today, a quick way to keep what you've learned fresh.`,
-      subjectId: null,
-      topicId: null,
-      action: "flashcards",
-    };
+    return { kind: "flashcardsDue", count: input.flashcardsDueCount as number, subjectId: null, topicId: null, action: "flashcards" };
   }
 
   if (!input.hasAnySubjects) {
-    return { text: "Add a subject and upload your first material to get a personalized study plan.", subjectId: null, topicId: null };
+    return { kind: "noSubjects", subjectId: null, topicId: null };
   }
 
-  return { text: "Upload some material for one of your subjects so your AI coach can find what to focus on.", subjectId: null, topicId: null };
+  return { kind: "uploadMaterial", subjectId: null, topicId: null };
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Send, Loader2, Sparkles, Plus, MessagesSquare, Check, Pencil } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useChatHistory, useChatThreads, useHomework, useExams, useCareerPaths } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
@@ -11,31 +12,25 @@ import { supabase } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 
-const SUGGESTED_PROMPTS = [
-  "What career fits me?",
-  "How do I improve my grades?",
-  "Help me choose a business idea.",
-  "What should I learn this month?",
-  "Help me plan my week.",
-  "What should I do today?",
-];
-
 interface LocalMessage {
   role: "user" | "assistant";
   content: string;
 }
 
-function relativeDay(iso: string): string {
+function relativeDay(iso: string, t: (key: string, values?: Record<string, string | number | Date>) => string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const days = Math.floor(diffMs / 86400000);
-  if (days <= 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days}d ago`;
+  if (days <= 0) return t("today");
+  if (days === 1) return t("yesterday");
+  if (days < 7) return t("daysAgo", { days });
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export default function CoachPage() {
   const { user, profile } = useAuth();
+  const t = useTranslations("CoachPage");
+  const tCareers = useTranslations("Careers");
+  const SUGGESTED_PROMPTS = t.raw("suggestedPrompts") as string[];
   const { data: threads, refetch: refetchThreads } = useChatThreads(user?.id);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [threadPanelOpen, setThreadPanelOpen] = useState(false);
@@ -54,9 +49,18 @@ export default function CoachPage() {
     return primary ? getCareer(primary.career_slug) : undefined;
   }, [careerPaths]);
 
+  const primaryCareerLabel = primaryCareer ? tCareers(`${primaryCareer.slug}.name`) : undefined;
   const chips = useMemo(
-    () => buildRecommendationChips({ exams, homework: homework.filter((h) => h.status === "pending"), primaryCareer }),
-    [exams, homework, primaryCareer]
+    () =>
+      buildRecommendationChips({
+        exams,
+        homework: homework.filter((h) => h.status === "pending"),
+        primaryCareerLabel,
+        primaryCareerFirstWord: primaryCareerLabel?.split(" ")[0],
+        labels: { skillBuilding: t("skillBuilding"), exploreCareer: t("exploreCareerChip") },
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [exams, homework, primaryCareerLabel]
   );
 
   const [messages, setMessages] = useState<LocalMessage[]>([]);
@@ -142,30 +146,30 @@ export default function CoachPage() {
     try {
       const res = await authedFetch("/api/coach", { method: "POST", body: JSON.stringify({ message: trimmed, threadId: activeThreadId }) });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Something went wrong.");
+      if (!res.ok) throw new Error(json.error || t("somethingWentWrong"));
       setMessages((prev) => [...prev, { role: "assistant", content: json.reply }]);
       if (json.title) await refetchThreads();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setError(e instanceof Error ? e.message : t("somethingWentWrong"));
     } finally {
       setSending(false);
     }
   }
 
-  const activeThread = threads.find((t) => t.id === activeThreadId);
+  const activeThread = threads.find((th) => th.id === activeThreadId);
 
   return (
     <div className="flex h-[calc(100dvh-8rem)] flex-col lg:mx-auto lg:w-full lg:max-w-2xl">
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-accent">Coach</p>
-          <h1 className="mt-0.5 truncate text-title font-bold tracking-tight text-foreground">{activeThread?.title || "New chat"}</h1>
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent">{t("coach")}</p>
+          <h1 className="mt-0.5 truncate text-title font-bold tracking-tight text-foreground">{activeThread?.title || t("newChat")}</h1>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             type="button"
             onClick={() => setThreadPanelOpen((v) => !v)}
-            aria-label="Chat history"
+            aria-label={t("chatHistory")}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-foreground transition-colors hover:border-border-strong"
           >
             <MessagesSquare className="h-4 w-4" />
@@ -174,7 +178,7 @@ export default function CoachPage() {
             type="button"
             onClick={newChat}
             disabled={creatingThread}
-            aria-label="New chat"
+            aria-label={t("newChat")}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised disabled:opacity-40"
           >
             {creatingThread ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
@@ -185,55 +189,55 @@ export default function CoachPage() {
       {threadPanelOpen && (
         <div className="bg-surface border border-border mt-3 max-h-56 shrink-0 space-y-1 overflow-y-auto rounded-2xl p-2 shadow-raised">
           {threads.length === 0 ? (
-            <p className="p-3 text-center text-xs text-muted-foreground">No conversations yet.</p>
+            <p className="p-3 text-center text-xs text-muted-foreground">{t("noConversations")}</p>
           ) : (
-            threads.map((t) =>
-              renamingId === t.id ? (
-                <div key={t.id} className="flex items-center gap-1.5 px-1 py-1">
+            threads.map((th) =>
+              renamingId === th.id ? (
+                <div key={th.id} className="flex items-center gap-1.5 px-1 py-1">
                   <Input
                     autoFocus
                     value={renameValue}
                     onChange={(e) => setRenameValue(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") saveRename(t.id);
+                      if (e.key === "Enter") saveRename(th.id);
                       if (e.key === "Escape") setRenamingId(null);
                     }}
-                    placeholder="Chat name…"
+                    placeholder={t("chatNamePlaceholder")}
                     className="h-9 min-w-0 flex-1"
                   />
                   <button
                     type="button"
-                    onClick={() => saveRename(t.id)}
+                    onClick={() => saveRename(th.id)}
                     disabled={!renameValue.trim() || savingRename}
                     className="shrink-0 rounded-full bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40"
                   >
-                    Save
+                    {t("save")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setRenamingId(null)}
                     className="shrink-0 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground"
                   >
-                    Cancel
+                    {t("cancel")}
                   </button>
                 </div>
               ) : (
                 <div
-                  key={t.id}
+                  key={th.id}
                   className={cn(
                     "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                    t.id === activeThreadId ? "bg-accent-soft/50 text-foreground" : "text-muted-foreground hover:bg-muted"
+                    th.id === activeThreadId ? "bg-accent-soft/50 text-foreground" : "text-muted-foreground hover:bg-muted"
                   )}
                 >
-                  <button type="button" onClick={() => switchThread(t.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
-                    <span className="min-w-0 flex-1 truncate">{t.title || "New chat"}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">{relativeDay(t.last_message_at)}</span>
-                    {t.id === activeThreadId && <Check className="h-3.5 w-3.5 shrink-0 text-accent" />}
+                  <button type="button" onClick={() => switchThread(th.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                    <span className="min-w-0 flex-1 truncate">{th.title || t("newChat")}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{relativeDay(th.last_message_at, t)}</span>
+                    {th.id === activeThreadId && <Check className="h-3.5 w-3.5 shrink-0 text-accent" />}
                   </button>
                   <button
                     type="button"
-                    aria-label="Rename chat"
-                    onClick={() => startRename(t.id, t.title)}
+                    aria-label={t("renameChat")}
+                    onClick={() => startRename(th.id, th.title)}
                     className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:text-accent"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -248,9 +252,7 @@ export default function CoachPage() {
       <div ref={scrollRef} className="scrollbar-none mt-5 flex-1 space-y-3 overflow-y-auto pb-3">
         {messages.length === 0 && !sending && (
           <div className="bg-surface border border-border rounded-2xl p-4 text-sm text-muted-foreground shadow-card">
-            {profile?.track === "business"
-              ? "Ask me anything about building your business. I'll keep it real, not hype."
-              : "Ask me anything about school, skills, or your future. I'll always make sure school comes first."}
+            {profile?.track === "business" ? t("emptyStateBusiness") : t("emptyStateStudent")}
           </div>
         )}
         {messages.map((m, i) => (
@@ -268,7 +270,7 @@ export default function CoachPage() {
         {sending && (
           <div className="flex justify-start">
             <div className="bg-surface border border-border flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t("thinking")}
             </div>
           </div>
         )}
@@ -277,7 +279,7 @@ export default function CoachPage() {
         {(chips.length > 0 || profile) && messages.length < 2 && (
           <div className="bg-surface border border-border rounded-2xl p-4 shadow-card">
             <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-accent">
-              <Sparkles className="h-3.5 w-3.5" /> Today&rsquo;s Recommendation
+              <Sparkles className="h-3.5 w-3.5" /> {t("todaysRecommendation")}
             </p>
             <div className="mt-3 space-y-2">
               {chips.map((chip, i) => (
@@ -285,7 +287,7 @@ export default function CoachPage() {
                   <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                     <chip.icon className="h-4 w-4 text-accent" aria-hidden /> {chip.label}
                   </span>
-                  <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-foreground">{chip.minutes} min</span>
+                  <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-foreground">{t("minutes", { minutes: chip.minutes })}</span>
                 </div>
               ))}
             </div>
@@ -317,20 +319,20 @@ export default function CoachPage() {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask Future Coach anything…"
+          placeholder={t("inputPlaceholder")}
           className="h-12 flex-1 rounded-full"
         />
         <button
           type="submit"
           disabled={sending || !input.trim()}
-          aria-label="Send"
+          aria-label={t("send")}
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised transition-opacity disabled:opacity-40"
         >
           <Send className="h-4 w-4" />
         </button>
       </form>
       <p className="mt-2 shrink-0 text-center text-caption text-muted-foreground">
-        Future Coach is a study &amp; career guide, not a substitute for a teacher, parent, or professional.
+        {t("disclaimer")}
       </p>
     </div>
   );

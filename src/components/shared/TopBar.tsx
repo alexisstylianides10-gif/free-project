@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { STUDENT_TABS, BUSINESS_TABS } from "@/lib/navTabs";
 import { Badge } from "@/components/ui/Badge";
@@ -17,17 +18,19 @@ import { levelFromXP, totalXP } from "@/lib/xp";
 export function TopBar() {
   const pathname = usePathname();
   const { profile } = useAuth();
+  const tNav = useTranslations("NavTabs");
+  const t = useTranslations("TopBar");
 
   if (!profile) return null;
 
   const TABS = profile.track === "business" ? BUSINESS_TABS : STUDENT_TABS;
-  const activeTab = TABS.find((t) => t.match(pathname));
+  const activeTab = TABS.find((tab) => tab.match(pathname));
   const level = levelFromXP(totalXP(profile));
 
   return (
     <header className="sticky top-0 z-30 hidden border-b border-border bg-background md:block">
       <div className="mx-auto flex max-w-3xl items-center justify-between px-10 py-4 lg:max-w-5xl xl:max-w-6xl">
-        <h1 className="text-base font-semibold tracking-tight text-foreground">{activeTab?.label ?? "Overview"}</h1>
+        <h1 className="text-base font-semibold tracking-tight text-foreground">{activeTab ? tNav(activeTab.labelKey) : t("overview")}</h1>
 
         <div className="flex items-center gap-2">
           <NotificationBell />
@@ -41,8 +44,8 @@ export function TopBar() {
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
               {profile.avatar_emoji || initials(profile.full_name)}
             </span>
-            <span className="text-sm font-medium text-foreground">{profile.full_name?.split(" ")[0] || "You"}</span>
-            <Badge tone="accent">Lvl {level}</Badge>
+            <span className="text-sm font-medium text-foreground">{profile.full_name?.split(" ")[0] || t("you")}</span>
+            <Badge tone="accent">{t("level", { level })}</Badge>
           </Link>
         </div>
       </div>

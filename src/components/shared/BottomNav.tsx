@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { STUDENT_TABS, BUSINESS_TABS } from "@/lib/navTabs";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,7 @@ import { cn } from "@/lib/utils";
 export function BottomNav() {
   const pathname = usePathname();
   const { profile } = useAuth();
+  const t = useTranslations("NavTabs");
   const TABS = profile?.track === "business" ? BUSINESS_TABS : STUDENT_TABS;
 
   return (
@@ -44,7 +46,7 @@ export function BottomNav() {
                 >
                   <Icon className="h-[18px] w-[18px]" strokeWidth={2.25} />
                 </span>
-                {tab.label}
+                {t(tab.labelKey)}
               </Link>
             );
           })}

@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { Flame } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
@@ -27,13 +28,14 @@ export function StatTile({
 }
 
 export function StreakStat({ days }: { days: number }) {
+  const t = useTranslations("StatTile");
   return (
     <div className="flex-1">
-      <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">Streak</p>
+      <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">{t("streak")}</p>
       <p className={cn("mt-1 flex items-center gap-1 text-lg font-bold text-foreground")}>
         <Flame className="h-4 w-4 text-warning" aria-hidden />
         {days}
-        <span className="text-xs font-medium text-muted-foreground">days</span>
+        <span className="text-xs font-medium text-muted-foreground">{t("days")}</span>
       </p>
     </div>
   );

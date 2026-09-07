@@ -1,7 +1,17 @@
 import { BookOpen, Rocket, Brain, Compass, type LucideIcon } from "lucide-react";
 import type { Exam, Homework } from "@/lib/types";
 import { daysBetween, todayISO } from "@/lib/utils";
-import type { Career } from "@/lib/catalog/careers";
+
+/** Discriminated result instead of a pre-built English string — the caller
+ * (StudentHome) resolves the final sentence via useTranslations("Home"),
+ * since the translated career name (from the "Careers" i18n namespace) and
+ * ICU day-count pluralization both need a real translator, which this pure
+ * data-shaping function intentionally doesn't depend on. */
+export type AIRecommendation =
+  | { kind: "examSoon"; subject: string; days: number; careerLabel?: string }
+  | { kind: "highPriorityHomework"; subject: string; title: string }
+  | { kind: "pushCareer"; careerLabel: string }
+  | { kind: "exploreCareer" };
 
 /**
  * The one-line "AI recommendation" shown on Home — deliberately school-first:
@@ -9,7 +19,7 @@ import type { Career } from "@/lib/catalog/careers";
  * career/business suggestions, mirroring the AI Coach's own prioritization
  * rule ("the exam comes first, then 20-30 minutes for your other goal").
  */
-export function buildAIRecommendation(input: { exams: Exam[]; homework: Homework[]; primaryCareer?: Career }): string {
+export function buildAIRecommendation(input: { exams: Exam[]; homework: Homework[]; primaryCareerLabel?: string }): AIRecommendation {
   const today = todayISO();
   const soonExam = input.exams
     .filter((e) => daysBetween(today, e.exam_date) >= 0 && daysBetween(today, e.exam_date) <= 7)
@@ -17,21 +27,19 @@ export function buildAIRecommendation(input: { exams: Exam[]; homework: Homework
 
   if (soonExam) {
     const days = daysBetween(today, soonExam.exam_date);
-    return `Your ${soonExam.subject} exam is in ${days} day${days === 1 ? "" : "s"}. Protect that first, then keep a light ${
-      input.primaryCareer ? input.primaryCareer.name.toLowerCase() : "career"
-    } habit going.`;
+    return { kind: "examSoon", subject: soonExam.subject, days, careerLabel: input.primaryCareerLabel };
   }
 
   const highPriority = input.homework.find((h) => h.status === "pending" && h.priority === "high");
   if (highPriority) {
-    return `${highPriority.subject} (${highPriority.title}) is high priority. Clear that today, then spend your extra time on your future.`;
+    return { kind: "highPriorityHomework", subject: highPriority.subject, title: highPriority.title };
   }
 
-  if (input.primaryCareer) {
-    return `School's under control right now. Good time to push further on ${input.primaryCareer.name}. Try today's Future Mission.`;
+  if (input.primaryCareerLabel) {
+    return { kind: "pushCareer", careerLabel: input.primaryCareerLabel };
   }
 
-  return "School's under control right now. A great time to explore a career direction with today's Future Mission.";
+  return { kind: "exploreCareer" };
 }
 
 export interface RecommendationChip {
@@ -40,13 +48,23 @@ export interface RecommendationChip {
   minutes: number;
 }
 
+export interface RecommendationChipLabels {
+  skillBuilding: string;
+  exploreCareer: string;
+}
+
 /** The two-chip "Today's Recommendation" split shown on the AI Coach tab —
  * a school block and a future/career block, sized so school always gets
- * the bigger (or only) share of time when a deadline is close. */
+ * the bigger (or only) share of time when a deadline is close.
+ * `primaryCareerLabel`/`primaryCareerFirstWord` are pre-resolved by the
+ * caller from the translated "Careers" namespace, same reasoning as
+ * buildAIRecommendation above. */
 export function buildRecommendationChips(input: {
   exams: Exam[];
   homework: Homework[];
-  primaryCareer?: Career;
+  primaryCareerLabel?: string;
+  primaryCareerFirstWord?: string;
+  labels: RecommendationChipLabels;
 }): RecommendationChip[] {
   const today = todayISO();
   const soonExam = input.exams
@@ -58,15 +76,15 @@ export function buildRecommendationChips(input: {
 
   if (soonExam) {
     chips.push({ icon: BookOpen, label: soonExam.subject, minutes: 45 });
-    if (input.primaryCareer) chips.push({ icon: Rocket, label: input.primaryCareer.name.split(" ")[0], minutes: 20 });
+    if (input.primaryCareerFirstWord) chips.push({ icon: Rocket, label: input.primaryCareerFirstWord, minutes: 20 });
   } else if (highPriorityHomework) {
     chips.push({ icon: BookOpen, label: highPriorityHomework.subject, minutes: 30 });
-    if (input.primaryCareer) chips.push({ icon: Rocket, label: input.primaryCareer.name.split(" ")[0], minutes: 30 });
-  } else if (input.primaryCareer) {
-    chips.push({ icon: Rocket, label: input.primaryCareer.name, minutes: 30 });
-    chips.push({ icon: Brain, label: "Skill building", minutes: 20 });
+    if (input.primaryCareerFirstWord) chips.push({ icon: Rocket, label: input.primaryCareerFirstWord, minutes: 30 });
+  } else if (input.primaryCareerLabel) {
+    chips.push({ icon: Rocket, label: input.primaryCareerLabel, minutes: 30 });
+    chips.push({ icon: Brain, label: input.labels.skillBuilding, minutes: 20 });
   } else {
-    chips.push({ icon: Compass, label: "Explore a career", minutes: 20 });
+    chips.push({ icon: Compass, label: input.labels.exploreCareer, minutes: 20 });
   }
 
   return chips;

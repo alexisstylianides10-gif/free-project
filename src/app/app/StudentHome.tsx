@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { CalendarClock, ClipboardList, ChevronRight, Sparkles, TriangleAlert, Flame } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -24,11 +25,11 @@ import { PriorityDot } from "@/components/ui/PriorityDot";
 
 const HOVER_LIFT = "lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-float";
 
-function greeting(): string {
+function greetingKey(): "morning" | "afternoon" | "evening" {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return "morning";
+  if (h < 17) return "afternoon";
+  return "evening";
 }
 
 function isUrgent(dateISO: string): boolean {
@@ -38,6 +39,8 @@ function isUrgent(dateISO: string): boolean {
 
 export default function StudentHome() {
   const { user, profile } = useAuth();
+  const t = useTranslations("Home");
+  const tCareers = useTranslations("Careers");
   const today = todayISO();
   const todayDow = new Date(today + "T00:00:00").getDay();
 
@@ -62,28 +65,54 @@ export default function StudentHome() {
   );
   const mission = useMemo(() => (user ? pickTodaysMission(user.id, completedMissionIds) : undefined), [user, completedMissionIds]);
 
-  const todayTimetable = timetable.filter((t) => t.day_of_week === todayDow);
+  const todayTimetable = timetable.filter((tt) => tt.day_of_week === todayDow);
   const todayHomework = homework.filter((h) => h.status === "pending");
   const todayStudySessions = studySessions.filter((s) => s.day_of_week === todayDow && !s.completed);
 
-  const plan = buildTodaysPlan({ todayTimetable, todayHomework, todayStudySessions, mission });
+  const plan = buildTodaysPlan({
+    todayTimetable,
+    todayHomework,
+    todayStudySessions,
+    mission,
+    labels: {
+      school: t("planLabels.school"),
+      homework: (subject) => t("planLabels.homework", { subject }),
+      minutes: (n) => t("planLabels.minutes", { minutes: n }),
+      freeTime: t("planLabels.freeTime"),
+      revision: (subject) => t("planLabels.revision", { subject }),
+      futureMission: t("planLabels.futureMission"),
+    },
+  });
 
   const nextExam = [...exams].sort((a, b) => a.exam_date.localeCompare(b.exam_date))[0];
   const nextHomework = homework.filter((h) => h.status === "pending").sort((a, b) => a.due_date.localeCompare(b.due_date))[0];
-  const recommendation = buildAIRecommendation({ exams, homework, primaryCareer });
+  const primaryCareerLabel = primaryCareer ? tCareers(`${primaryCareer.slug}.name`) : undefined;
+  const recommendationData = buildAIRecommendation({ exams, homework, primaryCareerLabel: primaryCareerLabel?.toLowerCase() });
+  const recommendation =
+    recommendationData.kind === "examSoon"
+      ? t("recommendation.examSoon", {
+          subject: recommendationData.subject,
+          days: recommendationData.days,
+          career: recommendationData.careerLabel ?? t("recommendation.genericCareer"),
+        })
+      : recommendationData.kind === "highPriorityHomework"
+        ? t("recommendation.highPriorityHomework", { subject: recommendationData.subject, title: recommendationData.title })
+        : recommendationData.kind === "pushCareer"
+          ? t("recommendation.pushCareer", { career: recommendationData.careerLabel })
+          : t("recommendation.exploreCareer");
 
   const schoolPercent = xpToPercent(profile?.xp_school ?? 0, 220);
   const futurePercent = xpToPercent(profile?.xp_career ?? 0, 260);
-  const firstName = profile?.full_name?.split(" ")[0] || "there";
+  const firstName = profile?.full_name?.split(" ")[0] || t("there");
 
   return (
     <div>
       <div className="mb-6 flex items-start justify-between gap-3 lg:mb-8">
         <div>
           <h1 className="text-title font-bold text-foreground lg:text-title-lg">
-            {greeting()}, <span className="text-gradient-brand">{firstName}</span>
+            {t(`greeting.${greetingKey()}`)}, <span className="text-gradient-brand">{firstName}</span>
           </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">Here&rsquo;s your plan for today.</p>
+          <p className="mt-0.5 text-sm text-muted-foreground lg:text-base">{t("planForToday")}</p>
         </div>
         <NotificationBell className="md:hidden" />
       </div>
@@ -92,7 +121,7 @@ export default function StudentHome() {
         <Card className="mb-6 border border-danger/40 lg:mb-8">
           <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Couldn&rsquo;t load some of your data. {pageError}</span>
+            <span>{t("loadError", { error: pageError })}</span>
           </CardContent>
         </Card>
       )}
@@ -100,9 +129,9 @@ export default function StudentHome() {
       <div className="space-y-7 pb-4 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-6 lg:space-y-0 lg:pb-0">
         <Card className="lg:hidden">
           <CardContent className="flex items-stretch gap-4 p-4">
-            <StatTile label="School" value={schoolPercent} tone="school" />
+            <StatTile label={t("school")} value={schoolPercent} tone="school" />
             <div className="w-px bg-border" />
-            <StatTile label="Future" value={futurePercent} tone="future" />
+            <StatTile label={t("future")} value={futurePercent} tone="future" />
             <div className="w-px bg-border" />
             <StreakStat days={profile?.streak_count ?? 0} />
           </CardContent>
@@ -111,13 +140,13 @@ export default function StudentHome() {
         <Card className="hidden overflow-hidden border-accent/20 lg:col-start-2 lg:row-start-1 lg:block">
           <CardContent className="relative p-5">
             <div className="relative flex items-center justify-around">
-              <RadialStat label="School" value={schoolPercent} tone="school" />
-              <RadialStat label="Future" value={futurePercent} tone="future" />
+              <RadialStat label={t("school")} value={schoolPercent} tone="school" />
+              <RadialStat label={t("future")} value={futurePercent} tone="future" />
             </div>
             <div className="relative mt-4 flex items-center justify-center gap-1.5 border-t border-border pt-4 text-sm font-bold text-foreground">
               <Flame className="h-4 w-4 text-warning" aria-hidden />
               {profile?.streak_count ?? 0}
-              <span className="text-xs font-medium text-muted-foreground">day streak</span>
+              <span className="text-xs font-medium text-muted-foreground">{t("dayStreak")}</span>
             </div>
           </CardContent>
         </Card>
@@ -130,17 +159,17 @@ export default function StudentHome() {
 
         <section className="lg:col-start-1 lg:row-start-1">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-bold text-foreground">Today&rsquo;s Plan</h2>
+            <h2 className="text-base font-bold text-foreground">{t("todaysPlan")}</h2>
             <Link href="/app/school" className="flex items-center gap-0.5 text-xs font-semibold text-accent">
-              School <ChevronRight className="h-3.5 w-3.5" />
+              {t("school")} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           {plan.length === 0 ? (
             <EmptyState
               icon={CalendarClock}
-              title="Nothing scheduled yet"
-              subtitle="Add homework and exams in School to build today's plan."
-              cta={{ label: "Go to School", href: "/app/school" }}
+              title={t("nothingScheduled")}
+              subtitle={t("nothingScheduledSubtitle")}
+              cta={{ label: t("goToSchool"), href: "/app/school" }}
             />
           ) : (
             <ol className="space-y-2">
@@ -162,7 +191,7 @@ export default function StudentHome() {
               <Card className={cn("h-full", HOVER_LIFT)}>
                 <CardContent className="p-4">
                   <CalendarClock className="h-5 w-5 text-school" />
-                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Upcoming exam</p>
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("upcomingExam")}</p>
                   {nextExam ? (
                     <>
                       <p className="mt-1 truncate text-sm font-bold text-foreground">{nextExam.subject}</p>
@@ -171,7 +200,7 @@ export default function StudentHome() {
                       </p>
                     </>
                   ) : (
-                    <p className="mt-1 text-sm text-muted-foreground">No exams yet</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t("noExamsYet")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -181,7 +210,7 @@ export default function StudentHome() {
               <Card className={cn("h-full", HOVER_LIFT)}>
                 <CardContent className="p-4">
                   <ClipboardList className="h-5 w-5 text-accent" />
-                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Homework due</p>
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("homeworkDue")}</p>
                   {nextHomework ? (
                     <>
                       <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-bold text-foreground">
@@ -198,7 +227,7 @@ export default function StudentHome() {
                       </p>
                     </>
                   ) : (
-                    <p className="mt-1 text-sm text-muted-foreground">All caught up</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t("allCaughtUp")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -207,7 +236,7 @@ export default function StudentHome() {
 
           <Link href="/app/deadlines" className="mt-2 block">
             <Button variant="outline" size="md" className="w-full">
-              View all deadlines
+              {t("viewAllDeadlines")}
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
@@ -221,10 +250,10 @@ export default function StudentHome() {
                   <primaryCareer.icon className="h-5 w-5 text-white" aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Career progress</p>
-                  <p className="truncate text-sm font-bold text-foreground">{primaryCareer.name}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("careerProgress")}</p>
+                  <p className="truncate text-sm font-bold text-foreground">{tCareers(`${primaryCareer.slug}.name`)}</p>
                 </div>
-                <Badge tone="accent">Level {levelFromXP(totalXP(profile ?? { xp_school: 0, xp_career: 0, xp_skill: 0, xp_project: 0 }))}</Badge>
+                <Badge tone="accent">{t("level", { level: levelFromXP(totalXP(profile ?? { xp_school: 0, xp_career: 0, xp_skill: 0, xp_project: 0 })) })}</Badge>
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
               </CardContent>
             </Card>
@@ -237,7 +266,7 @@ export default function StudentHome() {
               <Sparkles className="h-4 w-4 text-accent" />
             </span>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-accent">AI recommendation</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-accent">{t("aiRecommendation")}</p>
               <p className="mt-1 text-sm leading-relaxed text-foreground">{recommendation}</p>
             </div>
           </CardContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { branding } from "@/lib/branding";
 
@@ -14,12 +15,14 @@ import { branding } from "@/lib/branding";
  * working" reassurance as a real progress bar without lying about it.
  */
 export function LoadingScreen({
-  message = "Getting things ready…",
+  message,
   fullScreen = true,
 }: {
   message?: string;
   fullScreen?: boolean;
 }) {
+  const t = useTranslations("LoadingScreen");
+  const resolvedMessage = message ?? t("defaultMessage");
   const [percent, setPercent] = useState(8);
 
   useEffect(() => {
@@ -53,7 +56,7 @@ export function LoadingScreen({
           />
         </div>
 
-        <p className="mt-5 text-sm text-muted-foreground">{message}</p>
+        <p className="mt-5 text-sm text-muted-foreground">{resolvedMessage}</p>
       </div>
 
       {fullScreen && <p className="absolute bottom-10 text-xs font-medium tracking-wide text-muted-foreground/60">{branding.name}</p>}
