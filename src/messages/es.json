@@ -610,6 +610,35 @@
       "walkthrough": { "label": "Guíame Paso a Paso", "framed": "Esta es mi pregunta de deberes: \"{question}\". Guíame paso a paso. Pregúntame qué sé ya antes de decirme el siguiente paso. No me des directamente la respuesta final." }
     }
   },
+  "MaterialKind": {
+    "pdf": "PDF",
+    "image": "Imagen",
+    "notes": "Notas",
+    "paste": "Texto pegado"
+  },
+  "MaterialDetailPage": {
+    "analysisFailedAgain": "El análisis volvió a fallar. Inténtalo de nuevo en un momento.",
+    "couldNotReachServer": "No se pudo contactar con el servidor. Inténtalo de nuevo en un momento.",
+    "confirmDelete": "¿Eliminar \"{title}\"? Los temas ya extraídos de él se mantendrán.",
+    "loadingMaterial": "Cargando material…",
+    "materialNotFound": "No se pudo encontrar este material. Puede que se haya eliminado.",
+    "analyzingMaterial": "Analizando tu material…",
+    "analysisFailed": "El análisis falló",
+    "analysisFailedBody": "Algo salió mal al leer este material. Puedes intentarlo de nuevo.",
+    "retrying": "Reintentando…",
+    "tryAgain": "Intentar de nuevo",
+    "deleteMaterial": "Eliminar material",
+    "topics": "Temas",
+    "keyConcepts": "Conceptos Clave",
+    "importantTerms": "Términos Importantes",
+    "potentialQuestions": "Posibles Preguntas",
+    "found": "Encontrado",
+    "whatNext": "Qué sigue",
+    "createStudyPlan": "Crear Plan de Estudio",
+    "generateQuiz": "Generar Cuestionario",
+    "makeFlashcards": "Crear Tarjetas",
+    "startStudying": "Empezar a Estudiar"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",

@@ -610,6 +610,35 @@
       "walkthrough": { "label": "Guide-moi Étape par Étape", "framed": "Voici ma question de devoir : « {question} ». Guide-moi étape par étape. Demande-moi ce que je sais déjà avant de me donner l'étape suivante. Ne me donne pas directement la réponse finale." }
     }
   },
+  "MaterialKind": {
+    "pdf": "PDF",
+    "image": "Image",
+    "notes": "Notes",
+    "paste": "Texte collé"
+  },
+  "MaterialDetailPage": {
+    "analysisFailedAgain": "L'analyse a encore échoué. Réessaie dans un instant.",
+    "couldNotReachServer": "Impossible de contacter le serveur. Réessaie dans un instant.",
+    "confirmDelete": "Supprimer « {title} » ? Les sujets déjà extraits resteront.",
+    "loadingMaterial": "Chargement du document…",
+    "materialNotFound": "Ce document est introuvable. Il a peut-être été supprimé.",
+    "analyzingMaterial": "Analyse de ton document…",
+    "analysisFailed": "L'analyse a échoué",
+    "analysisFailedBody": "Un problème est survenu lors de la lecture de ce document. Tu peux réessayer.",
+    "retrying": "Nouvelle tentative…",
+    "tryAgain": "Réessayer",
+    "deleteMaterial": "Supprimer le document",
+    "topics": "Sujets",
+    "keyConcepts": "Concepts Clés",
+    "importantTerms": "Termes Importants",
+    "potentialQuestions": "Questions Potentielles",
+    "found": "Trouvé",
+    "whatNext": "Et ensuite",
+    "createStudyPlan": "Créer un Programme d'Étude",
+    "generateQuiz": "Générer un Quiz",
+    "makeFlashcards": "Créer des Cartes Mémo",
+    "startStudying": "Commencer à Étudier"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

@@ -610,6 +610,35 @@
       "walkthrough": { "label": "Walk Me Through It", "framed": "Here's my homework question: \"{question}\". Walk me through it step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer." }
     }
   },
+  "MaterialKind": {
+    "pdf": "PDF",
+    "image": "Image",
+    "notes": "Notes",
+    "paste": "Pasted text"
+  },
+  "MaterialDetailPage": {
+    "analysisFailedAgain": "Analysis failed again. Try again in a moment.",
+    "couldNotReachServer": "Couldn't reach the server. Try again in a moment.",
+    "confirmDelete": "Delete \"{title}\"? Topics already extracted from it will stay.",
+    "loadingMaterial": "Loading material…",
+    "materialNotFound": "This material couldn't be found. It may have been deleted.",
+    "analyzingMaterial": "Analyzing your material…",
+    "analysisFailed": "Analysis failed",
+    "analysisFailedBody": "Something went wrong reading this material. You can try again.",
+    "retrying": "Retrying…",
+    "tryAgain": "Try again",
+    "deleteMaterial": "Delete material",
+    "topics": "Topics",
+    "keyConcepts": "Key Concepts",
+    "importantTerms": "Important Terms",
+    "potentialQuestions": "Potential Questions",
+    "found": "Found",
+    "whatNext": "What next",
+    "createStudyPlan": "Create Study Plan",
+    "generateQuiz": "Generate Quiz",
+    "makeFlashcards": "Make Flashcards",
+    "startStudying": "Start Studying"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",
