@@ -12,6 +12,7 @@ import type {
   StudyQuizAttempt,
   StudyFlashcard,
   StudyTutorMessage,
+  WeakAreaPlan,
 } from "@/lib/study/types";
 
 export function useStudySubjects(userId?: string) {
@@ -20,6 +21,13 @@ export function useStudySubjects(userId?: string) {
 
 export function useStudyMaterials(userId?: string, subjectId?: string) {
   return useTableRows<StudyMaterial>("study_materials", userId, {
+    orderBy: { column: "created_at", ascending: false },
+    eq: subjectId ? { subject_id: subjectId } : undefined,
+  });
+}
+
+export function useWeakAreaPlans(userId?: string, subjectId?: string) {
+  return useTableRows<WeakAreaPlan>("weak_area_plans", userId, {
     orderBy: { column: "created_at", ascending: false },
     eq: subjectId ? { subject_id: subjectId } : undefined,
   });

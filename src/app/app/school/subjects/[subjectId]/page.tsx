@@ -3,11 +3,19 @@
 import { use, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Upload, CalendarClock, Play, Brain, Layers, Trash2, FileText, HelpCircle, BookOpen } from "lucide-react";
+import { Upload, CalendarClock, Play, Brain, Layers, Trash2, FileText, HelpCircle, BookOpen, LifeBuoy, ChevronRight } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useExams } from "@/lib/hooks/domain";
-import { useStudySubjects, useStudyTopics, useStudyMaterials, useStudyFocusSessions, useStudyQuizzes, useStudyQuizAttempts } from "@/lib/hooks/study";
+import {
+  useStudySubjects,
+  useStudyTopics,
+  useStudyMaterials,
+  useStudyFocusSessions,
+  useStudyQuizzes,
+  useStudyQuizAttempts,
+  useWeakAreaPlans,
+} from "@/lib/hooks/study";
 import { subjectReadiness } from "@/lib/study/recommendation";
 import { formatCountdown } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -27,6 +35,7 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
   const { data: quizzes } = useStudyQuizzes(user?.id, subjectId);
   const { data: attempts } = useStudyQuizAttempts(user?.id);
   const { data: exams } = useExams(user?.id);
+  const { data: weakAreaPlans } = useWeakAreaPlans(user?.id, subjectId);
 
   const subject = subjects.find((s) => s.id === subjectId);
   const linkedExam = exams.find((e) => e.study_subject_id === subjectId);
@@ -133,6 +142,39 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
           </div>
         </section>
       )}
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Struggling with something?</h2>
+          <Link
+            href={`/app/school/subjects/${subjectId}/weak-area/new`}
+            className="flex items-center gap-1 text-xs font-semibold text-accent"
+          >
+            <LifeBuoy className="h-3.5 w-3.5" /> Get help
+          </Link>
+        </div>
+        {weakAreaPlans.length === 0 ? (
+          <EmptyState
+            icon={LifeBuoy}
+            title="No plans yet"
+            subtitle="Tell us what you're struggling with in this subject and we'll build you practice materials, a plan, or resources."
+          />
+        ) : (
+          <div className="space-y-2">
+            {weakAreaPlans.map((p) => (
+              <Link key={p.id} href={`/app/school/subjects/${subjectId}/weak-area/${p.id}`}>
+                <Card>
+                  <CardContent className="flex items-center gap-3 p-3.5">
+                    <LifeBuoy className="h-4 w-4 shrink-0 text-accent" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{p.description}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section>
         <div className="mb-3 flex items-center justify-between">

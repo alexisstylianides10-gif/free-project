@@ -393,6 +393,25 @@ create table if not exists public.study_topics (
 alter table public.study_topics enable row level security;
 create policy "study_topics_all_own" on public.study_topics for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
+-- Student-declared weak areas ("my English reading isn't good"), distinct
+-- from study_topics.mastery which is only ever computed from quiz results.
+-- `plan` holds whatever mix of roadmap/exercises/resources the AI judged
+-- useful for the specific problem described — not every plan has all three.
+create table if not exists public.weak_area_plans (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.study_subjects (id) on delete cascade,
+  description text not null,
+  status text not null default 'pending' check (status in ('pending', 'ready', 'failed')),
+  plan jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists weak_area_plans_subject_idx on public.weak_area_plans (user_id, subject_id);
+
+alter table public.weak_area_plans enable row level security;
+create policy "weak_area_plans_all_own" on public.weak_area_plans for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
 alter table public.exams add column if not exists study_subject_id uuid references public.study_subjects (id) on delete set null;
 
 create table if not exists public.study_plans (

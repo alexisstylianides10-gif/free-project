@@ -69,6 +69,8 @@ ${examLines}
 PENDING HOMEWORK:
 ${homeworkLines}
 
+WEAK AREAS: If the student describes a real, specific difficulty with a subject they study (e.g. "my English reading is bad", "I don't get fractions"), use the create_weak_area_plan tool to build them real practice materials/a plan/resources under that subject, rather than just talking about it in the abstract.
+
 RESPONSE STYLE: Keep replies short — 2-5 sentences unless the student clearly wants a longer plan. Be specific and actionable, not generic. Use the student's real exams/homework/career above instead of asking questions you already know the answer to. Occasionally end with one concrete next step, not a stack of options.`;
 }
 

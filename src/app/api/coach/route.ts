@@ -5,7 +5,72 @@ import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { buildCoachSystemPrompt } from "@/lib/coach/systemPrompt";
 import { languageInstruction } from "@/lib/i18n/aiInstruction";
+import { getUserLanguage } from "@/lib/i18n/serverLocale";
+import { generateWeakAreaPlan } from "@/lib/study/weakArea";
+import { StudyAIError } from "@/lib/study/ai";
 import type { Homework, Exam, OnboardingResponse, Profile, CareerPath, BusinessProfile, BusinessMilestone } from "@/lib/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+const WEAK_AREA_TOOL: Anthropic.Messages.Tool = {
+  name: "create_weak_area_plan",
+  description:
+    "Builds a personalized improvement plan (practice exercises, a step-by-step roadmap, and/or resource recommendations, " +
+    "whichever actually fits) for a specific difficulty the student describes with one of their school subjects, and saves " +
+    "it under that subject in the app. Only call this when the student clearly describes a specific, real difficulty with " +
+    "a subject they study (e.g. 'my English reading is bad', 'I don't get fractions') — not for vague complaints or " +
+    "questions you can just answer directly in chat.",
+  input_schema: {
+    type: "object",
+    properties: {
+      subjectName: {
+        type: "string",
+        description: "The subject name, as close as possible to one of the student's existing subjects (e.g. 'English', 'Maths').",
+      },
+      description: {
+        type: "string",
+        description: "A clear restatement of the specific problem the student described, in their own terms.",
+      },
+    },
+    required: ["subjectName", "description"],
+  },
+};
+
+async function runWeakAreaTool(
+  client: SupabaseClient,
+  userId: string,
+  input: { subjectName?: string; description?: string }
+): Promise<string> {
+  const subjectName = (input.subjectName ?? "").trim();
+  const description = (input.description ?? "").trim();
+  if (!subjectName || !description) return JSON.stringify({ error: "Missing subjectName or description." });
+
+  const { data: subjects } = await client.from("study_subjects").select("id, name").eq("user_id", userId);
+  const normalized = subjectName.toLowerCase();
+  const match =
+    (subjects ?? []).find((s) => s.name.toLowerCase() === normalized) ??
+    (subjects ?? []).find((s) => s.name.toLowerCase().includes(normalized) || normalized.includes(s.name.toLowerCase()));
+
+  if (!match) {
+    return JSON.stringify({
+      error: "no_matching_subject",
+      availableSubjects: (subjects ?? []).map((s) => s.name),
+    });
+  }
+
+  try {
+    const plan = await generateWeakAreaPlan({
+      client,
+      userId,
+      subjectId: match.id,
+      subjectName: match.name,
+      description,
+      language: await getUserLanguage(client, userId),
+    });
+    return JSON.stringify({ ok: true, subjectName: match.name, summary: plan.plan?.summary ?? null });
+  } catch (err) {
+    return JSON.stringify({ error: err instanceof StudyAIError ? err.message : "Couldn't build a plan for that." });
+  }
+}
 
 export const runtime = "nodejs";
 
@@ -96,15 +161,45 @@ export async function POST(req: NextRequest) {
     { role: "user" as const, content: message },
   ];
 
+  // Only students have study_subjects to attach a plan to — the tool is
+  // simply omitted for founder-track accounts rather than offered and then
+  // always failing to find a matching subject.
+  const tools = profile.track === "student" ? [WEAK_AREA_TOOL] : undefined;
+
   let replyText: string;
   try {
-    const response = await anthropicClient().messages.create({
+    let response = await anthropicClient().messages.create({
       model: MODEL,
       max_tokens: 1024,
       system: systemPrompt,
       messages,
+      tools,
       output_config: { effort: "low" },
     });
+
+    // Single tool-use round trip: run the tool, feed its result back, and
+    // let the model compose the actual reply from it. No further tool calls
+    // are honored in that follow-up (no `tools` on the second request) —
+    // one plan per message is plenty, and it keeps this from looping.
+    if (response.stop_reason === "tool_use") {
+      const toolUseBlock = response.content.find((b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use");
+      if (toolUseBlock && toolUseBlock.name === "create_weak_area_plan") {
+        const toolResult = await runWeakAreaTool(client, user.id, toolUseBlock.input as { subjectName?: string; description?: string });
+        const followUp = await anthropicClient().messages.create({
+          model: MODEL,
+          max_tokens: 1024,
+          system: systemPrompt,
+          messages: [
+            ...messages,
+            { role: "assistant", content: response.content },
+            { role: "user", content: [{ type: "tool_result", tool_use_id: toolUseBlock.id, content: toolResult }] },
+          ],
+          output_config: { effort: "low" },
+        });
+        response = followUp;
+      }
+    }
+
     const textBlock = response.content.find((b): b is Anthropic.Messages.TextBlock => b.type === "text");
     replyText = textBlock?.text ?? "Sorry, I couldn't put that into words just now. Try asking again.";
   } catch {

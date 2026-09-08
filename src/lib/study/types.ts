@@ -52,6 +52,49 @@ export interface StudyMaterial {
   created_at: string;
 }
 
+export interface WeakAreaExercise {
+  title: string;
+  /** Only present when the exercise is passage-based (e.g. reading
+   * comprehension) — omitted for exercise types that don't need one (e.g.
+   * a set of math problems). */
+  passage?: string;
+  questions: { question: string; answer: string }[];
+}
+
+export interface WeakAreaRoadmapStep {
+  title: string;
+  detail: string;
+}
+
+export interface WeakAreaResource {
+  title: string;
+  author?: string;
+  why: string;
+}
+
+/**
+ * Whatever mix of these the AI judged useful for the specific problem the
+ * student described — never assume all three are present. A "my English
+ * reading is bad" plan might lean heavily on `exercises`; "I don't know how
+ * to start with fractions" might be mostly `roadmap`.
+ */
+export interface WeakAreaPlanContent {
+  summary: string;
+  roadmap?: WeakAreaRoadmapStep[];
+  exercises?: WeakAreaExercise[];
+  resources?: WeakAreaResource[];
+}
+
+export interface WeakAreaPlan {
+  id: string;
+  user_id: string;
+  subject_id: string;
+  description: string;
+  status: "pending" | "ready" | "failed";
+  plan: WeakAreaPlanContent | null;
+  created_at: string;
+}
+
 export interface StudyTopic {
   id: string;
   user_id: string;
