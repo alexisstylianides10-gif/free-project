@@ -548,6 +548,23 @@
     "startMockExam": "Iniciar Examen Simulacro",
     "practiceDisclaimer": "Solo es una señal basada en la práctica. Una buena puntuación simulada es una buena señal, no una garantía para tu examen real."
   },
+  "ProgressPage": {
+    "addingUp": "Sumando tu progreso…",
+    "noChange": "Sin cambios",
+    "vsLastWeek": "{value} vs la semana pasada",
+    "thisWeek": "Esta Semana",
+    "studyTime": "Tiempo de Estudio",
+    "quizAccuracy": "Precisión en Cuestionarios",
+    "topicsMastered": "Temas Dominados",
+    "weakTopicsImproved": "Temas Débiles Mejorados",
+    "comparedNote": "Comparado con los 7 días anteriores.",
+    "studyHistory": "Historial de Estudio",
+    "noSessionsYet": "Aún no hay sesiones de estudio registradas",
+    "noSessionsSubtitle": "Aparecerán aquí en cuanto empieces a estudiar.",
+    "subject": "Asignatura",
+    "minutes": "{minutes} min",
+    "mode": { "learn": "Aprender", "practice": "Practicar", "quiz": "Cuestionario", "review": "Repaso" }
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",

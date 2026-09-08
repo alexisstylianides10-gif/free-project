@@ -548,6 +548,23 @@
     "startMockExam": "Start Mock Exam",
     "practiceDisclaimer": "Practice-based signal only. A strong mock score is a good sign, not a guarantee for your real exam."
   },
+  "ProgressPage": {
+    "addingUp": "Adding up your progress…",
+    "noChange": "No change",
+    "vsLastWeek": "{value} vs last week",
+    "thisWeek": "This Week",
+    "studyTime": "Study Time",
+    "quizAccuracy": "Quiz Accuracy",
+    "topicsMastered": "Topics Mastered",
+    "weakTopicsImproved": "Weak Topics Improved",
+    "comparedNote": "Compared with the previous 7 days.",
+    "studyHistory": "Study History",
+    "noSessionsYet": "No study sessions logged yet",
+    "noSessionsSubtitle": "They'll show up here once you start studying.",
+    "subject": "Subject",
+    "minutes": "{minutes} min",
+    "mode": { "learn": "Learn", "practice": "Practice", "quiz": "Quiz", "review": "Review" }
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",

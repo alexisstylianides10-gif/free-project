@@ -548,6 +548,23 @@
     "startMockExam": "Démarrer l'Examen Blanc",
     "practiceDisclaimer": "Signal basé sur l'entraînement uniquement. Un bon score à l'examen blanc est bon signe, pas une garantie pour ton vrai examen."
   },
+  "ProgressPage": {
+    "addingUp": "Calcul de tes progrès…",
+    "noChange": "Aucun changement",
+    "vsLastWeek": "{value} vs la semaine dernière",
+    "thisWeek": "Cette Semaine",
+    "studyTime": "Temps d'Étude",
+    "quizAccuracy": "Précision aux Quiz",
+    "topicsMastered": "Sujets Maîtrisés",
+    "weakTopicsImproved": "Points Faibles Améliorés",
+    "comparedNote": "Comparé aux 7 derniers jours.",
+    "studyHistory": "Historique d'Étude",
+    "noSessionsYet": "Pas encore de séance d'étude enregistrée",
+    "noSessionsSubtitle": "Elles apparaîtront ici dès que tu commenceras à étudier.",
+    "subject": "Matière",
+    "minutes": "{minutes} min",
+    "mode": { "learn": "Apprendre", "practice": "Pratiquer", "quiz": "Quiz", "review": "Révision" }
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",
