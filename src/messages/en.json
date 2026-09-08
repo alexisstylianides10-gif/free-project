@@ -319,6 +319,78 @@
     "optional": "(optional)",
     "askCoachForGuidance": "Ask AI Coach for guidance"
   },
+  "NotesPage": {
+    "subtitle": "Every note, across every subject.",
+    "addNote": "Add Note",
+    "noNotesYet": "No notes yet",
+    "noNotesSubtitle": "Paste text, upload a PDF, or snap a photo — we'll pull out the topics, terms, and practice questions."
+  },
+  "MaterialStatus": {
+    "pending": "Pending",
+    "analyzing": "Analyzing",
+    "analyzed": "Analyzed",
+    "failed": "Failed"
+  },
+  "NewNotePage": {
+    "quickQuestion": "Quick one before we start — what subject is this note for? You can add more subjects later.",
+    "subjectPlaceholder": "e.g. Biology",
+    "creating": "Creating…",
+    "continue": "Continue",
+    "whichSubject": "Which subject is this note for?"
+  },
+  "WeakTopicsPage": {
+    "finding": "Finding your weak spots…",
+    "subtitle": "Every topic under {cutoff}% mastery, across every subject, weakest first.",
+    "noWeakTopics": "No weak topics right now",
+    "noWeakTopicsSubtitle": "Everything you've studied is at {cutoff}% mastery or better.",
+    "subject": "Subject",
+    "notTestedYet": "Not tested yet, a good next topic to practice.",
+    "attemptsSummary": "You've gotten this right in {correct} of your last {attempts, plural, one {# attempt} other {# attempts}}.",
+    "practiceNow": "Practice Now"
+  },
+  "PriorityBadge": {
+    "high": "High priority",
+    "medium": "Medium priority",
+    "low": "Low priority"
+  },
+  "ExamsPage": {
+    "confirmDelete": "Delete this exam? This can't be undone.",
+    "addExamPlaceholder": "Add an exam (e.g. Biology)…",
+    "examDate": "Exam date",
+    "addExam": "Add exam",
+    "loadError": "Couldn't load your exams. {error}",
+    "noExamsYet": "No exams on the horizon yet",
+    "noExamsSubtitle": "Add an exam above to start tracking your countdown.",
+    "subjectExam": "{subject} Exam",
+    "editExamDate": "Edit exam date",
+    "deleteExam": "Delete exam",
+    "newExamDate": "New exam date",
+    "save": "Save",
+    "cancel": "Cancel",
+    "percentReady": "{percent}% ready",
+    "linkSubjectHint": "Link a subject to track your readiness.",
+    "studyForThis": "Study for this",
+    "chooseSubject": "Choose a subject…",
+    "linkSubject": "Link a subject"
+  },
+  "HomeworkPage": {
+    "confirmDelete": "Delete this homework item? This can't be undone.",
+    "subjectPlaceholder": "Subject…",
+    "addHomeworkPlaceholder": "Add homework…",
+    "dueDate": "Due date",
+    "addHomework": "Add homework",
+    "loadError": "Couldn't load your homework. {error}",
+    "nothingSet": "Nothing set right now",
+    "nothingSetSubtitle": "Add homework above to start tracking it.",
+    "markComplete": "Mark as complete",
+    "completed": "Completed",
+    "getAiHelp": "Get AI help",
+    "editDueDate": "Edit due date",
+    "deleteHomework": "Delete homework",
+    "newDueDate": "New due date",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",

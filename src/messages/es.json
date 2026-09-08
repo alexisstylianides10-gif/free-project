@@ -319,6 +319,78 @@
     "optional": "(opcional)",
     "askCoachForGuidance": "Pide orientación al AI Coach"
   },
+  "NotesPage": {
+    "subtitle": "Todas tus notas, de todas las asignaturas.",
+    "addNote": "Añadir Nota",
+    "noNotesYet": "Aún no hay notas",
+    "noNotesSubtitle": "Pega texto, sube un PDF o haz una foto — extraeremos los temas, términos y preguntas de práctica."
+  },
+  "MaterialStatus": {
+    "pending": "Pendiente",
+    "analyzing": "Analizando",
+    "analyzed": "Analizado",
+    "failed": "Fallido"
+  },
+  "NewNotePage": {
+    "quickQuestion": "Antes de empezar — ¿para qué asignatura es esta nota? Puedes añadir más asignaturas después.",
+    "subjectPlaceholder": "p. ej. Biología",
+    "creating": "Creando…",
+    "continue": "Continuar",
+    "whichSubject": "¿Para qué asignatura es esta nota?"
+  },
+  "WeakTopicsPage": {
+    "finding": "Buscando tus puntos débiles…",
+    "subtitle": "Todos los temas por debajo del {cutoff}% de dominio, de todas las asignaturas, empezando por el más débil.",
+    "noWeakTopics": "No hay temas débiles ahora mismo",
+    "noWeakTopicsSubtitle": "Todo lo que has estudiado está al {cutoff}% de dominio o más.",
+    "subject": "Asignatura",
+    "notTestedYet": "Aún no evaluado, un buen próximo tema para practicar.",
+    "attemptsSummary": "Has acertado esto en {correct} de tus últimos {attempts, plural, one {# intento} other {# intentos}}.",
+    "practiceNow": "Practicar Ahora"
+  },
+  "PriorityBadge": {
+    "high": "Prioridad alta",
+    "medium": "Prioridad media",
+    "low": "Prioridad baja"
+  },
+  "ExamsPage": {
+    "confirmDelete": "¿Eliminar este examen? Esto no se puede deshacer.",
+    "addExamPlaceholder": "Añade un examen (p. ej. Biología)…",
+    "examDate": "Fecha del examen",
+    "addExam": "Añadir examen",
+    "loadError": "No se pudieron cargar tus exámenes. {error}",
+    "noExamsYet": "Aún no hay exámenes en el horizonte",
+    "noExamsSubtitle": "Añade un examen arriba para empezar a seguir tu cuenta atrás.",
+    "subjectExam": "Examen de {subject}",
+    "editExamDate": "Editar fecha del examen",
+    "deleteExam": "Eliminar examen",
+    "newExamDate": "Nueva fecha del examen",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "percentReady": "{percent}% preparado",
+    "linkSubjectHint": "Vincula una asignatura para seguir tu preparación.",
+    "studyForThis": "Estudiar para esto",
+    "chooseSubject": "Elige una asignatura…",
+    "linkSubject": "Vincular una asignatura"
+  },
+  "HomeworkPage": {
+    "confirmDelete": "¿Eliminar esta tarea? Esto no se puede deshacer.",
+    "subjectPlaceholder": "Asignatura…",
+    "addHomeworkPlaceholder": "Añade deberes…",
+    "dueDate": "Fecha límite",
+    "addHomework": "Añadir deberes",
+    "loadError": "No se pudieron cargar tus deberes. {error}",
+    "nothingSet": "No hay nada pendiente ahora mismo",
+    "nothingSetSubtitle": "Añade deberes arriba para empezar a seguirlos.",
+    "markComplete": "Marcar como completado",
+    "completed": "Completado",
+    "getAiHelp": "Pedir ayuda a la IA",
+    "editDueDate": "Editar fecha límite",
+    "deleteHomework": "Eliminar deberes",
+    "newDueDate": "Nueva fecha límite",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",

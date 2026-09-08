@@ -319,6 +319,78 @@
     "optional": "(optionnel)",
     "askCoachForGuidance": "Demande conseil à l'AI Coach"
   },
+  "NotesPage": {
+    "subtitle": "Toutes tes notes, dans toutes les matières.",
+    "addNote": "Ajouter une Note",
+    "noNotesYet": "Pas encore de notes",
+    "noNotesSubtitle": "Colle du texte, importe un PDF, ou prends une photo — on en extraira les sujets, termes et questions d'entraînement."
+  },
+  "MaterialStatus": {
+    "pending": "En attente",
+    "analyzing": "Analyse en cours",
+    "analyzed": "Analysé",
+    "failed": "Échec"
+  },
+  "NewNotePage": {
+    "quickQuestion": "Une petite question avant de commencer — pour quelle matière est cette note ? Tu pourras ajouter d'autres matières plus tard.",
+    "subjectPlaceholder": "ex. Biologie",
+    "creating": "Création…",
+    "continue": "Continuer",
+    "whichSubject": "Pour quelle matière est cette note ?"
+  },
+  "WeakTopicsPage": {
+    "finding": "Recherche de tes points faibles…",
+    "subtitle": "Tous les sujets en dessous de {cutoff} % de maîtrise, dans toutes les matières, du plus faible au plus fort.",
+    "noWeakTopics": "Aucun point faible pour le moment",
+    "noWeakTopicsSubtitle": "Tout ce que tu as étudié est à {cutoff} % de maîtrise ou plus.",
+    "subject": "Matière",
+    "notTestedYet": "Pas encore testé, un bon sujet à pratiquer ensuite.",
+    "attemptsSummary": "Tu as réussi cela {correct} fois sur tes {attempts, plural, one {# dernière tentative} other {# dernières tentatives}}.",
+    "practiceNow": "Pratiquer Maintenant"
+  },
+  "PriorityBadge": {
+    "high": "Priorité haute",
+    "medium": "Priorité moyenne",
+    "low": "Priorité basse"
+  },
+  "ExamsPage": {
+    "confirmDelete": "Supprimer cet examen ? Cette action est irréversible.",
+    "addExamPlaceholder": "Ajoute un examen (ex. Biologie)…",
+    "examDate": "Date de l'examen",
+    "addExam": "Ajouter l'examen",
+    "loadError": "Tes examens n'ont pas pu être chargés. {error}",
+    "noExamsYet": "Aucun examen à l'horizon pour le moment",
+    "noExamsSubtitle": "Ajoute un examen ci-dessus pour commencer le compte à rebours.",
+    "subjectExam": "Examen de {subject}",
+    "editExamDate": "Modifier la date de l'examen",
+    "deleteExam": "Supprimer l'examen",
+    "newExamDate": "Nouvelle date de l'examen",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "percentReady": "{percent} % prêt",
+    "linkSubjectHint": "Associe une matière pour suivre ta préparation.",
+    "studyForThis": "Réviser pour ça",
+    "chooseSubject": "Choisis une matière…",
+    "linkSubject": "Associer une matière"
+  },
+  "HomeworkPage": {
+    "confirmDelete": "Supprimer ce devoir ? Cette action est irréversible.",
+    "subjectPlaceholder": "Matière…",
+    "addHomeworkPlaceholder": "Ajoute un devoir…",
+    "dueDate": "Date d'échéance",
+    "addHomework": "Ajouter le devoir",
+    "loadError": "Tes devoirs n'ont pas pu être chargés. {error}",
+    "nothingSet": "Rien de prévu pour le moment",
+    "nothingSetSubtitle": "Ajoute un devoir ci-dessus pour commencer à le suivre.",
+    "markComplete": "Marquer comme terminé",
+    "completed": "Terminé",
+    "getAiHelp": "Obtenir de l'aide de l'IA",
+    "editDueDate": "Modifier la date d'échéance",
+    "deleteHomework": "Supprimer le devoir",
+    "newDueDate": "Nouvelle date d'échéance",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

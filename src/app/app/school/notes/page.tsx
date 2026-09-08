@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { NotebookPen, FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useStudyMaterials, useStudySubjects } from "@/lib/hooks/study";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -10,6 +11,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 
 export default function NotesPage() {
   const { user } = useAuth();
+  const t = useTranslations("NotesPage");
+  const tStatus = useTranslations("MaterialStatus");
   const { data: materials } = useStudyMaterials(user?.id);
   const { data: subjects } = useStudySubjects(user?.id);
   const subjectById = new Map(subjects.map((s) => [s.id, s]));
@@ -17,18 +20,18 @@ export default function NotesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Every note, across every subject.</p>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         <Link href="/app/school/notes/new">
-          <Button size="sm">Add Note</Button>
+          <Button size="sm">{t("addNote")}</Button>
         </Link>
       </div>
 
       {materials.length === 0 ? (
         <EmptyState
           icon={NotebookPen}
-          title="No notes yet"
-          subtitle="Paste text, upload a PDF, or snap a photo — we'll pull out the topics, terms, and practice questions."
-          cta={{ label: "Add Note", href: "/app/school/notes/new" }}
+          title={t("noNotesYet")}
+          subtitle={t("noNotesSubtitle")}
+          cta={{ label: t("addNote"), href: "/app/school/notes/new" }}
         />
       ) : (
         <div className="space-y-2">
@@ -47,7 +50,7 @@ export default function NotesPage() {
                         </p>
                       )}
                     </div>
-                    <span className="shrink-0 text-xs capitalize text-muted-foreground">{m.status}</span>
+                    <span className="shrink-0 text-xs capitalize text-muted-foreground">{tStatus(m.status)}</span>
                   </CardContent>
                 </Card>
               </Link>
