@@ -79,7 +79,7 @@ export default function DeadlinesPage() {
           href: "/app/school",
         })),
     ];
-  }, [isBusiness, exams, homework, milestones, today]);
+  }, [isBusiness, exams, homework, milestones, today, t]);
 
   const groups = useMemo(() => groupDeadlines(items), [items]);
   const hasAnySourceData = isBusiness ? milestones.length > 0 : exams.length > 0 || homework.length > 0;
