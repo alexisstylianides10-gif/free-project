@@ -43,6 +43,12 @@ export interface StudyMaterial {
   raw_text: string | null;
   status: MaterialStatus;
   analysis: MaterialAnalysisSummary | null;
+  /** True when this material is the student's textbook for the subject,
+   * distinct from ad-hoc notes/pasted text — surfaced as its own section on
+   * the subject page. Orthogonal to `kind`, which only describes the upload
+   * format (pdf/image/notes/paste); a textbook can be uploaded any of those
+   * ways. */
+  is_textbook: boolean;
   created_at: string;
 }
 

@@ -29,9 +29,15 @@ function titleFromText(text: string, kind: TextKind): string {
 export function AddNoteFlow({
   subjectId,
   onDone,
+  isTextbook = false,
 }: {
   subjectId: string;
   onDone: (materialId: string) => void;
+  /** True for the "Add your textbook" entry point on the subject page —
+   * flags the saved material with is_textbook so it's surfaced in its own
+   * section there, separate from ad-hoc notes. Same upload mechanics either
+   * way (PDF/photo/typed/pasted); only the flag and copy differ. */
+  isTextbook?: boolean;
 }) {
   const { user } = useAuth();
 
@@ -81,6 +87,7 @@ export function AddNoteFlow({
           kind,
           storage_path: path,
           status: "pending",
+          is_textbook: isTextbook,
         })
         .select()
         .single();
@@ -108,6 +115,7 @@ export function AddNoteFlow({
           storage_path: null,
           raw_text: textValue.trim(),
           status: "pending",
+          is_textbook: isTextbook,
         })
         .select()
         .single();
@@ -135,7 +143,9 @@ export function AddNoteFlow({
       {mode === "choose" ? (
         <>
           <p className="text-sm text-muted-foreground">
-            Add a note and we&apos;ll pull out its topics, key concepts, and terms automatically.
+            {isTextbook
+              ? "Add your textbook and we'll pull out its topics, key concepts, and terms automatically so quizzes and flashcards can draw on it."
+              : "Add a note and we'll pull out its topics, key concepts, and terms automatically."}
           </p>
 
           {error && (
@@ -224,7 +234,9 @@ export function AddNoteFlow({
             <ArrowLeft className="h-4 w-4" /> Back
           </button>
 
-          <h2 className="text-base font-bold text-foreground">{textKind === "paste" ? "Paste Text" : "Add Notes"}</h2>
+          <h2 className="text-base font-bold text-foreground">
+            {textKind === "paste" ? "Paste Text" : isTextbook ? "Add Textbook" : "Add Notes"}
+          </h2>
           <p className="text-sm text-muted-foreground">
             {textKind === "paste"
               ? "Paste in text copied from a textbook, slides, or a document."

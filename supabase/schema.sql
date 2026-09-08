@@ -367,11 +367,13 @@ create table if not exists public.study_materials (
   raw_text text,
   status text not null default 'pending' check (status in ('pending', 'analyzing', 'analyzed', 'failed')),
   analysis jsonb,
+  is_textbook boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 alter table public.study_materials enable row level security;
 create policy "study_materials_all_own" on public.study_materials for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+alter table public.study_materials add column if not exists is_textbook boolean not null default false;
 
 create table if not exists public.study_topics (
   id uuid primary key default gen_random_uuid(),

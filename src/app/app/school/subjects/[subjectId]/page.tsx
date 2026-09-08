@@ -3,7 +3,7 @@
 import { use, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Upload, CalendarClock, Play, Brain, Layers, Trash2, FileText, HelpCircle } from "lucide-react";
+import { Upload, CalendarClock, Play, Brain, Layers, Trash2, FileText, HelpCircle, BookOpen } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useExams } from "@/lib/hooks/domain";
@@ -38,6 +38,9 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
   const accuracy = subjectAttempts.length ? Math.round(subjectAttempts.reduce((s, a) => s + a.score_percent, 0) / subjectAttempts.length) : null;
 
   const weakTopics = [...topics].filter((t) => t.mastery < 60).sort((a, b) => a.mastery - b.mastery);
+
+  const textbookMaterials = materials.filter((m) => m.is_textbook);
+  const noteMaterials = materials.filter((m) => !m.is_textbook);
 
   async function deleteSubject() {
     if (!supabase) return;
@@ -133,16 +136,49 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
 
       <section>
         <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Textbook</h2>
+          <Link
+            href={`/app/school/subjects/${subjectId}/materials/new?type=book`}
+            className="flex items-center gap-1 text-xs font-semibold text-accent"
+          >
+            <Upload className="h-3.5 w-3.5" /> Add
+          </Link>
+        </div>
+        {textbookMaterials.length === 0 ? (
+          <EmptyState
+            icon={BookOpen}
+            title="No textbook added yet"
+            subtitle="Add your textbook so quizzes, flashcards, and study plans can draw on it."
+          />
+        ) : (
+          <div className="space-y-2">
+            {textbookMaterials.map((m) => (
+              <Link key={m.id} href={`/app/school/subjects/${subjectId}/materials/${m.id}`}>
+                <Card>
+                  <CardContent className="flex items-center gap-3 p-3.5">
+                    <BookOpen className="h-4 w-4 shrink-0 text-accent" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{m.title}</span>
+                    <span className="shrink-0 text-xs capitalize text-muted-foreground">{m.status}</span>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Notes</h2>
           <Link href={`/app/school/subjects/${subjectId}/materials/new`} className="flex items-center gap-1 text-xs font-semibold text-accent">
             <Upload className="h-3.5 w-3.5" /> Add
           </Link>
         </div>
-        {materials.length === 0 ? (
+        {noteMaterials.length === 0 ? (
           <EmptyState icon={Upload} title="No notes yet" subtitle="Upload a PDF, photo, or your notes to get started." />
         ) : (
           <div className="space-y-2">
-            {materials.map((m) => (
+            {noteMaterials.map((m) => (
               <Link key={m.id} href={`/app/school/subjects/${subjectId}/materials/${m.id}`}>
                 <Card>
                   <CardContent className="flex items-center gap-3 p-3.5">

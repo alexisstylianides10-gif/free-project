@@ -145,7 +145,10 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-lg font-bold text-foreground">{material.title}</p>
+          <div className="flex items-center gap-2">
+            <p className="truncate text-lg font-bold text-foreground">{material.title}</p>
+            {material.is_textbook && <Badge tone="accent">Textbook</Badge>}
+          </div>
           <p className="text-xs capitalize text-muted-foreground">{material.kind} · analyzed</p>
         </div>
         <button
