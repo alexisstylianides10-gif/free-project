@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { Loader2, Lock } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { getStripePromise } from "@/lib/billing/stripePromise";
@@ -40,6 +40,10 @@ function InnerForm({ submitLabel, onSuccess }: { submitLabel: string; onSuccess:
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Rendered in the same Elements group as PaymentElement — Stripe.js
+          automatically forwards this to confirmPayment() as billing_details,
+          so no change to handleSubmit is needed to actually use it. */}
+      <AddressElement options={{ mode: "billing" }} />
       <PaymentElement options={{ layout: "tabs" }} />
       {error && <p className="text-sm text-danger">{error}</p>}
       <Button type="submit" size="lg" className="w-full" disabled={!stripe || submitting}>
