@@ -4,6 +4,7 @@ import { use, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Upload, CalendarClock, Play, Brain, Layers, Trash2, FileText, HelpCircle, BookOpen, LifeBuoy, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useExams } from "@/lib/hooks/domain";
@@ -27,6 +28,8 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
   const { subjectId } = use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations("SubjectDetailPage");
+  const tStatus = useTranslations("MaterialStatus");
 
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: topics } = useStudyTopics(user?.id, subjectId);
@@ -53,13 +56,13 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
 
   async function deleteSubject() {
     if (!supabase) return;
-    if (!confirm(`Delete ${subject?.name}? This removes its materials, plans, quizzes, and flashcards too.`)) return;
+    if (!confirm(t("confirmDelete", { name: subject?.name ?? "" }))) return;
     await supabase.from("study_subjects").delete().eq("id", subjectId);
     router.push("/app/school/subjects");
   }
 
   if (!subject) {
-    return <p className="py-12 text-center text-sm text-muted-foreground">Loading…</p>;
+    return <p className="py-12 text-center text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   return (
@@ -69,11 +72,11 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-extrabold text-foreground">{subject.name}</h1>
           <p className="text-xs text-muted-foreground">
-            {readiness ?? 0}% progress
-            {accuracy !== null ? ` · ${accuracy}% quiz accuracy` : ""} · {studyMinutes}m studied
+            {t("percentProgress", { percent: readiness ?? 0 })}
+            {accuracy !== null ? ` · ${t("percentQuizAccuracy", { percent: accuracy })}` : ""} · {t("minutesStudied", { minutes: studyMinutes })}
           </p>
         </div>
-        <button onClick={deleteSubject} aria-label="Delete subject" className="shrink-0 rounded-full p-2 text-muted-foreground hover:text-danger">
+        <button onClick={deleteSubject} aria-label={t("deleteSubject")} className="shrink-0 rounded-full p-2 text-muted-foreground hover:text-danger">
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
@@ -82,7 +85,7 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
         <Card>
           <CardContent className="flex items-center justify-between gap-3 p-4">
             <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <CalendarClock className="h-4 w-4 text-school" /> {linkedExam.subject} Exam
+              <CalendarClock className="h-4 w-4 text-school" /> {t("subjectExam", { subject: linkedExam.subject })}
             </span>
             <span className="text-sm font-bold text-accent">{formatCountdown(linkedExam.exam_date)}</span>
           </CardContent>
@@ -93,48 +96,48 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
         <Link href={`/app/school/subjects/${subjectId}/session`}>
           <Button variant="mission" size="lg" className="w-full">
             <Play className="h-4 w-4" />
-            Start Studying
+            {t("startStudying")}
           </Button>
         </Link>
         <Link href={`/app/school/subjects/${subjectId}/plan/new`}>
           <Button variant="secondary" size="lg" className="w-full">
             <CalendarClock className="h-4 w-4" />
-            Study Plan
+            {t("studyPlan")}
           </Button>
         </Link>
         <Link href={`/app/school/quizzes?subject=${subjectId}`}>
           <Button variant="secondary" size="lg" className="w-full">
             <Brain className="h-4 w-4" />
-            Generate Quiz
+            {t("generateQuiz")}
           </Button>
         </Link>
         <Link href={`/app/school/flashcards?subject=${subjectId}`}>
           <Button variant="secondary" size="lg" className="w-full">
             <Layers className="h-4 w-4" />
-            Flashcards
+            {t("flashcards")}
           </Button>
         </Link>
         <Link href={`/app/school/subjects/${subjectId}/homework-help`} className="col-span-2">
           <Button variant="secondary" size="lg" className="w-full">
             <HelpCircle className="h-4 w-4" />
-            Homework Help
+            {t("homeworkHelp")}
           </Button>
         </Link>
       </div>
 
       {weakTopics.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Weak Topics</h2>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("weakTopics")}</h2>
           <div className="space-y-2">
-            {weakTopics.map((t) => (
-              <Link key={t.id} href={`/app/school/subjects/${subjectId}/session?topic=${t.id}`}>
+            {weakTopics.map((topic) => (
+              <Link key={topic.id} href={`/app/school/subjects/${subjectId}/session?topic=${topic.id}`}>
                 <Card>
                   <CardContent className="p-3.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-foreground">{t.name}</span>
-                      <span className="text-sm font-bold text-warning">{t.mastery}%</span>
+                      <span className="text-sm font-semibold text-foreground">{topic.name}</span>
+                      <span className="text-sm font-bold text-warning">{topic.mastery}%</span>
                     </div>
-                    <ProgressBar value={t.mastery} tone="warning" className="mt-2" />
+                    <ProgressBar value={topic.mastery} tone="warning" className="mt-2" />
                   </CardContent>
                 </Card>
               </Link>
@@ -145,20 +148,16 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Struggling with something?</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("strugglingHeader")}</h2>
           <Link
             href={`/app/school/subjects/${subjectId}/weak-area/new`}
             className="flex items-center gap-1 text-xs font-semibold text-accent"
           >
-            <LifeBuoy className="h-3.5 w-3.5" /> Get help
+            <LifeBuoy className="h-3.5 w-3.5" /> {t("getHelp")}
           </Link>
         </div>
         {weakAreaPlans.length === 0 ? (
-          <EmptyState
-            icon={LifeBuoy}
-            title="No plans yet"
-            subtitle="Tell us what you're struggling with in this subject and we'll build you practice materials, a plan, or resources."
-          />
+          <EmptyState icon={LifeBuoy} title={t("noPlansYet")} subtitle={t("noPlansSubtitle")} />
         ) : (
           <div className="space-y-2">
             {weakAreaPlans.map((p) => (
@@ -178,20 +177,16 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Textbook</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("textbook")}</h2>
           <Link
             href={`/app/school/subjects/${subjectId}/materials/new?type=book`}
             className="flex items-center gap-1 text-xs font-semibold text-accent"
           >
-            <Upload className="h-3.5 w-3.5" /> Add
+            <Upload className="h-3.5 w-3.5" /> {t("add")}
           </Link>
         </div>
         {textbookMaterials.length === 0 ? (
-          <EmptyState
-            icon={BookOpen}
-            title="No textbook added yet"
-            subtitle="Add your textbook so quizzes, flashcards, and study plans can draw on it."
-          />
+          <EmptyState icon={BookOpen} title={t("noTextbookYet")} subtitle={t("noTextbookSubtitle")} />
         ) : (
           <div className="space-y-2">
             {textbookMaterials.map((m) => (
@@ -200,7 +195,7 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
                   <CardContent className="flex items-center gap-3 p-3.5">
                     <BookOpen className="h-4 w-4 shrink-0 text-accent" />
                     <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{m.title}</span>
-                    <span className="shrink-0 text-xs capitalize text-muted-foreground">{m.status}</span>
+                    <span className="shrink-0 text-xs capitalize text-muted-foreground">{tStatus(m.status)}</span>
                   </CardContent>
                 </Card>
               </Link>
@@ -211,13 +206,13 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Notes</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("notes")}</h2>
           <Link href={`/app/school/subjects/${subjectId}/materials/new`} className="flex items-center gap-1 text-xs font-semibold text-accent">
-            <Upload className="h-3.5 w-3.5" /> Add
+            <Upload className="h-3.5 w-3.5" /> {t("add")}
           </Link>
         </div>
         {noteMaterials.length === 0 ? (
-          <EmptyState icon={Upload} title="No notes yet" subtitle="Upload a PDF, photo, or your notes to get started." />
+          <EmptyState icon={Upload} title={t("noNotesYet")} subtitle={t("noNotesSubtitle")} />
         ) : (
           <div className="space-y-2">
             {noteMaterials.map((m) => (
@@ -226,7 +221,7 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
                   <CardContent className="flex items-center gap-3 p-3.5">
                     <FileText className="h-4 w-4 shrink-0 text-accent" />
                     <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{m.title}</span>
-                    <span className="shrink-0 text-xs capitalize text-muted-foreground">{m.status}</span>
+                    <span className="shrink-0 text-xs capitalize text-muted-foreground">{tStatus(m.status)}</span>
                   </CardContent>
                 </Card>
               </Link>
@@ -237,16 +232,16 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
 
       {topics.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">All Topics</h2>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("allTopics")}</h2>
           <div className="space-y-2">
-            {topics.map((t) => (
-              <Card key={t.id}>
+            {topics.map((topic) => (
+              <Card key={topic.id}>
                 <CardContent className="p-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-foreground">{t.name}</span>
-                    <span className="text-sm font-bold text-foreground">{t.mastery}%</span>
+                    <span className="text-sm font-semibold text-foreground">{topic.name}</span>
+                    <span className="text-sm font-bold text-foreground">{topic.mastery}%</span>
                   </div>
-                  <ProgressBar value={t.mastery} className="mt-2" />
+                  <ProgressBar value={topic.mastery} className="mt-2" />
                 </CardContent>
               </Card>
             ))}

@@ -4,6 +4,7 @@ import { use, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Star, Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCareerPaths } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
@@ -21,6 +22,8 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
   const { user, profile, refreshProfile } = useAuth();
   const { data: careerPaths, refetch } = useCareerPaths(user?.id);
   const { data: onboarding } = useOnboardingResponse(user?.id);
+  const t = useTranslations("CareerDetailPage");
+  const tCareers = useTranslations("Careers");
 
   const [saving, setSaving] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
@@ -32,13 +35,20 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
   if (!career) {
     return (
       <div className="animate-fade-in py-16 text-center text-sm text-muted-foreground">
-        Career not found.{" "}
+        {t("notFound")}{" "}
         <Link href="/app/future" className="text-accent underline underline-offset-4">
-          Back to Your Future
+          {t("backToFuture")}
         </Link>
       </div>
     );
   }
+
+  const subjects = tCareers.raw(`${slug}.subjects`) as string[];
+  const skills = tCareers.raw(`${slug}.skills`) as string[];
+  const projects = tCareers.raw(`${slug}.projects`) as string[];
+  const tryNow = tCareers.raw(`${slug}.tryNow`) as string[];
+  const educationRoutes = tCareers.raw(`${slug}.educationRoutes`) as string[];
+  const progression = tCareers.raw(`${slug}.progression`) as string[];
 
   async function handleAdd() {
     if (!user || !profile || !supabase || !career) return;
@@ -68,28 +78,28 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
           <career.icon className="h-7 w-7 text-white" aria-hidden />
         </span>
         <div className="min-w-0">
-          <h1 className="text-xl font-bold leading-snug text-foreground">{career.name}</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">{career.tagline}</p>
+          <h1 className="text-xl font-bold leading-snug text-foreground">{tCareers(`${slug}.name`)}</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">{tCareers(`${slug}.tagline`)}</p>
         </div>
       </div>
 
       <Card className="mt-6">
         <CardContent className="p-5">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-accent">Why this matches you</p>
-            <span className="shrink-0 text-lg font-bold text-accent">{percent}% match</span>
+            <p className="text-xs font-semibold uppercase tracking-wide text-accent">{t("whyMatches")}</p>
+            <span className="shrink-0 text-lg font-bold text-accent">{t("percentMatch", { percent })}</span>
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-foreground">{career.whyItMatches}</p>
+          <p className="mt-2 text-sm leading-relaxed text-foreground">{tCareers(`${slug}.whyItMatches`)}</p>
         </CardContent>
       </Card>
 
       <section className="mt-7">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">School subjects</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("schoolSubjects")}</h2>
         <Card>
           <CardContent className="space-y-3 p-5">
-            {career.subjects.map((s) => (
+            {career.subjects.map((s, idx) => (
               <div key={s.subject} className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">{s.subject}</span>
+                <span className="text-sm font-medium text-foreground">{subjects[idx]}</span>
                 <span className="flex items-center gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
@@ -105,9 +115,9 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
       </section>
 
       <section className="mt-7">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Skills to build</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("skillsToBuild")}</h2>
         <div className="flex flex-wrap gap-1.5">
-          {career.skills.map((skill) => (
+          {skills.map((skill) => (
             <Badge key={skill} tone="accent">
               {skill}
             </Badge>
@@ -116,11 +126,11 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
       </section>
 
       <section className="mt-7">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Projects to try</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("projectsToTry")}</h2>
         <Card>
           <CardContent className="p-5">
             <ol className="space-y-3">
-              {career.projects.map((project, i) => (
+              {projects.map((project, i) => (
                 <li key={project} className="flex gap-3 text-sm text-foreground">
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-caption font-bold text-accent">
                     {i + 1}
@@ -134,9 +144,9 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
       </section>
 
       <section className="mt-7">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Try now</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("tryNow")}</h2>
         <ul className="space-y-2">
-          {career.tryNow.map((item) => (
+          {tryNow.map((item) => (
             <li key={item} className="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground">
               <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <span className="leading-relaxed">{item}</span>
@@ -146,9 +156,9 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
       </section>
 
       <section className="mt-7">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Education routes</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("educationRoutes")}</h2>
         <ul className="space-y-1.5">
-          {career.educationRoutes.map((route) => (
+          {educationRoutes.map((route) => (
             <li key={route} className="flex items-start gap-2 text-sm text-foreground">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
               <span className="leading-relaxed">{route}</span>
@@ -158,14 +168,14 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
       </section>
 
       <section className="mt-7">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Career progression</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("careerProgression")}</h2>
         <div className="scrollbar-none flex gap-2 overflow-x-auto pb-1">
-          {career.progression.map((stage, i) => (
+          {progression.map((stage, i) => (
             <div key={stage} className="flex shrink-0 items-center gap-2">
               <span className="whitespace-nowrap rounded-full border border-border bg-surface px-3.5 py-2 text-xs font-semibold text-foreground">
                 {stage}
               </span>
-              {i < career.progression.length - 1 && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+              {i < progression.length - 1 && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
             </div>
           ))}
         </div>
@@ -175,11 +185,11 @@ export default function CareerDetailPage({ params }: { params: Promise<{ slug: s
         {alreadyAdded ? (
           <Button size="lg" className="w-full" disabled>
             <Check className="h-4 w-4" />
-            Added to your path
+            {t("addedToPath")}
           </Button>
         ) : (
           <Button size="lg" className="w-full" onClick={handleAdd} disabled={saving}>
-            {saving ? "Adding…" : "Add This Career To My Path"}
+            {saving ? t("adding") : t("addToPath")}
           </Button>
         )}
       </div>

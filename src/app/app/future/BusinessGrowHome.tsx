@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { TrendingUp, Sparkles, Users, Loader2, Plus, Receipt, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useBusinessMetrics, useBusinessContentIdeas, useBusinessCompetitors, useBusinessExpenses } from "@/lib/hooks/domain";
 import { supabase } from "@/lib/supabase/client";
@@ -16,31 +17,16 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 
-const METRIC_OPTIONS = [
-  { key: "revenue", label: "Revenue ($)" },
-  { key: "customers", label: "Customers" },
-  { key: "signups", label: "Signups" },
-];
-
-const PLATFORM_OPTIONS = [
-  { key: "instagram", label: "Instagram" },
-  { key: "blog", label: "Blog" },
-  { key: "email", label: "Email" },
-  { key: "other", label: "Other" },
-];
-
-const EXPENSE_CATEGORY_OPTIONS = [
-  { key: "software_tools", label: "Software/tools" },
-  { key: "marketing", label: "Marketing/ads" },
-  { key: "inventory", label: "Inventory/supplies" },
-  { key: "contractors", label: "Contractors/freelancers" },
-  { key: "shipping", label: "Shipping" },
-  { key: "rent", label: "Rent/office" },
-  { key: "other", label: "Other" },
-];
+const METRIC_KEYS: string[] = ["revenue", "customers", "signups"];
+const PLATFORM_KEYS: string[] = ["instagram", "blog", "email", "other"];
+const EXPENSE_CATEGORY_KEYS: string[] = ["software_tools", "marketing", "inventory", "contractors", "shipping", "rent", "other"];
 
 export default function BusinessGrowHome() {
   const { user } = useAuth();
+  const t = useTranslations("BusinessGrowHome");
+  const METRIC_OPTIONS = METRIC_KEYS.map((key) => ({ key, label: t(`metricOptions.${key}`) }));
+  const PLATFORM_OPTIONS = PLATFORM_KEYS.map((key) => ({ key, label: t(`platformOptions.${key}`) }));
+  const EXPENSE_CATEGORY_OPTIONS = EXPENSE_CATEGORY_KEYS.map((key) => ({ key, label: t(`expenseCategoryOptions.${key}`) }));
   const { data: metrics, error: metricsError, refetch: refetchMetrics } = useBusinessMetrics(user?.id);
   const { data: contentIdeas, error: ideasError, refetch: refetchIdeas } = useBusinessContentIdeas(user?.id);
   const { data: competitors, error: competitorsError, refetch: refetchCompetitors } = useBusinessCompetitors(user?.id);
@@ -114,11 +100,11 @@ export default function BusinessGrowHome() {
     try {
       const res = await authedFetch("/api/business/generate-content", { method: "POST", body: JSON.stringify({ platform, topic }) });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Couldn't generate content.");
+      if (!res.ok) throw new Error(json.error || t("couldNotGenerate"));
       setTopic("");
       await refetchIdeas();
     } catch (err) {
-      setContentError(err instanceof Error ? err.message : "Couldn't generate content.");
+      setContentError(err instanceof Error ? err.message : t("couldNotGenerate"));
     } finally {
       setGenerating(false);
     }
@@ -140,13 +126,13 @@ export default function BusinessGrowHome() {
 
   return (
     <div className="space-y-7 pb-4">
-      <ScreenHeader title="Grow" subtitle="Track your numbers, draft content, and watch the market." action={<NotificationBell className="md:hidden" />} />
+      <ScreenHeader title={t("title")} subtitle={t("subtitle")} action={<NotificationBell className="md:hidden" />} />
 
       {pageError && (
         <Card className="border border-danger/40">
           <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Couldn&rsquo;t load some of your data. {pageError}</span>
+            <span>{t("loadError", { error: pageError })}</span>
           </CardContent>
         </Card>
       )}
@@ -154,7 +140,7 @@ export default function BusinessGrowHome() {
       <section>
         <div className="mb-3 flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-accent" />
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Metrics</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("metrics")}</h2>
         </div>
         <Card>
           <CardContent className="p-4">
@@ -166,9 +152,9 @@ export default function BusinessGrowHome() {
                   </option>
                 ))}
               </Select>
-              <Input value={metricValue} onChange={(e) => setMetricValue(e.target.value)} type="number" placeholder="Value" className="flex-1" />
+              <Input value={metricValue} onChange={(e) => setMetricValue(e.target.value)} type="number" placeholder={t("value")} className="flex-1" />
               <Button size="sm" type="submit" disabled={loggingMetric || !metricValue.trim()}>
-                {loggingMetric ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Log"}
+                {loggingMetric ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("log")}
               </Button>
             </form>
 
@@ -182,7 +168,7 @@ export default function BusinessGrowHome() {
                 return (
                   <Badge tone={delta > 0 ? "success" : "danger"} className="mt-3">
                     {delta > 0 ? "+" : ""}
-                    {delta} vs last {METRIC_OPTIONS.find((o) => o.key === latest.metric_key)?.label ?? latest.metric_key} entry
+                    {delta} {t("vsLastEntry", { metric: METRIC_OPTIONS.find((o) => o.key === latest.metric_key)?.label ?? latest.metric_key })}
                   </Badge>
                 );
               })()}
@@ -190,13 +176,13 @@ export default function BusinessGrowHome() {
             {metrics.length === 0 ? (
               <EmptyState
                 icon={TrendingUp}
-                title="No metrics logged yet"
-                subtitle="Log your first number above to start tracking trends."
+                title={t("noMetricsYet")}
+                subtitle={t("noMetricsSubtitle")}
                 bare
               />
             ) : (
               <>
-                <p className="mb-2 mt-4 text-caption font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <p className="mb-2 mt-4 text-caption font-semibold uppercase tracking-wide text-muted-foreground">{t("recent")}</p>
                 <div className="space-y-1.5">
                   {metrics.slice(0, 6).map((m) => (
                     <div key={m.id} className="flex items-center justify-between text-sm">
@@ -216,7 +202,7 @@ export default function BusinessGrowHome() {
       <section>
         <div className="mb-3 flex items-center gap-2">
           <Receipt className="h-4 w-4 text-accent" />
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Expenses</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("expenses")}</h2>
         </div>
         <Card>
           <CardContent className="p-4">
@@ -235,7 +221,7 @@ export default function BusinessGrowHome() {
                   type="number"
                   min="0"
                   step="0.01"
-                  placeholder="Amount ($)"
+                  placeholder={t("amount")}
                   className="flex-1"
                 />
               </div>
@@ -243,11 +229,11 @@ export default function BusinessGrowHome() {
                 <Input
                   value={expenseDescription}
                   onChange={(e) => setExpenseDescription(e.target.value)}
-                  placeholder="What was it for? (optional)"
+                  placeholder={t("whatWasItFor")}
                   className="flex-1"
                 />
                 <Button size="sm" type="submit" disabled={loggingExpense || !expenseAmount.trim()}>
-                  {loggingExpense ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Log"}
+                  {loggingExpense ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("log")}
                 </Button>
               </div>
             </form>
@@ -255,17 +241,17 @@ export default function BusinessGrowHome() {
             {expenses.length === 0 ? (
               <EmptyState
                 icon={Receipt}
-                title="No expenses logged yet"
-                subtitle="Log your first expense above to start tracking spend."
+                title={t("noExpensesYet")}
+                subtitle={t("noExpensesSubtitle")}
                 bare
               />
             ) : (
               <>
                 <div className="mt-4 flex items-center justify-between border-b border-border pb-2 text-sm">
-                  <span className="font-semibold text-foreground">Total spent</span>
+                  <span className="font-semibold text-foreground">{t("totalSpent")}</span>
                   <span className="font-bold text-foreground">${totalExpenses.toFixed(2)}</span>
                 </div>
-                <p className="mb-2 mt-4 text-caption font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <p className="mb-2 mt-4 text-caption font-semibold uppercase tracking-wide text-muted-foreground">{t("recent")}</p>
                 <div className="space-y-1.5">
                   {expenses.slice(0, 6).map((exp) => (
                     <div key={exp.id} className="flex items-center justify-between text-sm">
@@ -286,7 +272,7 @@ export default function BusinessGrowHome() {
       <section>
         <div className="mb-3 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-accent" />
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Content Helper</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("contentHelper")}</h2>
         </div>
         <Card>
           <CardContent className="p-4">
@@ -299,10 +285,10 @@ export default function BusinessGrowHome() {
                     </option>
                   ))}
                 </Select>
-                <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What's it about?" className="flex-1" />
+                <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={t("topicPlaceholder")} className="flex-1" />
               </div>
               <Button size="md" type="submit" className="w-full" disabled={generating || !topic.trim()}>
-                {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Generate draft"}
+                {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : t("generateDraft")}
               </Button>
             </form>
             {contentError && <p className="mt-2 text-xs text-danger">{contentError}</p>}
@@ -326,20 +312,20 @@ export default function BusinessGrowHome() {
       <section>
         <div className="mb-3 flex items-center gap-2">
           <Users className="h-4 w-4 text-accent" />
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Competitors</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("competitors")}</h2>
         </div>
         <Card>
           <CardContent className="p-4">
             {competitors.length === 0 ? (
               <EmptyState
                 icon={Users}
-                title="No competitors added yet"
-                subtitle="Add one below to start watching the market."
+                title={t("noCompetitorsYet")}
+                subtitle={t("noCompetitorsSubtitle")}
                 bare
               />
             ) : (
               <>
-                <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted-foreground">Recent</p>
+                <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted-foreground">{t("recent")}</p>
                 <div className="space-y-2">
                   {competitors.map((c) => (
                     <div key={c.id} className="rounded-xl bg-muted px-3.5 py-2.5">
@@ -352,12 +338,12 @@ export default function BusinessGrowHome() {
             )}
 
             <form onSubmit={addCompetitor} className="mt-3 flex items-center gap-2">
-              <Input value={competitorName} onChange={(e) => setCompetitorName(e.target.value)} placeholder="Name" className="flex-1" />
-              <Input value={competitorUrl} onChange={(e) => setCompetitorUrl(e.target.value)} placeholder="URL (optional)" className="flex-1" />
+              <Input value={competitorName} onChange={(e) => setCompetitorName(e.target.value)} placeholder={t("namePlaceholder")} className="flex-1" />
+              <Input value={competitorUrl} onChange={(e) => setCompetitorUrl(e.target.value)} placeholder={t("urlPlaceholder")} className="flex-1" />
               <button
                 type="submit"
                 disabled={addingCompetitor || !competitorName.trim()}
-                aria-label="Add competitor"
+                aria-label={t("addCompetitor")}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised transition-opacity disabled:opacity-40"
               >
                 <Plus className="h-4 w-4" />

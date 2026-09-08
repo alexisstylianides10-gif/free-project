@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useUserMissions } from "@/lib/hooks/domain";
 import { useRouter } from "next/navigation";
@@ -8,20 +9,21 @@ import { MISSIONS, type MissionCategory } from "@/lib/catalog/missions";
 import { MissionListItem } from "@/components/shared/MissionCard";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 
-const CATEGORY_TITLES: Record<MissionCategory, string> = {
-  school: "School Missions",
-  skill: "Skill Missions",
-  career: "Career Missions",
-  business: "Business Missions",
-  creative: "Creative Missions",
-};
-
 const ORDER: MissionCategory[] = ["school", "skill", "career", "business", "creative"];
 
 export default function MissionsPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations("MissionsPage");
   const { data: userMissions } = useUserMissions(user?.id);
+
+  const CATEGORY_TITLES: Record<MissionCategory, string> = {
+    school: t("categoryTitles.school"),
+    skill: t("categoryTitles.skill"),
+    career: t("categoryTitles.career"),
+    business: t("categoryTitles.business"),
+    creative: t("categoryTitles.creative"),
+  };
 
   const statusByMissionId = useMemo(() => {
     const map = new Map<string, "completed" | "active">();
@@ -32,8 +34,8 @@ export default function MissionsPage() {
   return (
     <div className="space-y-7 animate-fade-in">
       <ScreenHeader
-        title="Missions"
-        subtitle="Real accomplishments, not app-usage streaks. Each one moves your future forward."
+        title={t("title")}
+        subtitle={t("subtitle")}
       />
 
       {ORDER.map((category) => (

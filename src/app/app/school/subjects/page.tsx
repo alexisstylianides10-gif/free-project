@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useStudySubjects, useStudyTopics, useStudyFocusSessions, useStudyQuizzes, useStudyQuizAttempts } from "@/lib/hooks/study";
@@ -15,6 +16,7 @@ const EMOJI_CHOICES = ["📘", "🔢", "🔬", "🧪", "📖", "🌍", "💻", "
 
 export default function SubjectsPage() {
   const { user } = useAuth();
+  const t = useTranslations("SubjectsPage");
   const { data: subjects, refetch } = useStudySubjects(user?.id);
   const { data: topics } = useStudyTopics(user?.id);
   const { data: focusSessions } = useStudyFocusSessions(user?.id);
@@ -76,8 +78,8 @@ export default function SubjectsPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-bold text-foreground">{subject.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {s?.progress ?? 0}% progress
-                      {s?.accuracy !== null && s?.accuracy !== undefined ? ` · ${s.accuracy}% quiz accuracy` : ""}
+                      {t("percentProgress", { percent: s?.progress ?? 0 })}
+                      {s?.accuracy !== null && s?.accuracy !== undefined ? ` · ${t("percentQuizAccuracy", { percent: s.accuracy })}` : ""}
                     </p>
                   </div>
                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -85,7 +87,7 @@ export default function SubjectsPage() {
                 <ProgressBar value={s?.progress ?? 0} className="mt-3" />
                 {s && s.weak.length > 0 && (
                   <p className="mt-2.5 text-xs text-muted-foreground">
-                    Weak: <span className="font-medium text-warning">{s.weak.join(", ")}</span>
+                    {t("weak")} <span className="font-medium text-warning">{s.weak.join(", ")}</span>
                   </p>
                 )}
               </CardContent>
@@ -97,7 +99,7 @@ export default function SubjectsPage() {
       {creating ? (
         <Card>
           <CardContent className="space-y-3 p-4">
-            <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Subject name (e.g. Mathematics)" />
+            <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={t("subjectNamePlaceholder")} />
             <div className="flex flex-wrap gap-1.5">
               {EMOJI_CHOICES.map((e) => (
                 <button
@@ -114,10 +116,10 @@ export default function SubjectsPage() {
             </div>
             <div className="flex gap-2">
               <Button size="md" className="flex-1" onClick={createSubject} disabled={!name.trim() || saving}>
-                {saving ? "Creating…" : "Create Subject"}
+                {saving ? t("creating") : t("createSubject")}
               </Button>
               <Button size="md" variant="secondary" onClick={() => setCreating(false)}>
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           </CardContent>
@@ -129,7 +131,7 @@ export default function SubjectsPage() {
           className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-5 text-sm font-semibold text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
         >
           <Plus className="h-4 w-4" />
-          New Subject
+          {t("newSubject")}
         </button>
       )}
     </div>

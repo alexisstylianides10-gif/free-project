@@ -4,6 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CalendarClock, Brain, Layers, Play, Trash2, RotateCcw, Sparkles, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { authedFetch } from "@/lib/api";
@@ -18,6 +19,9 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
   const { subjectId, materialId } = use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations("MaterialDetailPage");
+  const tKind = useTranslations("MaterialKind");
+  const tStatus = useTranslations("MaterialStatus");
 
   const { data: materials, loading: materialsLoading, refetch: refetchMaterials } = useStudyMaterials(user?.id, subjectId);
   const { data: topicsAll, refetch: refetchTopics } = useStudyTopics(user?.id, subjectId);
@@ -61,12 +65,12 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setRetryError(body.error ?? "Analysis failed again. Try again in a moment.");
+        setRetryError(body.error ?? t("analysisFailedAgain"));
       }
       await refetchMaterials();
       await refetchTopics();
     } catch {
-      setRetryError("Couldn't reach the server. Try again in a moment.");
+      setRetryError(t("couldNotReachServer"));
     } finally {
       setRetrying(false);
     }
@@ -74,7 +78,7 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
 
   async function deleteMaterial() {
     if (!material || !supabase || deleting) return;
-    if (!confirm(`Delete "${material.title}"? Topics already extracted from it will stay.`)) return;
+    if (!confirm(t("confirmDelete", { title: material.title }))) return;
     setDeleting(true);
     try {
       if (material.storage_path) {
@@ -88,21 +92,21 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
   }
 
   if (materialsLoading && !material) {
-    return <LoadingScreen message="Loading material…" fullScreen={false} />;
+    return <LoadingScreen message={t("loadingMaterial")} fullScreen={false} />;
   }
 
   if (!material) {
     return (
       <Card>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          This material couldn&apos;t be found. It may have been deleted.
+          {t("materialNotFound")}
         </CardContent>
       </Card>
     );
   }
 
   if (material.status === "pending" || material.status === "analyzing") {
-    return <LoadingScreen message="Analyzing your material…" fullScreen={false} />;
+    return <LoadingScreen message={t("analyzingMaterial")} fullScreen={false} />;
   }
 
   if (material.status === "failed") {
@@ -111,13 +115,13 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
         <Card className="border border-danger/40">
           <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
             <TriangleAlert className="h-6 w-6 text-danger" />
-            <p className="text-sm font-semibold text-foreground">Analysis failed</p>
+            <p className="text-sm font-semibold text-foreground">{t("analysisFailed")}</p>
             <p className="max-w-xs text-sm text-muted-foreground">
-              {retryError ?? "Something went wrong reading this material. You can try again."}
+              {retryError ?? t("analysisFailedBody")}
             </p>
             <Button variant="secondary" onClick={retryAnalysis} disabled={retrying} className="mt-2">
               <RotateCcw className="h-4 w-4" />
-              {retrying ? "Retrying…" : "Try again"}
+              {retrying ? t("retrying") : t("tryAgain")}
             </Button>
           </CardContent>
         </Card>
@@ -127,7 +131,7 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
           disabled={deleting}
           className="mx-auto flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-danger disabled:opacity-40"
         >
-          <Trash2 className="h-3.5 w-3.5" /> Delete material
+          <Trash2 className="h-3.5 w-3.5" /> {t("deleteMaterial")}
         </button>
       </div>
     );
@@ -135,10 +139,10 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
 
   const analysis = material.analysis as MaterialAnalysisFull | null;
   const stats = [
-    { label: "Topics", value: analysis?.topic_count ?? topics.length },
-    { label: "Key Concepts", value: analysis?.concept_count ?? 0 },
-    { label: "Important Terms", value: analysis?.term_count ?? 0 },
-    { label: "Potential Questions", value: analysis?.question_count ?? 0 },
+    { label: t("topics"), value: analysis?.topic_count ?? topics.length },
+    { label: t("keyConcepts"), value: analysis?.concept_count ?? 0 },
+    { label: t("importantTerms"), value: analysis?.term_count ?? 0 },
+    { label: t("potentialQuestions"), value: analysis?.question_count ?? 0 },
   ];
 
   return (
@@ -147,14 +151,14 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="truncate text-lg font-bold text-foreground">{material.title}</p>
-            {material.is_textbook && <Badge tone="accent">Textbook</Badge>}
+            {material.is_textbook && <Badge tone="accent">{t("textbookBadge")}</Badge>}
           </div>
-          <p className="text-xs capitalize text-muted-foreground">{material.kind} · analyzed</p>
+          <p className="text-xs capitalize text-muted-foreground">{tKind(material.kind)} · {tStatus(material.status)}</p>
         </div>
         <button
           onClick={deleteMaterial}
           disabled={deleting}
-          aria-label="Delete material"
+          aria-label={t("deleteMaterial")}
           className="shrink-0 rounded-full p-2 text-muted-foreground hover:text-danger disabled:opacity-40"
         >
           <Trash2 className="h-4 w-4" />
@@ -163,7 +167,7 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
 
       <section>
         <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5 text-accent" /> Found
+          <Sparkles className="h-3.5 w-3.5 text-accent" /> {t("found")}
         </h2>
         <Card>
           <CardContent className="grid grid-cols-2 gap-5 p-5">
@@ -179,16 +183,16 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
 
       {topics.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Topics</h2>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("topics")}</h2>
           <div className="space-y-2">
-            {topics.map((t) => (
-              <Card key={t.id}>
+            {topics.map((topic) => (
+              <Card key={topic.id}>
                 <CardContent className="p-4">
-                  <p className="text-sm font-bold text-foreground">{t.name}</p>
-                  {t.summary && <p className="mt-1 text-sm text-muted-foreground">{t.summary}</p>}
-                  {t.key_concepts.length > 0 && (
+                  <p className="text-sm font-bold text-foreground">{topic.name}</p>
+                  {topic.summary && <p className="mt-1 text-sm text-muted-foreground">{topic.summary}</p>}
+                  {topic.key_concepts.length > 0 && (
                     <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      {t.key_concepts.map((c) => (
+                      {topic.key_concepts.map((c) => (
                         <Badge key={c} tone="accent">
                           {c}
                         </Badge>
@@ -204,7 +208,7 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
 
       {analysis && analysis.terms.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Important Terms</h2>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("importantTerms")}</h2>
           <div className="flex flex-wrap gap-1.5">
             {analysis.terms.map((term) => (
               <Badge key={term} tone="neutral">
@@ -217,7 +221,7 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
 
       {analysis && analysis.potential_questions.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Potential Questions</h2>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("potentialQuestions")}</h2>
           <div className="space-y-2">
             {analysis.potential_questions.map((q, i) => (
               <Card key={i}>
@@ -229,30 +233,30 @@ export default function MaterialDetailPage({ params }: { params: Promise<{ subje
       )}
 
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">What next</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("whatNext")}</h2>
         <div className="grid grid-cols-2 gap-3">
           <Link href={`/app/school/subjects/${subjectId}/plan/new?material=${materialId}`}>
             <Button variant="mission" size="lg" className="w-full">
               <CalendarClock className="h-4 w-4" />
-              Create Study Plan
+              {t("createStudyPlan")}
             </Button>
           </Link>
           <Link href={`/app/school/quizzes?subject=${subjectId}&material=${materialId}`}>
             <Button variant="secondary" size="lg" className="w-full">
               <Brain className="h-4 w-4" />
-              Generate Quiz
+              {t("generateQuiz")}
             </Button>
           </Link>
           <Link href={`/app/school/flashcards?subject=${subjectId}&material=${materialId}`}>
             <Button variant="secondary" size="lg" className="w-full">
               <Layers className="h-4 w-4" />
-              Make Flashcards
+              {t("makeFlashcards")}
             </Button>
           </Link>
           <Link href={`/app/school/subjects/${subjectId}/session?material=${materialId}`}>
             <Button variant="secondary" size="lg" className="w-full">
               <Play className="h-4 w-4" />
-              Start Studying
+              {t("startStudying")}
             </Button>
           </Link>
         </div>

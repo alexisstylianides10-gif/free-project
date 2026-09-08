@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, X, Minus, PartyPopper } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { gradeFlashcard, logFocusSession } from "@/lib/study/actions";
@@ -18,12 +19,6 @@ import { LoadingScreen } from "@/components/shared/LoadingScreen";
 const MASTERY_ACHIEVEMENT_THRESHOLD = 20;
 const SOON_DAYS = 7;
 
-const BUCKET_LABEL: Record<string, string> = {
-  due: "Due Today",
-  soon: "Coming Soon",
-  mastered: "Mastered",
-};
-
 interface GradeResult {
   cardId: string;
   subjectId: string;
@@ -31,8 +26,9 @@ interface GradeResult {
 }
 
 export default function FlashcardsReviewPage() {
+  const t = useTranslations("FlashcardsReviewPage");
   return (
-    <Suspense fallback={<LoadingScreen message="Loading review…" fullScreen={false} />}>
+    <Suspense fallback={<LoadingScreen message={t("loadingReview")} fullScreen={false} />}>
       <ReviewInner />
     </Suspense>
   );
@@ -41,6 +37,12 @@ export default function FlashcardsReviewPage() {
 function ReviewInner() {
   const { user, profile, refreshProfile } = useAuth();
   const router = useRouter();
+  const t = useTranslations("FlashcardsReviewPage");
+  const BUCKET_LABEL: Record<string, string> = {
+    due: t("dueToday"),
+    soon: t("comingSoon"),
+    mastered: t("mastered"),
+  };
   const searchParams = useSearchParams();
   const bucket = searchParams.get("bucket");
   const idsParam = searchParams.get("ids");
@@ -139,7 +141,7 @@ function ReviewInner() {
   }, [complete, sessionLogged]);
 
   if (flashcardsLoading) {
-    return <LoadingScreen message="Loading review…" fullScreen={false} />;
+    return <LoadingScreen message={t("loadingReview")} fullScreen={false} />;
   }
 
   if (queue.length === 0) {
@@ -147,16 +149,16 @@ function ReviewInner() {
       <div className="space-y-4">
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-sm font-semibold text-foreground">Nothing to review here</p>
+            <p className="text-sm font-semibold text-foreground">{t("nothingToReview")}</p>
             <p className="max-w-xs text-sm text-muted-foreground">
               {bucket && BUCKET_LABEL[bucket]
-                ? `You don't have any "${BUCKET_LABEL[bucket]}" cards right now.`
-                : "This review session is empty."}
+                ? t("noCardsInBucket", { bucket: BUCKET_LABEL[bucket] })
+                : t("emptySession")}
             </p>
           </CardContent>
         </Card>
         <Button size="lg" className="w-full" onClick={() => router.push("/app/school/flashcards")}>
-          Back to Flashcards
+          {t("backToFlashcards")}
         </Button>
       </div>
     );
@@ -173,14 +175,14 @@ function ReviewInner() {
             <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white">
               <PartyPopper className="h-6 w-6" />
             </span>
-            <p className="text-lg font-bold text-foreground">Review complete</p>
+            <p className="text-lg font-bold text-foreground">{t("reviewComplete")}</p>
             <p className="text-sm text-muted-foreground">
-              {results.length} card{results.length === 1 ? "" : "s"} reviewed: {knewCount} knew it, {almostCount} almost, {didntCount} didn&rsquo;t know.
+              {t("resultsSummary", { count: results.length, knew: knewCount, almost: almostCount, didnt: didntCount })}
             </p>
           </CardContent>
         </Card>
         <Button size="lg" className="w-full" disabled={!sessionLogged} onClick={() => router.push("/app/school/flashcards")}>
-          {sessionLogged ? "Done" : "Saving…"}
+          {sessionLogged ? t("done") : t("saving")}
         </Button>
       </div>
     );
@@ -192,7 +194,7 @@ function ReviewInner() {
     <div className="space-y-5">
       <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
         <span>
-          Card {index + 1} of {queue.length}
+          {t("cardXOfY", { current: index + 1, total: queue.length })}
         </span>
         {subject && (
           <span className="flex items-center gap-1">
@@ -210,7 +212,7 @@ function ReviewInner() {
         {!revealed ? (
           <>
             <p className="text-lg font-semibold leading-relaxed text-foreground">{currentCard.front}</p>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tap to reveal answer</p>
+            <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("tapToReveal")}</p>
           </>
         ) : (
           <>
@@ -224,15 +226,15 @@ function ReviewInner() {
         <div className="grid grid-cols-3 gap-2">
           <Button variant="danger" disabled={grading} onClick={() => grade("didnt")} className="h-auto flex-col gap-1 px-2 py-3">
             <X className="h-4 w-4" />
-            <span className="text-xs">Didn&rsquo;t know</span>
+            <span className="text-xs">{t("didntKnow")}</span>
           </Button>
           <Button variant="secondary" disabled={grading} onClick={() => grade("almost")} className="h-auto flex-col gap-1 px-2 py-3">
             <Minus className="h-4 w-4" />
-            <span className="text-xs">Almost</span>
+            <span className="text-xs">{t("almost")}</span>
           </Button>
           <Button variant="mission" disabled={grading} onClick={() => grade("knew")} className="h-auto flex-col gap-1 px-2 py-3">
             <Check className="h-4 w-4" />
-            <span className="text-xs">Knew it</span>
+            <span className="text-xs">{t("knewIt")}</span>
           </Button>
         </div>
       )}

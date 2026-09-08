@@ -3,6 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Layers, Clock, CalendarDays, Trophy, Sparkles, TriangleAlert, ArrowLeft, BookOpen } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
 import { useStudySubjects, useStudyTopics, useStudyMaterials, useStudyFlashcards } from "@/lib/hooks/study";
@@ -17,8 +18,9 @@ const MASTERED_REPS = 4;
 const SOON_DAYS = 7;
 
 export default function FlashcardsPage() {
+  const t = useTranslations("FlashcardsPage");
   return (
-    <Suspense fallback={<LoadingScreen message="Loading flashcards…" fullScreen={false} />}>
+    <Suspense fallback={<LoadingScreen message={t("loadingFlashcards")} fullScreen={false} />}>
       <FlashcardsPageInner />
     </Suspense>
   );
@@ -27,6 +29,7 @@ export default function FlashcardsPage() {
 function FlashcardsPageInner() {
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations("FlashcardsPage");
   const searchParams = useSearchParams();
   const subjectParam = searchParams.get("subject") ?? "";
   const materialParam = searchParams.get("material") ?? "";
@@ -81,18 +84,18 @@ function FlashcardsPageInner() {
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Couldn't generate those flashcards.");
+      if (!res.ok) throw new Error(json.error ?? t("couldNotGenerate"));
       await refetchFlashcards();
       const ids = (json.cards as { id: string }[]).map((c) => c.id).join(",");
       router.push(`/app/school/flashcards/review?ids=${ids}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong generating those flashcards.");
+      setError(e instanceof Error ? e.message : t("generateError"));
       setGenerating(false);
     }
   }
 
   if (generating) {
-    return <LoadingScreen message="Writing your flashcards…" fullScreen={false} />;
+    return <LoadingScreen message={t("writingFlashcards")} fullScreen={false} />;
   }
 
   return (
@@ -100,14 +103,14 @@ function FlashcardsPageInner() {
       {showGenerate ? (
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Generate Flashcards</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("generateFlashcards")}</h2>
             {!forceGenerate && flashcards.length > 0 && (
               <button
                 type="button"
                 onClick={() => setManualToggle(false)}
                 className="flex shrink-0 items-center gap-1 text-xs font-semibold text-accent"
               >
-                <ArrowLeft className="h-3.5 w-3.5" /> My flashcards
+                <ArrowLeft className="h-3.5 w-3.5" /> {t("myFlashcards")}
               </button>
             )}
           </div>
@@ -124,15 +127,15 @@ function FlashcardsPageInner() {
           {subjects.length === 0 ? (
             <EmptyState
               icon={BookOpen}
-              title="Add a subject first"
-              subtitle="Come back here once you've added a subject to generate flashcards."
-              cta={{ label: "Add subject", href: "/app/school/subjects" }}
+              title={t("addSubjectFirst")}
+              subtitle={t("addSubjectFirstSubtitle")}
+              cta={{ label: t("addSubject"), href: "/app/school/subjects" }}
             />
           ) : (
             <Card>
               <CardContent className="space-y-5 p-4">
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Subject</p>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("subject")}</p>
                   <div className="flex flex-wrap gap-2">
                     {subjects.map((s) => (
                       <button
@@ -157,13 +160,13 @@ function FlashcardsPageInner() {
                 {subjectId && materialInfo && (
                   <div className="flex items-center gap-2 rounded-xl bg-muted px-3.5 py-2.5 text-xs text-muted-foreground">
                     <Sparkles className="h-3.5 w-3.5 shrink-0 text-accent" />
-                    Generating from <span className="font-semibold text-foreground">&ldquo;{materialInfo.title}&rdquo;</span>
+                    {t("generatingFrom")} <span className="font-semibold text-foreground">&ldquo;{materialInfo.title}&rdquo;</span>
                   </div>
                 )}
 
                 {subjectId && !materialInfo && (
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Topic</p>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("topic")}</p>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
@@ -173,19 +176,19 @@ function FlashcardsPageInner() {
                           topicId === "" ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                         )}
                       >
-                        All topics
+                        {t("allTopics")}
                       </button>
-                      {topics.map((t) => (
+                      {topics.map((topic) => (
                         <button
-                          key={t.id}
+                          key={topic.id}
                           type="button"
-                          onClick={() => setTopicId(t.id)}
+                          onClick={() => setTopicId(topic.id)}
                           className={cn(
                             "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                            topicId === t.id ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
+                            topicId === topic.id ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                           )}
                         >
-                          {t.name}
+                          {topic.name}
                         </button>
                       ))}
                     </div>
@@ -193,7 +196,7 @@ function FlashcardsPageInner() {
                 )}
 
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">How many</p>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("howMany")}</p>
                   <div className="grid grid-cols-3 gap-2">
                     {COUNT_OPTIONS.map((n) => (
                       <button
@@ -213,7 +216,7 @@ function FlashcardsPageInner() {
 
                 <Button size="lg" className="w-full" disabled={!subjectId} onClick={generate}>
                   <Layers className="h-4 w-4" />
-                  Generate Flashcards
+                  {t("generateFlashcards")}
                 </Button>
               </CardContent>
             </Card>
@@ -222,7 +225,7 @@ function FlashcardsPageInner() {
       ) : (
         <>
           <section className="space-y-3">
-            <p className="text-sm text-muted-foreground">Tap a set below to start reviewing.</p>
+            <p className="text-sm text-muted-foreground">{t("tapASet")}</p>
 
             <button type="button" onClick={() => router.push("/app/school/flashcards/review?bucket=due")} className="block w-full text-left" disabled={buckets.due.length === 0}>
               <Card className={cn(buckets.due.length === 0 && "opacity-50")}>
@@ -231,8 +234,8 @@ function FlashcardsPageInner() {
                     <Clock className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Due Today</p>
-                    <p className="mt-0.5 text-lg font-extrabold text-foreground">{buckets.due.length} cards</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("dueToday")}</p>
+                    <p className="mt-0.5 text-lg font-extrabold text-foreground">{t("cardsCount", { count: buckets.due.length })}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -245,8 +248,8 @@ function FlashcardsPageInner() {
                     <CalendarDays className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Coming Soon</p>
-                    <p className="mt-0.5 text-lg font-extrabold text-foreground">{buckets.soon.length} cards</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("comingSoon")}</p>
+                    <p className="mt-0.5 text-lg font-extrabold text-foreground">{t("cardsCount", { count: buckets.soon.length })}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -259,8 +262,8 @@ function FlashcardsPageInner() {
                     <Trophy className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Mastered</p>
-                    <p className="mt-0.5 text-lg font-extrabold text-foreground">{buckets.mastered.length} cards</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("mastered")}</p>
+                    <p className="mt-0.5 text-lg font-extrabold text-foreground">{t("cardsCount", { count: buckets.mastered.length })}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -269,7 +272,7 @@ function FlashcardsPageInner() {
 
           <Button variant="secondary" size="lg" className="w-full" onClick={() => setManualToggle(true)}>
             <Sparkles className="h-4 w-4" />
-            Generate New Flashcards
+            {t("generateNewFlashcards")}
           </Button>
         </>
       )}

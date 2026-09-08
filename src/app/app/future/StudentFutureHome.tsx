@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Compass } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCareerPaths, useRoadmapProgress } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
@@ -18,6 +19,8 @@ import { useOnboardingResponse, mergeTopMatches } from "./_lib/matches";
 
 export default function StudentFutureHome() {
   const { user } = useAuth();
+  const t = useTranslations("StudentFutureHome");
+  const tRoadmap = useTranslations("RoadmapLevels");
   const { data: careerPaths } = useCareerPaths(user?.id);
   const { data: roadmapProgress, refetch: refetchRoadmap } = useRoadmapProgress(user?.id);
   const { data: onboarding, loading: onboardingLoading } = useOnboardingResponse(user?.id);
@@ -46,9 +49,15 @@ export default function StudentFutureHome() {
         const status: RoadmapStep["status"] = progress?.completed_at ? "completed" : progress?.unlocked ? "unlocked" : "locked";
         const action =
           level.level === frontierManualLevel
-            ? { label: "Mark as done", pending: markingLevel === level.level, onClick: () => handleMarkComplete(level.level) }
+            ? { label: t("markAsDone"), pending: markingLevel === level.level, onClick: () => handleMarkComplete(level.level) }
             : undefined;
-        return { level: level.level, title: level.title, description: level.description, status, action };
+        return {
+          level: level.level,
+          title: tRoadmap(`${level.level}.title`),
+          description: tRoadmap(`${level.level}.description`),
+          status,
+          action,
+        };
       }),
     // handleMarkComplete is intentionally excluded: it's a plain function
     // (not memoized) redefined every render, so including it here would
@@ -62,20 +71,20 @@ export default function StudentFutureHome() {
 
   return (
     <div className="space-y-7 pb-4">
-      <ScreenHeader title="Your Future" subtitle="Top career matches, based on you." action={<NotificationBell className="md:hidden" />} />
+      <ScreenHeader title={t("title")} subtitle={t("subtitle")} action={<NotificationBell className="md:hidden" />} />
 
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Your Top Career Matches</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("topMatches")}</h2>
         {topMatches.length === 0 ? (
           onboardingLoading ? (
             <Card>
-              <CardContent className="py-6 text-center text-sm text-muted-foreground">Loading your matches…</CardContent>
+              <CardContent className="py-6 text-center text-sm text-muted-foreground">{t("loadingMatches")}</CardContent>
             </Card>
           ) : (
             <EmptyState
               icon={Compass}
-              title="No career matches yet"
-              subtitle="Complete onboarding to see careers matched to your subjects, interests, and strengths."
+              title={t("emptyTitle")}
+              subtitle={t("emptySubtitle")}
             />
           )
         ) : (
@@ -90,7 +99,7 @@ export default function StudentFutureHome() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-muted-foreground">Roadmap</h2>
+        <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("roadmap")}</h2>
         <Card>
           <CardContent className="p-5">
             <RoadmapTimeline steps={roadmapSteps} />

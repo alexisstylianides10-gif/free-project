@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, GraduationCap, TriangleAlert, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
 import { useStudySubjects, useStudyMaterials } from "@/lib/hooks/study";
@@ -21,15 +22,15 @@ const PRESETS = [
   { count: 30, timeMin: 45 },
 ] as const;
 
-const DIFFICULTIES: { value: QuizDifficulty; label: string }[] = [
-  { value: "medium", label: "Medium" },
-  { value: "hard", label: "Hard" },
-  { value: "exam", label: "Exam Level" },
-];
-
 export default function ExamModeSetupPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations("ExamModeSetupPage");
+  const DIFFICULTIES: { value: QuizDifficulty; label: string }[] = [
+    { value: "medium", label: t("difficulty.medium") },
+    { value: "hard", label: t("difficulty.hard") },
+    { value: "exam", label: t("difficulty.exam") },
+  ];
 
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: exams } = useExams(user?.id);
@@ -64,22 +65,22 @@ export default function ExamModeSetupPage() {
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Couldn't start the mock exam.");
+      if (!res.ok) throw new Error(json.error ?? t("couldNotStart"));
       router.push(`/app/school/quizzes/${json.quiz.id}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong starting the mock exam.");
+      setError(e instanceof Error ? e.message : t("startError"));
       setStarting(false);
     }
   }
 
   if (starting) {
-    return <LoadingScreen message="Building your mock exam…" fullScreen={false} />;
+    return <LoadingScreen message={t("buildingExam")} fullScreen={false} />;
   }
 
   return (
     <div className="space-y-6">
       <Link href="/app/school/quizzes" className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Back to Quizzes
+        <ArrowLeft className="h-4 w-4" /> {t("backToQuizzes")}
       </Link>
 
       <div className="flex items-center gap-3">
@@ -87,8 +88,8 @@ export default function ExamModeSetupPage() {
           <GraduationCap className="h-5 w-5" />
         </span>
         <div>
-          <h1 className="text-lg font-extrabold text-foreground">Exam Mode</h1>
-          <p className="text-xs text-muted-foreground">A timed mock exam, no hints until it&apos;s graded.</p>
+          <h1 className="text-lg font-extrabold text-foreground">{t("examMode")}</h1>
+          <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -104,15 +105,15 @@ export default function ExamModeSetupPage() {
       {subjects.length === 0 ? (
         <EmptyState
           icon={BookOpen}
-          title="Add a subject first"
-          subtitle="Come back here once you've added a subject to start a mock exam."
-          cta={{ label: "Add subject", href: "/app/school/subjects" }}
+          title={t("addSubjectFirst")}
+          subtitle={t("addSubjectFirstSubtitle")}
+          cta={{ label: t("addSubject"), href: "/app/school/subjects" }}
         />
       ) : (
         <Card>
           <CardContent className="space-y-5 p-4">
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Subject</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("subject")}</p>
               <div className="flex flex-wrap gap-2">
                 {subjects.map((s) => (
                   <button
@@ -137,7 +138,7 @@ export default function ExamModeSetupPage() {
 
             {subjectId && linkedExams.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Linked exam (optional)</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("linkedExam")}</p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -147,7 +148,7 @@ export default function ExamModeSetupPage() {
                       examId === "" ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    None
+                    {t("none")}
                   </button>
                   {linkedExams.map((e) => (
                     <button
@@ -168,14 +169,14 @@ export default function ExamModeSetupPage() {
 
             {subjectId && (
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Past paper (optional)</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("pastPaper")}</p>
                 {analyzedMaterials.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
-                    No uploaded materials yet for this subject.{" "}
+                    {t("noMaterialsYet")}{" "}
                     <Link href={`/app/school/subjects/${subjectId}/materials/new`} className="font-semibold text-accent">
-                      Upload one
+                      {t("uploadOne")}
                     </Link>
-                    , then come back here.
+                    {t("thenComeBack")}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
@@ -187,7 +188,7 @@ export default function ExamModeSetupPage() {
                         materialId === "" ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      None
+                      {t("none")}
                     </button>
                     {analyzedMaterials.map((m) => (
                       <button
@@ -206,14 +207,14 @@ export default function ExamModeSetupPage() {
                 )}
                 {materialId && (
                   <p className="mt-2 text-xs text-muted-foreground">
-                    The exam will be grounded in this paper&apos;s real topics, format, and difficulty, not just the subject&apos;s general curriculum.
+                    {t("groundedInPaper")}
                   </p>
                 )}
               </div>
             )}
 
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Length</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("length")}</p>
               <div className="grid grid-cols-3 gap-2">
                 {PRESETS.map((p) => (
                   <button
@@ -225,15 +226,15 @@ export default function ExamModeSetupPage() {
                       preset.count === p.count ? "bg-gradient-mission text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <span className="block text-sm font-bold">{p.count} Qs</span>
-                    <span className="block text-caption opacity-80">{p.timeMin} min</span>
+                    <span className="block text-sm font-bold">{t("questionsAbbrev", { count: p.count })}</span>
+                    <span className="block text-caption opacity-80">{t("minutes", { minutes: p.timeMin })}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Difficulty</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("difficultyLabel")}</p>
               <div className="grid grid-cols-3 gap-2">
                 {DIFFICULTIES.map((d) => (
                   <button
@@ -252,10 +253,10 @@ export default function ExamModeSetupPage() {
             </div>
 
             <Button variant="mission" size="lg" className="w-full" disabled={!subjectId} onClick={startExam}>
-              Start Mock Exam
+              {t("startMockExam")}
             </Button>
             <p className="text-center text-caption leading-relaxed text-muted-foreground">
-              Practice-based signal only. A strong mock score is a good sign, not a guarantee for your real exam.
+              {t("practiceDisclaimer")}
             </p>
           </CardContent>
         </Card>

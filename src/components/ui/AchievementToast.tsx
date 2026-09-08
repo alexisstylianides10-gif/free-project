@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { AchievementDef } from "@/lib/catalog/achievements";
 
 /** Presentational-only unlock toast — one achievement per card. Stacking,
@@ -12,6 +13,8 @@ import type { AchievementDef } from "@/lib/catalog/achievements";
  * else in the app, not a raw emoji. */
 export function AchievementToast({ achievement, onDismiss }: { achievement: AchievementDef; onDismiss: () => void }) {
   const Icon = achievement.icon;
+  const t = useTranslations("AchievementToast");
+  const tAchievements = useTranslations("Achievements");
   return (
     <div
       role="status"
@@ -22,8 +25,8 @@ export function AchievementToast({ achievement, onDismiss }: { achievement: Achi
         <Icon className="h-5 w-5 text-white" aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">Achievement Unlocked</p>
-        <p className="truncate text-sm font-bold text-foreground">{achievement.title}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent">{t("achievementUnlocked")}</p>
+        <p className="truncate text-sm font-bold text-foreground">{tAchievements(`${achievement.key}.title`)}</p>
       </div>
     </div>
   );

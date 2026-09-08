@@ -44,9 +44,9 @@ function isAlreadyInstalled(): boolean {
  * user-agent check — good enough for the common cases, not bulletproof.
  */
 export function InstallAppCard() {
+  const t = useTranslations("InstallAppCard");
   const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<Platform>("other");
-  const t = useTranslations("InstallAppCard");
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
@@ -81,18 +81,18 @@ export function InstallAppCard() {
           <Smartphone className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground">{t("title", { name: branding.name })}</p>
+          <p className="text-sm font-semibold text-foreground">{t("getApp", { name: branding.name })}</p>
           {platform === "ios" ? (
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {t.rich("ios", {
-                share: () => <Share className="inline h-3 w-3 -translate-y-px" aria-hidden />,
+              {t.rich("iosInstructions", {
+                icon: () => <Share className="inline h-3 w-3 -translate-y-px" aria-hidden />,
                 strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
               })}
             </p>
           ) : (
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {t.rich("android", {
-                menu: () => <MoreVertical className="inline h-3 w-3 -translate-y-px" aria-hidden />,
+              {t.rich("androidInstructions", {
+                icon: () => <MoreVertical className="inline h-3 w-3 -translate-y-px" aria-hidden />,
                 strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
               })}
             </p>

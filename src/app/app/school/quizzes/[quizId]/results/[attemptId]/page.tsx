@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { Sparkles, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useStudySubjects, useStudyTopics } from "@/lib/hooks/study";
@@ -13,12 +14,13 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
 import { cn } from "@/lib/utils";
 
-const VERDICT_LABEL: Record<AnswerVerdict, string> = { correct: "Correct", almost: "Almost", review: "Review" };
 const VERDICT_TONE: Record<AnswerVerdict, "success" | "warning" | "danger"> = { correct: "success", almost: "warning", review: "danger" };
 
 export default function QuizResultsPage({ params }: { params: Promise<{ quizId: string; attemptId: string }> }) {
   const { quizId, attemptId } = use(params);
   const { user } = useAuth();
+  const t = useTranslations("QuizResultsPage");
+  const VERDICT_LABEL: Record<AnswerVerdict, string> = { correct: t("verdict.correct"), almost: t("verdict.almost"), review: t("verdict.review") };
 
   const [attempt, setAttempt] = useState<StudyQuizAttempt | null>(null);
   const [quiz, setQuiz] = useState<StudyQuiz | null>(null);
@@ -61,13 +63,13 @@ export default function QuizResultsPage({ params }: { params: Promise<{ quizId: 
     }
   }, [attemptId]);
 
-  if (loading) return <LoadingScreen message="Loading your results…" fullScreen={false} />;
+  if (loading) return <LoadingScreen message={t("loadingResults")} fullScreen={false} />;
   if (notFound || !attempt || !quiz) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
           <TriangleAlert className="h-6 w-6 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Couldn&apos;t find that result.</p>
+          <p className="text-sm text-muted-foreground">{t("resultNotFound")}</p>
         </CardContent>
       </Card>
     );
@@ -91,7 +93,7 @@ export default function QuizResultsPage({ params }: { params: Promise<{ quizId: 
     <div className="space-y-6">
       <Card className="border-accent/30">
         <CardContent className="flex flex-col items-center gap-1 p-8 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Score</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("score")}</p>
           <p className="mt-2 text-4xl font-extrabold text-foreground">
             {attempt.correct_count} / {total}
           </p>
@@ -107,7 +109,7 @@ export default function QuizResultsPage({ params }: { params: Promise<{ quizId: 
           {subject && (
             <p className="mt-3 text-xs text-muted-foreground">
               {subject.icon} {subject.name}
-              {quiz.is_mock_exam ? " · Mock Exam" : ""}
+              {quiz.is_mock_exam ? ` · ${t("mockExam")}` : ""}
             </p>
           )}
         </CardContent>
@@ -125,14 +127,14 @@ export default function QuizResultsPage({ params }: { params: Promise<{ quizId: 
       <div className="grid grid-cols-1 gap-3">
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs font-bold uppercase tracking-wide text-success">Strong</p>
-            <p className="mt-1.5 text-sm text-foreground">{attempt.strong_topics.length ? attempt.strong_topics.join(", ") : "None yet, keep practicing."}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-success">{t("strong")}</p>
+            <p className="mt-1.5 text-sm text-foreground">{attempt.strong_topics.length ? attempt.strong_topics.join(", ") : t("noneYet")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs font-bold uppercase tracking-wide text-warning">Needs work</p>
-            <p className="mt-1.5 text-sm text-foreground">{attempt.weak_topics.length ? attempt.weak_topics.join(", ") : "Nothing. Great job across the board."}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-warning">{t("needsWork")}</p>
+            <p className="mt-1.5 text-sm text-foreground">{attempt.weak_topics.length ? attempt.weak_topics.join(", ") : t("greatJob")}</p>
           </CardContent>
         </Card>
       </div>
@@ -140,13 +142,13 @@ export default function QuizResultsPage({ params }: { params: Promise<{ quizId: 
       {practiceHref && (
         <Link href={practiceHref}>
           <Button size="lg" className="w-full">
-            Practice Weak Topics
+            {t("practiceWeakTopics")}
           </Button>
         </Link>
       )}
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Review Answers</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("reviewAnswers")}</h2>
         <div className="space-y-2">
           {attempt.results.map((r, i) => (
             <Card key={r.question_id}>
@@ -160,11 +162,11 @@ export default function QuizResultsPage({ params }: { params: Promise<{ quizId: 
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Your answer: <span className="text-foreground">{r.your_answer || "(no answer)"}</span>
+                  {t("yourAnswer")} <span className="text-foreground">{r.your_answer || t("noAnswer")}</span>
                 </p>
                 {r.verdict !== "correct" && (
                   <p className="text-xs text-muted-foreground">
-                    Correct answer: <span className="text-foreground">{r.correct_answer}</span>
+                    {t("correctAnswer")} <span className="text-foreground">{r.correct_answer}</span>
                   </p>
                 )}
                 {r.explanation && <p className="text-xs leading-relaxed text-muted-foreground">{r.explanation}</p>}

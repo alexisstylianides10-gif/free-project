@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Rocket, BookOpen, Brain, Briefcase, Palette, type LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { Mission } from "@/lib/catalog/missions";
 import { Button } from "@/components/ui/Button";
@@ -15,35 +16,37 @@ import { Button } from "@/components/ui/Button";
  * `bg-gradient-mission` treatment is reserved for the mission detail screen
  * (missions/[id]/page.tsx), where a user has intentionally navigated in to
  * look at one specific mission. */
-export function MissionHomeCard({ mission, eyebrow = "Future Mission" }: { mission: Mission; eyebrow?: string }) {
+export function MissionHomeCard({ mission, eyebrow }: { mission: Mission; eyebrow?: string }) {
+  const t = useTranslations("MissionCard");
+  const tMissions = useTranslations("Missions");
   return (
     <div className="rounded-3xl border border-border bg-surface p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-mission-via">
-          <Rocket className="h-3.5 w-3.5" aria-hidden /> {eyebrow}
+          <Rocket className="h-3.5 w-3.5" aria-hidden /> {eyebrow ?? t("futureMission")}
         </p>
         <span className="rounded-full bg-mission-via/15 px-2.5 py-1 text-xs font-bold text-mission-via">+{mission.xp} XP</span>
       </div>
-      <p className="mt-3 text-lg font-bold leading-snug text-foreground">{mission.title}</p>
+      <p className="mt-3 text-lg font-bold leading-snug text-foreground">{tMissions(`${mission.id}.title`)}</p>
       <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-        <span className="rounded-full bg-muted px-2.5 py-1 capitalize">{mission.difficulty}</span>
-        <span className="rounded-full bg-muted px-2.5 py-1">{mission.minutes} min</span>
+        <span className="rounded-full bg-muted px-2.5 py-1 capitalize">{t(`difficulty.${mission.difficulty}`)}</span>
+        <span className="rounded-full bg-muted px-2.5 py-1">{t("minutes", { minutes: mission.minutes })}</span>
       </div>
       <Link href={`/app/missions/${mission.id}`} className="mt-4 block">
         <Button size="lg" variant="secondary" className="w-full">
-          Start Mission
+          {t("startMission")}
         </Button>
       </Link>
     </div>
   );
 }
 
-const categoryMeta: Record<Mission["category"], { label: string; icon: LucideIcon; className: string }> = {
-  school: { label: "School mission", icon: BookOpen, className: "bg-school/15 text-school" },
-  skill: { label: "Skill mission", icon: Brain, className: "bg-accent-soft text-accent" },
-  career: { label: "Career mission", icon: Rocket, className: "bg-future/15 text-future" },
-  business: { label: "Business mission", icon: Briefcase, className: "bg-mission-via/15 text-mission-via" },
-  creative: { label: "Creative mission", icon: Palette, className: "bg-mission-from/15 text-mission-from" },
+const categoryMeta: Record<Mission["category"], { icon: LucideIcon; className: string }> = {
+  school: { icon: BookOpen, className: "bg-school/15 text-school" },
+  skill: { icon: Brain, className: "bg-accent-soft text-accent" },
+  career: { icon: Rocket, className: "bg-future/15 text-future" },
+  business: { icon: Briefcase, className: "bg-mission-via/15 text-mission-via" },
+  creative: { icon: Palette, className: "bg-mission-from/15 text-mission-from" },
 };
 
 export function MissionListItem({
@@ -55,6 +58,8 @@ export function MissionListItem({
   status?: "available" | "active" | "completed";
   onClick?: () => void;
 }) {
+  const t = useTranslations("MissionCard");
+  const tMissions = useTranslations("Missions");
   const meta = categoryMeta[mission.category];
   return (
     <button
@@ -69,13 +74,13 @@ export function MissionListItem({
         <meta.icon className="h-5 w-5" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold text-foreground">{mission.title}</span>
+        <span className="block truncate text-sm font-semibold text-foreground">{tMissions(`${mission.id}.title`)}</span>
         <span className="mt-0.5 block text-xs text-muted-foreground">
-          {meta.label} · {mission.minutes} min
+          {t(`categoryLabel.${mission.category}`)} · {t("minutes", { minutes: mission.minutes })}
         </span>
       </span>
       <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-foreground">
-        {status === "completed" ? "Done" : `+${mission.xp} XP`}
+        {status === "completed" ? t("done") : `+${mission.xp} XP`}
       </span>
     </button>
   );

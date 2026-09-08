@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ClipboardCheck, Plus, Trash2, Pencil, Sparkles, CheckCircle2, Circle, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework } from "@/lib/hooks/domain";
 import { supabase } from "@/lib/supabase/client";
@@ -19,6 +20,7 @@ const HOMEWORK_XP: Record<Homework["priority"], number> = { high: 15, medium: 10
 
 export default function HomeworkPage() {
   const { user, profile, refreshProfile } = useAuth();
+  const t = useTranslations("HomeworkPage");
   const { data: homework, error, refetch } = useHomework(user?.id);
 
   const [newSubject, setNewSubject] = useState("");
@@ -67,7 +69,7 @@ export default function HomeworkPage() {
     // exams/page.tsx's deleteExam) — a browser confirm is the right amount
     // of friction, not a full modal.
     if (!supabase || deletingId) return;
-    if (!confirm("Delete this homework item? This can't be undone.")) return;
+    if (!confirm(t("confirmDelete"))) return;
     setDeletingId(hwId);
     try {
       await supabase.from("homework").delete().eq("id", hwId);
@@ -115,17 +117,17 @@ export default function HomeworkPage() {
           <Input
             value={newSubject}
             onChange={(e) => setNewSubject(e.target.value)}
-            placeholder="Subject…"
+            placeholder={t("subjectPlaceholder")}
             className="w-28 shrink-0 sm:w-32"
           />
-          <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Add homework…" className="min-w-0 flex-1" />
+          <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder={t("addHomeworkPlaceholder")} className="min-w-0 flex-1" />
         </div>
         <div className="flex items-center gap-2">
           <Input
             type="date"
             value={newDueDate}
             onChange={(e) => setNewDueDate(e.target.value)}
-            aria-label="Due date"
+            aria-label={t("dueDate")}
             required
             min={todayISO()}
             className="min-w-0 flex-1"
@@ -133,7 +135,7 @@ export default function HomeworkPage() {
           <button
             type="submit"
             disabled={adding || !newSubject.trim() || !newTitle.trim() || !newDueDate}
-            aria-label="Add homework"
+            aria-label={t("addHomework")}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised transition-opacity disabled:opacity-40"
           >
             <Plus className="h-4 w-4" />
@@ -145,13 +147,13 @@ export default function HomeworkPage() {
         <Card className="border border-danger/40">
           <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Couldn&rsquo;t load your homework. {error}</span>
+            <span>{t("loadError", { error })}</span>
           </CardContent>
         </Card>
       )}
 
       {sortedHomework.length === 0 ? (
-        <EmptyState icon={ClipboardCheck} title="Nothing set right now" subtitle="Add homework above to start tracking it." />
+        <EmptyState icon={ClipboardCheck} title={t("nothingSet")} subtitle={t("nothingSetSubtitle")} />
       ) : (
         sortedHomework.map((hw) => {
           const isCompleted = hw.status === "completed";
@@ -161,7 +163,7 @@ export default function HomeworkPage() {
                 <div className="flex items-start gap-3">
                   <button
                     type="button"
-                    aria-label="Mark as complete"
+                    aria-label={t("markComplete")}
                     onClick={() => toggleHomework(hw)}
                     disabled={isCompleted || busyId === hw.id}
                     className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-success disabled:cursor-default disabled:opacity-40"
@@ -174,7 +176,7 @@ export default function HomeworkPage() {
                     </p>
                     <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-xs text-muted-foreground">{isCompleted ? "Completed" : formatCountdown(hw.due_date)}</p>
+                        <p className="text-xs text-muted-foreground">{isCompleted ? t("completed") : formatCountdown(hw.due_date)}</p>
                         {!isCompleted && <PriorityBadge priority={hw.priority} />}
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
@@ -182,15 +184,15 @@ export default function HomeworkPage() {
                           <>
                             <Link
                               href={`/app/school/homework/${hw.id}/help`}
-                              aria-label="Get AI help with this homework"
-                              title="Get AI help"
+                              aria-label={t("getAiHelp")}
+                              title={t("getAiHelp")}
                               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-accent transition-colors hover:bg-border-strong/40"
                             >
                               <Sparkles className="h-3.5 w-3.5" />
                             </Link>
                             <button
                               type="button"
-                              aria-label="Edit due date"
+                              aria-label={t("editDueDate")}
                               onClick={() => startEditDate(hw.id, hw.due_date)}
                               className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-accent"
                             >
@@ -200,7 +202,7 @@ export default function HomeworkPage() {
                         )}
                         <button
                           type="button"
-                          aria-label="Delete homework"
+                          aria-label={t("deleteHomework")}
                           onClick={() => deleteHomework(hw.id)}
                           disabled={deletingId === hw.id}
                           className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-40"
@@ -218,14 +220,14 @@ export default function HomeworkPage() {
                       type="date"
                       value={editDateValue}
                       onChange={(e) => setEditDateValue(e.target.value)}
-                      aria-label="New due date"
+                      aria-label={t("newDueDate")}
                       className="h-9 flex-1 text-xs"
                     />
                     <Button size="sm" onClick={() => saveDueDate(hw.id)} disabled={!editDateValue || savingDate}>
-                      Save
+                      {t("save")}
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => setEditingDateId(null)}>
-                      Cancel
+                      {t("cancel")}
                     </Button>
                   </div>
                 )}

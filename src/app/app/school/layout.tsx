@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { NotificationBell } from "@/components/shared/NotificationBell";
@@ -11,6 +12,7 @@ import { SchoolSubNav } from "./SchoolSubNav";
  * BusinessPlanHome renders its own. */
 export default function SchoolLayout({ children }: { children: React.ReactNode }) {
   const { profile } = useAuth();
+  const t = useTranslations("SchoolLayout");
 
   if (profile?.track === "business") {
     return <div className="pb-4">{children}</div>;
@@ -18,7 +20,7 @@ export default function SchoolLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="space-y-5 pb-4">
-      <ScreenHeader title="My School" subtitle="Class, homework, exams, and your AI study coach." action={<NotificationBell className="md:hidden" />} />
+      <ScreenHeader title={t("title")} subtitle={t("subtitle")} action={<NotificationBell className="md:hidden" />} />
       <SchoolSubNav />
       <div>{children}</div>
     </div>

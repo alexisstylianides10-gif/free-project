@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Lock, Check, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +14,7 @@ export interface RoadmapStep {
 }
 
 export function RoadmapTimeline({ steps }: { steps: RoadmapStep[] }) {
+  const t = useTranslations("RoadmapTimeline");
   return (
     <ol className="relative">
       {steps.map((step, i) => (
@@ -44,7 +46,7 @@ export function RoadmapTimeline({ steps }: { steps: RoadmapStep[] }) {
           </span>
           <div className="pt-0.5">
             <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">
-              Level {step.level}
+              {t("level", { level: step.level })}
             </p>
             <p className={cn("text-sm font-semibold", step.status === "locked" ? "text-muted-foreground" : "text-foreground")}>
               {step.title}
@@ -54,9 +56,9 @@ export function RoadmapTimeline({ steps }: { steps: RoadmapStep[] }) {
               <div className="mt-3">
                 <Button size="sm" variant="mission" onClick={step.action.onClick} disabled={step.action.pending}>
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  {step.action.pending ? "Saving…" : step.action.label}
+                  {step.action.pending ? t("saving") : step.action.label}
                 </Button>
-                <p className="mt-1.5 text-xs text-muted-foreground">Be honest. This one&apos;s on you to confirm.</p>
+                <p className="mt-1.5 text-xs text-muted-foreground">{t("confirmHint")}</p>
               </div>
             )}
           </div>

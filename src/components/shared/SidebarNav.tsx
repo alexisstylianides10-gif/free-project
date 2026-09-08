@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { STUDENT_TABS, BUSINESS_TABS } from "@/lib/navTabs";
 import { LogoMark } from "@/components/shared/LogoMark";
@@ -15,6 +16,8 @@ export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { profile, signOut } = useAuth();
+  const t = useTranslations("NavTabs");
+  const tSidebar = useTranslations("SidebarNav");
   const TABS = profile?.track === "business" ? BUSINESS_TABS : STUDENT_TABS;
 
   async function handleSignOut() {
@@ -48,7 +51,7 @@ export function SidebarNav() {
               )}
             >
               <Icon className="h-[18px] w-[18px]" strokeWidth={2.25} />
-              {tab.label}
+              {t(tab.labelKey)}
             </Link>
           );
         })}
@@ -59,7 +62,7 @@ export function SidebarNav() {
         className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <LogOut className="h-[18px] w-[18px]" strokeWidth={2.25} />
-        Sign out
+        {tSidebar("signOut")}
       </button>
     </aside>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { AchievementToastProvider } from "@/components/providers/AchievementToastProvider";
 import { BottomNav } from "@/components/shared/BottomNav";
@@ -17,6 +18,7 @@ import { supabase } from "@/lib/supabase/client";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, profileLoading, refreshProfile } = useAuth();
   const router = useRouter();
+  const t = useTranslations("AppLayout");
   const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (loading || !user || profileLoading) {
-    return <LoadingScreen message="Signing you in…" />;
+    return <LoadingScreen message={t("signingIn")} />;
   }
 
   // AuthProvider flips `loading` false once its initial-mount profile fetch
@@ -62,19 +64,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/15">
           <AlertTriangle className="h-6 w-6 text-danger" />
         </span>
-        <h1 className="mt-6 text-xl font-bold text-foreground">We couldn&apos;t find your profile</h1>
+        <h1 className="mt-6 text-xl font-bold text-foreground">{t("profileNotFoundTitle")}</h1>
         <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-          Your account exists, but setup didn&apos;t finish. Logging back in usually fixes this.
+          {t("profileNotFoundSubtitle")}
         </p>
         <Link href="/login" className="mt-8">
-          <Button size="lg">Go to log in</Button>
+          <Button size="lg">{t("goToLogin")}</Button>
         </Link>
       </div>
     );
   }
 
   if (!profile.onboarding_completed) {
-    return <LoadingScreen message="Just a moment…" />;
+    return <LoadingScreen message={t("justAMoment")} />;
   }
 
   return (

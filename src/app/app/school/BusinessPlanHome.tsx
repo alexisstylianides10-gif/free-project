@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Circle, Sparkles, Target, Plus, CalendarClock, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useBusinessProfile, useBusinessMilestones } from "@/lib/hooks/domain";
 import { supabase } from "@/lib/supabase/client";
@@ -15,15 +16,15 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 
-const STAGE_LABEL: Record<string, string> = {
-  idea: "Idea",
-  validating: "Validating",
-  building: "Building",
-  launched: "Launched",
-};
-
 export default function BusinessPlanHome() {
   const { user, profile, refreshProfile } = useAuth();
+  const t = useTranslations("BusinessPlanHome");
+  const STAGE_LABEL: Record<string, string> = {
+    idea: t("stage.idea"),
+    validating: t("stage.validating"),
+    building: t("stage.building"),
+    launched: t("stage.launched"),
+  };
   const { data: businessProfile, loading: businessProfileLoading } = useBusinessProfile(user?.id);
   const { data: milestones, error: milestonesError, refetch: refetchMilestones } = useBusinessMilestones(user?.id);
 
@@ -76,7 +77,7 @@ export default function BusinessPlanHome() {
         <Card className="border border-danger/40">
           <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Couldn&rsquo;t load your milestones. {milestonesError}</span>
+            <span>{t("loadError", { error: milestonesError })}</span>
           </CardContent>
         </Card>
       )}
@@ -84,10 +85,10 @@ export default function BusinessPlanHome() {
       <Card className="border-accent/30">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Your Business</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("yourBusiness")}</p>
             {businessProfile && <Badge tone="accent">{STAGE_LABEL[businessProfile.stage] ?? businessProfile.stage}</Badge>}
           </div>
-          <p className="mt-2 text-sm font-semibold text-foreground">{businessProfile?.business_idea || "No idea saved yet"}</p>
+          <p className="mt-2 text-sm font-semibold text-foreground">{businessProfile?.business_idea || t("noIdeaSaved")}</p>
           {businessProfile?.ai_snapshot && (
             <div className="mt-3 flex items-start gap-2 rounded-xl bg-accent-soft/40 p-3">
               <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
@@ -102,8 +103,7 @@ export default function BusinessPlanHome() {
             <div className="mt-3 flex items-start gap-2 rounded-xl bg-warning-soft/40 p-3">
               <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
               <p className="text-xs leading-relaxed text-foreground">
-                We couldn&rsquo;t generate a personalized snapshot when you signed up, so your milestones below are a
-                generic starting point. Edit them to match your actual plan.
+                {t("noSnapshotBody")}
               </p>
             </div>
           )}
@@ -114,7 +114,7 @@ export default function BusinessPlanHome() {
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Target className="h-4 w-4 text-accent" />
-            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Milestones</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("milestones")}</h2>
           </div>
           <span className="text-xs font-semibold text-muted-foreground">
             {doneCount}/{milestones.length}
@@ -122,7 +122,7 @@ export default function BusinessPlanHome() {
         </div>
 
         {milestones.length === 0 ? (
-          <EmptyState icon={Target} title="No milestones yet" subtitle="Add your first milestone below to start your plan." />
+          <EmptyState icon={Target} title={t("noMilestonesYet")} subtitle={t("noMilestonesSubtitle")} />
         ) : (
           <div className="space-y-2">
             {milestones.map((m) => {
@@ -132,7 +132,7 @@ export default function BusinessPlanHome() {
                   <CardContent className="flex items-center gap-3 p-4">
                     <button
                       type="button"
-                      aria-label="Mark as done"
+                      aria-label={t("markAsDone")}
                       onClick={() => toggleMilestone(m.id, m.status)}
                       disabled={isDone || busyId === m.id}
                       className="shrink-0 text-muted-foreground transition-colors hover:text-success disabled:cursor-default disabled:opacity-40"
@@ -159,11 +159,11 @@ export default function BusinessPlanHome() {
 
         <form onSubmit={addMilestone} className="mt-3 space-y-2">
           <div className="flex items-center gap-2">
-            <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Add a milestone…" className="flex-1" />
+            <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder={t("addMilestonePlaceholder")} className="flex-1" />
             <button
               type="submit"
               disabled={adding || !newTitle.trim()}
-              aria-label="Add milestone"
+              aria-label={t("addMilestone")}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white shadow-raised transition-opacity disabled:opacity-40"
             >
               <Plus className="h-4 w-4" />
@@ -172,7 +172,7 @@ export default function BusinessPlanHome() {
           <div className="flex items-center gap-2 pl-1">
             <CalendarClock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <label htmlFor="milestone-due-date" className="text-xs text-muted-foreground">
-              Due date <span className="text-muted-foreground/60">(optional)</span>
+              {t("dueDate")} <span className="text-muted-foreground/60">{t("optional")}</span>
             </label>
             <Input
               id="milestone-due-date"
@@ -188,7 +188,7 @@ export default function BusinessPlanHome() {
       <Link href="/app/coach">
         <Button variant="secondary" size="lg" className="w-full">
           <Sparkles className="h-4 w-4" />
-          Ask AI Coach for guidance
+          {t("askCoachForGuidance")}
         </Button>
       </Link>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useStudySubjects } from "@/lib/hooks/study";
@@ -16,6 +17,7 @@ const EMOJI_CHOICES = ["📘", "🔢", "🔬", "🧪", "📖", "🌍", "💻", "
 export default function NewNotePage() {
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations("NewNotePage");
   const { data: subjects, loading, refetch } = useStudySubjects(user?.id);
 
   const [pickedSubjectId, setPickedSubjectId] = useState<string | null>(null);
@@ -60,8 +62,8 @@ export default function NewNotePage() {
     return (
       <Card>
         <CardContent className="space-y-3 p-4">
-          <p className="text-sm text-muted-foreground">Quick one before we start — what subject is this note for? You can add more subjects later.</p>
-          <Input autoFocus value={creatingName} onChange={(e) => setCreatingName(e.target.value)} placeholder="e.g. Biology" />
+          <p className="text-sm text-muted-foreground">{t("quickQuestion")}</p>
+          <Input autoFocus value={creatingName} onChange={(e) => setCreatingName(e.target.value)} placeholder={t("subjectPlaceholder")} />
           <div className="flex flex-wrap gap-1.5">
             {EMOJI_CHOICES.map((e) => (
               <button
@@ -75,7 +77,7 @@ export default function NewNotePage() {
             ))}
           </div>
           <Button size="md" className="w-full" onClick={createSubjectAndContinue} disabled={!creatingName.trim() || saving}>
-            {saving ? "Creating…" : "Continue"}
+            {saving ? t("creating") : t("continue")}
           </Button>
         </CardContent>
       </Card>
@@ -87,7 +89,7 @@ export default function NewNotePage() {
   return (
     <Card>
       <CardContent className="space-y-3 p-4">
-        <p className="text-sm text-muted-foreground">Which subject is this note for?</p>
+        <p className="text-sm text-muted-foreground">{t("whichSubject")}</p>
         <div className="flex flex-wrap gap-2">
           {subjects.map((s) => (
             <button

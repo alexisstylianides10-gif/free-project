@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { CircleCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useStudySubjects, useStudyTopics } from "@/lib/hooks/study";
 import type { StudyTopic } from "@/lib/study/types";
@@ -28,15 +29,16 @@ function band(mastery: number): { tone: "warning" | "danger" | "success" } {
 /** A short, honest sentence built from the topic's own real attempt
  * numbers — no AI call needed (and no per-topic AI call is appropriate on
  * a list page like this one). */
-function topicExplanation(topic: StudyTopic): string {
+function topicExplanation(topic: StudyTopic, t: ReturnType<typeof useTranslations>): string {
   if (topic.quiz_attempts === 0) {
-    return "Not tested yet, a good next topic to practice.";
+    return t("notTestedYet");
   }
-  return `You've gotten this right in ${topic.correct_answers} of your last ${topic.quiz_attempts} attempt${topic.quiz_attempts === 1 ? "" : "s"}.`;
+  return t("attemptsSummary", { correct: topic.correct_answers, attempts: topic.quiz_attempts });
 }
 
 export default function WeakTopicsPage() {
   const { user } = useAuth();
+  const t = useTranslations("WeakTopicsPage");
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: topics, loading } = useStudyTopics(user?.id);
 
@@ -48,21 +50,21 @@ export default function WeakTopicsPage() {
   );
 
   if (loading) {
-    return <LoadingScreen message="Finding your weak spots…" fullScreen={false} />;
+    return <LoadingScreen message={t("finding")} fullScreen={false} />;
   }
 
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
-        Every topic under {NEEDS_ATTENTION_CUTOFF}% mastery, across every subject, weakest first.
+        {t("subtitle", { cutoff: NEEDS_ATTENTION_CUTOFF })}
       </p>
 
       {weakTopics.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
             <CircleCheck className="h-7 w-7 text-success" />
-            <p className="text-sm font-semibold text-foreground">No weak topics right now</p>
-            <p className="max-w-xs text-sm text-muted-foreground">Everything you&rsquo;ve studied is at {NEEDS_ATTENTION_CUTOFF}% mastery or better.</p>
+            <p className="text-sm font-semibold text-foreground">{t("noWeakTopics")}</p>
+            <p className="max-w-xs text-sm text-muted-foreground">{t("noWeakTopicsSubtitle", { cutoff: NEEDS_ATTENTION_CUTOFF })}</p>
           </CardContent>
         </Card>
       ) : (
@@ -76,7 +78,7 @@ export default function WeakTopicsPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {subject ? `${subject.icon} ${subject.name}` : "Subject"}
+                        {subject ? `${subject.icon} ${subject.name}` : t("subject")}
                       </p>
                       <p className="mt-0.5 flex items-center gap-2 truncate text-base font-bold text-foreground">
                         <span
@@ -96,11 +98,11 @@ export default function WeakTopicsPage() {
 
                   <ProgressBar value={topic.mastery} tone={tone === "danger" ? "warning" : tone} className="mt-3" />
 
-                  <p className="mt-3 text-sm text-muted-foreground">{topicExplanation(topic)}</p>
+                  <p className="mt-3 text-sm text-muted-foreground">{topicExplanation(topic, t)}</p>
 
                   <Link href={`/app/school/subjects/${topic.subject_id}/session?topic=${topic.id}`} className="mt-4 block">
                     <Button size="md" className="w-full">
-                      Practice Now
+                      {t("practiceNow")}
                     </Button>
                   </Link>
                 </CardContent>

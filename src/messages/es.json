@@ -28,9 +28,9 @@
     "accept": "Aceptar"
   },
   "InstallAppCard": {
-    "title": "Consigue la app de {name}",
-    "ios": "Toca <share></share> Compartir en Safari y elige <strong>“Añadir a pantalla de inicio”.</strong>",
-    "android": "Toca <menu></menu> el menú de Chrome y elige <strong>“Instalar aplicación”</strong> (o “Añadir a pantalla de inicio”).",
+    "getApp": "Consigue la app de {name}",
+    "iosInstructions": "Toca <icon></icon> Compartir en Safari y luego elige <strong>«Añadir a pantalla de inicio».</strong>",
+    "androidInstructions": "Toca <icon></icon> el menú de Chrome y luego elige <strong>«Instalar aplicación»</strong> (o «Añadir a pantalla de inicio»).",
     "dismiss": "Cerrar"
   },
   "BrandPanel": {
@@ -81,9 +81,18 @@
     "accountDeleted": "Tu cuenta ha sido eliminada.",
     "dismiss": "Cerrar",
     "proof": {
-      "track": { "value": "Estudiante · Emprendedor", "label": "Dos caminos, una app" },
-      "plan": { "value": "Creado con tus datos", "label": "Plan diario" },
-      "free": { "value": "Sin tarjeta necesaria", "label": "Gratis para empezar" }
+      "track": {
+        "value": "Estudiante · Emprendedor",
+        "label": "Dos caminos, una app"
+      },
+      "plan": {
+        "value": "Creado con tus datos",
+        "label": "Plan diario"
+      },
+      "free": {
+        "value": "Sin tarjeta necesaria",
+        "label": "Gratis para empezar"
+      }
     }
   },
   "FeaturesSection": {
@@ -104,26 +113,80 @@
     "getStarted": "Empezar",
     "seePricing": "Ver precios",
     "student": {
-      "timetable": { "title": "Horario", "description": "Añade tus clases una vez y consulta el horario de hoy cada mañana, con número de aula incluido." },
-      "homeworkTracking": { "title": "Seguimiento de deberes", "description": "Cada tarea con una cuenta atrás real hasta su entrega, para que nada se retrase sin darte cuenta." },
-      "examsReadiness": { "title": "Exámenes y preparación", "description": "Una cuenta atrás en vivo por examen, más un porcentaje de preparación honesto calculado a partir de cómo te va de verdad en cada tema." },
-      "weeklyStudyPlan": { "title": "Plan de estudio semanal", "description": "Un plan real de lunes a viernes, sesión a sesión, que vas marcando a medida que avanzas." },
-      "aiStudyPlans": { "title": "Planes de estudio con IA", "description": "Genera un plan de estudio para una asignatura o tema concreto en vez de adivinar por dónde empezar." },
-      "flashcards": { "title": "Tarjetas de repaso", "description": "Tarjetas con repetición espaciada que reaparecen justo cuando estás a punto de olvidarlas, no según un horario aleatorio." },
-      "aiQuizzes": { "title": "Cuestionarios generados con IA", "description": "Elige una asignatura, una dificultad (de Fácil a Nivel de examen) y un número de preguntas para obtener un cuestionario real, no un banco estático." },
-      "weakTopics": { "title": "Temas débiles", "description": "Los temas con los que de verdad tienes dificultades, mostrados con claridad y tu historial real de intentos, sin consejos vagos." },
-      "careerMatches": { "title": "Coincidencias profesionales", "description": "Sugerencias de carrera según las asignaturas, intereses y fortalezas que indicaste al registrarte, cada una con un porcentaje de coincidencia real." },
-      "futureMap": { "title": "Mapa de Futuro (hoja de ruta)", "description": "Una hoja de ruta de 6 niveles: Descubrir → Aprender → Construir → Lanzar → Crecer. Los primeros pasos avanzan automáticamente según lo que haces en la app; los siguientes los marcas tú mismo, con honestidad." },
-      "weeklyReview": { "title": "Resumen semanal", "description": "Un resumen semanal real: tiempo de estudio, aciertos en cuestionarios, temas dominados y cómo fue realmente tu semana." },
-      "xpStreaks": { "title": "XP, rachas y logros", "description": "Las acciones reales ganan XP real y desbloquean logros, no es gamificación de relleno." }
+      "timetable": {
+        "title": "Horario",
+        "description": "Añade tus clases una vez y consulta el horario de hoy cada mañana, con número de aula incluido."
+      },
+      "homeworkTracking": {
+        "title": "Seguimiento de deberes",
+        "description": "Cada tarea con una cuenta atrás real hasta su entrega, para que nada se retrase sin darte cuenta."
+      },
+      "examsReadiness": {
+        "title": "Exámenes y preparación",
+        "description": "Una cuenta atrás en vivo por examen, más un porcentaje de preparación honesto calculado a partir de cómo te va de verdad en cada tema."
+      },
+      "weeklyStudyPlan": {
+        "title": "Plan de estudio semanal",
+        "description": "Un plan real de lunes a viernes, sesión a sesión, que vas marcando a medida que avanzas."
+      },
+      "aiStudyPlans": {
+        "title": "Planes de estudio con IA",
+        "description": "Genera un plan de estudio para una asignatura o tema concreto en vez de adivinar por dónde empezar."
+      },
+      "flashcards": {
+        "title": "Tarjetas de repaso",
+        "description": "Tarjetas con repetición espaciada que reaparecen justo cuando estás a punto de olvidarlas, no según un horario aleatorio."
+      },
+      "aiQuizzes": {
+        "title": "Cuestionarios generados con IA",
+        "description": "Elige una asignatura, una dificultad (de Fácil a Nivel de examen) y un número de preguntas para obtener un cuestionario real, no un banco estático."
+      },
+      "weakTopics": {
+        "title": "Temas débiles",
+        "description": "Los temas con los que de verdad tienes dificultades, mostrados con claridad y tu historial real de intentos, sin consejos vagos."
+      },
+      "careerMatches": {
+        "title": "Coincidencias profesionales",
+        "description": "Sugerencias de carrera según las asignaturas, intereses y fortalezas que indicaste al registrarte, cada una con un porcentaje de coincidencia real."
+      },
+      "futureMap": {
+        "title": "Mapa de Futuro (hoja de ruta)",
+        "description": "Una hoja de ruta de 6 niveles: Descubrir → Aprender → Construir → Lanzar → Crecer. Los primeros pasos avanzan automáticamente según lo que haces en la app; los siguientes los marcas tú mismo, con honestidad."
+      },
+      "weeklyReview": {
+        "title": "Resumen semanal",
+        "description": "Un resumen semanal real: tiempo de estudio, aciertos en cuestionarios, temas dominados y cómo fue realmente tu semana."
+      },
+      "xpStreaks": {
+        "title": "XP, rachas y logros",
+        "description": "Las acciones reales ganan XP real y desbloquean logros, no es gamificación de relleno."
+      }
     },
     "business": {
-      "milestoneTracking": { "title": "Seguimiento de hitos", "description": "Tu idea, su etapa (Idea → Validando → Construyendo → Lanzado) y una lista de hitos que de verdad completas." },
-      "aiBusinessSnapshot": { "title": "Resumen de negocio con IA", "description": "Un breve resumen de tu idea generado por IA a partir de lo que indicaste al registrarte." },
-      "metricsLog": { "title": "Registro de métricas", "description": "Registra ingresos, clientes o registros a lo largo del tiempo y compara la tendencia con tu última entrada." },
-      "expenseTracking": { "title": "Control de gastos", "description": "Registra gastos por categoría (software, marketing, colaboradores y más) y consulta tu total acumulado." },
-      "aiContentHelper": { "title": "Ayudante de contenido con IA", "description": "Genera un primer borrador de contenido para Instagram, blog o correo electrónico sobre el tema que le des." },
-      "competitorTracker": { "title": "Seguimiento de la competencia", "description": "Mantén una lista actualizada de quién más hay en tu mercado, con tus propias notas." }
+      "milestoneTracking": {
+        "title": "Seguimiento de hitos",
+        "description": "Tu idea, su etapa (Idea → Validando → Construyendo → Lanzado) y una lista de hitos que de verdad completas."
+      },
+      "aiBusinessSnapshot": {
+        "title": "Resumen de negocio con IA",
+        "description": "Un breve resumen de tu idea generado por IA a partir de lo que indicaste al registrarte."
+      },
+      "metricsLog": {
+        "title": "Registro de métricas",
+        "description": "Registra ingresos, clientes o registros a lo largo del tiempo y compara la tendencia con tu última entrada."
+      },
+      "expenseTracking": {
+        "title": "Control de gastos",
+        "description": "Registra gastos por categoría (software, marketing, colaboradores y más) y consulta tu total acumulado."
+      },
+      "aiContentHelper": {
+        "title": "Ayudante de contenido con IA",
+        "description": "Genera un primer borrador de contenido para Instagram, blog o correo electrónico sobre el tema que le des."
+      },
+      "competitorTracker": {
+        "title": "Seguimiento de la competencia",
+        "description": "Mantén una lista actualizada de quién más hay en tu mercado, con tus propias notas."
+      }
     }
   },
   "PricingSection": {
@@ -683,5 +746,1571 @@
     "United Arab Emirates": "Emiratos Árabes Unidos",
     "Vietnam": "Vietnam",
     "Other": "Otro"
+  },
+  "NavTabs": {
+    "home": "Inicio",
+    "school": "Escuela",
+    "future": "Futuro",
+    "coach": "Coach",
+    "profile": "Perfil",
+    "plan": "Plan",
+    "grow": "Crecer"
+  },
+  "TopBar": {
+    "overview": "Resumen",
+    "you": "Tú",
+    "level": "Nvl {level}"
+  },
+  "SidebarNav": {
+    "signOut": "Cerrar sesión"
+  },
+  "RoadmapTimeline": {
+    "level": "Nivel {level}",
+    "saving": "Guardando…",
+    "confirmHint": "Sé honesto. Confirmarlo depende de ti."
+  },
+  "NotificationBell": {
+    "notifications": "Notificaciones",
+    "notificationsUnread": "Notificaciones, {count} sin leer",
+    "markAllRead": "Marcar todo como leído",
+    "allCaughtUp": "Estás al día.",
+    "dueDate": "Vence el {date}",
+    "examTitle": "Examen de {subject}"
+  },
+  "PaywallGate": {
+    "trialEnded": "Tu prueba gratuita ha terminado",
+    "activatePlus": "Activa {name} Plus",
+    "studentDescription": "El Coach de IA y todo el sistema de Estudio (análisis de material, planes de estudio con IA, cuestionarios, tarjetas de memoria y tu tutor de IA) forman parte de {name} Plus.",
+    "businessDescription": "El Coach de IA, el resumen de tu negocio, la IA de hitos y el asistente de marketing/contenido forman parte de {name} Plus.",
+    "activateFor": "Activar por ${price}/mes"
+  },
+  "NewUserTutorial": {
+    "quickTourTitle": "Recorrido rápido",
+    "quickTourDescription": "Aquí es donde vive todo. Tarda unos 20 segundos.",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "getStarted": "Empezar",
+    "student": {
+      "0": {
+        "title": "Inicio · tu resumen diario",
+        "body": "Tu racha, tus XP y el plan de hoy, extraídos de Escuela y Futuro, para que siempre sepas qué hacer primero."
+      },
+      "1": {
+        "title": "Escuela · todo lo relacionado con el instituto",
+        "body": "Tus clases, deberes, exámenes y un coach de estudio con IA que conoce tus asignaturas."
+      },
+      "2": {
+        "title": "Futuro · hacia dónde va esto",
+        "body": "Consulta tus principales coincidencias de carrera y sigue una hoja de ruta de 6 niveles, desde explorar hasta construir algo real."
+      },
+      "3": {
+        "title": "Coach · pregúntale lo que sea",
+        "body": "¿Atascado con los deberes o no sabes qué hacer después? Tu coach de IA conoce tus asignaturas y tu plan."
+      },
+      "4": {
+        "title": "Perfil · todo lo que has construido",
+        "body": "Tus estadísticas, habilidades, racha y logros, además de la facturación y los ajustes de la cuenta."
+      }
+    },
+    "business": {
+      "0": {
+        "title": "Inicio · tu resumen diario",
+        "body": "Tu racha, tus XP y el plan de hoy, extraídos de Plan y Crecer, para que siempre sepas qué hacer primero."
+      },
+      "1": {
+        "title": "Plan · tus hitos",
+        "body": "Haz seguimiento de los hitos que impulsan tu negocio, uno a la vez."
+      },
+      "2": {
+        "title": "Crecer · tus números y tu mercado",
+        "body": "Registra tus métricas y gastos, redacta contenido y mantente al tanto de tu mercado."
+      },
+      "3": {
+        "title": "Coach · pregúntale lo que sea",
+        "body": "¿No sabes qué hacer a continuación o necesitas pensar una decisión? Tu coach de IA conoce tu negocio y tu plan."
+      },
+      "4": {
+        "title": "Perfil · todo lo que has construido",
+        "body": "Tus estadísticas, racha y logros, además de la facturación y los ajustes de la cuenta."
+      }
+    }
+  },
+  "LoadingScreen": {
+    "defaultMessage": "Preparando todo…"
+  },
+  "AchievementToast": {
+    "achievementUnlocked": "Logro Desbloqueado"
+  },
+  "Achievements": {
+    "first_study_session": {
+      "title": "Primera Sesión de Estudio",
+      "description": "Completaste tu primera sesión de estudio."
+    },
+    "first_career_mission": {
+      "title": "Primera Misión de Carrera",
+      "description": "Completaste tu primera misión de carrera."
+    },
+    "first_project": {
+      "title": "Primer Proyecto",
+      "description": "Construiste tu primer proyecto real."
+    },
+    "career_path_chosen": {
+      "title": "Carrera Elegida",
+      "description": "Añadiste una carrera a tu camino."
+    },
+    "streak_7": {
+      "title": "Racha de 7 Días",
+      "description": "Mantuviste la constancia durante 7 días seguidos."
+    },
+    "study_sessions_10": {
+      "title": "10 Sesiones de Estudio",
+      "description": "Completaste 10 sesiones de estudio."
+    },
+    "first_quiz": {
+      "title": "Primer Cuestionario",
+      "description": "Completaste tu primer cuestionario generado por IA."
+    },
+    "first_mock_exam": {
+      "title": "Primer Examen Simulacro",
+      "description": "Completaste tu primer examen simulacro completo."
+    },
+    "flashcards_mastered_20": {
+      "title": "Maestro de Tarjetas",
+      "description": "Dominaste 20 tarjetas de memoria mediante repetición espaciada."
+    }
+  },
+  "MissionCard": {
+    "futureMission": "Misión Futura",
+    "startMission": "Iniciar Misión",
+    "done": "Hecho",
+    "minutes": "{minutes} min",
+    "difficulty": {
+      "easy": "fácil",
+      "medium": "media",
+      "hard": "difícil"
+    },
+    "categoryLabel": {
+      "school": "Misión escolar",
+      "skill": "Misión de habilidad",
+      "career": "Misión de carrera",
+      "business": "Misión de negocio",
+      "creative": "Misión creativa"
+    }
+  },
+  "AppLayout": {
+    "signingIn": "Iniciando tu sesión…",
+    "profileNotFoundTitle": "No pudimos encontrar tu perfil",
+    "profileNotFoundSubtitle": "Tu cuenta existe, pero la configuración no terminó. Volver a iniciar sesión suele solucionarlo.",
+    "goToLogin": "Ir a iniciar sesión",
+    "justAMoment": "Un momento…"
+  },
+  "Home": {
+    "there": "amigo",
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "planForToday": "Aquí tienes tu plan para hoy.",
+    "loadError": "No se pudieron cargar algunos de tus datos. {error}",
+    "school": "Escuela",
+    "future": "Futuro",
+    "dayStreak": "días de racha",
+    "todaysPlan": "Plan de Hoy",
+    "nothingScheduled": "Nada programado todavía",
+    "nothingScheduledSubtitle": "Añade deberes y exámenes en Escuela para construir el plan de hoy.",
+    "goToSchool": "Ir a Escuela",
+    "upcomingExam": "Próximo examen",
+    "noExamsYet": "Aún no hay exámenes",
+    "homeworkDue": "Deberes pendientes",
+    "allCaughtUp": "Todo al día",
+    "viewAllDeadlines": "Ver todos los plazos",
+    "careerProgress": "Progreso profesional",
+    "level": "Nivel {level}",
+    "aiRecommendation": "Recomendación de IA",
+    "planLabels": {
+      "school": "Escuela",
+      "homework": "Deberes de {subject}",
+      "minutes": "{minutes} min",
+      "freeTime": "Actividad / tiempo libre",
+      "revision": "Repaso de {subject}",
+      "futureMission": "Misión Futura"
+    },
+    "recommendation": {
+      "examSoon": "Tu examen de {subject} es en {days, plural, one {# día} other {# días}}. Prioriza eso primero, y luego dedica un poco de tiempo a {career}.",
+      "genericCareer": "tu futuro",
+      "highPriorityHomework": "{subject} ({title}) es prioritario. Termínalo hoy y dedica el tiempo extra a tu futuro.",
+      "pushCareer": "Ahora mismo el instituto está bajo control. Buen momento para avanzar más en {career}. Prueba la Misión Futura de hoy.",
+      "exploreCareer": "Ahora mismo el instituto está bajo control. Un buen momento para explorar una dirección profesional con la Misión Futura de hoy."
+    }
+  },
+  "CoachPage": {
+    "coach": "Coach",
+    "newChat": "Nuevo chat",
+    "chatHistory": "Historial de chats",
+    "noConversations": "Aún no hay conversaciones.",
+    "chatNamePlaceholder": "Nombre del chat…",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "renameChat": "Renombrar chat",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "daysAgo": "hace {days}d",
+    "somethingWentWrong": "Algo salió mal.",
+    "emptyStateBusiness": "Pregúntame lo que sea sobre cómo construir tu negocio. Seré realista, no exagerado.",
+    "emptyStateStudent": "Pregúntame lo que sea sobre el instituto, habilidades o tu futuro. Siempre me aseguraré de que el instituto sea lo primero.",
+    "thinking": "Pensando…",
+    "todaysRecommendation": "Recomendación de Hoy",
+    "minutes": "{minutes} min",
+    "inputPlaceholder": "Pregunta lo que sea a Future Coach…",
+    "send": "Enviar",
+    "disclaimer": "Future Coach es una guía de estudio y carrera, no un sustituto de un profesor, familiar o profesional.",
+    "skillBuilding": "Desarrollo de habilidades",
+    "exploreCareerChip": "Explora una carrera",
+    "suggestedPrompts": [
+      "¿Qué carrera me conviene?",
+      "¿Cómo mejoro mis notas?",
+      "Ayúdame a elegir una idea de negocio.",
+      "¿Qué debería aprender este mes?",
+      "Ayúdame a planear mi semana.",
+      "¿Qué debería hacer hoy?"
+    ]
+  },
+  "BusinessHome": {
+    "there": "amigo",
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "subtitle": "Así está tu negocio hoy.",
+    "loadError": "No se pudieron cargar algunos de tus datos. {error}",
+    "milestones": "Hitos",
+    "milestonesDone": "{done} de {total} hitos completados",
+    "dayStreak": "días de racha",
+    "yourIdea": "Tu idea",
+    "doThisNext": "Haz esto a continuación",
+    "plan": "Plan",
+    "noMilestonesYet": "Aún no hay hitos",
+    "noMilestonesSubtitle": "Añade hitos en Plan para ver qué sigue.",
+    "goToPlan": "Ir a Plan",
+    "allCaughtUp": "Todo al día",
+    "allCaughtUpSubtitle": "Todos los hitos están completados. Añade uno nuevo en Plan.",
+    "viewAllDeadlines": "Ver todos los plazos",
+    "latestMetric": "Última métrica",
+    "grow": "Crecer",
+    "noMetricsYet": "Aún no hay métricas registradas",
+    "noMetricsSubtitle": "Registra tu primer número en Crecer para empezar a seguir tendencias.",
+    "goToGrow": "Ir a Crecer",
+    "askCoach": "Pregúntale al AI Coach en qué enfocarte a continuación."
+  },
+  "BusinessGrowHome": {
+    "metricOptions": {
+      "revenue": "Ingresos ($)",
+      "customers": "Clientes",
+      "signups": "Registros"
+    },
+    "platformOptions": {
+      "instagram": "Instagram",
+      "blog": "Blog",
+      "email": "Correo",
+      "other": "Otro"
+    },
+    "expenseCategoryOptions": {
+      "software_tools": "Software/herramientas",
+      "marketing": "Marketing/anuncios",
+      "inventory": "Inventario/suministros",
+      "contractors": "Contratistas/freelancers",
+      "shipping": "Envíos",
+      "rent": "Alquiler/oficina",
+      "other": "Otro"
+    },
+    "title": "Crecer",
+    "subtitle": "Sigue tus números, redacta contenido y vigila el mercado.",
+    "loadError": "No se pudieron cargar algunos de tus datos. {error}",
+    "metrics": "Métricas",
+    "value": "Valor",
+    "log": "Registrar",
+    "vsLastEntry": "vs el último registro de {metric}",
+    "noMetricsYet": "Aún no hay métricas registradas",
+    "noMetricsSubtitle": "Registra tu primer número arriba para empezar a seguir tendencias.",
+    "recent": "Reciente",
+    "expenses": "Gastos",
+    "amount": "Importe ($)",
+    "whatWasItFor": "¿Para qué era? (opcional)",
+    "noExpensesYet": "Aún no hay gastos registrados",
+    "noExpensesSubtitle": "Registra tu primer gasto arriba para empezar a seguir el gasto.",
+    "totalSpent": "Total gastado",
+    "contentHelper": "Asistente de Contenido",
+    "topicPlaceholder": "¿De qué trata?",
+    "generateDraft": "Generar borrador",
+    "couldNotGenerate": "No se pudo generar el contenido.",
+    "competitors": "Competidores",
+    "noCompetitorsYet": "Aún no hay competidores añadidos",
+    "noCompetitorsSubtitle": "Añade uno abajo para empezar a vigilar el mercado.",
+    "namePlaceholder": "Nombre",
+    "urlPlaceholder": "URL (opcional)",
+    "addCompetitor": "Añadir competidor"
+  },
+  "Weekdays": {
+    "0": "Domingo",
+    "1": "Lunes",
+    "2": "Martes",
+    "3": "Miércoles",
+    "4": "Jueves",
+    "5": "Viernes",
+    "6": "Sábado"
+  },
+  "StudentSchoolHome": {
+    "confirmDeleteClass": "¿Eliminar esta clase? Esto no se puede deshacer.",
+    "loadError": "No se pudieron cargar algunos de tus datos. {error}",
+    "today": "Hoy",
+    "minutesStudied": "{minutes} min estudiados",
+    "streak": "Racha",
+    "daysCount": "{days} días",
+    "due": "Pendientes",
+    "cardsCount": "{count} tarjetas",
+    "yourProgram": "Tu programa",
+    "starterTemplate": "Plantilla inicial",
+    "starterTemplateBody": "No pudimos investigar el plan de estudios real de tu centro cuando te registraste, así que tu horario, deberes y exámenes de abajo son un punto de partida genérico, no plazos que encontramos para ti. Edita o elimina lo que no coincida con tu horario real.",
+    "subjectExam": "Examen de {subject}",
+    "percentReady": "{percent}% preparado",
+    "todaysRecommendation": "Recomendación de hoy",
+    "startStudy": "Empezar a Estudiar",
+    "todaysClasses": "Clases de Hoy",
+    "noClassesToday": "No hay clases hoy",
+    "noClassesTodaySubtitle": "No hay nada en tu horario para hoy.",
+    "deleteClass": "Eliminar clase",
+    "day": "Día",
+    "addClassPlaceholder": "Añade una clase (p. ej. Biología)…",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de fin",
+    "roomPlaceholder": "Aula (opcional)…",
+    "addClass": "Añadir clase",
+    "homework": "Deberes",
+    "pendingCount": "{count} pendientes",
+    "nextHomework": "Siguiente: {subject}: {title} · {countdown}",
+    "allCaughtUpHomework": "Estás al día. Toca para añadir deberes.",
+    "weeklyStudyPlan": "Plan de Estudio de Esta Semana",
+    "noWeeklyPlan": "Aún no hay plan semanal",
+    "noWeeklyPlanSubtitle": "Crea un plan de estudio en Asignaturas para verlo aquí.",
+    "goToSubjects": "Ir a Asignaturas",
+    "minutes": "{minutes} min",
+    "askAiAboutSubject": "Pregunta a la IA sobre esta asignatura",
+    "recommendation": {
+      "examWeakTopic": "Practica {topic} durante 30 minutos: es tu tema más débil y se acerca el examen de {examSubject}.",
+      "weakTopic": "Practica {topic} durante 30 minutos: tus resultados recientes muestran que es tu tema más débil actualmente.",
+      "flashcardsDue": "Tienes {count, plural, one {# tarjeta} other {# tarjetas}} pendientes de repaso hoy, una forma rápida de mantener fresco lo aprendido.",
+      "noSubjects": "Añade una asignatura y sube tu primer material para obtener un plan de estudio personalizado.",
+      "uploadMaterial": "Sube algún material de una de tus asignaturas para que tu tutor de IA encuentre en qué enfocarse."
+    }
+  },
+  "SchoolLayout": {
+    "title": "Mi Escuela",
+    "subtitle": "Clases, deberes, exámenes y tu tutor de estudio con IA."
+  },
+  "SchoolSubNav": {
+    "home": "Inicio",
+    "subjects": "Asignaturas",
+    "notes": "Apuntes",
+    "exams": "Exámenes",
+    "homework": "Deberes",
+    "flashcards": "Tarjetas",
+    "quizzes": "Cuestionarios",
+    "progress": "Progreso"
+  },
+  "BusinessPlanHome": {
+    "stage": {
+      "idea": "Idea",
+      "validating": "Validando",
+      "building": "Construyendo",
+      "launched": "Lanzado"
+    },
+    "loadError": "No se pudieron cargar tus hitos. {error}",
+    "yourBusiness": "Tu Negocio",
+    "noIdeaSaved": "Aún no hay ninguna idea guardada",
+    "noSnapshotBody": "No pudimos generar un resumen personalizado cuando te registraste, así que tus hitos de abajo son un punto de partida genérico. Edítalos para que coincidan con tu plan real.",
+    "milestones": "Hitos",
+    "noMilestonesYet": "Aún no hay hitos",
+    "noMilestonesSubtitle": "Añade tu primer hito abajo para empezar tu plan.",
+    "markAsDone": "Marcar como hecho",
+    "addMilestonePlaceholder": "Añade un hito…",
+    "addMilestone": "Añadir hito",
+    "dueDate": "Fecha límite",
+    "optional": "(opcional)",
+    "askCoachForGuidance": "Pide orientación al AI Coach"
+  },
+  "NotesPage": {
+    "subtitle": "Todas tus notas, de todas las asignaturas.",
+    "addNote": "Añadir Nota",
+    "noNotesYet": "Aún no hay notas",
+    "noNotesSubtitle": "Pega texto, sube un PDF o haz una foto — extraeremos los temas, términos y preguntas de práctica."
+  },
+  "MaterialStatus": {
+    "pending": "Pendiente",
+    "analyzing": "Analizando",
+    "analyzed": "Analizado",
+    "failed": "Fallido"
+  },
+  "NewNotePage": {
+    "quickQuestion": "Antes de empezar — ¿para qué asignatura es esta nota? Puedes añadir más asignaturas después.",
+    "subjectPlaceholder": "p. ej. Biología",
+    "creating": "Creando…",
+    "continue": "Continuar",
+    "whichSubject": "¿Para qué asignatura es esta nota?"
+  },
+  "WeakTopicsPage": {
+    "finding": "Buscando tus puntos débiles…",
+    "subtitle": "Todos los temas por debajo del {cutoff}% de dominio, de todas las asignaturas, empezando por el más débil.",
+    "noWeakTopics": "No hay temas débiles ahora mismo",
+    "noWeakTopicsSubtitle": "Todo lo que has estudiado está al {cutoff}% de dominio o más.",
+    "subject": "Asignatura",
+    "notTestedYet": "Aún no evaluado, un buen próximo tema para practicar.",
+    "attemptsSummary": "Has acertado esto en {correct} de tus últimos {attempts, plural, one {# intento} other {# intentos}}.",
+    "practiceNow": "Practicar Ahora"
+  },
+  "PriorityBadge": {
+    "high": "Prioridad alta",
+    "medium": "Prioridad media",
+    "low": "Prioridad baja"
+  },
+  "ExamsPage": {
+    "confirmDelete": "¿Eliminar este examen? Esto no se puede deshacer.",
+    "addExamPlaceholder": "Añade un examen (p. ej. Biología)…",
+    "examDate": "Fecha del examen",
+    "addExam": "Añadir examen",
+    "loadError": "No se pudieron cargar tus exámenes. {error}",
+    "noExamsYet": "Aún no hay exámenes en el horizonte",
+    "noExamsSubtitle": "Añade un examen arriba para empezar a seguir tu cuenta atrás.",
+    "subjectExam": "Examen de {subject}",
+    "editExamDate": "Editar fecha del examen",
+    "deleteExam": "Eliminar examen",
+    "newExamDate": "Nueva fecha del examen",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "percentReady": "{percent}% preparado",
+    "linkSubjectHint": "Vincula una asignatura para seguir tu preparación.",
+    "studyForThis": "Estudiar para esto",
+    "chooseSubject": "Elige una asignatura…",
+    "linkSubject": "Vincular una asignatura"
+  },
+  "HomeworkPage": {
+    "confirmDelete": "¿Eliminar esta tarea? Esto no se puede deshacer.",
+    "subjectPlaceholder": "Asignatura…",
+    "addHomeworkPlaceholder": "Añade deberes…",
+    "dueDate": "Fecha límite",
+    "addHomework": "Añadir deberes",
+    "loadError": "No se pudieron cargar tus deberes. {error}",
+    "nothingSet": "No hay nada pendiente ahora mismo",
+    "nothingSetSubtitle": "Añade deberes arriba para empezar a seguirlos.",
+    "markComplete": "Marcar como completado",
+    "completed": "Completado",
+    "getAiHelp": "Pedir ayuda a la IA",
+    "editDueDate": "Editar fecha límite",
+    "deleteHomework": "Eliminar deberes",
+    "newDueDate": "Nueva fecha límite",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  },
+  "HomeworkHelpPage": {
+    "somethingWentWrong": "Algo salió mal.",
+    "loading": "Cargando…",
+    "school": "Escuela",
+    "notFound": "No se pudo encontrar esa tarea.",
+    "intro": "Cuéntale a tu tutor en qué estás atascado, o usa una acción rápida abajo. Te ayudará a resolverlo, no lo hará por ti.",
+    "questionPlaceholder": "Opcional: describe exactamente en qué estás atascado…",
+    "thinking": "Pensando…",
+    "footerNote": "La Ayuda con Deberes enseña el concepto. No te dará la respuesta directamente.",
+    "actions": {
+      "hint": {
+        "label": "Pista",
+        "framed": "Esto es en lo que estoy atascado: \"{question}\". Dame una pista para empezar, pero no lo resuelvas por mí.",
+        "unframed": "Dame una pista para empezar estos deberes, pero no los resuelvas por mí."
+      },
+      "explain": {
+        "label": "Explicar",
+        "framed": "Esto es en lo que estoy atascado: \"{question}\". Ayúdame a entender el concepto detrás de esto.",
+        "unframed": "Ayúdame a entender el concepto detrás de estos deberes."
+      },
+      "example": {
+        "label": "Mostrar Ejemplo Similar",
+        "framed": "Esto es en lo que estoy atascado: \"{question}\". Muéstrame un ejemplo resuelto similar (no este problema exacto) para que pueda resolver el mío.",
+        "unframed": "Muéstrame un ejemplo resuelto similar para este tipo de deberes para que pueda resolver el mío."
+      },
+      "walkthrough": {
+        "label": "Guíame Paso a Paso",
+        "framed": "Esto es en lo que estoy atascado: \"{question}\". Guíame paso a paso. Pregúntame qué sé ya antes de decirme el siguiente paso. No me des directamente la respuesta final.",
+        "unframed": "Guíame paso a paso con estos deberes. Pregúntame qué sé ya antes de decirme el siguiente paso. No me des directamente la respuesta final."
+      }
+    }
+  },
+  "FlashcardsPage": {
+    "loadingFlashcards": "Cargando tarjetas…",
+    "couldNotGenerate": "No se pudieron generar esas tarjetas.",
+    "generateError": "Algo salió mal al generar esas tarjetas.",
+    "writingFlashcards": "Escribiendo tus tarjetas…",
+    "generateFlashcards": "Generar Tarjetas",
+    "myFlashcards": "Mis tarjetas",
+    "addSubjectFirst": "Añade una asignatura primero",
+    "addSubjectFirstSubtitle": "Vuelve aquí cuando hayas añadido una asignatura para generar tarjetas.",
+    "addSubject": "Añadir asignatura",
+    "subject": "Asignatura",
+    "generatingFrom": "Generando a partir de",
+    "topic": "Tema",
+    "allTopics": "Todos los temas",
+    "howMany": "Cuántas",
+    "tapASet": "Toca un set abajo para empezar a repasar.",
+    "dueToday": "Para Hoy",
+    "cardsCount": "{count} tarjetas",
+    "comingSoon": "Próximamente",
+    "mastered": "Dominadas",
+    "generateNewFlashcards": "Generar Nuevas Tarjetas"
+  },
+  "FlashcardsReviewPage": {
+    "loadingReview": "Cargando repaso…",
+    "dueToday": "Para Hoy",
+    "comingSoon": "Próximamente",
+    "mastered": "Dominadas",
+    "nothingToReview": "No hay nada que repasar aquí",
+    "noCardsInBucket": "No tienes ninguna tarjeta de \"{bucket}\" ahora mismo.",
+    "emptySession": "Esta sesión de repaso está vacía.",
+    "backToFlashcards": "Volver a Tarjetas",
+    "reviewComplete": "Repaso completado",
+    "resultsSummary": "{count, plural, one {# tarjeta} other {# tarjetas}} repasadas: {knew} sabidas, {almost} casi, {didnt} no sabidas.",
+    "done": "Hecho",
+    "saving": "Guardando…",
+    "cardXOfY": "Tarjeta {current} de {total}",
+    "tapToReveal": "Toca para ver la respuesta",
+    "didntKnow": "No lo sabía",
+    "almost": "Casi",
+    "knewIt": "Lo sabía"
+  },
+  "QuizzesPage": {
+    "loadingQuizzes": "Cargando cuestionarios…",
+    "couldNotGenerate": "No se pudo generar ese cuestionario.",
+    "generateError": "Algo salió mal al generar ese cuestionario.",
+    "writingQuiz": "Escribiendo tu cuestionario…",
+    "newQuiz": "Nuevo Cuestionario",
+    "examMode": "Modo Examen",
+    "addSubjectFirst": "Añade una asignatura primero",
+    "addSubjectFirstSubtitle": "Vuelve aquí cuando hayas añadido una asignatura para generar un cuestionario.",
+    "addSubject": "Añadir asignatura",
+    "subject": "Asignatura",
+    "topic": "Tema",
+    "allTopics": "Todos los temas",
+    "questions": "Preguntas",
+    "difficultyLabel": "Dificultad",
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Media",
+      "hard": "Difícil",
+      "exam": "Nivel Examen"
+    },
+    "generateQuiz": "Generar Cuestionario",
+    "history": "Historial",
+    "noQuizzesYet": "Aún no hay cuestionarios",
+    "noQuizzesSubtitle": "Genera uno arriba para empezar a practicar.",
+    "mockExam": "Examen Simulacro",
+    "questionCount": "{count} preguntas",
+    "notStarted": "No iniciado"
+  },
+  "TakeQuizPage": {
+    "couldNotGrade": "No se pudo calificar ese cuestionario.",
+    "submitError": "Algo salió mal al enviar tus respuestas.",
+    "loadingQuiz": "Cargando tu cuestionario…",
+    "quizNotFound": "No se pudo encontrar ese cuestionario.",
+    "quiz": "Cuestionario",
+    "mockExam": "Examen Simulacro",
+    "questionXOfY": "Pregunta {current} de {total}",
+    "scenario": "Escenario",
+    "fillInTheBlank": "Completa el espacio en blanco…",
+    "typeYourAnswer": "Escribe tu respuesta…",
+    "correct": "Correcto",
+    "notQuite": "No exactamente. Respuesta correcta: {answer}",
+    "submitting": "Enviando…",
+    "submitQuiz": "Enviar Cuestionario",
+    "next": "Siguiente",
+    "gradingAnswers": "Calificando tus respuestas…"
+  },
+  "QuizResultsPage": {
+    "verdict": {
+      "correct": "Correcto",
+      "almost": "Casi",
+      "review": "Repasar"
+    },
+    "loadingResults": "Cargando tus resultados…",
+    "resultNotFound": "No se pudo encontrar ese resultado.",
+    "score": "Puntuación",
+    "mockExam": "Examen Simulacro",
+    "strong": "Fuerte",
+    "noneYet": "Todavía ninguno, sigue practicando.",
+    "needsWork": "Necesita trabajo",
+    "greatJob": "Nada. Buen trabajo en todo.",
+    "practiceWeakTopics": "Practicar Temas Débiles",
+    "reviewAnswers": "Revisar Respuestas",
+    "yourAnswer": "Tu respuesta:",
+    "noAnswer": "(sin respuesta)",
+    "correctAnswer": "Respuesta correcta:"
+  },
+  "ExamModeSetupPage": {
+    "couldNotStart": "No se pudo iniciar el examen simulacro.",
+    "startError": "Algo salió mal al iniciar el examen simulacro.",
+    "buildingExam": "Preparando tu examen simulacro…",
+    "backToQuizzes": "Volver a Cuestionarios",
+    "examMode": "Modo Examen",
+    "subtitle": "Un examen simulacro cronometrado, sin pistas hasta que se corrija.",
+    "addSubjectFirst": "Añade una asignatura primero",
+    "addSubjectFirstSubtitle": "Vuelve aquí cuando hayas añadido una asignatura para iniciar un examen simulacro.",
+    "addSubject": "Añadir asignatura",
+    "subject": "Asignatura",
+    "linkedExam": "Examen vinculado (opcional)",
+    "none": "Ninguno",
+    "pastPaper": "Examen de años anteriores (opcional)",
+    "noMaterialsYet": "Aún no hay materiales subidos para esta asignatura.",
+    "uploadOne": "Sube uno",
+    "thenComeBack": ", y luego vuelve aquí.",
+    "groundedInPaper": "El examen se basará en los temas, formato y dificultad reales de este documento, no solo en el plan de estudios general de la asignatura.",
+    "length": "Duración",
+    "questionsAbbrev": "{count} Preg.",
+    "minutes": "{minutes} min",
+    "difficultyLabel": "Dificultad",
+    "difficulty": {
+      "medium": "Media",
+      "hard": "Difícil",
+      "exam": "Nivel Examen"
+    },
+    "startMockExam": "Iniciar Examen Simulacro",
+    "practiceDisclaimer": "Solo es una señal basada en la práctica. Una buena puntuación simulada es una buena señal, no una garantía para tu examen real."
+  },
+  "ProgressPage": {
+    "addingUp": "Sumando tu progreso…",
+    "noChange": "Sin cambios",
+    "vsLastWeek": "{value} vs la semana pasada",
+    "thisWeek": "Esta Semana",
+    "studyTime": "Tiempo de Estudio",
+    "quizAccuracy": "Precisión en Cuestionarios",
+    "topicsMastered": "Temas Dominados",
+    "weakTopicsImproved": "Temas Débiles Mejorados",
+    "comparedNote": "Comparado con los 7 días anteriores.",
+    "studyHistory": "Historial de Estudio",
+    "noSessionsYet": "Aún no hay sesiones de estudio registradas",
+    "noSessionsSubtitle": "Aparecerán aquí en cuanto empieces a estudiar.",
+    "subject": "Asignatura",
+    "minutes": "{minutes} min",
+    "mode": {
+      "learn": "Aprender",
+      "practice": "Practicar",
+      "quiz": "Cuestionario",
+      "review": "Repaso"
+    }
+  },
+  "SubjectsPage": {
+    "percentProgress": "{percent}% de progreso",
+    "percentQuizAccuracy": "{percent}% de precisión en cuestionarios",
+    "weak": "Débil:",
+    "subjectNamePlaceholder": "Nombre de la asignatura (p. ej. Matemáticas)",
+    "creating": "Creando…",
+    "createSubject": "Crear Asignatura",
+    "cancel": "Cancelar",
+    "newSubject": "Nueva Asignatura"
+  },
+  "SubjectDetailPage": {
+    "confirmDelete": "¿Eliminar {name}? Esto también elimina sus materiales, planes, cuestionarios y tarjetas.",
+    "loading": "Cargando…",
+    "percentProgress": "{percent}% de progreso",
+    "percentQuizAccuracy": "{percent}% de precisión en cuestionarios",
+    "minutesStudied": "{minutes} min estudiados",
+    "deleteSubject": "Eliminar asignatura",
+    "subjectExam": "Examen de {subject}",
+    "startStudying": "Empezar a Estudiar",
+    "studyPlan": "Plan de Estudio",
+    "generateQuiz": "Generar Cuestionario",
+    "flashcards": "Tarjetas",
+    "homeworkHelp": "Ayuda con Deberes",
+    "weakTopics": "Temas Débiles",
+    "notes": "Apuntes",
+    "add": "Añadir",
+    "noNotesYet": "Aún no hay apuntes",
+    "noNotesSubtitle": "Sube un PDF, una foto o tus apuntes para empezar.",
+    "allTopics": "Todos los Temas",
+    "strugglingHeader": "¿Tienes dificultades con algo?",
+    "getHelp": "Obtener ayuda",
+    "noPlansYet": "Aún no hay planes",
+    "noPlansSubtitle": "Cuéntanos con qué tienes dificultades en esta asignatura y te prepararemos materiales de práctica, un plan o recursos.",
+    "textbook": "Libro de Texto",
+    "noTextbookYet": "Aún no has añadido un libro de texto",
+    "noTextbookSubtitle": "Añade tu libro de texto para que los cuestionarios, tarjetas y planes de estudio puedan usarlo."
+  },
+  "SubjectHomeworkHelpPage": {
+    "somethingWentWrong": "Algo salió mal.",
+    "loading": "Cargando…",
+    "title": "Ayuda con Deberes",
+    "intro": "Describe la pregunta en la que estás atascado. Tu tutor te ayudará a resolverla, no la hará por ti.",
+    "questionPlaceholder": "Escribe o pega aquí tu pregunta de deberes…",
+    "thinking": "Pensando…",
+    "footerNote": "La Ayuda con Deberes enseña el concepto. No te dará la respuesta directamente.",
+    "actions": {
+      "hint": {
+        "label": "Pista",
+        "framed": "Esta es mi pregunta de deberes: \"{question}\". Dame una pista para empezar, pero no la resuelvas por mí."
+      },
+      "explain": {
+        "label": "Explicar",
+        "framed": "Esta es mi pregunta de deberes: \"{question}\". Ayúdame a entender el concepto detrás de esta pregunta."
+      },
+      "example": {
+        "label": "Mostrar Ejemplo Similar",
+        "framed": "Esta es mi pregunta de deberes: \"{question}\". Muéstrame un ejemplo resuelto similar (no este problema exacto) para que pueda resolver el mío."
+      },
+      "walkthrough": {
+        "label": "Guíame Paso a Paso",
+        "framed": "Esta es mi pregunta de deberes: \"{question}\". Guíame paso a paso. Pregúntame qué sé ya antes de decirme el siguiente paso. No me des directamente la respuesta final."
+      }
+    }
+  },
+  "MaterialKind": {
+    "pdf": "PDF",
+    "image": "Imagen",
+    "notes": "Notas",
+    "paste": "Texto pegado"
+  },
+  "MaterialDetailPage": {
+    "analysisFailedAgain": "El análisis volvió a fallar. Inténtalo de nuevo en un momento.",
+    "couldNotReachServer": "No se pudo contactar con el servidor. Inténtalo de nuevo en un momento.",
+    "confirmDelete": "¿Eliminar \"{title}\"? Los temas ya extraídos de él se mantendrán.",
+    "loadingMaterial": "Cargando material…",
+    "materialNotFound": "No se pudo encontrar este material. Puede que se haya eliminado.",
+    "analyzingMaterial": "Analizando tu material…",
+    "analysisFailed": "El análisis falló",
+    "analysisFailedBody": "Algo salió mal al leer este material. Puedes intentarlo de nuevo.",
+    "retrying": "Reintentando…",
+    "tryAgain": "Intentar de nuevo",
+    "deleteMaterial": "Eliminar material",
+    "topics": "Temas",
+    "keyConcepts": "Conceptos Clave",
+    "importantTerms": "Términos Importantes",
+    "potentialQuestions": "Posibles Preguntas",
+    "found": "Encontrado",
+    "whatNext": "Qué sigue",
+    "createStudyPlan": "Crear Plan de Estudio",
+    "generateQuiz": "Generar Cuestionario",
+    "makeFlashcards": "Crear Tarjetas",
+    "startStudying": "Empezar a Estudiar",
+    "textbookBadge": "Libro de Texto"
+  },
+  "PlanDetailPage": {
+    "loading": "Cargando…",
+    "studyPlan": "Plan de Estudio",
+    "daysDone": "{done}/{total} días completados",
+    "day": "Día {day}",
+    "markAsDone": "Marcar como hecho",
+    "markAsNotDone": "Marcar como no hecho",
+    "minutes": "{minutes} min"
+  },
+  "NewPlanPage": {
+    "couldNotGenerate": "No se pudo generar un plan.",
+    "loading": "Cargando…",
+    "title": "Nuevo Plan de Estudio",
+    "subtitle": "Un plan personalizado día a día, centrado en tus temas más débiles.",
+    "targetAnExam": "Apuntar a un examen",
+    "noSpecificExam": "Sin examen específico, elegir mi propio plazo",
+    "daysAvailable": "Días disponibles",
+    "minutesPerDay": "Minutos por día",
+    "generating": "Generando…",
+    "generatePlan": "Generar Plan",
+    "day": "Día {day}",
+    "minutes": "{minutes} min",
+    "accept": "Aceptar",
+    "done": "Hecho",
+    "edit": "Editar",
+    "redo": "Rehacer"
+  },
+  "StudySessionPage": {
+    "modes": {
+      "learn": "Aprender",
+      "practice": "Practicar",
+      "quiz": "Cuestionario",
+      "review": "Repaso"
+    },
+    "levels": {
+      "simple": "Simple",
+      "normal": "Normal",
+      "detailed": "Detallado",
+      "exam": "Nivel Examen"
+    },
+    "verdict": {
+      "correct": "CORRECTO",
+      "almost": "CASI",
+      "review": "A REPASAR"
+    },
+    "buildUnderstanding": "Construye una comprensión real de {topic}.",
+    "makeProgress": "Avanza de forma enfocada en {subject}.",
+    "somethingWentWrong": "Algo salió mal.",
+    "couldNotLoadQuestion": "No se pudo cargar una pregunta.",
+    "couldNotGrade": "No se pudo calificar esa respuesta.",
+    "loading": "Cargando…",
+    "generalStudy": "Estudio general",
+    "reduceTimer": "Reducir el temporizador en 5 minutos",
+    "addTimer": "Añadir 5 minutos",
+    "pauseTimer": "Pausar temporizador",
+    "resumeTimer": "Reanudar temporizador",
+    "timesUp": "Se acabó el tiempo. Sigue si estás concentrado, o termina la sesión cuando quieras.",
+    "askOrPickLevel": "Haz una pregunta, o elige un nivel abajo para empezar una explicación de {topic}.",
+    "thinking": "Pensando…",
+    "explainAtLevel": "Explica {topic} a un nivel {level}.",
+    "askAnything": "Pregunta lo que sea, o di que no entiendes…",
+    "send": "Enviar",
+    "addMaterialToPractice": "Añade algún material a esta asignatura primero para tener contenido que practicar.",
+    "practicingWeakest": "Practicando tu tema más débil:",
+    "loadingQuestion": "Cargando una pregunta…",
+    "typeYourAnswer": "Escribe tu respuesta…",
+    "submitAnswer": "Enviar Respuesta",
+    "nextQuestion": "Siguiente pregunta",
+    "addMaterialToQuiz": "Añade algún material a esta asignatura primero para tener contenido sobre el que hacer el cuestionario.",
+    "quickCheckComplete": "Comprobación Rápida Completa",
+    "retakeQuickCheck": "Repetir Comprobación Rápida",
+    "quickCheckWeakest": "Comprobación rápida sobre tu tema más débil:",
+    "questionXOfY": "Pregunta {current} de {total}",
+    "seeScore": "Ver puntuación",
+    "addMaterialToReview": "Añade algún material a esta asignatura primero para tener contenido que repasar.",
+    "reviewingWeakest": "Repasando tu tema más débil:",
+    "noSummary": "Aún no hay un resumen guardado para este tema.",
+    "keyConcepts": "Conceptos Clave",
+    "endSession": "Terminar Sesión",
+    "endConfirm": "¿Terminar esta sesión? Habrás estudiado unos <b>{minutes} min</b>.",
+    "endConfirmWithAccuracy": "¿Terminar esta sesión? Habrás estudiado unos <b>{minutes} min</b> con un <b>{accuracy}%</b> de precisión.",
+    "finishAndSave": "Terminar y Guardar",
+    "keepStudying": "Seguir Estudiando"
+  },
+  "DeadlinesPage": {
+    "source": {
+      "exam": "Examen",
+      "homework": "Deberes",
+      "milestone": "Hito"
+    },
+    "bucket": {
+      "overdue": "Atrasado",
+      "today": "Hoy",
+      "thisWeek": "Esta semana",
+      "later": "Más tarde"
+    },
+    "subjectExam": "Examen de {subject}",
+    "title": "Plazos",
+    "subtitle": "Todo lo que tiene una fecha límite, en un solo lugar.",
+    "loadError": "No se pudieron cargar tus plazos. {error}",
+    "gathering": "Reuniendo tus plazos…",
+    "noMilestonesWithDueDate": "No hay hitos con fecha límite",
+    "noMilestonesWithDueDateSubtitle": "Establece una fecha límite al añadir un hito en Plan para verlo aquí.",
+    "goToPlan": "Ir a Plan",
+    "noMilestonesYet": "Aún no hay hitos",
+    "noMilestonesYetSubtitle": "Añade tu primer hito en Plan para empezar a seguir plazos.",
+    "nothingDue": "Nada pendiente",
+    "nothingDueSubtitle": "Añade exámenes y deberes en Escuela para verlos aquí.",
+    "goToSchool": "Ir a Escuela"
+  },
+  "MissionsPage": {
+    "categoryTitles": {
+      "school": "Misiones Escolares",
+      "skill": "Misiones de Habilidades",
+      "career": "Misiones de Carrera",
+      "business": "Misiones de Negocio",
+      "creative": "Misiones Creativas"
+    },
+    "title": "Misiones",
+    "subtitle": "Logros reales, no rachas de uso de la app. Cada una impulsa tu futuro."
+  },
+  "MissionDetailPage": {
+    "notFound": "Misión no encontrada.",
+    "backToMissions": "Volver a Misiones",
+    "builds": "Desarrolla {skill}",
+    "missionComplete": "Misión completada · +{xp} XP ganados.",
+    "saving": "Guardando…",
+    "iCompletedThis": "Completé esto",
+    "beHonest": "Sé honesto. Las misiones solo cuentan si realmente las hiciste."
+  },
+  "Skills": {
+    "communication": "Comunicación",
+    "creativity": "Creatividad",
+    "problem_solving": "Resolución de Problemas",
+    "leadership": "Liderazgo",
+    "coding": "Programación",
+    "mathematics": "Matemáticas",
+    "writing": "Escritura",
+    "video_editing": "Edición de Vídeo",
+    "selling": "Ventas",
+    "organisation": "Organización",
+    "working_with_people": "Trabajo con Personas",
+    "building_things": "Construcción de Cosas"
+  },
+  "ProfilePage": {
+    "deleteFailed": "No se pudo eliminar tu cuenta. Inténtalo de nuevo.",
+    "deleteNetworkError": "No se pudo contactar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+    "eyebrow": "Perfil",
+    "title": "Tu progreso",
+    "subtitle": "Todo lo que has construido, en un solo lugar.",
+    "level": "Nivel {level}",
+    "progress": "Progreso",
+    "planXp": "XP de Plan",
+    "schoolXp": "XP de Escuela",
+    "businessXp": "XP de Negocio",
+    "careerXp": "XP de Carrera",
+    "skillXp": "XP de Habilidades",
+    "projectXp": "XP de Proyecto",
+    "achievements": "Logros",
+    "skills": "Habilidades",
+    "noSkillsYet": "Aún no hay habilidades",
+    "noSkillsSubtitle": "Completa misiones para empezar a desarrollar habilidades.",
+    "careerJourney": "Trayectoria Profesional",
+    "weeklyReview": "Revisión Semanal",
+    "settings": "Ajustes",
+    "appearance": "Apariencia",
+    "language": "Idioma",
+    "planName": "{name} Plus",
+    "manageSubscription": "Gestiona tu suscripción",
+    "businessPlanBlurb": "AI Coach, resumen del negocio y asistente de contenido",
+    "studentPlanBlurb": "AI Coach, planes de estudio, cuestionarios y más",
+    "manage": "Gestionar",
+    "activate": "Activar",
+    "signOut": "Cerrar sesión",
+    "dangerZone": "Zona de peligro",
+    "deleteAccount": "Eliminar cuenta",
+    "deleteAccountBody": "Elimina permanentemente tu cuenta y todo lo que contiene. Esto no se puede deshacer.",
+    "delete": "Eliminar",
+    "deleteModalTitle": "¿Eliminar tu cuenta?",
+    "deleteModalDescription": "Esto elimina permanentemente tu perfil, progreso, XP, misiones, materiales de estudio, historial de chat y (si estás suscrito) cancela tu suscripción a {name} Plus. No hay forma de deshacer esto.",
+    "onPlusWarning": "Tienes {name} Plus. Tu suscripción se cancelará automáticamente como parte de la eliminación.",
+    "typeToConfirm": "Escribe <b>{phrase}</b> para confirmar",
+    "cancel": "Cancelar",
+    "deletePermanently": "Eliminar permanentemente"
+  },
+  "UpgradePage": {
+    "trackLabel": {
+      "student": "Estudiante",
+      "business": "Negocio"
+    },
+    "perks": {
+      "student": [
+        "Coach IA: tu mentor siempre disponible para el colegio, habilidades y carrera",
+        "Planes de estudio con IA creados a partir de tus exámenes y plazos reales",
+        "Sube apuntes, fotos o PDFs y obtén un resumen instantáneo con IA",
+        "Sesiones de tutoría IA, cuestionarios y tarjetas de repetición espaciada"
+      ],
+      "business": [
+        "Coach IA: tu mentor siempre disponible para construir tu negocio",
+        "Un diagnóstico generado por IA y hitos iniciales para tu idea",
+        "Ideas de marketing y contenido redactadas por IA para cualquier plataforma",
+        "Seguimiento de hitos, métricas y competencia en un solo lugar"
+      ]
+    },
+    "freeTagline": {
+      "student": "El seguimiento escolar (horario, tareas, exámenes, carreras afines y tu ruta) siempre es gratis.",
+      "business": "Lo básico de tu plan de negocio, la lista de hitos y el registro de métricas siempre son gratis."
+    },
+    "couldNotStartCheckout": "No se pudo iniciar el pago.",
+    "couldNotOpenPortal": "No se pudo abrir el portal de facturación.",
+    "eyebrow": "{name} Plus",
+    "activateYourPlan": "Activa tu plan de {track}",
+    "onPlusEnjoy": "Ya tienes {name} Plus. ¡Disfrútalo!",
+    "activationDelayed": "Pago recibido, pero la activación está tardando más de lo habitual.",
+    "activatingPlan": "Pago recibido. Activando tu plan…",
+    "continueToApp": "Continuar a la app",
+    "activationDelayedBody": "Tu tarjeta se cobró correctamente. Solo hay un retraso al confirmarlo de nuestro lado. Prueba a actualizar, o entra ya a la app; se desbloqueará en cuanto se ponga al día.",
+    "refresh": "Actualizar",
+    "goToApp": "Ir a la app",
+    "daysLeftInTrial": "Te {days, plural, one {queda # día} other {quedan # días}} de tu prueba gratuita.",
+    "trialEnded": "Tu prueba gratuita ha terminado.",
+    "planPlusTrack": "{name} Plus · {track}",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "moAbbrev": "mes",
+    "yrAbbrev": "año",
+    "manageSubscription": "Gestionar suscripción",
+    "payAmount": "Pagar ${price}/{unit}",
+    "changePlan": "Cambiar plan",
+    "continueToPayment": "Continuar al pago",
+    "backToApp": "Volver a la app"
+  },
+  "WeeklyReviewPage": {
+    "eyebrow": "Esta semana",
+    "title": "Resumen semanal",
+    "puttingWeekTogether": "Preparando el resumen de tu semana…",
+    "plan": "Plan",
+    "milestonesCompleted": "Hitos completados:",
+    "expensesLoggedThisWeek": "Gastos registrados esta semana:",
+    "school": "Colegio",
+    "completedAssignments": "Tareas completadas:",
+    "studyTime": "Tiempo de estudio:",
+    "skills": "Habilidades",
+    "noSkillActivityTitle": "Aún no hay actividad en habilidades",
+    "noSkillActivitySubtitle": "Completa misiones para empezar a desarrollar habilidades.",
+    "future": "Futuro",
+    "missionsCompleted": "<b>{count}</b> {count, plural, one {misión completada} other {misiones completadas}} esta semana.",
+    "consistency": "Constancia",
+    "daysActive": "<b>{days}/7</b> días activo esta semana.",
+    "nextWeeksFocus": "Enfoque para la próxima semana",
+    "workToward": "Trabaja hacia: {title}",
+    "nextUp": "Siguiente: {title}",
+    "keepLoggingMetrics": "Sigue registrando tus métricas y gastos",
+    "prepareForExam": "Prepárate para el examen de {subject}",
+    "finishHomework": "Termina {subject}: {title}",
+    "keepBuildingToward": "Sigue avanzando hacia {career}",
+    "maintainStudyRoutine": "Mantén tu rutina de estudio diaria"
+  },
+  "CheckoutForm": {
+    "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
+    "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",
+    "securedByStripe": "Los pagos se procesan de forma segura a través de Stripe."
+  },
+  "AddNoteFlow": {
+    "pastedTextTitle": "Texto pegado",
+    "notesTitle": "Apuntes",
+    "couldNotSave": "No se pudo guardar ese material.",
+    "uploadError": "Algo salió mal al subir ese archivo.",
+    "saveError": "Algo salió mal al guardar eso.",
+    "analyzing": "Analizando tu material…",
+    "intro": "Añade un apunte y extraeremos automáticamente sus temas, conceptos clave y términos.",
+    "uploadPdf": "Subir PDF",
+    "uploadPdfHint": "Diapositivas de clase, capítulos de libros",
+    "takePhoto": "Hacer Foto",
+    "takePhotoHint": "Fotografía una página o pizarra",
+    "uploadImage": "Subir Imagen",
+    "uploadImageHint": "Desde tu galería",
+    "typeNotes": "Escribir Apuntes",
+    "typeNotesHint": "Escribe lo que tengas",
+    "pasteText": "Pegar Texto",
+    "saving": "Guardando…",
+    "back": "Atrás",
+    "addNotes": "Añadir Apuntes",
+    "pasteHint": "Pega texto copiado de un libro, unas diapositivas o un documento.",
+    "typeHint": "Escribe lo que tengas, incluso apuntes básicos sirven.",
+    "pastePlaceholder": "Pega aquí tu texto…",
+    "typePlaceholder": "Empieza a escribir tus apuntes…",
+    "analyze": "Analizar",
+    "introTextbook": "Añade tu libro de texto y extraeremos automáticamente sus temas, conceptos clave y términos para que los cuestionarios y tarjetas puedan usarlo.",
+    "addTextbook": "Añadir Libro de Texto"
+  },
+  "Missions": {
+    "school-30min-revision": {
+      "title": "Completa 30 minutos de repaso enfocado",
+      "description": "Elige tu tema más débil de Escuela y repásalo sin distracciones durante 30 minutos."
+    },
+    "school-past-paper": {
+      "title": "Completa un examen de años anteriores",
+      "description": "Busca un examen de años anteriores o un set de práctica para un próximo examen y complétalo en condiciones cronometradas."
+    },
+    "school-summarise-topic": {
+      "title": "Resume un tema con tus propias palabras",
+      "description": "Convierte los apuntes de una lección en un resumen de una página que podrías enseñar a un amigo."
+    },
+    "skill-coding-concept": {
+      "title": "Aprende un nuevo concepto de programación",
+      "description": "Mira o lee una lección breve sobre un concepto de programación que no conozcas, y luego escribe 5 líneas usándolo."
+    },
+    "skill-public-speaking": {
+      "title": "Practica explicar una idea en voz alta",
+      "description": "Graba una nota de voz de 60 segundos explicando algo que aprendiste esta semana, como si se lo enseñaras a otra persona."
+    },
+    "skill-design-basics": {
+      "title": "Aprende un principio de diseño",
+      "description": "Busca un principio de diseño (por ejemplo, contraste, jerarquía) y encuentra 3 ejemplos en apps que uses."
+    },
+    "career-research": {
+      "title": "Investiga una carrera en profundidad",
+      "description": "Elige una coincidencia de carrera e investiga un día típico, el rango salarial y la formación requerida."
+    },
+    "career-shadow-conversation": {
+      "title": "Habla con alguien de una carrera que te interese",
+      "description": "Pregunta a un padre, profesor o amigo de la familia sobre su trabajo: qué hace realmente en el día a día."
+    },
+    "career-linkedin-explore": {
+      "title": "Explora 3 ofertas de empleo reales",
+      "description": "Busca 3 ofertas de empleo reales en un campo que te interese y anota las habilidades que piden."
+    },
+    "business-find-problems": {
+      "title": "Encuentra 5 problemas que tienen los clientes",
+      "description": "Habla con la gente a tu alrededor u obsérvala y anota 5 problemas reales de los que se quejan."
+    },
+    "business-one-pager": {
+      "title": "Escribe una idea de negocio en una página",
+      "description": "Elige un problema que hayas encontrado y escribe un plan de una página: quién lo tiene y cómo lo resolverías."
+    },
+    "business-pitch-practice": {
+      "title": "Presenta tu idea a alguien",
+      "description": "Explica tu idea en voz alta a un amigo o familiar en menos de 2 minutos y consigue su reacción sincera."
+    },
+    "creative-portfolio-piece": {
+      "title": "Crea tu primera pieza de portafolio",
+      "description": "Haz una pequeña pieza creativa (diseño, vídeo, escritura o código) de la que te sientas orgulloso de mostrar."
+    },
+    "creative-short-video": {
+      "title": "Graba y edita un vídeo corto",
+      "description": "Planifica, graba y edita un vídeo de menos de 60 segundos sobre un tema que te importe."
+    },
+    "creative-study-inspiration": {
+      "title": "Estudia a 3 creadores o diseñadores que admires",
+      "description": "Analiza qué hace efectivas a 3 piezas de trabajo creativo (canales, diseños, marcas)."
+    }
+  },
+  "StatTile": {
+    "streak": "Racha",
+    "days": "días"
+  },
+  "StudentFutureHome": {
+    "title": "Tu Futuro",
+    "subtitle": "Las carreras que más encajan contigo.",
+    "topMatches": "Tus Principales Coincidencias de Carrera",
+    "loadingMatches": "Cargando tus coincidencias…",
+    "emptyTitle": "Aún no hay coincidencias de carrera",
+    "emptySubtitle": "Completa el onboarding para ver carreras que coincidan con tus asignaturas, intereses y fortalezas.",
+    "roadmap": "Hoja de ruta",
+    "markAsDone": "Marcar como hecho"
+  },
+  "CareerDetailPage": {
+    "notFound": "Carrera no encontrada.",
+    "backToFuture": "Volver a Tu Futuro",
+    "whyMatches": "Por qué encaja contigo",
+    "percentMatch": "{percent}% de coincidencia",
+    "schoolSubjects": "Asignaturas escolares",
+    "skillsToBuild": "Habilidades por desarrollar",
+    "projectsToTry": "Proyectos para probar",
+    "tryNow": "Prueba ahora",
+    "educationRoutes": "Rutas educativas",
+    "careerProgression": "Progresión profesional",
+    "addedToPath": "Añadido a tu camino",
+    "adding": "Añadiendo…",
+    "addToPath": "Añadir esta carrera a mi camino"
+  },
+  "RoadmapLevels": {
+    "1": {
+      "title": "Descubre tus intereses",
+      "description": "Completa el onboarding y explora tus principales coincidencias de carrera."
+    },
+    "2": {
+      "title": "Aprende lo básico",
+      "description": "Desarrolla una habilidad clave que necesita tu carrera principal: programación, diseño, escritura o números."
+    },
+    "3": {
+      "title": "Crea tu primer proyecto",
+      "description": "Convierte lo que estás aprendiendo en algo real que puedas mostrar."
+    },
+    "4": {
+      "title": "Lánzalo",
+      "description": "Comparte tu proyecto o idea con una audiencia real, aunque sea pequeña."
+    },
+    "5": {
+      "title": "Consigue tus primeros usuarios o feedback",
+      "description": "Consigue comentarios reales de personas fuera de tu círculo cercano."
+    },
+    "6": {
+      "title": "Construye algo más grande",
+      "description": "Convierte un primer logro en un proyecto más grande, un portafolio o un pequeño negocio."
+    }
+  },
+  "Careers": {
+    "matchLabel": "coincidencia",
+    "software-engineer": {
+      "name": "Ingeniero de Software",
+      "tagline": "Construye las aplicaciones y sistemas que la gente usa cada día.",
+      "whyItMatches": "Te atrae la tecnología y la resolución de problemas, y te gusta construir cosas que realmente funcionen.",
+      "subjects": [
+        "Matemáticas",
+        "Informática"
+      ],
+      "skills": [
+        "Python",
+        "Resolución de problemas",
+        "Desarrollo web",
+        "Git y control de versiones"
+      ],
+      "projects": [
+        "Crea tu página web personal",
+        "Crea una app sencilla de tareas",
+        "Crea un chatbot con IA"
+      ],
+      "tryNow": [
+        "Prueba un tutorial gratuito de introducción a Python",
+        "Reconstruye una web sencilla que te guste",
+        "Únete a una comunidad de programación para principiantes"
+      ],
+      "educationRoutes": [
+        "Grado en Informática",
+        "Bootcamp de programación",
+        "Autodidacta + portafolio",
+        "Formación en prácticas (aprendizaje)"
+      ],
+      "progression": [
+        "Desarrollador junior",
+        "Ingeniero de nivel medio",
+        "Ingeniero senior",
+        "Tech lead / Ingeniero principal"
+      ]
+    },
+    "entrepreneur": {
+      "name": "Emprendedor",
+      "tagline": "Detecta problemas reales y construye algo que los resuelva.",
+      "whyItMatches": "Te interesan los negocios y el dinero, y te atrae la idea de construir algo propio.",
+      "subjects": [
+        "Empresariales",
+        "Economía",
+        "Matemáticas"
+      ],
+      "skills": [
+        "Ventas",
+        "Comunicación",
+        "Liderazgo",
+        "Finanzas básicas"
+      ],
+      "projects": [
+        "Gestiona una pequeña tienda online",
+        "Vende un servicio a 3 clientes reales",
+        "Escribe un plan de negocio de una página"
+      ],
+      "tryNow": [
+        "Encuentra 3 problemas de los que la gente a tu alrededor realmente se queja",
+        "Entrevista a un pequeño empresario local",
+        "Lee un libro sobre cómo empezar un negocio"
+      ],
+      "educationRoutes": [
+        "Grado en Empresariales/Economía (opcional)",
+        "Empieza mientras estudias, aprende haciendo",
+        "Incubadora de negocios o programa de jóvenes emprendedores"
+      ],
+      "progression": [
+        "Primer proyecto pequeño",
+        "Primer cliente de pago",
+        "Negocio pequeño sostenible",
+        "Escalar una empresa real"
+      ]
+    },
+    "ai-engineer": {
+      "name": "Ingeniero de IA",
+      "tagline": "Diseña y entrena los modelos detrás de los productos de IA modernos.",
+      "whyItMatches": "Sientes curiosidad por la IA y disfrutas de las matemáticas y la informática, las dos asignaturas que más importan aquí.",
+      "subjects": [
+        "Matemáticas",
+        "Informática",
+        "Ciencias"
+      ],
+      "skills": [
+        "Python",
+        "Estadística",
+        "Fundamentos de machine learning",
+        "Resolución de problemas"
+      ],
+      "projects": [
+        "Entrena un clasificador de imágenes sencillo",
+        "Crea un chatbot con una API de IA",
+        "Analiza un conjunto de datos público"
+      ],
+      "tryNow": [
+        "Prueba una herramienta gratuita de IA interactiva",
+        "Mira un vídeo introductorio de machine learning",
+        "Aprende Python básico si aún no lo sabes"
+      ],
+      "educationRoutes": [
+        "Grado en Informática / Matemáticas",
+        "Especializaciones online de ML",
+        "Prácticas de investigación"
+      ],
+      "progression": [
+        "Becario de ML/IA",
+        "Ingeniero de IA junior",
+        "Ingeniero de IA",
+        "Líder de investigación en IA"
+      ]
+    },
+    "data-scientist": {
+      "name": "Científico de Datos",
+      "tagline": "Convierte datos desordenados en decisiones sobre las que la gente realmente actúa.",
+      "whyItMatches": "Te gustan las matemáticas y la resolución de problemas, y te interesa cómo los datos impulsan la tecnología y los negocios.",
+      "subjects": [
+        "Matemáticas",
+        "Informática",
+        "Economía"
+      ],
+      "skills": [
+        "Estadística",
+        "Python o R",
+        "Visualización de datos",
+        "Resolución de problemas"
+      ],
+      "projects": [
+        "Analiza un conjunto de datos y presenta 3 hallazgos",
+        "Crea un panel (dashboard) sencillo",
+        "Predice algo a partir de datos públicos"
+      ],
+      "tryNow": [
+        "Explora un conjunto de datos público gratuito",
+        "Prueba un ejercicio de análisis de datos con hojas de cálculo para principiantes",
+        "Aprende estadística básica"
+      ],
+      "educationRoutes": [
+        "Grado en Matemáticas, Estadística o Informática",
+        "Cursos online de ciencia de datos",
+        "Prácticas con un conjunto de datos real"
+      ],
+      "progression": [
+        "Analista de datos",
+        "Científico de datos junior",
+        "Científico de datos",
+        "Científico de datos principal"
+      ]
+    },
+    "digital-creator": {
+      "name": "Creador Digital",
+      "tagline": "Construye una audiencia y cuenta historias que la gente quiera ver.",
+      "whyItMatches": "Disfrutas creando contenido y usando redes sociales, y te gusta expresar ideas de forma creativa.",
+      "subjects": [
+        "Lengua",
+        "Arte",
+        "Diseño"
+      ],
+      "skills": [
+        "Edición de vídeo",
+        "Narrativa",
+        "Constancia",
+        "Diseño básico"
+      ],
+      "projects": [
+        "Publica 5 vídeos cortos sobre un mismo tema",
+        "Diseña una marca sencilla para tu canal",
+        "Edita un resumen de 60 segundos"
+      ],
+      "tryNow": [
+        "Graba un vídeo corto esta semana",
+        "Aprende a usar una herramienta gratuita de edición de vídeo",
+        "Estudia a 3 creadores que admires y anota qué funciona"
+      ],
+      "educationRoutes": [
+        "Sin requisito formal, se construye con la práctica",
+        "Cursos de Medios/Diseño (opcional)",
+        "Grado en Marketing o Comunicación (opcional)"
+      ],
+      "progression": [
+        "Primeras publicaciones",
+        "Audiencia pequeña y constante",
+        "Canal monetizado",
+        "Marca/negocio creativo consolidado"
+      ]
+    },
+    "doctor": {
+      "name": "Médico",
+      "tagline": "Diagnostica, trata y cuida a las personas a través de la ciencia.",
+      "whyItMatches": "Te interesan la medicina y la ciencia, y te gusta trabajar con personas y ayudarlas.",
+      "subjects": [
+        "Ciencias",
+        "Matemáticas"
+      ],
+      "skills": [
+        "Razonamiento científico",
+        "Comunicación",
+        "Resiliencia",
+        "Atención al detalle"
+      ],
+      "projects": [
+        "Haz voluntariado o acompaña a un profesional en un entorno sanitario (según tu edad)",
+        "Investiga un área de la medicina en profundidad",
+        "Presenta un tema de ciencias de la salud a tu clase"
+      ],
+      "tryNow": [
+        "Lee sobre un avance médico reciente",
+        "Pregunta en tu instituto sobre opciones de prácticas",
+        "Refuerza tus bases de Biología y Química"
+      ],
+      "educationRoutes": [
+        "Biología/Química en el instituto",
+        "Grado en Medicina (camino largo y competitivo)",
+        "Experiencia laboral en el ámbito sanitario"
+      ],
+      "progression": [
+        "Estudios preuniversitarios de ciencias",
+        "Facultad de Medicina",
+        "Médico residente",
+        "Especialista consultor"
+      ]
+    },
+    "lawyer": {
+      "name": "Abogado",
+      "tagline": "Argumenta, negocia y usa el derecho para resolver disputas reales.",
+      "whyItMatches": "Te interesa el derecho y se te da bien la comunicación y la argumentación estructurada.",
+      "subjects": [
+        "Lengua",
+        "Historia",
+        "Economía"
+      ],
+      "skills": [
+        "Comunicación",
+        "Escritura",
+        "Pensamiento crítico",
+        "Investigación"
+      ],
+      "projects": [
+        "Únete a un club de debate o juicio simulado",
+        "Escribe un ensayo persuasivo sobre un tema real",
+        "Investiga cómo se resolvió un caso real"
+      ],
+      "tryNow": [
+        "Mira o lee sobre un caso judicial real",
+        "Únete al club de debate de tu instituto",
+        "Practica escribiendo un argumento persuasivo"
+      ],
+      "educationRoutes": [
+        "Grado en Derecho",
+        "Prácticas jurídicas (donde estén disponibles)",
+        "Experiencia laboral en un bufete de abogados"
+      ],
+      "progression": [
+        "Estudiante de Derecho",
+        "Abogado en prácticas",
+        "Abogado colegiado",
+        "Socio / abogado sénior"
+      ]
+    },
+    "product-designer": {
+      "name": "Diseñador de Producto",
+      "tagline": "Diseña el aspecto y la experiencia de los productos que usa la gente.",
+      "whyItMatches": "Te interesan el diseño y la creatividad, y te gusta crear cosas que se vean y se sientan bien al usarlas.",
+      "subjects": [
+        "Arte",
+        "Diseño",
+        "Informática"
+      ],
+      "skills": [
+        "Diseño visual",
+        "Creatividad",
+        "Resolución de problemas",
+        "Feedback e iteración"
+      ],
+      "projects": [
+        "Rediseña una pantalla de una app que uses a diario",
+        "Diseña un logo y un mini kit de marca",
+        "Crea un prototipo sencillo en una herramienta de diseño gratuita"
+      ],
+      "tryNow": [
+        "Prueba una herramienta de diseño gratuita durante una hora",
+        "Estudia el diseño de 3 apps que uses",
+        "Dibuja 5 ideas de iconos para una app inventada"
+      ],
+      "educationRoutes": [
+        "Grado en Diseño/UX",
+        "Autodidacta + portafolio sólido",
+        "Bootcamp de diseño"
+      ],
+      "progression": [
+        "Estudiante de diseño / diseñador junior",
+        "Diseñador de producto",
+        "Diseñador senior",
+        "Responsable de diseño"
+      ]
+    },
+    "mechanical-engineer": {
+      "name": "Ingeniero Mecánico",
+      "tagline": "Diseña y construye las máquinas y sistemas que hacen funcionar el mundo.",
+      "whyItMatches": "Te interesa la ingeniería, y te gusta entender cómo funcionan las cosas y construirlas.",
+      "subjects": [
+        "Matemáticas",
+        "Ciencias"
+      ],
+      "skills": [
+        "Resolución de problemas",
+        "Matemáticas y física",
+        "Fundamentos de CAD",
+        "Trabajo manual"
+      ],
+      "projects": [
+        "Construye un pequeño modelo mecánico",
+        "Desmonta algo y vuelve a montarlo",
+        "Participa en un reto escolar de ingeniería/robótica"
+      ],
+      "tryNow": [
+        "Observa cómo funciona una máquina real y dibuja sus piezas",
+        "Prueba una herramienta gratuita de CAD para principiantes",
+        "Construye algo con tus manos esta semana"
+      ],
+      "educationRoutes": [
+        "Grado en Ingeniería",
+        "Formación en prácticas de ingeniería",
+        "Formación profesional técnica"
+      ],
+      "progression": [
+        "Estudiante de ingeniería",
+        "Ingeniero recién titulado",
+        "Ingeniero de diseño/proyectos",
+        "Ingeniero senior/jefe"
+      ]
+    },
+    "finance-analyst": {
+      "name": "Analista Financiero",
+      "tagline": "Comprende el dinero, los mercados y cómo las empresas toman decisiones.",
+      "whyItMatches": "Te interesan el dinero y los negocios, y te sientes cómodo con los números.",
+      "subjects": [
+        "Matemáticas",
+        "Economía",
+        "Empresariales"
+      ],
+      "skills": [
+        "Cálculo numérico",
+        "Análisis",
+        "Atención al detalle",
+        "Comunicación"
+      ],
+      "projects": [
+        "Sigue y analiza una cartera de inversión simulada",
+        "Crea una hoja de cálculo de presupuesto sencilla",
+        "Investiga cómo gana dinero una empresa real"
+      ],
+      "tryNow": [
+        "Lee un artículo de finanzas para principiantes cada semana",
+        "Aprende cómo funciona el interés compuesto",
+        "Prueba una plantilla gratuita de hoja de cálculo de presupuesto"
+      ],
+      "educationRoutes": [
+        "Grado en Finanzas/Economía",
+        "Certificaciones profesionales de finanzas",
+        "Prácticas en un banco o empresa"
+      ],
+      "progression": [
+        "Becario de finanzas",
+        "Analista junior",
+        "Analista",
+        "Analista senior / gestor de carteras"
+      ]
+    },
+    "sports-professional": {
+      "name": "Profesional del Deporte",
+      "tagline": "Convierte la disciplina y el rendimiento en una carrera deportiva.",
+      "whyItMatches": "Te interesa el deporte, y ya tienes la disciplina necesaria para competir y mejorar.",
+      "subjects": [
+        "Educación Física",
+        "Ciencias"
+      ],
+      "skills": [
+        "Disciplina",
+        "Forma física",
+        "Resiliencia",
+        "Trabajo en equipo"
+      ],
+      "projects": [
+        "Diseña un plan de entrenamiento estructurado de 4 semanas",
+        "Registra tus estadísticas de rendimiento durante una temporada",
+        "Únete a una liga competitiva o haz una prueba de selección"
+      ],
+      "tryNow": [
+        "Fíjate una meta física medible para este mes",
+        "Pide a un entrenador feedback honesto",
+        "Estudia la rutina de entrenamiento de un profesional de tu deporte"
+      ],
+      "educationRoutes": [
+        "Academia deportiva / itinerario de talento",
+        "Grado en Ciencias del Deporte (vía alternativa)",
+        "Titulaciones de entrenador"
+      ],
+      "progression": [
+        "Nivel juvenil/de cantera",
+        "Amateur competitivo",
+        "Contrato profesional",
+        "Nivel de élite / selección nacional"
+      ]
+    }
   }
 }

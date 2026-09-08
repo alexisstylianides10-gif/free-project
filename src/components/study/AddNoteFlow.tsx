@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { FileText, Camera, Image as ImageIcon, NotebookPen, ClipboardPaste, ArrowLeft, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { authedFetch } from "@/lib/api";
@@ -13,10 +14,10 @@ import type { MaterialKind } from "@/lib/study/types";
 
 type TextKind = Extract<MaterialKind, "notes" | "paste">;
 
-function titleFromText(text: string, kind: TextKind): string {
+function titleFromText(text: string, kind: TextKind, t: (key: string) => string): string {
   const firstLine = text.trim().split("\n")[0]?.trim() ?? "";
   if (firstLine.length > 0) return firstLine.slice(0, 70);
-  return kind === "paste" ? "Pasted text" : "Notes";
+  return kind === "paste" ? t("pastedTextTitle") : t("notesTitle");
 }
 
 /**
@@ -40,6 +41,7 @@ export function AddNoteFlow({
   isTextbook?: boolean;
 }) {
   const { user } = useAuth();
+  const t = useTranslations("AddNoteFlow");
 
   const [mode, setMode] = useState<"choose" | "text">("choose");
   const [textKind, setTextKind] = useState<TextKind>("notes");
@@ -91,11 +93,11 @@ export function AddNoteFlow({
         })
         .select()
         .single();
-      if (insertError || !row) throw insertError ?? new Error("Couldn't save that material.");
+      if (insertError || !row) throw insertError ?? new Error(t("couldNotSave"));
 
       await analyzeAndGo(row.id as string);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong uploading that file.");
+      setError(e instanceof Error ? e.message : t("uploadError"));
       setBusy(null);
     }
   }
@@ -110,7 +112,7 @@ export function AddNoteFlow({
         .insert({
           user_id: user.id,
           subject_id: subjectId,
-          title: titleFromText(textValue, textKind),
+          title: titleFromText(textValue, textKind, t),
           kind: textKind,
           storage_path: null,
           raw_text: textValue.trim(),
@@ -119,11 +121,11 @@ export function AddNoteFlow({
         })
         .select()
         .single();
-      if (insertError || !row) throw insertError ?? new Error("Couldn't save that material.");
+      if (insertError || !row) throw insertError ?? new Error(t("couldNotSave"));
 
       await analyzeAndGo(row.id as string);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong saving that.");
+      setError(e instanceof Error ? e.message : t("saveError"));
       setBusy(null);
     }
   }
@@ -135,18 +137,14 @@ export function AddNoteFlow({
   }
 
   if (busy === "analyzing") {
-    return <LoadingScreen message="Analyzing your material…" fullScreen={false} />;
+    return <LoadingScreen message={t("analyzing")} fullScreen={false} />;
   }
 
   return (
     <div className="space-y-6">
       {mode === "choose" ? (
         <>
-          <p className="text-sm text-muted-foreground">
-            {isTextbook
-              ? "Add your textbook and we'll pull out its topics, key concepts, and terms automatically so quizzes and flashcards can draw on it."
-              : "Add a note and we'll pull out its topics, key concepts, and terms automatically."}
-          </p>
+          <p className="text-sm text-muted-foreground">{isTextbook ? t("introTextbook") : t("intro")}</p>
 
           {error && (
             <Card className="border border-danger/40">
@@ -160,29 +158,29 @@ export function AddNoteFlow({
           <div className="grid grid-cols-2 gap-3">
             <SourceTile
               icon={FileText}
-              label="Upload PDF"
-              hint="Lecture slides, textbook chapters"
+              label={t("uploadPdf")}
+              hint={t("uploadPdfHint")}
               disabled={!!busy}
               onClick={() => pdfInputRef.current?.click()}
             />
             <SourceTile
               icon={Camera}
-              label="Take Photo"
-              hint="Snap a page or whiteboard"
+              label={t("takePhoto")}
+              hint={t("takePhotoHint")}
               disabled={!!busy}
               onClick={() => cameraInputRef.current?.click()}
             />
             <SourceTile
               icon={ImageIcon}
-              label="Upload Image"
-              hint="From your camera roll"
+              label={t("uploadImage")}
+              hint={t("uploadImageHint")}
               disabled={!!busy}
               onClick={() => imageInputRef.current?.click()}
             />
             <SourceTile
               icon={NotebookPen}
-              label="Type Notes"
-              hint="Type up what you've got"
+              label={t("typeNotes")}
+              hint={t("typeNotesHint")}
               disabled={!!busy}
               onClick={() => {
                 setTextKind("notes");
@@ -205,10 +203,10 @@ export function AddNoteFlow({
             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-4 text-sm font-semibold text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground disabled:opacity-40"
           >
             <ClipboardPaste className="h-4 w-4" />
-            Paste Text
+            {t("pasteText")}
           </button>
 
-          {busy === "saving" && <p className="text-center text-xs text-muted-foreground">Saving…</p>}
+          {busy === "saving" && <p className="text-center text-xs text-muted-foreground">{t("saving")}</p>}
 
           <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => onPick(e, "pdf")} />
           <input
@@ -231,23 +229,23 @@ export function AddNoteFlow({
             }}
             className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            <ArrowLeft className="h-4 w-4" /> Back
+            <ArrowLeft className="h-4 w-4" /> {t("back")}
           </button>
 
           <h2 className="text-base font-bold text-foreground">
-            {textKind === "paste" ? "Paste Text" : isTextbook ? "Add Textbook" : "Add Notes"}
+            {textKind === "paste" ? t("pasteText") : isTextbook ? t("addTextbook") : t("addNotes")}
           </h2>
           <p className="text-sm text-muted-foreground">
             {textKind === "paste"
-              ? "Paste in text copied from a textbook, slides, or a document."
-              : "Type up what you've got, even rough notes work."}
+              ? t("pasteHint")
+              : t("typeHint")}
           </p>
 
           <textarea
             autoFocus
             value={textValue}
             onChange={(e) => setTextValue(e.target.value)}
-            placeholder={textKind === "paste" ? "Paste your text here…" : "Start typing your notes…"}
+            placeholder={textKind === "paste" ? t("pastePlaceholder") : t("typePlaceholder")}
             rows={12}
             className="w-full resize-y rounded-2xl border border-border bg-surface px-4 py-3.5 text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground focus:border-accent/60"
           />
@@ -260,7 +258,7 @@ export function AddNoteFlow({
             onClick={handleTextSubmit}
             disabled={!textValue.trim() || busy === "saving"}
           >
-            {busy === "saving" ? "Saving…" : "Analyze"}
+            {busy === "saving" ? t("saving") : t("analyze")}
           </Button>
         </div>
       )}

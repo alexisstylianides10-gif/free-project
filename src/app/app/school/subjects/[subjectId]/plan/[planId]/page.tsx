@@ -3,6 +3,7 @@
 import { use, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CalendarClock, CheckCircle2, Circle, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useStudySubjects, useStudyPlanItems } from "@/lib/hooks/study";
@@ -14,6 +15,7 @@ import type { StudyPlanItem } from "@/lib/study/types";
 export default function PlanDetailPage({ params }: { params: Promise<{ subjectId: string; planId: string }> }) {
   const { subjectId, planId } = use(params);
   const { user } = useAuth();
+  const t = useTranslations("PlanDetailPage");
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: items, refetch } = useStudyPlanItems(user?.id, planId);
 
@@ -45,7 +47,7 @@ export default function PlanDetailPage({ params }: { params: Promise<{ subjectId
   }
 
   if (!subject) {
-    return <p className="py-12 text-center text-sm text-muted-foreground">Loading…</p>;
+    return <p className="py-12 text-center text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   return (
@@ -55,9 +57,9 @@ export default function PlanDetailPage({ params }: { params: Promise<{ subjectId
       </Link>
 
       <div>
-        <h1 className="text-xl font-extrabold text-foreground">Study Plan</h1>
+        <h1 className="text-xl font-extrabold text-foreground">{t("studyPlan")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {completedCount}/{items.length} days done
+          {t("daysDone", { done: completedCount, total: items.length })}
         </p>
         <ProgressBar value={progress} className="mt-2.5" />
       </div>
@@ -67,7 +69,7 @@ export default function PlanDetailPage({ params }: { params: Promise<{ subjectId
           <Card key={day}>
             <CardContent className="p-4">
               <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-accent">
-                <CalendarClock className="h-3.5 w-3.5" /> Day {day}
+                <CalendarClock className="h-3.5 w-3.5" /> {t("day", { day })}
               </p>
               <div className="space-y-1.5">
                 {dayItems.map((item) => {
@@ -76,7 +78,7 @@ export default function PlanDetailPage({ params }: { params: Promise<{ subjectId
                     <div className="flex items-center gap-3 rounded-xl px-1 py-2">
                       <button
                         type="button"
-                        aria-label={item.completed ? "Mark as not done" : "Mark as done"}
+                        aria-label={item.completed ? t("markAsNotDone") : t("markAsDone")}
                         onClick={(e) => {
                           e.preventDefault();
                           toggleComplete(item);
@@ -94,7 +96,7 @@ export default function PlanDetailPage({ params }: { params: Promise<{ subjectId
                       >
                         {item.label}
                       </span>
-                      <span className="shrink-0 text-xs font-bold text-muted-foreground">{item.duration_min} min</span>
+                      <span className="shrink-0 text-xs font-bold text-muted-foreground">{t("minutes", { minutes: item.duration_min })}</span>
                       {canStudy && <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
                     </div>
                   );

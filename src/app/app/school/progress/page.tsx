@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { ArrowUp, ArrowDown, Minus, Clock, Target, GraduationCap, TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useStudySubjects, useStudyTopics, useStudyFocusSessions, useStudyQuizAttempts } from "@/lib/hooks/study";
 import type { StudyFocusSession, StudyQuizAttempt, StudyTopic } from "@/lib/study/types";
@@ -54,6 +55,7 @@ function computeWeekStats(
 
 export default function ProgressPage() {
   const { user } = useAuth();
+  const t = useTranslations("ProgressPage");
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: topics, loading: topicsLoading } = useStudyTopics(user?.id);
   const { data: sessions, loading: sessionsLoading } = useStudyFocusSessions(user?.id);
@@ -83,49 +85,56 @@ export default function ProgressPage() {
 
   const loading = topicsLoading || sessionsLoading || attemptsLoading;
   if (loading) {
-    return <LoadingScreen message="Adding up your progress…" fullScreen={false} />;
+    return <LoadingScreen message={t("addingUp")} fullScreen={false} />;
+  }
+
+  function deltaLabel(current: number, previous: number, suffix: string): { text: string; tone: "success" | "danger" | "neutral" } {
+    const diff = current - previous;
+    if (diff === 0) return { text: t("noChange"), tone: "neutral" };
+    const sign = diff > 0 ? "+" : "";
+    return { text: t("vsLastWeek", { value: `${sign}${diff}${suffix}` }), tone: diff > 0 ? "success" : "danger" };
   }
 
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">This Week</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("thisWeek")}</h2>
         <div className="grid grid-cols-2 gap-3">
           <StatTile
             icon={Clock}
-            label="Study Time"
+            label={t("studyTime")}
             value={`${thisWeek.studyTimeMin}m`}
             delta={deltaLabel(thisWeek.studyTimeMin, lastWeek.studyTimeMin, "m")}
           />
           <StatTile
             icon={Target}
-            label="Quiz Accuracy"
+            label={t("quizAccuracy")}
             value={thisWeek.quizAccuracy !== null ? `${thisWeek.quizAccuracy}%` : "—"}
             delta={thisWeek.quizAccuracy !== null && lastWeek.quizAccuracy !== null ? deltaLabel(thisWeek.quizAccuracy, lastWeek.quizAccuracy, "%") : null}
           />
           <StatTile
             icon={GraduationCap}
-            label="Topics Mastered"
+            label={t("topicsMastered")}
             value={String(thisWeek.topicsMastered)}
             delta={deltaLabel(thisWeek.topicsMastered, lastWeek.topicsMastered, "")}
           />
           <StatTile
             icon={TrendingUp}
-            label="Weak Topics Improved"
+            label={t("weakTopicsImproved")}
             value={String(thisWeek.weakTopicsImproved)}
             delta={deltaLabel(thisWeek.weakTopicsImproved, lastWeek.weakTopicsImproved, "")}
           />
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">Compared with the previous 7 days.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{t("comparedNote")}</p>
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Study History</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("studyHistory")}</h2>
         {history.length === 0 ? (
           <EmptyState
             icon={Clock}
-            title="No study sessions logged yet"
-            subtitle="They'll show up here once you start studying."
+            title={t("noSessionsYet")}
+            subtitle={t("noSessionsSubtitle")}
           />
         ) : (
           <div className="space-y-4">
@@ -142,11 +151,11 @@ export default function ProgressPage() {
                             {subject?.icon ?? "📘"}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold text-foreground">{subject?.name ?? "Subject"}</p>
-                            <p className="mt-0.5 text-xs capitalize text-muted-foreground">{s.mode}</p>
+                            <p className="truncate text-sm font-semibold text-foreground">{subject?.name ?? t("subject")}</p>
+                            <p className="mt-0.5 text-xs capitalize text-muted-foreground">{t(`mode.${s.mode}`)}</p>
                           </div>
                           <div className="shrink-0 text-right">
-                            <p className="text-sm font-bold text-foreground">{s.duration_min} min</p>
+                            <p className="text-sm font-bold text-foreground">{t("minutes", { minutes: s.duration_min })}</p>
                             {s.accuracy_percent !== null && <p className="text-xs text-muted-foreground">{s.accuracy_percent}%</p>}
                           </div>
                         </CardContent>
@@ -161,13 +170,6 @@ export default function ProgressPage() {
       </section>
     </div>
   );
-}
-
-function deltaLabel(current: number, previous: number, suffix: string): { text: string; tone: "success" | "danger" | "neutral" } {
-  const diff = current - previous;
-  if (diff === 0) return { text: `No change`, tone: "neutral" };
-  const sign = diff > 0 ? "+" : "";
-  return { text: `${sign}${diff}${suffix} vs last week`, tone: diff > 0 ? "success" : "danger" };
 }
 
 function StatTile({

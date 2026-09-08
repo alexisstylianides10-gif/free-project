@@ -23,6 +23,10 @@ function inWindow(dueDateISO: string, todayISO: string): boolean {
   return diff >= -WINDOW_DAYS && diff <= WINDOW_DAYS;
 }
 
+/** `labels` lets callers (NotificationBell) supply translated copy for the
+ * two English-formatted strings this builder used to hard-code ("Due {date}"
+ * / "{subject} Exam"). Defaults keep this usable from anywhere that hasn't
+ * threaded a translator through (e.g. tests). */
 export function buildDeadlineNotifications(params: {
   exams: Exam[];
   homework: Homework[];
@@ -30,8 +34,10 @@ export function buildDeadlineNotifications(params: {
   isBusiness: boolean;
   dismissedIds: Set<string>; // synthetic ids already suppressed via a stored deadline_* row
   today: string;
+  labels?: { due: (date: string) => string; examTitle: (subject: string) => string };
 }): NotificationItem[] {
   const { exams, homework, milestones, isBusiness, dismissedIds, today } = params;
+  const labels = params.labels ?? { due: (date: string) => `Due ${date}`, examTitle: (subject: string) => `${subject} Exam` };
   const items: NotificationItem[] = [];
 
   if (isBusiness) {
@@ -39,14 +45,14 @@ export function buildDeadlineNotifications(params: {
       if (!m.due_date || m.status === "done" || !inWindow(m.due_date, today)) continue;
       const id = `deadline-milestone-${m.id}`;
       if (dismissedIds.has(id)) continue;
-      items.push({ id, type: "deadline_milestone", title: m.title, body: `Due ${m.due_date}`, href: "/app/school", read: false, createdAt: today, dismissible: true, relatedId: m.id });
+      items.push({ id, type: "deadline_milestone", title: m.title, body: labels.due(m.due_date), href: "/app/school", read: false, createdAt: today, dismissible: true, relatedId: m.id });
     }
   } else {
     for (const e of exams) {
       if (!inWindow(e.exam_date, today)) continue;
       const id = `deadline-exam-${e.id}`;
       if (dismissedIds.has(id)) continue;
-      items.push({ id, type: "deadline_exam", title: `${e.subject} Exam`, body: `Due ${e.exam_date}`, href: "/app/school/exams", read: false, createdAt: today, dismissible: true, relatedId: e.id });
+      items.push({ id, type: "deadline_exam", title: labels.examTitle(e.subject), body: labels.due(e.exam_date), href: "/app/school/exams", read: false, createdAt: today, dismissible: true, relatedId: e.id });
     }
     for (const h of homework) {
       if (h.status !== "pending" || !inWindow(h.due_date, today)) continue;

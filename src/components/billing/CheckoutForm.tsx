@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { Loader2, Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { getStripePromise } from "@/lib/billing/stripePromise";
 import { stripeAppearance } from "@/lib/billing/stripeAppearance";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 function InnerForm({ submitLabel, onSuccess }: { submitLabel: string; onSuccess: () => void }) {
   const stripe = useStripe();
   const elements = useElements();
+  const t = useTranslations("CheckoutForm");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +28,7 @@ function InnerForm({ submitLabel, onSuccess }: { submitLabel: string; onSuccess:
     });
 
     if (confirmError) {
-      setError(confirmError.message ?? "Your card couldn't be charged. Try again.");
+      setError(confirmError.message ?? t("cardFailed"));
       setSubmitting(false);
       return;
     }
@@ -34,7 +36,7 @@ function InnerForm({ submitLabel, onSuccess }: { submitLabel: string; onSuccess:
       onSuccess();
       return;
     }
-    setError("Payment wasn't completed. Try again.");
+    setError(t("paymentIncomplete"));
     setSubmitting(false);
   }
 
@@ -50,7 +52,7 @@ function InnerForm({ submitLabel, onSuccess }: { submitLabel: string; onSuccess:
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}
       </Button>
       <p className="flex items-center justify-center gap-1 text-center text-caption text-muted-foreground">
-        <Lock className="h-3 w-3" /> Payments are processed securely by Stripe.
+        <Lock className="h-3 w-3" /> {t("securedByStripe")}
       </p>
     </form>
   );
