@@ -289,6 +289,36 @@
       "uploadMaterial": "Sube algún material de una de tus asignaturas para que tu tutor de IA encuentre en qué enfocarse."
     }
   },
+  "SchoolLayout": {
+    "title": "Mi Escuela",
+    "subtitle": "Clases, deberes, exámenes y tu tutor de estudio con IA."
+  },
+  "SchoolSubNav": {
+    "home": "Inicio",
+    "subjects": "Asignaturas",
+    "notes": "Apuntes",
+    "exams": "Exámenes",
+    "homework": "Deberes",
+    "flashcards": "Tarjetas",
+    "quizzes": "Cuestionarios",
+    "progress": "Progreso"
+  },
+  "BusinessPlanHome": {
+    "stage": { "idea": "Idea", "validating": "Validando", "building": "Construyendo", "launched": "Lanzado" },
+    "loadError": "No se pudieron cargar tus hitos. {error}",
+    "yourBusiness": "Tu Negocio",
+    "noIdeaSaved": "Aún no hay ninguna idea guardada",
+    "noSnapshotBody": "No pudimos generar un resumen personalizado cuando te registraste, así que tus hitos de abajo son un punto de partida genérico. Edítalos para que coincidan con tu plan real.",
+    "milestones": "Hitos",
+    "noMilestonesYet": "Aún no hay hitos",
+    "noMilestonesSubtitle": "Añade tu primer hito abajo para empezar tu plan.",
+    "markAsDone": "Marcar como hecho",
+    "addMilestonePlaceholder": "Añade un hito…",
+    "addMilestone": "Añadir hito",
+    "dueDate": "Fecha límite",
+    "optional": "(opcional)",
+    "askCoachForGuidance": "Pide orientación al AI Coach"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",

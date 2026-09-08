@@ -289,6 +289,36 @@
       "uploadMaterial": "Importe des documents pour une de tes matières afin que ton coach IA puisse trouver sur quoi te concentrer."
     }
   },
+  "SchoolLayout": {
+    "title": "Mon École",
+    "subtitle": "Cours, devoirs, examens et ton coach d'étude IA."
+  },
+  "SchoolSubNav": {
+    "home": "Accueil",
+    "subjects": "Matières",
+    "notes": "Notes",
+    "exams": "Examens",
+    "homework": "Devoirs",
+    "flashcards": "Cartes",
+    "quizzes": "Quiz",
+    "progress": "Progrès"
+  },
+  "BusinessPlanHome": {
+    "stage": { "idea": "Idée", "validating": "Validation", "building": "Construction", "launched": "Lancé" },
+    "loadError": "Tes jalons n'ont pas pu être chargés. {error}",
+    "yourBusiness": "Ton Entreprise",
+    "noIdeaSaved": "Pas encore d'idée enregistrée",
+    "noSnapshotBody": "Nous n'avons pas pu générer un aperçu personnalisé lors de ton inscription, donc tes jalons ci-dessous sont un point de départ générique. Modifie-les pour qu'ils correspondent à ton vrai plan.",
+    "milestones": "Jalons",
+    "noMilestonesYet": "Pas encore de jalons",
+    "noMilestonesSubtitle": "Ajoute ton premier jalon ci-dessous pour démarrer ton plan.",
+    "markAsDone": "Marquer comme fait",
+    "addMilestonePlaceholder": "Ajoute un jalon…",
+    "addMilestone": "Ajouter un jalon",
+    "dueDate": "Date d'échéance",
+    "optional": "(optionnel)",
+    "askCoachForGuidance": "Demande conseil à l'AI Coach"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

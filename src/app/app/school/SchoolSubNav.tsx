@@ -2,21 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { href: "/app/school", label: "Home", match: (p: string) => p === "/app/school" },
-  { href: "/app/school/subjects", label: "Subjects", match: (p: string) => p.startsWith("/app/school/subjects") },
-  { href: "/app/school/notes", label: "Notes", match: (p: string) => p.startsWith("/app/school/notes") },
-  { href: "/app/school/exams", label: "Exams", match: (p: string) => p.startsWith("/app/school/exams") },
-  { href: "/app/school/homework", label: "Homework", match: (p: string) => p.startsWith("/app/school/homework") },
-  { href: "/app/school/flashcards", label: "Flashcards", match: (p: string) => p.startsWith("/app/school/flashcards") },
-  { href: "/app/school/quizzes", label: "Quizzes", match: (p: string) => p.startsWith("/app/school/quizzes") },
-  { href: "/app/school/progress", label: "Progress", match: (p: string) => p.startsWith("/app/school/progress") },
+  { href: "/app/school", labelKey: "home", match: (p: string) => p === "/app/school" },
+  { href: "/app/school/subjects", labelKey: "subjects", match: (p: string) => p.startsWith("/app/school/subjects") },
+  { href: "/app/school/notes", labelKey: "notes", match: (p: string) => p.startsWith("/app/school/notes") },
+  { href: "/app/school/exams", labelKey: "exams", match: (p: string) => p.startsWith("/app/school/exams") },
+  { href: "/app/school/homework", labelKey: "homework", match: (p: string) => p.startsWith("/app/school/homework") },
+  { href: "/app/school/flashcards", labelKey: "flashcards", match: (p: string) => p.startsWith("/app/school/flashcards") },
+  { href: "/app/school/quizzes", labelKey: "quizzes", match: (p: string) => p.startsWith("/app/school/quizzes") },
+  { href: "/app/school/progress", labelKey: "progress", match: (p: string) => p.startsWith("/app/school/progress") },
 ];
 
 export function SchoolSubNav() {
   const pathname = usePathname();
+  const t = useTranslations("SchoolSubNav");
 
   return (
     <div className="scrollbar-none -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
@@ -31,7 +33,7 @@ export function SchoolSubNav() {
               active ? "bg-gradient-brand text-white" : "bg-muted text-muted-foreground hover:text-foreground"
             )}
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </Link>
         );
       })}

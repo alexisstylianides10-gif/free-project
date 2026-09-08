@@ -289,6 +289,36 @@
       "uploadMaterial": "Upload some material for one of your subjects so your AI coach can find what to focus on."
     }
   },
+  "SchoolLayout": {
+    "title": "My School",
+    "subtitle": "Class, homework, exams, and your AI study coach."
+  },
+  "SchoolSubNav": {
+    "home": "Home",
+    "subjects": "Subjects",
+    "notes": "Notes",
+    "exams": "Exams",
+    "homework": "Homework",
+    "flashcards": "Flashcards",
+    "quizzes": "Quizzes",
+    "progress": "Progress"
+  },
+  "BusinessPlanHome": {
+    "stage": { "idea": "Idea", "validating": "Validating", "building": "Building", "launched": "Launched" },
+    "loadError": "Couldn't load your milestones. {error}",
+    "yourBusiness": "Your Business",
+    "noIdeaSaved": "No idea saved yet",
+    "noSnapshotBody": "We couldn't generate a personalized snapshot when you signed up, so your milestones below are a generic starting point. Edit them to match your actual plan.",
+    "milestones": "Milestones",
+    "noMilestonesYet": "No milestones yet",
+    "noMilestonesSubtitle": "Add your first milestone below to start your plan.",
+    "markAsDone": "Mark as done",
+    "addMilestonePlaceholder": "Add a milestone…",
+    "addMilestone": "Add milestone",
+    "dueDate": "Due date",
+    "optional": "(optional)",
+    "askCoachForGuidance": "Ask AI Coach for guidance"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",
