@@ -595,6 +595,21 @@
     "noNotesSubtitle": "Importe un PDF, une photo, ou tes notes pour commencer.",
     "allTopics": "Tous les Sujets"
   },
+  "SubjectHomeworkHelpPage": {
+    "somethingWentWrong": "Une erreur s'est produite.",
+    "loading": "Chargement…",
+    "title": "Aide aux Devoirs",
+    "intro": "Décris la question sur laquelle tu bloques. Ton tuteur t'aidera à avancer, pas à la faire à ta place.",
+    "questionPlaceholder": "Tape ou colle ta question de devoir ici…",
+    "thinking": "Réflexion…",
+    "footerNote": "L'Aide aux Devoirs enseigne le concept. Elle ne te donnera pas directement la réponse.",
+    "actions": {
+      "hint": { "label": "Indice", "framed": "Voici ma question de devoir : « {question} ». Donne-moi un indice pour démarrer, mais ne la résous pas pour moi." },
+      "explain": { "label": "Expliquer", "framed": "Voici ma question de devoir : « {question} ». Aide-moi à comprendre le concept derrière cette question." },
+      "example": { "label": "Montrer un Exemple Similaire", "framed": "Voici ma question de devoir : « {question} ». Montre-moi un exemple similaire résolu (pas cet exercice exact) pour que je puisse trouver le mien." },
+      "walkthrough": { "label": "Guide-moi Étape par Étape", "framed": "Voici ma question de devoir : « {question} ». Guide-moi étape par étape. Demande-moi ce que je sais déjà avant de me donner l'étape suivante. Ne me donne pas directement la réponse finale." }
+    }
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

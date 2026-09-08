@@ -595,6 +595,21 @@
     "noNotesSubtitle": "Sube un PDF, una foto o tus apuntes para empezar.",
     "allTopics": "Todos los Temas"
   },
+  "SubjectHomeworkHelpPage": {
+    "somethingWentWrong": "Algo salió mal.",
+    "loading": "Cargando…",
+    "title": "Ayuda con Deberes",
+    "intro": "Describe la pregunta en la que estás atascado. Tu tutor te ayudará a resolverla, no la hará por ti.",
+    "questionPlaceholder": "Escribe o pega aquí tu pregunta de deberes…",
+    "thinking": "Pensando…",
+    "footerNote": "La Ayuda con Deberes enseña el concepto. No te dará la respuesta directamente.",
+    "actions": {
+      "hint": { "label": "Pista", "framed": "Esta es mi pregunta de deberes: \"{question}\". Dame una pista para empezar, pero no la resuelvas por mí." },
+      "explain": { "label": "Explicar", "framed": "Esta es mi pregunta de deberes: \"{question}\". Ayúdame a entender el concepto detrás de esta pregunta." },
+      "example": { "label": "Mostrar Ejemplo Similar", "framed": "Esta es mi pregunta de deberes: \"{question}\". Muéstrame un ejemplo resuelto similar (no este problema exacto) para que pueda resolver el mío." },
+      "walkthrough": { "label": "Guíame Paso a Paso", "framed": "Esta es mi pregunta de deberes: \"{question}\". Guíame paso a paso. Pregúntame qué sé ya antes de decirme el siguiente paso. No me des directamente la respuesta final." }
+    }
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",

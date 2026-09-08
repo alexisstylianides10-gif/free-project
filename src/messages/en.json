@@ -595,6 +595,21 @@
     "noNotesSubtitle": "Upload a PDF, photo, or your notes to get started.",
     "allTopics": "All Topics"
   },
+  "SubjectHomeworkHelpPage": {
+    "somethingWentWrong": "Something went wrong.",
+    "loading": "Loading…",
+    "title": "Homework Help",
+    "intro": "Describe the question you're stuck on. Your tutor will help you work through it, not do it for you.",
+    "questionPlaceholder": "Type or paste your homework question here…",
+    "thinking": "Thinking…",
+    "footerNote": "Homework Help teaches the concept. It won't just hand you the answer.",
+    "actions": {
+      "hint": { "label": "Hint", "framed": "Here's my homework question: \"{question}\". Give me a hint to get started, but don't solve it for me." },
+      "explain": { "label": "Explain", "framed": "Here's my homework question: \"{question}\". Help me understand the concept behind this question." },
+      "example": { "label": "Show Similar Example", "framed": "Here's my homework question: \"{question}\". Show me a similar worked example (not this exact problem) so I can figure mine out." },
+      "walkthrough": { "label": "Walk Me Through It", "framed": "Here's my homework question: \"{question}\". Walk me through it step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer." }
+    }
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",
