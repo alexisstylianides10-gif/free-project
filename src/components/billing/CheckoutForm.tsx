@@ -44,9 +44,12 @@ function InnerForm({ submitLabel, onSuccess }: { submitLabel: string; onSuccess:
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Rendered in the same Elements group as PaymentElement — Stripe.js
           automatically forwards this to confirmPayment() as billing_details,
-          so no change to handleSubmit is needed to actually use it. */}
+          so no change to handleSubmit is needed to actually use it.
+          PaymentElement's own billing_details collection must be turned off
+          (Stripe's documented pairing for this combination) or the two
+          elements redundantly prompt for the same name/address. */}
       <AddressElement options={{ mode: "billing" }} />
-      <PaymentElement options={{ layout: "tabs" }} />
+      <PaymentElement options={{ layout: "tabs", fields: { billingDetails: { name: "never", address: "never" } } }} />
       {error && <p className="text-sm text-danger">{error}</p>}
       <Button type="submit" size="lg" className="w-full" disabled={!stripe || submitting}>
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}

@@ -87,7 +87,7 @@ export default function WeakAreaPlanPage({ params }: { params: Promise<{ subject
         </Card>
       )}
 
-      {content?.roadmap && content.roadmap.length > 0 && (
+      {Array.isArray(content?.roadmap) && content.roadmap.length > 0 && (
         <section>
           <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-muted-foreground">
             <ListChecks className="h-3.5 w-3.5 text-accent" /> Your plan
@@ -110,7 +110,7 @@ export default function WeakAreaPlanPage({ params }: { params: Promise<{ subject
         </section>
       )}
 
-      {content?.exercises && content.exercises.length > 0 && (
+      {Array.isArray(content?.exercises) && content.exercises.length > 0 && (
         <section>
           <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Practice</h2>
           <div className="space-y-3">
@@ -122,7 +122,7 @@ export default function WeakAreaPlanPage({ params }: { params: Promise<{ subject
                     <p className="mt-2 rounded-xl bg-muted p-3 text-sm leading-relaxed text-foreground">{ex.passage}</p>
                   )}
                   <div className="mt-3 space-y-3">
-                    {ex.questions.map((q, qi) => {
+                    {(Array.isArray(ex.questions) ? ex.questions : []).map((q, qi) => {
                       const key = i * 1000 + qi;
                       const open = openExercise === key;
                       return (
@@ -148,7 +148,7 @@ export default function WeakAreaPlanPage({ params }: { params: Promise<{ subject
         </section>
       )}
 
-      {content?.resources && content.resources.length > 0 && (
+      {Array.isArray(content?.resources) && content.resources.length > 0 && (
         <section>
           <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-muted-foreground">
             <BookIcon className="h-3.5 w-3.5 text-accent" /> Recommended

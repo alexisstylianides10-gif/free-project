@@ -2,7 +2,47 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { callStudyAIForJSON, StudyAIError } from "@/lib/study/ai";
 import type { Locale } from "@/lib/i18n/locales";
-import type { WeakAreaPlan, WeakAreaPlanContent } from "@/lib/study/types";
+import type { WeakAreaPlan, WeakAreaPlanContent, WeakAreaExercise, WeakAreaRoadmapStep, WeakAreaResource } from "@/lib/study/types";
+
+/**
+ * Coerces the AI's raw JSON into a shape the renderer can trust — same
+ * defensive pattern generate-quiz/generate-flashcards already use for their
+ * AI responses. Without this, any shape drift from the model (a missing
+ * `questions` array, roadmap returned as an object instead of an array,
+ * etc.) would still parse as valid JSON and get saved with status "ready",
+ * permanently bricking that plan's page on every future render.
+ */
+function sanitizePlanContent(raw: WeakAreaPlanContent): WeakAreaPlanContent {
+  const roadmap = Array.isArray(raw.roadmap)
+    ? raw.roadmap
+        .filter((s): s is WeakAreaRoadmapStep => !!s && typeof s.title === "string" && typeof s.detail === "string")
+        .map((s) => ({ title: s.title, detail: s.detail }))
+    : undefined;
+
+  const exercises = Array.isArray(raw.exercises)
+    ? raw.exercises
+        .filter((e): e is WeakAreaExercise => !!e && typeof e.title === "string" && Array.isArray(e.questions))
+        .map((e) => ({
+          title: e.title,
+          passage: typeof e.passage === "string" ? e.passage : undefined,
+          questions: e.questions.filter((q) => q && typeof q.question === "string" && typeof q.answer === "string"),
+        }))
+        .filter((e) => e.questions.length > 0)
+    : undefined;
+
+  const resources = Array.isArray(raw.resources)
+    ? raw.resources
+        .filter((r): r is WeakAreaResource => !!r && typeof r.title === "string" && typeof r.why === "string")
+        .map((r) => ({ title: r.title, author: typeof r.author === "string" ? r.author : undefined, why: r.why }))
+    : undefined;
+
+  return {
+    summary: typeof raw.summary === "string" ? raw.summary : "",
+    roadmap: roadmap && roadmap.length > 0 ? roadmap : undefined,
+    exercises: exercises && exercises.length > 0 ? exercises : undefined,
+    resources: resources && resources.length > 0 ? resources : undefined,
+  };
+}
 
 /**
  * Shared by both the dedicated /api/study/weak-area-plan route (Subject
@@ -42,13 +82,17 @@ export async function generateWeakAreaPlan(params: {
 
   let plan: WeakAreaPlanContent;
   try {
-    plan = await callStudyAIForJSON<WeakAreaPlanContent>({
+    const raw = await callStudyAIForJSON<WeakAreaPlanContent>({
       system,
       userText,
       maxTokens: 1536,
       effort: "medium",
       language,
     });
+    plan = sanitizePlanContent(raw);
+    if (!plan.roadmap && !plan.exercises && !plan.resources) {
+      throw new StudyAIError("The AI didn't return anything usable. Try again.");
+    }
   } catch (err) {
     await client.from("weak_area_plans").insert({
       user_id: userId,

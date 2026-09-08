@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { authedFetch } from "@/lib/api";
 import type { Profile } from "@/lib/types";
 
 interface AuthState {
@@ -135,6 +136,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
+    // Revoke this device's push subscription BEFORE the session goes away —
+    // authedFetch needs the still-valid access token to authenticate the
+    // unsubscribe call. Without this, a shared/family/school device keeps
+    // receiving the signed-out student's achievement, roadmap, and deadline
+    // push notifications indefinitely, since push_subscriptions rows are
+    // keyed by device endpoint, not tied to session lifetime.
+    try {
+      if ("serviceWorker" in navigator && "PushManager" in window) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        const subscription = await registration?.pushManager.getSubscription();
+        if (subscription) {
+          await authedFetch("/api/push/unsubscribe", { method: "POST", body: JSON.stringify({ endpoint: subscription.endpoint }) });
+          await subscription.unsubscribe();
+        }
+      }
+    } catch {
+      // Best-effort — never block sign-out on push cleanup failing (e.g.
+      // network hiccup, unsupported browser).
+    }
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);

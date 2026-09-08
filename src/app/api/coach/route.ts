@@ -177,23 +177,34 @@ export async function POST(req: NextRequest) {
       output_config: { effort: "low" },
     });
 
-    // Single tool-use round trip: run the tool, feed its result back, and
-    // let the model compose the actual reply from it. No further tool calls
-    // are honored in that follow-up (no `tools` on the second request) —
-    // one plan per message is plenty, and it keeps this from looping.
+    // Single tool-use round trip: run every tool call the model made in this
+    // turn, feed all their results back together, and let the model compose
+    // the actual reply from them. No further tool calls are honored in that
+    // follow-up (no `tools` on the second request) — this keeps it from
+    // looping. The Anthropic API requires a tool_result for EVERY tool_use
+    // in the preceding assistant turn or the follow-up request is rejected
+    // outright — a student describing two distinct problems in one message
+    // (e.g. "I'm bad at English reading and I don't get fractions") can
+    // plausibly make the model emit two tool_use blocks in parallel, so this
+    // must not assume there's only one.
     if (response.stop_reason === "tool_use") {
-      const toolUseBlock = response.content.find((b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use");
-      if (toolUseBlock && toolUseBlock.name === "create_weak_area_plan") {
-        const toolResult = await runWeakAreaTool(client, user.id, toolUseBlock.input as { subjectName?: string; description?: string });
+      const toolUseBlocks = response.content.filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use");
+      if (toolUseBlocks.length > 0) {
+        const toolResults = await Promise.all(
+          toolUseBlocks.map(async (block) => ({
+            type: "tool_result" as const,
+            tool_use_id: block.id,
+            content:
+              block.name === "create_weak_area_plan"
+                ? await runWeakAreaTool(client, user.id, block.input as { subjectName?: string; description?: string })
+                : JSON.stringify({ error: "Unknown tool." }),
+          }))
+        );
         const followUp = await anthropicClient().messages.create({
           model: MODEL,
           max_tokens: 1024,
           system: systemPrompt,
-          messages: [
-            ...messages,
-            { role: "assistant", content: response.content },
-            { role: "user", content: [{ type: "tool_result", tool_use_id: toolUseBlock.id, content: toolResult }] },
-          ],
+          messages: [...messages, { role: "assistant", content: response.content }, { role: "user", content: toolResults }],
           output_config: { effort: "low" },
         });
         response = followUp;
