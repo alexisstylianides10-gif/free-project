@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Sparkles, Target, BookOpen, Brain, Rocket, Flame } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import {
   useHomework,
@@ -14,7 +15,6 @@ import {
   useBusinessExpenses,
 } from "@/lib/hooks/domain";
 import { getCareer } from "@/lib/catalog/careers";
-import { skillLabel } from "@/lib/catalog/skills";
 import { supabase } from "@/lib/supabase/client";
 import { mondayOfThisWeek, addDaysISO, daysBetween, todayISO } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -38,6 +38,9 @@ function formatWeekLabel(weekStart: string): string {
 
 export default function WeeklyReviewPage() {
   const { user, profile } = useAuth();
+  const t = useTranslations("WeeklyReviewPage");
+  const tSkills = useTranslations("Skills");
+  const tCareers = useTranslations("Careers");
   const weekStart = mondayOfThisWeek();
 
   const isBusiness = profile?.track === "business";
@@ -108,12 +111,12 @@ export default function WeeklyReviewPage() {
       const upcomingMilestone = [...milestones]
         .filter((m) => m.status !== "done" && m.due_date && daysBetween(today, m.due_date) >= 0 && daysBetween(today, m.due_date) <= 10)
         .sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""))[0];
-      if (upcomingMilestone) items.push(`Work toward: ${upcomingMilestone.title}`);
+      if (upcomingMilestone) items.push(t("workToward", { title: upcomingMilestone.title }));
 
       const nextOpenMilestone = [...milestones].filter((m) => m.status !== "done").sort((a, b) => a.order_index - b.order_index)[0];
-      if (nextOpenMilestone && nextOpenMilestone.id !== upcomingMilestone?.id) items.push(`Next up: ${nextOpenMilestone.title}`);
+      if (nextOpenMilestone && nextOpenMilestone.id !== upcomingMilestone?.id) items.push(t("nextUp", { title: nextOpenMilestone.title }));
 
-      items.push("Keep logging your metrics and expenses");
+      items.push(t("keepLoggingMetrics"));
     } else {
       const upcomingExam = [...exams]
         .filter((e) => {
@@ -121,20 +124,20 @@ export default function WeeklyReviewPage() {
           return diff >= 0 && diff <= 10;
         })
         .sort((a, b) => a.exam_date.localeCompare(b.exam_date))[0];
-      if (upcomingExam) items.push(`Prepare for ${upcomingExam.subject} exam`);
+      if (upcomingExam) items.push(t("prepareForExam", { subject: upcomingExam.subject }));
 
       const priorityHomework = homework
         .filter((h) => h.status === "pending" && h.priority === "high")
         .sort((a, b) => a.due_date.localeCompare(b.due_date))[0];
-      if (priorityHomework) items.push(`Finish ${priorityHomework.subject}: ${priorityHomework.title}`);
+      if (priorityHomework) items.push(t("finishHomework", { subject: priorityHomework.subject, title: priorityHomework.title }));
 
-      if (primaryCareer) items.push(`Keep building toward ${primaryCareer.name}`);
+      if (primaryCareer) items.push(t("keepBuildingToward", { career: tCareers(`${primaryCareer.slug}.name`) }));
 
-      items.push("Maintain your daily study routine");
+      items.push(t("maintainStudyRoutine"));
     }
 
     return items.slice(0, 4);
-  }, [isBusiness, exams, homework, milestones, primaryCareer]);
+  }, [isBusiness, exams, homework, milestones, primaryCareer, t, tCareers]);
 
   useEffect(() => {
     if (!user || !profile || !supabase) return;
@@ -182,10 +185,10 @@ export default function WeeklyReviewPage() {
 
   return (
     <div className="space-y-7 pb-4 animate-fade-in">
-      <ScreenHeader eyebrow="This Week" title="Weekly Review" subtitle={formatWeekLabel(weekStart)} />
+      <ScreenHeader eyebrow={t("eyebrow")} title={t("title")} subtitle={formatWeekLabel(weekStart)} />
 
       {!ready ? (
-        <LoadingScreen message="Putting your week together…" fullScreen={false} />
+        <LoadingScreen message={t("puttingWeekTogether")} fullScreen={false} />
       ) : (
         <>
           <Card>
@@ -193,25 +196,25 @@ export default function WeeklyReviewPage() {
               {isBusiness ? (
                 <>
                   <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                    <Target className="h-4 w-4 text-accent" aria-hidden /> Plan
+                    <Target className="h-4 w-4 text-accent" aria-hidden /> {t("plan")}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Milestones completed: <span className="font-semibold text-foreground">{primaryCompletedCount}</span>
+                    {t("milestonesCompleted")} <span className="font-semibold text-foreground">{primaryCompletedCount}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Expenses logged this week: <span className="font-semibold text-foreground">${expensesThisWeek.toFixed(2)}</span>
+                    {t("expensesLoggedThisWeek")} <span className="font-semibold text-foreground">${expensesThisWeek.toFixed(2)}</span>
                   </p>
                 </>
               ) : (
                 <>
                   <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                    <BookOpen className="h-4 w-4 text-accent" aria-hidden /> School
+                    <BookOpen className="h-4 w-4 text-accent" aria-hidden /> {t("school")}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Completed assignments: <span className="font-semibold text-foreground">{primaryCompletedCount}</span>
+                    {t("completedAssignments")} <span className="font-semibold text-foreground">{primaryCompletedCount}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Study time: <span className="font-semibold text-foreground">{formatStudyTime(studyMinutes)}</span>
+                    {t("studyTime")} <span className="font-semibold text-foreground">{formatStudyTime(studyMinutes)}</span>
                   </p>
                 </>
               )}
@@ -221,12 +224,12 @@ export default function WeeklyReviewPage() {
           <Card>
             <CardContent className="space-y-1.5 p-5">
               <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Brain className="h-4 w-4 text-accent" aria-hidden /> Skills
+                <Brain className="h-4 w-4 text-accent" aria-hidden /> {t("skills")}
               </p>
               {skillsTouched.length === 0 ? (
-                <EmptyState icon={Sparkles} title="No skill activity yet" subtitle="Complete missions to start building skills." bare />
+                <EmptyState icon={Sparkles} title={t("noSkillActivityTitle")} subtitle={t("noSkillActivitySubtitle")} bare />
               ) : (
-                <p className="text-sm text-muted-foreground">{skillsTouched.map((k) => skillLabel(k)).join(", ")}</p>
+                <p className="text-sm text-muted-foreground">{skillsTouched.map((k) => tSkills(k)).join(", ")}</p>
               )}
             </CardContent>
           </Card>
@@ -234,11 +237,13 @@ export default function WeeklyReviewPage() {
           <Card>
             <CardContent className="space-y-1.5 p-5">
               <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Rocket className="h-4 w-4 text-accent" aria-hidden /> Future
+                <Rocket className="h-4 w-4 text-accent" aria-hidden /> {t("future")}
               </p>
               <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">{missionsCompleted}</span> mission
-                {missionsCompleted === 1 ? "" : "s"} completed this week.
+                {t.rich("missionsCompleted", {
+                  count: missionsCompleted,
+                  b: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+                })}
               </p>
             </CardContent>
           </Card>
@@ -246,17 +251,20 @@ export default function WeeklyReviewPage() {
           <Card>
             <CardContent className="space-y-2.5 p-5">
               <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Flame className="h-4 w-4 text-accent" aria-hidden /> Consistency
+                <Flame className="h-4 w-4 text-accent" aria-hidden /> {t("consistency")}
               </p>
               <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">{consistencyDays}/7</span> days active this week.
+                {t.rich("daysActive", {
+                  days: consistencyDays,
+                  b: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+                })}
               </p>
               <ProgressBar value={(consistencyDays / 7) * 100} tone="warning" className="h-1.5" />
             </CardContent>
           </Card>
 
           <section>
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Next Week&rsquo;s Focus</h2>
+            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t("nextWeeksFocus")}</h2>
             <Card>
               <CardContent className="p-5">
                 <ol className="space-y-3">
