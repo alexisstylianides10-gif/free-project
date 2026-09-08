@@ -391,6 +391,79 @@
     "save": "Save",
     "cancel": "Cancel"
   },
+  "HomeworkHelpPage": {
+    "somethingWentWrong": "Something went wrong.",
+    "loading": "Loading…",
+    "school": "School",
+    "notFound": "That homework item couldn't be found.",
+    "intro": "Tell your tutor what you're stuck on, or use a quick action below. It'll help you work through it, not do it for you.",
+    "questionPlaceholder": "Optional: describe exactly what you're stuck on…",
+    "thinking": "Thinking…",
+    "footerNote": "Homework Help teaches the concept. It won't just hand you the answer.",
+    "actions": {
+      "hint": {
+        "label": "Hint",
+        "framed": "Here's what I'm stuck on: \"{question}\". Give me a hint to get started, but don't solve it for me.",
+        "unframed": "Give me a hint to get started on this homework, but don't solve it for me."
+      },
+      "explain": {
+        "label": "Explain",
+        "framed": "Here's what I'm stuck on: \"{question}\". Help me understand the concept behind this.",
+        "unframed": "Help me understand the concept behind this homework."
+      },
+      "example": {
+        "label": "Show Similar Example",
+        "framed": "Here's what I'm stuck on: \"{question}\". Show me a similar worked example (not this exact problem) so I can figure mine out.",
+        "unframed": "Show me a similar worked example for this kind of homework so I can figure mine out."
+      },
+      "walkthrough": {
+        "label": "Walk Me Through It",
+        "framed": "Here's what I'm stuck on: \"{question}\". Walk me through it step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer.",
+        "unframed": "Walk me through this homework step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer."
+      }
+    }
+  },
+  "FlashcardsPage": {
+    "loadingFlashcards": "Loading flashcards…",
+    "couldNotGenerate": "Couldn't generate those flashcards.",
+    "generateError": "Something went wrong generating those flashcards.",
+    "writingFlashcards": "Writing your flashcards…",
+    "generateFlashcards": "Generate Flashcards",
+    "myFlashcards": "My flashcards",
+    "addSubjectFirst": "Add a subject first",
+    "addSubjectFirstSubtitle": "Come back here once you've added a subject to generate flashcards.",
+    "addSubject": "Add subject",
+    "subject": "Subject",
+    "generatingFrom": "Generating from",
+    "topic": "Topic",
+    "allTopics": "All topics",
+    "howMany": "How many",
+    "tapASet": "Tap a set below to start reviewing.",
+    "dueToday": "Due Today",
+    "cardsCount": "{count} cards",
+    "comingSoon": "Coming Soon",
+    "mastered": "Mastered",
+    "generateNewFlashcards": "Generate New Flashcards"
+  },
+  "FlashcardsReviewPage": {
+    "loadingReview": "Loading review…",
+    "dueToday": "Due Today",
+    "comingSoon": "Coming Soon",
+    "mastered": "Mastered",
+    "nothingToReview": "Nothing to review here",
+    "noCardsInBucket": "You don't have any \"{bucket}\" cards right now.",
+    "emptySession": "This review session is empty.",
+    "backToFlashcards": "Back to Flashcards",
+    "reviewComplete": "Review complete",
+    "resultsSummary": "{count, plural, one {# card} other {# cards}} reviewed: {knew} knew it, {almost} almost, {didnt} didn't know.",
+    "done": "Done",
+    "saving": "Saving…",
+    "cardXOfY": "Card {current} of {total}",
+    "tapToReveal": "Tap to reveal answer",
+    "didntKnow": "Didn't know",
+    "almost": "Almost",
+    "knewIt": "Knew it"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",

@@ -3,6 +3,7 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Lightbulb, BookOpen, Compass, Footprints, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
 import { useHomework } from "@/lib/hooks/domain";
@@ -16,41 +17,39 @@ interface LocalMessage {
   content: string;
 }
 
-const ACTIONS: { key: string; label: string; icon: typeof Lightbulb; frame: (q: string) => string }[] = [
-  {
-    key: "hint",
-    label: "Hint",
-    icon: Lightbulb,
-    frame: (q) => (q ? `Here's what I'm stuck on: "${q}". Give me a hint to get started, but don't solve it for me.` : "Give me a hint to get started on this homework, but don't solve it for me."),
-  },
-  {
-    key: "explain",
-    label: "Explain",
-    icon: BookOpen,
-    frame: (q) => (q ? `Here's what I'm stuck on: "${q}". Help me understand the concept behind this.` : "Help me understand the concept behind this homework."),
-  },
-  {
-    key: "example",
-    label: "Show Similar Example",
-    icon: Compass,
-    frame: (q) => (q ? `Here's what I'm stuck on: "${q}". Show me a similar worked example (not this exact problem) so I can figure mine out.` : "Show me a similar worked example for this kind of homework so I can figure mine out."),
-  },
-  {
-    key: "walkthrough",
-    label: "Walk Me Through It",
-    icon: Footprints,
-    frame: (q) =>
-      q
-        ? `Here's what I'm stuck on: "${q}". Walk me through it step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer.`
-        : "Walk me through this homework step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer.",
-  },
-];
-
 export default function HomeworkHelpPage({ params }: { params: Promise<{ homeworkId: string }> }) {
   const { homeworkId } = use(params);
   const { user } = useAuth();
+  const t = useTranslations("HomeworkHelpPage");
   const { data: homework, loading: homeworkLoading } = useHomework(user?.id);
   const hw = homework.find((h) => h.id === homeworkId);
+
+  const ACTIONS: { key: string; label: string; icon: typeof Lightbulb; frame: (q: string) => string }[] = [
+    {
+      key: "hint",
+      label: t("actions.hint.label"),
+      icon: Lightbulb,
+      frame: (q) => (q ? t("actions.hint.framed", { question: q }) : t("actions.hint.unframed")),
+    },
+    {
+      key: "explain",
+      label: t("actions.explain.label"),
+      icon: BookOpen,
+      frame: (q) => (q ? t("actions.explain.framed", { question: q }) : t("actions.explain.unframed")),
+    },
+    {
+      key: "example",
+      label: t("actions.example.label"),
+      icon: Compass,
+      frame: (q) => (q ? t("actions.example.framed", { question: q }) : t("actions.example.unframed")),
+    },
+    {
+      key: "walkthrough",
+      label: t("actions.walkthrough.label"),
+      icon: Footprints,
+      frame: (q) => (q ? t("actions.walkthrough.framed", { question: q }) : t("actions.walkthrough.unframed")),
+    },
+  ];
 
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<LocalMessage[]>([]);
@@ -68,26 +67,26 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
         body: JSON.stringify({ homeworkId, message: framedMessage }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Something went wrong.");
+      if (!res.ok) throw new Error(json.error || t("somethingWentWrong"));
       setMessages((prev) => [...prev, { role: "assistant", content: json.reply }]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setError(e instanceof Error ? e.message : t("somethingWentWrong"));
     } finally {
       setSending(false);
     }
   }
 
   if (homeworkLoading && !hw) {
-    return <p className="py-12 text-center text-sm text-muted-foreground">Loading…</p>;
+    return <p className="py-12 text-center text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   if (!hw) {
     return (
       <div className="space-y-5 animate-fade-in">
         <Link href="/app/school" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> School
+          <ArrowLeft className="h-4 w-4" /> {t("school")}
         </Link>
-        <p className="py-12 text-center text-sm text-muted-foreground">That homework item couldn&rsquo;t be found.</p>
+        <p className="py-12 text-center text-sm text-muted-foreground">{t("notFound")}</p>
       </div>
     );
   }
@@ -95,7 +94,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
   return (
     <div className="space-y-5 animate-fade-in">
       <Link href="/app/school" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> School
+        <ArrowLeft className="h-4 w-4" /> {t("school")}
       </Link>
 
       <div>
@@ -106,7 +105,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
           <PriorityBadge priority={hw.priority} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Tell your tutor what you&rsquo;re stuck on, or use a quick action below. It&rsquo;ll help you work through it, not do it for you.
+          {t("intro")}
         </p>
       </div>
 
@@ -115,7 +114,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
           <Textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Optional: describe exactly what you're stuck on…"
+            placeholder={t("questionPlaceholder")}
             rows={3}
             className="resize-none"
           />
@@ -155,7 +154,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
           {sending && (
             <div className="flex justify-start">
               <div className="bg-surface border border-border flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm text-muted-foreground shadow-subtle">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t("thinking")}
               </div>
             </div>
           )}
@@ -163,7 +162,7 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
       )}
       {error && <p className="text-xs text-danger">{error}</p>}
 
-      <p className="text-center text-caption text-muted-foreground">Homework Help teaches the concept. It won&rsquo;t just hand you the answer.</p>
+      <p className="text-center text-caption text-muted-foreground">{t("footerNote")}</p>
     </div>
   );
 }

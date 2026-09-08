@@ -391,6 +391,79 @@
     "save": "Enregistrer",
     "cancel": "Annuler"
   },
+  "HomeworkHelpPage": {
+    "somethingWentWrong": "Une erreur s'est produite.",
+    "loading": "Chargement…",
+    "school": "École",
+    "notFound": "Ce devoir est introuvable.",
+    "intro": "Dis à ton tuteur sur quoi tu bloques, ou utilise une action rapide ci-dessous. Il t'aidera à avancer, pas à faire le devoir à ta place.",
+    "questionPlaceholder": "Optionnel : décris exactement sur quoi tu bloques…",
+    "thinking": "Réflexion…",
+    "footerNote": "L'Aide aux Devoirs enseigne le concept. Elle ne te donnera pas directement la réponse.",
+    "actions": {
+      "hint": {
+        "label": "Indice",
+        "framed": "Voici sur quoi je bloque : « {question} ». Donne-moi un indice pour démarrer, mais ne le résous pas pour moi.",
+        "unframed": "Donne-moi un indice pour démarrer ce devoir, mais ne le résous pas pour moi."
+      },
+      "explain": {
+        "label": "Expliquer",
+        "framed": "Voici sur quoi je bloque : « {question} ». Aide-moi à comprendre le concept derrière ça.",
+        "unframed": "Aide-moi à comprendre le concept derrière ce devoir."
+      },
+      "example": {
+        "label": "Montrer un Exemple Similaire",
+        "framed": "Voici sur quoi je bloque : « {question} ». Montre-moi un exemple similaire résolu (pas cet exercice exact) pour que je puisse trouver le mien.",
+        "unframed": "Montre-moi un exemple similaire résolu pour ce type de devoir pour que je puisse trouver le mien."
+      },
+      "walkthrough": {
+        "label": "Guide-moi Étape par Étape",
+        "framed": "Voici sur quoi je bloque : « {question} ». Guide-moi étape par étape. Demande-moi ce que je sais déjà avant de me donner l'étape suivante. Ne me donne pas directement la réponse finale.",
+        "unframed": "Guide-moi étape par étape pour ce devoir. Demande-moi ce que je sais déjà avant de me donner l'étape suivante. Ne me donne pas directement la réponse finale."
+      }
+    }
+  },
+  "FlashcardsPage": {
+    "loadingFlashcards": "Chargement des cartes…",
+    "couldNotGenerate": "Impossible de générer ces cartes.",
+    "generateError": "Un problème est survenu lors de la génération de ces cartes.",
+    "writingFlashcards": "Rédaction de tes cartes…",
+    "generateFlashcards": "Générer des Cartes",
+    "myFlashcards": "Mes cartes",
+    "addSubjectFirst": "Ajoute d'abord une matière",
+    "addSubjectFirstSubtitle": "Reviens ici une fois que tu as ajouté une matière pour générer des cartes.",
+    "addSubject": "Ajouter une matière",
+    "subject": "Matière",
+    "generatingFrom": "Génération à partir de",
+    "topic": "Sujet",
+    "allTopics": "Tous les sujets",
+    "howMany": "Combien",
+    "tapASet": "Appuie sur un lot ci-dessous pour commencer à réviser.",
+    "dueToday": "À Réviser Aujourd'hui",
+    "cardsCount": "{count} cartes",
+    "comingSoon": "Bientôt",
+    "mastered": "Maîtrisées",
+    "generateNewFlashcards": "Générer de Nouvelles Cartes"
+  },
+  "FlashcardsReviewPage": {
+    "loadingReview": "Chargement de la révision…",
+    "dueToday": "À Réviser Aujourd'hui",
+    "comingSoon": "Bientôt",
+    "mastered": "Maîtrisées",
+    "nothingToReview": "Rien à réviser ici",
+    "noCardsInBucket": "Tu n'as aucune carte « {bucket} » pour le moment.",
+    "emptySession": "Cette session de révision est vide.",
+    "backToFlashcards": "Retour aux Cartes",
+    "reviewComplete": "Révision terminée",
+    "resultsSummary": "{count, plural, one {# carte} other {# cartes}} révisées : {knew} sues, {almost} presque, {didnt} pas sues.",
+    "done": "Terminé",
+    "saving": "Enregistrement…",
+    "cardXOfY": "Carte {current} sur {total}",
+    "tapToReveal": "Appuie pour révéler la réponse",
+    "didntKnow": "Pas sue",
+    "almost": "Presque",
+    "knewIt": "Sue"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

@@ -391,6 +391,79 @@
     "save": "Guardar",
     "cancel": "Cancelar"
   },
+  "HomeworkHelpPage": {
+    "somethingWentWrong": "Algo salió mal.",
+    "loading": "Cargando…",
+    "school": "Escuela",
+    "notFound": "No se pudo encontrar esa tarea.",
+    "intro": "Cuéntale a tu tutor en qué estás atascado, o usa una acción rápida abajo. Te ayudará a resolverlo, no lo hará por ti.",
+    "questionPlaceholder": "Opcional: describe exactamente en qué estás atascado…",
+    "thinking": "Pensando…",
+    "footerNote": "La Ayuda con Deberes enseña el concepto. No te dará la respuesta directamente.",
+    "actions": {
+      "hint": {
+        "label": "Pista",
+        "framed": "Esto es en lo que estoy atascado: \"{question}\". Dame una pista para empezar, pero no lo resuelvas por mí.",
+        "unframed": "Dame una pista para empezar estos deberes, pero no los resuelvas por mí."
+      },
+      "explain": {
+        "label": "Explicar",
+        "framed": "Esto es en lo que estoy atascado: \"{question}\". Ayúdame a entender el concepto detrás de esto.",
+        "unframed": "Ayúdame a entender el concepto detrás de estos deberes."
+      },
+      "example": {
+        "label": "Mostrar Ejemplo Similar",
+        "framed": "Esto es en lo que estoy atascado: \"{question}\". Muéstrame un ejemplo resuelto similar (no este problema exacto) para que pueda resolver el mío.",
+        "unframed": "Muéstrame un ejemplo resuelto similar para este tipo de deberes para que pueda resolver el mío."
+      },
+      "walkthrough": {
+        "label": "Guíame Paso a Paso",
+        "framed": "Esto es en lo que estoy atascado: \"{question}\". Guíame paso a paso. Pregúntame qué sé ya antes de decirme el siguiente paso. No me des directamente la respuesta final.",
+        "unframed": "Guíame paso a paso con estos deberes. Pregúntame qué sé ya antes de decirme el siguiente paso. No me des directamente la respuesta final."
+      }
+    }
+  },
+  "FlashcardsPage": {
+    "loadingFlashcards": "Cargando tarjetas…",
+    "couldNotGenerate": "No se pudieron generar esas tarjetas.",
+    "generateError": "Algo salió mal al generar esas tarjetas.",
+    "writingFlashcards": "Escribiendo tus tarjetas…",
+    "generateFlashcards": "Generar Tarjetas",
+    "myFlashcards": "Mis tarjetas",
+    "addSubjectFirst": "Añade una asignatura primero",
+    "addSubjectFirstSubtitle": "Vuelve aquí cuando hayas añadido una asignatura para generar tarjetas.",
+    "addSubject": "Añadir asignatura",
+    "subject": "Asignatura",
+    "generatingFrom": "Generando a partir de",
+    "topic": "Tema",
+    "allTopics": "Todos los temas",
+    "howMany": "Cuántas",
+    "tapASet": "Toca un set abajo para empezar a repasar.",
+    "dueToday": "Para Hoy",
+    "cardsCount": "{count} tarjetas",
+    "comingSoon": "Próximamente",
+    "mastered": "Dominadas",
+    "generateNewFlashcards": "Generar Nuevas Tarjetas"
+  },
+  "FlashcardsReviewPage": {
+    "loadingReview": "Cargando repaso…",
+    "dueToday": "Para Hoy",
+    "comingSoon": "Próximamente",
+    "mastered": "Dominadas",
+    "nothingToReview": "No hay nada que repasar aquí",
+    "noCardsInBucket": "No tienes ninguna tarjeta de \"{bucket}\" ahora mismo.",
+    "emptySession": "Esta sesión de repaso está vacía.",
+    "backToFlashcards": "Volver a Tarjetas",
+    "reviewComplete": "Repaso completado",
+    "resultsSummary": "{count, plural, one {# tarjeta} other {# tarjetas}} repasadas: {knew} sabidas, {almost} casi, {didnt} no sabidas.",
+    "done": "Hecho",
+    "saving": "Guardando…",
+    "cardXOfY": "Tarjeta {current} de {total}",
+    "tapToReveal": "Toca para ver la respuesta",
+    "didntKnow": "No lo sabía",
+    "almost": "Casi",
+    "knewIt": "Lo sabía"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",
