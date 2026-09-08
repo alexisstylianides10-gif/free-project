@@ -801,6 +801,50 @@
     "cancel": "Annuler",
     "deletePermanently": "Supprimer définitivement"
   },
+  "UpgradePage": {
+    "trackLabel": { "student": "Étudiant", "business": "Entreprise" },
+    "perks": {
+      "student": [
+        "Coach IA : ton mentor toujours disponible pour l'école, les compétences et l'orientation",
+        "Plans de révision IA construits autour de tes examens et échéances réels",
+        "Importe tes notes, photos ou PDF et obtiens une synthèse IA instantanée",
+        "Séances de tutorat IA, quiz et cartes mémoire à répétition espacée"
+      ],
+      "business": [
+        "Coach IA : ton mentor toujours disponible pour construire ton entreprise",
+        "Un état des lieux généré par IA et des jalons de départ pour ton idée",
+        "Idées marketing et de contenu rédigées par IA pour toute plateforme",
+        "Suivi des jalons, des indicateurs et de la concurrence au même endroit"
+      ]
+    },
+    "freeTagline": {
+      "student": "Le suivi scolaire (emploi du temps, devoirs, examens, métiers correspondants et ta feuille de route) est toujours gratuit.",
+      "business": "Les bases de ton plan d'affaires, la liste des jalons et le suivi des indicateurs sont toujours gratuits."
+    },
+    "couldNotStartCheckout": "Impossible de démarrer le paiement.",
+    "couldNotOpenPortal": "Impossible d'ouvrir le portail de facturation.",
+    "eyebrow": "{name} Plus",
+    "activateYourPlan": "Active ton plan {track}",
+    "onPlusEnjoy": "Tu es sur {name} Plus. Profites-en !",
+    "activationDelayed": "Paiement reçu, mais l'activation prend plus de temps que d'habitude.",
+    "activatingPlan": "Paiement reçu. Activation de ton plan…",
+    "continueToApp": "Continuer vers l'application",
+    "activationDelayedBody": "Ta carte a bien été débitée. C'est juste un délai de confirmation de notre côté. Essaie d'actualiser, ou va directement dans l'application ; elle se débloquera dès que ce sera à jour.",
+    "refresh": "Actualiser",
+    "goToApp": "Aller à l'application",
+    "daysLeftInTrial": "Il {days, plural, one {reste # jour} other {reste # jours}} à ton essai gratuit.",
+    "trialEnded": "Ton essai gratuit est terminé.",
+    "planPlusTrack": "{name} Plus · {track}",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "moAbbrev": "mois",
+    "yrAbbrev": "an",
+    "manageSubscription": "Gérer l'abonnement",
+    "payAmount": "Payer {price} $/{unit}",
+    "changePlan": "Changer de plan",
+    "continueToPayment": "Continuer vers le paiement",
+    "backToApp": "Retour à l'application"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

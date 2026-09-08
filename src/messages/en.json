@@ -801,6 +801,50 @@
     "cancel": "Cancel",
     "deletePermanently": "Delete permanently"
   },
+  "UpgradePage": {
+    "trackLabel": { "student": "Student", "business": "Business" },
+    "perks": {
+      "student": [
+        "AI Coach: your always-on mentor for school, skills, and career",
+        "AI study plans built around your real exams and deadlines",
+        "Upload notes, photos, or PDFs and get an instant AI breakdown",
+        "AI tutor sessions, quizzes, and spaced-repetition flashcards"
+      ],
+      "business": [
+        "AI Coach: your always-on mentor for building your business",
+        "An AI-generated snapshot and starter milestones for your idea",
+        "AI-drafted marketing and content ideas for any platform",
+        "Milestone, metrics, and competitor tracking in one place"
+      ]
+    },
+    "freeTagline": {
+      "student": "School tracking (timetable, homework, exams, career matches, and your roadmap) is always free.",
+      "business": "Your business plan basics, milestone checklist, and metrics log are always free."
+    },
+    "couldNotStartCheckout": "Couldn't start checkout.",
+    "couldNotOpenPortal": "Couldn't open the billing portal.",
+    "eyebrow": "{name} Plus",
+    "activateYourPlan": "Activate your {track} plan",
+    "onPlusEnjoy": "You're on {name} Plus. Enjoy!",
+    "activationDelayed": "Payment received, but activation is taking longer than usual.",
+    "activatingPlan": "Payment received. Activating your plan…",
+    "continueToApp": "Continue to app",
+    "activationDelayedBody": "Your card was charged successfully. This is just a delay confirming it on our side. Try refreshing, or head into the app now; it'll unlock as soon as it catches up.",
+    "refresh": "Refresh",
+    "goToApp": "Go to app",
+    "daysLeftInTrial": "{days, plural, one {# day} other {# days}} left in your free trial.",
+    "trialEnded": "Your free trial has ended.",
+    "planPlusTrack": "{name} Plus · {track}",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "moAbbrev": "mo",
+    "yrAbbrev": "yr",
+    "manageSubscription": "Manage subscription",
+    "payAmount": "Pay ${price}/{unit}",
+    "changePlan": "Change plan",
+    "continueToPayment": "Continue to payment",
+    "backToApp": "Back to app"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",

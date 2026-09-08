@@ -3,39 +3,34 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Sparkles, Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
 import { isEntitled } from "@/lib/billing/entitlement";
-import { getPlanOption, TRACK_LABEL, type BillingInterval } from "@/lib/billing/plans";
+import { getPlanOption, type BillingInterval } from "@/lib/billing/plans";
 import { CheckoutForm } from "@/components/billing/CheckoutForm";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { branding } from "@/lib/branding";
 
-const PERKS_BY_TRACK = {
-  student: [
-    "AI Coach: your always-on mentor for school, skills, and career",
-    "AI study plans built around your real exams and deadlines",
-    "Upload notes, photos, or PDFs and get an instant AI breakdown",
-    "AI tutor sessions, quizzes, and spaced-repetition flashcards",
-  ],
-  business: [
-    "AI Coach: your always-on mentor for building your business",
-    "An AI-generated snapshot and starter milestones for your idea",
-    "AI-drafted marketing and content ideas for any platform",
-    "Milestone, metrics, and competitor tracking in one place",
-  ],
-} as const;
-
-const FREE_TAGLINE_BY_TRACK = {
-  student: "School tracking (timetable, homework, exams, career matches, and your roadmap) is always free.",
-  business: "Your business plan basics, milestone checklist, and metrics log are always free.",
-} as const;
-
 export default function UpgradePage() {
   const { profile, refreshProfile } = useAuth();
   const router = useRouter();
+  const t = useTranslations("UpgradePage");
+
+  const TRACK_LABEL_LOCAL: Record<"student" | "business", string> = {
+    student: t("trackLabel.student"),
+    business: t("trackLabel.business"),
+  };
+  const PERKS_BY_TRACK = {
+    student: t.raw("perks.student") as string[],
+    business: t.raw("perks.business") as string[],
+  };
+  const FREE_TAGLINE_BY_TRACK = {
+    student: t("freeTagline.student"),
+    business: t("freeTagline.business"),
+  };
 
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [startingCheckout, setStartingCheckout] = useState(false);
@@ -96,10 +91,10 @@ export default function UpgradePage() {
         body: JSON.stringify({ interval }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Couldn't start checkout.");
+      if (!res.ok) throw new Error(json.error || t("couldNotStartCheckout"));
       setClientSecret(json.clientSecret);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't start checkout.");
+      setError(e instanceof Error ? e.message : t("couldNotStartCheckout"));
     } finally {
       setStartingCheckout(false);
     }
@@ -111,10 +106,10 @@ export default function UpgradePage() {
     try {
       const res = await authedFetch("/api/billing/create-portal-session", { method: "POST" });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Couldn't open the billing portal.");
+      if (!res.ok) throw new Error(json.error || t("couldNotOpenPortal"));
       window.location.href = json.url;
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't open the billing portal.");
+      setError(e instanceof Error ? e.message : t("couldNotOpenPortal"));
       setPortalLoading(false);
     }
   }
@@ -125,7 +120,7 @@ export default function UpgradePage() {
 
   return (
     <div className="space-y-6 pb-4 animate-fade-in">
-      <ScreenHeader eyebrow={`${branding.name} Plus`} title={`Activate your ${TRACK_LABEL[track].toLowerCase()} plan`} />
+      <ScreenHeader eyebrow={t("eyebrow", { name: branding.name })} title={t("activateYourPlan", { track: TRACK_LABEL_LOCAL[track].toLowerCase() })} />
 
       {paymentSucceeded && (
         <Card className="border-success/40">
@@ -134,29 +129,28 @@ export default function UpgradePage() {
               {!onPlus && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-success" />}
               <p className="text-sm text-foreground">
                 {onPlus
-                  ? "You're on Alxioum Plus. Enjoy!"
+                  ? t("onPlusEnjoy", { name: branding.name })
                   : activationTimedOut
-                    ? "Payment received, but activation is taking longer than usual."
-                    : "Payment received. Activating your plan…"}
+                    ? t("activationDelayed")
+                    : t("activatingPlan")}
               </p>
             </div>
             {onPlus ? (
               <Button size="sm" className="mt-3 w-full" onClick={() => router.push("/app")}>
-                Continue to app
+                {t("continueToApp")}
               </Button>
             ) : (
               activationTimedOut && (
                 <div className="mt-3 space-y-2">
                   <p className="text-xs text-muted-foreground">
-                    Your card was charged successfully. This is just a delay confirming it on our side. Try refreshing,
-                    or head into the app now; it&rsquo;ll unlock as soon as it catches up.
+                    {t("activationDelayedBody")}
                   </p>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" className="flex-1" onClick={() => refreshProfile()}>
-                      Refresh
+                      {t("refresh")}
                     </Button>
                     <Button size="sm" variant="ghost" className="flex-1" onClick={() => router.push("/app")}>
-                      Go to app
+                      {t("goToApp")}
                     </Button>
                   </div>
                 </div>
@@ -169,7 +163,7 @@ export default function UpgradePage() {
       {profile?.plan_status === "trialing" && !onPlus && !paymentSucceeded && (
         <Card className="border-accent/30">
           <CardContent className="p-4 text-sm text-foreground">
-            {daysLeft > 0 ? `${daysLeft} day${daysLeft === 1 ? "" : "s"} left in your free trial.` : "Your free trial has ended."}
+            {daysLeft > 0 ? t("daysLeftInTrial", { days: daysLeft }) : t("trialEnded")}
           </CardContent>
         </Card>
       )}
@@ -178,7 +172,7 @@ export default function UpgradePage() {
         <Card>
           <CardContent className="p-6">
             <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-accent">
-              <Sparkles className="h-3.5 w-3.5" /> {branding.name} Plus · {TRACK_LABEL[track]}
+              <Sparkles className="h-3.5 w-3.5" /> {t("planPlusTrack", { name: branding.name, track: TRACK_LABEL_LOCAL[track] })}
             </p>
 
             {!onPlus && !clientSecret && (
@@ -194,10 +188,10 @@ export default function UpgradePage() {
                     }
                   >
                     {i === "monthly" ? (
-                      "Monthly"
+                      t("monthly")
                     ) : (
                       <span className="inline-flex items-center gap-1">
-                        Yearly
+                        {t("yearly")}
                         <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-2xs font-bold text-success">
                           -{yearlySavingsPercent}%
                         </span>
@@ -210,7 +204,7 @@ export default function UpgradePage() {
 
             <p className="mt-4 text-3xl font-extrabold text-foreground">
               ${planOption.priceUsd}
-              <span className="text-base font-medium text-muted-foreground">/{interval === "monthly" ? "mo" : "yr"}</span>
+              <span className="text-base font-medium text-muted-foreground">/{interval === "monthly" ? t("moAbbrev") : t("yrAbbrev")}</span>
             </p>
 
             {!clientSecret && (
@@ -229,27 +223,27 @@ export default function UpgradePage() {
             <div className="mt-6 space-y-2.5">
               {onPlus ? (
                 <Button size="lg" variant="outline" className="w-full" onClick={openPortal} disabled={portalLoading}>
-                  {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Manage subscription"}
+                  {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("manageSubscription")}
                 </Button>
               ) : clientSecret ? (
                 <>
                   <CheckoutForm
                     clientSecret={clientSecret}
-                    submitLabel={`Pay $${planOption.priceUsd}/${interval === "monthly" ? "mo" : "yr"}`}
+                    submitLabel={t("payAmount", { price: planOption.priceUsd, unit: interval === "monthly" ? t("moAbbrev") : t("yrAbbrev") })}
                     onSuccess={() => setPaymentSucceeded(true)}
                   />
                   <Button size="sm" variant="ghost" className="w-full" onClick={() => setClientSecret(null)}>
-                    Change plan
+                    {t("changePlan")}
                   </Button>
                 </>
               ) : (
                 <Button size="lg" className="w-full" onClick={startCheckout} disabled={startingCheckout}>
-                  {startingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue to payment"}
+                  {startingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : t("continueToPayment")}
                 </Button>
               )}
               {!clientSecret && (
                 <Button size="sm" variant="ghost" className="w-full" onClick={() => router.push("/app")}>
-                  Back to app
+                  {t("backToApp")}
                 </Button>
               )}
             </div>

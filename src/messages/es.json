@@ -801,6 +801,50 @@
     "cancel": "Cancelar",
     "deletePermanently": "Eliminar permanentemente"
   },
+  "UpgradePage": {
+    "trackLabel": { "student": "Estudiante", "business": "Negocio" },
+    "perks": {
+      "student": [
+        "Coach IA: tu mentor siempre disponible para el colegio, habilidades y carrera",
+        "Planes de estudio con IA creados a partir de tus exámenes y plazos reales",
+        "Sube apuntes, fotos o PDFs y obtén un resumen instantáneo con IA",
+        "Sesiones de tutoría IA, cuestionarios y tarjetas de repetición espaciada"
+      ],
+      "business": [
+        "Coach IA: tu mentor siempre disponible para construir tu negocio",
+        "Un diagnóstico generado por IA y hitos iniciales para tu idea",
+        "Ideas de marketing y contenido redactadas por IA para cualquier plataforma",
+        "Seguimiento de hitos, métricas y competencia en un solo lugar"
+      ]
+    },
+    "freeTagline": {
+      "student": "El seguimiento escolar (horario, tareas, exámenes, carreras afines y tu ruta) siempre es gratis.",
+      "business": "Lo básico de tu plan de negocio, la lista de hitos y el registro de métricas siempre son gratis."
+    },
+    "couldNotStartCheckout": "No se pudo iniciar el pago.",
+    "couldNotOpenPortal": "No se pudo abrir el portal de facturación.",
+    "eyebrow": "{name} Plus",
+    "activateYourPlan": "Activa tu plan de {track}",
+    "onPlusEnjoy": "Ya tienes {name} Plus. ¡Disfrútalo!",
+    "activationDelayed": "Pago recibido, pero la activación está tardando más de lo habitual.",
+    "activatingPlan": "Pago recibido. Activando tu plan…",
+    "continueToApp": "Continuar a la app",
+    "activationDelayedBody": "Tu tarjeta se cobró correctamente. Solo hay un retraso al confirmarlo de nuestro lado. Prueba a actualizar, o entra ya a la app; se desbloqueará en cuanto se ponga al día.",
+    "refresh": "Actualizar",
+    "goToApp": "Ir a la app",
+    "daysLeftInTrial": "Te {days, plural, one {queda # día} other {quedan # días}} de tu prueba gratuita.",
+    "trialEnded": "Tu prueba gratuita ha terminado.",
+    "planPlusTrack": "{name} Plus · {track}",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "moAbbrev": "mes",
+    "yrAbbrev": "año",
+    "manageSubscription": "Gestionar suscripción",
+    "payAmount": "Pagar ${price}/{unit}",
+    "changePlan": "Cambiar plan",
+    "continueToPayment": "Continuar al pago",
+    "backToApp": "Volver a la app"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",
