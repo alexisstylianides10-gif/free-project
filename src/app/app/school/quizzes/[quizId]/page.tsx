@@ -3,6 +3,7 @@
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock, TriangleAlert, XCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useAchievementToast } from "@/components/providers/AchievementToastProvider";
 import { supabase } from "@/lib/supabase/client";
@@ -27,6 +28,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
   const router = useRouter();
   const { user } = useAuth();
   const { notify } = useAchievementToast();
+  const t = useTranslations("TakeQuizPage");
 
   const [quiz, setQuiz] = useState<StudyQuiz | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,7 +90,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
           }),
         });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? "Couldn't grade that quiz.");
+        if (!res.ok) throw new Error(json.error ?? t("couldNotGrade"));
 
         if (quiz.is_mock_exam && json.next_focus_note) {
           try {
@@ -109,12 +111,12 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
 
         router.push(`/app/school/quizzes/${quiz.id}/results/${json.attempt.id}`);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Something went wrong submitting your answers.");
+        setError(e instanceof Error ? e.message : t("submitError"));
         submittingRef.current = false;
         setSubmitting(false);
       }
     },
-    [quiz, router, notify]
+    [quiz, router, notify, t]
   );
 
   // Mock-exam countdown — auto-submits whatever's been answered when it hits zero.
@@ -166,13 +168,13 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
     advance({ ...answers, [question.id]: draft });
   }
 
-  if (loading) return <LoadingScreen message="Loading your quiz…" fullScreen={false} />;
+  if (loading) return <LoadingScreen message={t("loadingQuiz")} fullScreen={false} />;
   if (notFound || !quiz || !question) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
           <TriangleAlert className="h-6 w-6 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Couldn&apos;t find that quiz.</p>
+          <p className="text-sm text-muted-foreground">{t("quizNotFound")}</p>
         </CardContent>
       </Card>
     );
@@ -186,11 +188,11 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {subject?.name ?? "Quiz"}
-            {quiz.is_mock_exam ? " · Mock Exam" : topic ? ` · ${topic.name}` : ""}
+            {subject?.name ?? t("quiz")}
+            {quiz.is_mock_exam ? ` · ${t("mockExam")}` : topic ? ` · ${topic.name}` : ""}
           </p>
           <p className="mt-0.5 text-sm font-bold text-foreground">
-            Question {index + 1} of {total}
+            {t("questionXOfY", { current: index + 1, total })}
           </p>
         </div>
         {secondsLeft !== null && (
@@ -215,7 +217,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
       <Card>
         <CardContent className="space-y-5 p-5">
           {question.type === "scenario" && (
-            <span className="inline-block rounded-full bg-accent-soft px-2.5 py-1 text-caption font-semibold text-accent">Scenario</span>
+            <span className="inline-block rounded-full bg-accent-soft px-2.5 py-1 text-caption font-semibold text-accent">{t("scenario")}</span>
           )}
           <p className="text-base font-semibold leading-relaxed text-foreground">{question.prompt}</p>
 
@@ -282,7 +284,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
               autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder={question.type === "fill_blank" ? "Fill in the blank…" : "Type your answer…"}
+              placeholder={question.type === "fill_blank" ? t("fillInTheBlank") : t("typeYourAnswer")}
               rows={question.type === "scenario" ? 5 : 3}
               className="resize-y leading-relaxed"
             />
@@ -290,7 +292,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
 
           {checked && !quiz.is_mock_exam && (
             <div className={cn("rounded-xl p-3.5 text-sm leading-relaxed", isCorrectSelection ? "bg-success-soft text-success" : "bg-danger-soft text-danger")}>
-              <p className="font-bold">{isCorrectSelection ? "Correct" : `Not quite. Correct answer: ${question.answer}`}</p>
+              <p className="font-bold">{isCorrectSelection ? t("correct") : t("notQuite", { answer: question.answer })}</p>
               {question.explanation && <p className="mt-1 text-foreground/80">{question.explanation}</p>}
             </div>
           )}
@@ -299,18 +301,18 @@ export default function TakeQuizPage({ params }: { params: Promise<{ quizId: str
 
       {(question.type === "short_answer" || question.type === "fill_blank" || question.type === "scenario") && (
         <Button size="lg" className="w-full" disabled={submitting} onClick={submitFreeText}>
-          {isLast ? (submitting ? "Submitting…" : "Submit Quiz") : "Next"}
+          {isLast ? (submitting ? t("submitting") : t("submitQuiz")) : t("next")}
         </Button>
       )}
 
       {(question.type === "multiple_choice" || question.type === "true_false") && checked && !quiz.is_mock_exam && (
         <Button size="lg" className="w-full" disabled={submitting} onClick={goNext}>
-          {isLast ? (submitting ? "Submitting…" : "Submit Quiz") : "Next"}
+          {isLast ? (submitting ? t("submitting") : t("submitQuiz")) : t("next")}
         </Button>
       )}
 
       {submitting && (question.type === "multiple_choice" || question.type === "true_false") && quiz.is_mock_exam && (
-        <p className="text-center text-xs text-muted-foreground">Grading your answers…</p>
+        <p className="text-center text-xs text-muted-foreground">{t("gradingAnswers")}</p>
       )}
     </div>
   );
