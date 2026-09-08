@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getAchievement } from "@/lib/catalog/achievements";
+import { authedFetch } from "@/lib/api";
 
 /** The browser CustomEvent name `AchievementToastProvider` listens for.
  * Kept as a small shared constant rather than a magic string on both ends. */
@@ -43,6 +44,12 @@ export async function awardAchievementOnce(supabase: SupabaseClient, userId: str
     });
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent(ACHIEVEMENT_UNLOCKED_EVENT, { detail: { key } }));
+      // Fire-and-forget: a push notification is a nice-to-have alongside the
+      // toast/bell, not something worth blocking or failing this call over.
+      authedFetch("/api/push/send", {
+        method: "POST",
+        body: JSON.stringify({ title: "Achievement unlocked", body: def.title, href: "/app/profile" }),
+      }).catch(() => {});
     }
   }
   return newlyAwarded;

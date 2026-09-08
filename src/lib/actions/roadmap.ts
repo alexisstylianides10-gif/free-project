@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ROADMAP_LEVELS } from "@/lib/catalog/roadmap";
+import { authedFetch } from "@/lib/api";
 
 /** The browser CustomEvent name a future toast/badge listener could use.
  * Kept as a small shared constant rather than a magic string on both ends. */
@@ -63,6 +64,14 @@ export async function advanceRoadmapLevel(supabase: SupabaseClient, userId: stri
       });
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent(ROADMAP_LEVEL_UP_EVENT, { detail: { level } }));
+        authedFetch("/api/push/send", {
+          method: "POST",
+          body: JSON.stringify({
+            title: `Roadmap: Level ${level} complete`,
+            body: def?.title ?? `You completed level ${level}.`,
+            href: "/app/future",
+          }),
+        }).catch(() => {});
       }
     }
   }

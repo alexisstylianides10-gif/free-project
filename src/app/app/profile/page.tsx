@@ -25,6 +25,7 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { InstallAppCard } from "@/components/shared/InstallAppCard";
+import { PushNotificationToggle } from "@/components/shared/PushNotificationToggle";
 import { branding } from "@/lib/branding";
 
 const DELETE_CONFIRM_PHRASE = "DELETE";
@@ -208,6 +209,12 @@ export default function ProfilePage() {
           <CardContent className="p-4">
             <p className="mb-2.5 text-sm font-medium text-foreground">Appearance</p>
             <ThemeToggle />
+          </CardContent>
+        </Card>
+        <Card className="mt-3">
+          <CardContent className="p-4">
+            <p className="mb-2.5 text-sm font-medium text-foreground">Notifications</p>
+            <PushNotificationToggle />
           </CardContent>
         </Card>
         <Card className="mt-3">

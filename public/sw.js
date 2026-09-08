@@ -29,3 +29,38 @@ self.addEventListener("fetch", (event) => {
     caches.match(event.request).then((cached) => cached ?? fetch(event.request))
   );
 });
+
+// Web Push (Android Chrome, and iOS 16.4+ once added to the home screen).
+// The payload is always our own JSON from src/lib/push/webpush.ts's
+// PushPayload shape — never anything from a third party — so no origin
+// check is needed here the way the fetch handler above needs one.
+self.addEventListener("push", (event) => {
+  let payload = { title: "Alxioum", body: "", href: "/app" };
+  try {
+    if (event.data) payload = { ...payload, ...event.data.json() };
+  } catch {
+    // Malformed/empty push payload — fall back to the generic title above
+    // rather than dropping the notification entirely.
+  }
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { href: payload.href },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const href = event.notification.data?.href || "/app";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
+      for (const client of clientsList) {
+        if (client.url.includes(href) && "focus" in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(href);
+    })
+  );
+});

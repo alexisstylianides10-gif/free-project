@@ -637,3 +637,36 @@ create index if not exists notifications_user_idx on public.notifications (user_
 
 alter table public.notifications enable row level security;
 create policy "notifications_all_own" on public.notifications for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Web Push subscriptions (iOS 16.4+ home-screen PWAs and Android Chrome).
+-- One row per device/browser a user has enabled notifications on, so a
+-- push fans out to every device they've opted in on, not just the most
+-- recent one.
+create table if not exists public.push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth_key text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists push_subscriptions_user_idx on public.push_subscriptions (user_id);
+
+alter table public.push_subscriptions enable row level security;
+create policy "push_subscriptions_all_own" on public.push_subscriptions for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Dedup marker so the daily deadline-reminder cron (service-role, see
+-- /api/cron/deadline-reminders) never pushes the same exam/homework/
+-- milestone deadline to the same user more than once — independent of
+-- `notifications`'s own dismiss-marker rows (src/lib/notifications.ts),
+-- which mean something different (the student saw and cleared it in-app).
+create table if not exists public.push_sent_deadlines (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  deadline_key text not null, -- same synthetic id shape as NotificationItem.id, e.g. "deadline-exam-{id}"
+  sent_at timestamptz not null default now(),
+  primary key (user_id, deadline_key)
+);
+
+alter table public.push_sent_deadlines enable row level security;
+create policy "push_sent_deadlines_all_own" on public.push_sent_deadlines for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
