@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, Mail, ArrowRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -15,6 +16,7 @@ const RESEND_COOLDOWN_SECONDS = 45;
 
 export function SignupClient() {
   const router = useRouter();
+  const t = useTranslations("SignupPage");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +53,7 @@ export function SignupClient() {
     if (!supabase) return false;
     const { error: profileError } = await supabase.from("profiles").insert({ id: userId, full_name: fullName });
     if (profileError) {
-      setError("Your account was created, but we couldn't set it up yet. Try logging in.");
+      setError(t("profileSetupFailed"));
       return false;
     }
     router.push("/choose-plan");
@@ -62,11 +64,11 @@ export function SignupClient() {
     e.preventDefault();
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setError("Sign up isn't available right now. The backend isn't configured.");
+      setError(t("backendUnavailable"));
       return;
     }
     if (name.trim().length < 2) {
-      setError("Enter your first name.");
+      setError(t("enterFirstName"));
       return;
     }
     setLoading(true);
@@ -102,12 +104,12 @@ export function SignupClient() {
     setVerifyError(null);
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setVerifyError("Verification isn't available right now. The backend isn't configured.");
+      setVerifyError(t("verificationUnavailable"));
       return;
     }
     const trimmed = code.trim();
     if (trimmed.length !== 6) {
-      setVerifyError("Enter the 6-digit code from your email.");
+      setVerifyError(t("enterCode"));
       return;
     }
     setVerifyLoading(true);
@@ -124,7 +126,7 @@ export function SignupClient() {
       return;
     }
     if (!data.session || !data.user) {
-      setVerifyError("Couldn't verify that code. Try again or request a new one.");
+      setVerifyError(t("couldntVerifyCode"));
       setVerifyLoading(false);
       return;
     }
@@ -159,7 +161,7 @@ export function SignupClient() {
       setVerifyError(resendErr.message);
       return;
     }
-    setResendMessage("New code sent.");
+    setResendMessage(t("newCodeSent"));
     setResendCooldown(RESEND_COOLDOWN_SECONDS);
   }
 
@@ -174,20 +176,19 @@ export function SignupClient() {
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/15">
             <AlertTriangle className="h-6 w-6 text-danger" />
           </span>
-          <h1 className="mt-6 text-xl font-bold text-foreground">Almost there</h1>
+          <h1 className="mt-6 text-xl font-bold text-foreground">{t("almostThere")}</h1>
           <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-            Your email is confirmed, but we hit a problem finishing setup for{" "}
-            <span className="text-foreground">{email}</span>.
+            {t.rich("setupProblem", { email: () => <span className="text-foreground">{email}</span> })}
           </p>
           <p className="mt-2 max-w-xs text-sm text-danger">{error}</p>
 
           <div className="mt-8 w-full max-w-xs space-y-3">
             <Button type="button" size="lg" className="w-full" onClick={handleRetryProfile} disabled={verifyLoading}>
-              {verifyLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Try again"}
+              {verifyLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("tryAgain")}
             </Button>
             <Link href="/login">
               <Button type="button" size="lg" variant="secondary" className="w-full">
-                Log in instead
+                {t("logInInstead")}
               </Button>
             </Link>
           </div>
@@ -200,10 +201,9 @@ export function SignupClient() {
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand">
           <Mail className="h-6 w-6 text-white" />
         </span>
-        <h1 className="mt-6 text-xl font-bold text-foreground">Check your email</h1>
+        <h1 className="mt-6 text-xl font-bold text-foreground">{t("checkEmail")}</h1>
         <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-          We sent a 6-digit code to <span className="text-foreground">{email}</span>. Enter it below to confirm your
-          account.
+          {t.rich("codeSentTo", { email: () => <span className="text-foreground">{email}</span> })}
         </p>
         <form onSubmit={handleVerifyCode} className="mt-8 w-full max-w-xs space-y-3.5">
           <Input
@@ -221,7 +221,7 @@ export function SignupClient() {
           {resendMessage && !verifyError && !error && <p className="text-sm text-success">{resendMessage}</p>}
 
           <Button type="submit" size="lg" className="w-full" disabled={verifyLoading}>
-            {verifyLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Confirm account <ArrowRight className="h-4 w-4" /></>}
+            {verifyLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t("confirmAccount")} <ArrowRight className="h-4 w-4" /></>}
           </Button>
         </form>
 
@@ -231,17 +231,10 @@ export function SignupClient() {
           disabled={resendCooldown > 0 || resendLoading}
           className="mt-4 text-sm font-semibold text-foreground underline underline-offset-4 disabled:pointer-events-none disabled:opacity-40"
         >
-          {resendLoading
-            ? "Sending…"
-            : resendCooldown > 0
-              ? `Resend code (${resendCooldown}s)`
-              : "Resend code"}
+          {resendLoading ? t("sending") : resendCooldown > 0 ? t("resendCodeCooldown", { seconds: resendCooldown }) : t("resendCode")}
         </button>
 
-        <p className="mt-6 text-xs text-muted-foreground">
-          Prefer the link instead? Click &ldquo;Confirm your email&rdquo; in the message we sent, and it&rsquo;ll take you
-          straight into the app.
-        </p>
+        <p className="mt-6 text-xs text-muted-foreground">{t("preferLink")}</p>
 
       </main>
     );
@@ -253,14 +246,12 @@ export function SignupClient() {
         <div className="mx-auto w-full max-w-sm">
           <LogoMark size={44} className="mx-auto lg:mx-0" />
           <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground lg:text-left">
-            Create your account
+            {t("title")}
           </h1>
-          <p className="mt-1.5 text-center text-sm text-muted-foreground lg:text-left">
-            Create an account, then pick your plan and build your future.
-          </p>
+          <p className="mt-1.5 text-center text-sm text-muted-foreground lg:text-left">{t("subtitle")}</p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
-            <Field label="First name">
+            <Field label={t("firstName")}>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -268,7 +259,7 @@ export function SignupClient() {
                 autoComplete="given-name"
               />
             </Field>
-            <Field label="Email">
+            <Field label={t("email")}>
               <Input
                 type="email"
                 value={email}
@@ -278,12 +269,12 @@ export function SignupClient() {
                 required
               />
             </Field>
-            <Field label="Password">
+            <Field label={t("password")}>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 8 characters"
+                placeholder={t("passwordPlaceholder")}
                 autoComplete="new-password"
                 minLength={8}
                 required
@@ -293,19 +284,18 @@ export function SignupClient() {
             {error && <p className="text-sm text-danger">{error}</p>}
 
             <Button type="submit" size="lg" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Create account <ArrowRight className="h-4 w-4" /></>}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t("createAccount")} <ArrowRight className="h-4 w-4" /></>}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground lg:text-left">
-            Already have an account?{" "}
+            {t("alreadyHaveAccount")}{" "}
             <Link href="/login" className="font-semibold text-foreground underline underline-offset-4">
-              Log in
+              {t("logIn")}
             </Link>
           </p>
           <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground lg:text-left">
-            By continuing you agree that {branding.name} is a study and career-exploration tool, not a substitute for
-            school or a guarantee of any outcome.
+            {t("agreeNotice", { name: branding.name })}
           </p>
         </div>
       </div>

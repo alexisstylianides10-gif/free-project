@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -53,6 +54,9 @@ const QUESTION_COUNT = 11;
 export default function StudentOnboarding() {
   const router = useRouter();
   const { user, profile, refreshProfile } = useAuth();
+  const t = useTranslations("StudentOnboarding");
+  const tOptions = useTranslations("OnboardingOptions");
+  const tContext = useTranslations("OnboardingContext");
   const [step, setStep] = useState(0); // 0..9 = questions, 10 = results
   const [answers, setAnswers] = useState<Answers>(EMPTY_ANSWERS);
   const [submitting, setSubmitting] = useState(false);
@@ -122,7 +126,7 @@ export default function StudentOnboarding() {
   }
 
   if (submitting) {
-    return <LoadingScreen message="Researching your school and building your plan. This can take up to a minute…" />;
+    return <LoadingScreen message={t("buildingPlan")} />;
   }
 
   if (step === QUESTION_COUNT) {
@@ -137,17 +141,17 @@ export default function StudentOnboarding() {
       track="student"
       footer={
         <Button size="lg" className="w-full" disabled={!isValid} onClick={next}>
-          Continue
+          {t("continue")}
         </Button>
       }
     >
       {step === 0 && (
-        <Question title="What year are you in?">
+        <Question title={t("q0Title")}>
           <div className="grid grid-cols-2 gap-2.5">
             {YEAR_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`years.${o.key}`)}
                 compact
                 selected={answers.yearGroup === o.key}
                 onClick={() => setAnswers({ ...answers, yearGroup: o.key })}
@@ -158,27 +162,29 @@ export default function StudentOnboarding() {
       )}
 
       {step === 1 && (
-        <Question title="What country do you study in?" context={personalizedContext(1, answers)} className="flex-1 overflow-hidden">
+        <Question title={t("q1Title")} context={personalizedContext(1, answers, tContext, tOptions)} className="flex-1 overflow-hidden">
           <CountrySelect value={answers.country} onChange={(country) => setAnswers({ ...answers, country })} />
         </Question>
       )}
 
       {step === 2 && (
-        <Question title="What school do you go to?" subtitle="This helps us match your real timetable and curriculum" context={personalizedContext(2, answers)}>
+        <Question title={t("q2Title")} subtitle={t("q2Subtitle")} context={personalizedContext(2, answers, tContext, tOptions)}>
           <Input
             autoFocus
             value={answers.schoolName}
             onChange={(e) => setAnswers({ ...answers, schoolName: e.target.value })}
-            placeholder="e.g. Lincoln High School"
+            placeholder={t("q2Placeholder")}
             className="h-12 text-body"
           />
         </Question>
       )}
 
       {step === 3 && (
-        <Question title="What subjects do you enjoy most?" subtitle="Select as many as you like" context={personalizedContext(3, answers)}>
+        <Question title={t("q3Title")} subtitle={t("selectAsManyAsYouLike")} context={personalizedContext(3, answers, tContext, tOptions)}>
           <OptionGrid
             options={SUBJECT_OPTIONS}
+            group="subjects"
+            t={tOptions}
             selected={answers.subjects}
             onToggle={(key) => setAnswers({ ...answers, subjects: toggle(answers.subjects, key) })}
           />
@@ -186,9 +192,11 @@ export default function StudentOnboarding() {
       )}
 
       {step === 4 && (
-        <Question title="What are you naturally interested in?" subtitle="Select as many as you like" context={personalizedContext(4, answers)}>
+        <Question title={t("q4Title")} subtitle={t("selectAsManyAsYouLike")} context={personalizedContext(4, answers, tContext, tOptions)}>
           <OptionGrid
             options={INTEREST_OPTIONS}
+            group="interests"
+            t={tOptions}
             selected={answers.interests}
             onToggle={(key) => setAnswers({ ...answers, interests: toggle(answers.interests, key) })}
             showEmoji
@@ -197,9 +205,11 @@ export default function StudentOnboarding() {
       )}
 
       {step === 5 && (
-        <Question title="What are you already good at?" subtitle="Select as many as you like" context={personalizedContext(5, answers)}>
+        <Question title={t("q5Title")} subtitle={t("selectAsManyAsYouLike")} context={personalizedContext(5, answers, tContext, tOptions)}>
           <OptionGrid
             options={STRENGTH_OPTIONS}
+            group="strengths"
+            t={tOptions}
             selected={answers.strengths}
             onToggle={(key) => setAnswers({ ...answers, strengths: toggle(answers.strengths, key) })}
           />
@@ -207,9 +217,11 @@ export default function StudentOnboarding() {
       )}
 
       {step === 6 && (
-        <Question title="What would you like to explore?" subtitle="Select as many as you like" context={personalizedContext(6, answers)}>
+        <Question title={t("q6Title")} subtitle={t("selectAsManyAsYouLike")} context={personalizedContext(6, answers, tContext, tOptions)}>
           <OptionGrid
             options={EXPLORE_OPTIONS}
+            group="explore"
+            t={tOptions}
             selected={answers.exploreGoals}
             onToggle={(key) => setAnswers({ ...answers, exploreGoals: toggle(answers.exploreGoals, key) })}
           />
@@ -217,12 +229,12 @@ export default function StudentOnboarding() {
       )}
 
       {step === 7 && (
-        <Question title="How much free time do you realistically have after school?" context={personalizedContext(7, answers)}>
+        <Question title={t("q7Title")} context={personalizedContext(7, answers, tContext, tOptions)}>
           <div className="space-y-2.5">
             {FREE_TIME_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`freeTime.${o.key}`)}
                 selected={answers.freeTime === o.key}
                 onClick={() => setAnswers({ ...answers, freeTime: o.key })}
               />
@@ -232,12 +244,12 @@ export default function StudentOnboarding() {
       )}
 
       {step === 8 && (
-        <Question title="What is your biggest goal right now?" context={personalizedContext(8, answers)}>
+        <Question title={t("q8Title")} context={personalizedContext(8, answers, tContext, tOptions)}>
           <div className="space-y-2.5">
             {GOAL_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`goals.${o.key}`)}
                 selected={answers.biggestGoal === o.key}
                 onClick={() => setAnswers({ ...answers, biggestGoal: o.key })}
               />
@@ -247,12 +259,12 @@ export default function StudentOnboarding() {
       )}
 
       {step === 9 && (
-        <Question title="What is your biggest problem?" context={personalizedContext(9, answers)}>
+        <Question title={t("q9Title")} context={personalizedContext(9, answers, tContext, tOptions)}>
           <div className="space-y-2.5">
             {PROBLEM_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`problems.${o.key}`)}
                 selected={answers.biggestProblem === o.key}
                 onClick={() => setAnswers({ ...answers, biggestProblem: o.key })}
               />
@@ -262,7 +274,7 @@ export default function StudentOnboarding() {
       )}
 
       {step === 10 && (
-        <Question title="How old are you?" subtitle="Optional. This just helps us understand our students better.">
+        <Question title={t("q10Title")} subtitle={t("q10Subtitle")}>
           <Input
             autoFocus
             type="number"
@@ -274,7 +286,7 @@ export default function StudentOnboarding() {
               const raw = e.target.value;
               setAnswers({ ...answers, age: raw === "" ? null : Number(raw) });
             }}
-            placeholder="e.g. 15"
+            placeholder={t("q10Placeholder")}
             className="h-12 text-body"
           />
         </Question>
@@ -308,11 +320,15 @@ function Question({
 
 function OptionGrid({
   options,
+  group,
+  t,
   selected,
   onToggle,
   showEmoji,
 }: {
   options: { key: string; label: string; emoji?: string }[];
+  group: string;
+  t: (key: string) => string;
   selected: string[];
   onToggle: (key: string) => void;
   showEmoji?: boolean;
@@ -322,7 +338,7 @@ function OptionGrid({
       {options.map((o) => (
         <SelectableCard
           key={o.key}
-          label={o.label}
+          label={t(`${group}.${o.key}`)}
           icon={showEmoji ? o.emoji : undefined}
           selected={selected.includes(o.key)}
           onClick={() => onToggle(o.key)}
@@ -333,17 +349,16 @@ function OptionGrid({
 }
 
 function ResultsScreen({ matches, slugs, onContinue }: { matches: number[]; slugs: string[]; onContinue: () => void }) {
+  const t = useTranslations("StudentOnboarding");
   const careers = slugs.map((slug) => CAREERS.find((c) => c.slug === slug)).filter((c): c is NonNullable<typeof c> => Boolean(c));
 
   return (
     <div className="flex min-h-dvh flex-col bg-background px-6 pb-8 pt-16 md:px-10">
       <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col md:max-w-lg lg:max-w-xl">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">Future Map</p>
-        <h1 className="mt-1 text-heading font-extrabold tracking-tight text-foreground">Your Future Map is ready.</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Based on your answers, here are the directions where you&rsquo;re most likely to thrive.
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent">{t("futureMap")}</p>
+        <h1 className="mt-1 text-heading font-extrabold tracking-tight text-foreground">{t("resultsTitle")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("resultsSubtitle")}</p>
 
         <div className="mt-8 space-y-3">
           {careers.map((career, i) => (
@@ -354,7 +369,7 @@ function ResultsScreen({ matches, slugs, onContinue }: { matches: number[]; slug
                     <career.icon className="h-5 w-5 text-accent" aria-hidden />
                     {career.name}
                   </span>
-                  <span className="text-sm font-bold text-accent">{matches[i]}% match</span>
+                  <span className="text-sm font-bold text-accent">{t("percentMatch", { percent: matches[i] })}</span>
                 </div>
                 <ProgressBar value={matches[i]} className="mt-3" />
               </CardContent>
@@ -364,11 +379,9 @@ function ResultsScreen({ matches, slugs, onContinue }: { matches: number[]; slug
 
         <div className="mt-auto pt-10">
           <Button size="lg" className="w-full" onClick={onContinue}>
-            Build My Plan
+            {t("buildMyPlan")}
           </Button>
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            School always comes first. {branding.name} fits around it, never instead of it.
-          </p>
+          <p className="mt-3 text-center text-xs text-muted-foreground">{t("schoolFirstNote", { name: branding.name })}</p>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Loader2, ArrowRight, ArrowLeft, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -22,6 +23,7 @@ import { branding } from "@/lib/branding";
  * auth (see AuthProvider.tsx's own staleness-guard comments).
  */
 export default function ForgotPasswordPage() {
+  const t = useTranslations("ForgotPasswordPage");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setError("Password reset isn't available right now. The backend isn't configured.");
+      setError(t("backendUnavailable"));
       return;
     }
     setLoading(true);
@@ -60,31 +62,30 @@ export default function ForgotPasswordPage() {
                 <MailCheck className="h-6 w-6 text-white" />
               </span>
               <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground lg:text-left">
-                Check your email
+                {t("checkEmail")}
               </h1>
               <p className="mt-1.5 text-center text-sm text-muted-foreground lg:text-left">
-                If an account exists for <span className="text-foreground">{email}</span>, we sent a link to reset
-                your password. It expires after a while, so use it soon.
+                {t.rich("checkEmailBody", { email: () => <span className="text-foreground">{email}</span> })}
               </p>
               <Link
                 href="/login"
                 className="mt-8 flex items-center justify-center gap-1.5 text-sm font-semibold text-foreground underline underline-offset-4 lg:justify-start"
               >
-                <ArrowLeft className="h-3.5 w-3.5" /> Back to log in
+                <ArrowLeft className="h-3.5 w-3.5" /> {t("backToLogIn")}
               </Link>
             </>
           ) : (
             <>
               <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground lg:text-left">
-                Forgot your password?
+                {t("title")}
               </h1>
               <p className="mt-1.5 text-center text-sm text-muted-foreground lg:text-left">
-                Enter the email on your {branding.name} account and we&rsquo;ll send you a link to reset it.
+                {t("subtitle", { name: branding.name })}
               </p>
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
                 <label className="block">
-                  <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</span>
+                  <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{t("email")}</span>
                   <Input
                     type="email"
                     value={email}
@@ -99,14 +100,14 @@ export default function ForgotPasswordPage() {
                 {error && <p className="text-sm text-danger">{error}</p>}
 
                 <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Send reset link <ArrowRight className="h-4 w-4" /></>}
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t("sendResetLink")} <ArrowRight className="h-4 w-4" /></>}
                 </Button>
               </form>
 
               <p className="mt-6 text-center text-sm text-muted-foreground lg:text-left">
-                Remembered it?{" "}
+                {t("rememberedIt")}{" "}
                 <Link href="/login" className="font-semibold text-foreground underline underline-offset-4">
-                  Log in
+                  {t("logIn")}
                 </Link>
               </p>
             </>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { branding } from "@/lib/branding";
 
@@ -23,6 +24,7 @@ const CONSENT_KEY = "alxioum_cookie_consent";
  */
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const t = useTranslations("CookieBanner");
 
   useEffect(() => {
     try {
@@ -48,18 +50,20 @@ export function CookieBanner() {
   if (!visible) return null;
 
   return (
-    <div className="animate-fade-in fixed inset-x-0 bottom-0 z-50 px-4 pb-4 sm:px-6 sm:pb-6" role="region" aria-label="Cookie notice">
+    <div className="animate-fade-in fixed inset-x-0 bottom-0 z-50 px-4 pb-4 sm:px-6 sm:pb-6" role="region" aria-label={t("srLabel")}>
       <div className="bg-surface border border-border mx-auto flex w-full max-w-2xl flex-col items-start gap-3 rounded-2xl border border-border p-4 shadow-pop sm:flex-row sm:items-center sm:gap-4 sm:p-5">
         <p className="flex-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-          {branding.name} only uses strictly necessary cookies, the ones that keep you signed in. We don&rsquo;t
-          use analytics or advertising cookies today. See our{" "}
-          <Link href="/privacy" className="font-semibold text-foreground underline underline-offset-4">
-            Privacy Policy
-          </Link>{" "}
-          for details.
+          {t.rich("message", {
+            name: branding.name,
+            link: (chunks) => (
+              <Link href="/privacy" className="font-semibold text-foreground underline underline-offset-4">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
         <Button size="sm" onClick={accept} className="w-full shrink-0 sm:w-auto">
-          Accept
+          {t("accept")}
         </Button>
       </div>
     </div>

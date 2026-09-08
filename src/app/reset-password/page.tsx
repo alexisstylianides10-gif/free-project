@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, ArrowRight, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -46,6 +47,7 @@ import { branding } from "@/lib/branding";
  */
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const t = useTranslations("ResetPasswordPage");
 
   const [checking, setChecking] = useState(true);
   const [sessionReady, setSessionReady] = useState(false);
@@ -64,7 +66,7 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     if (!supabase) {
-      setLinkError("Password reset isn't available right now. The backend isn't configured.");
+      setLinkError(t("backendUnavailable"));
       setChecking(false);
       return;
     }
@@ -105,7 +107,7 @@ export default function ResetPasswordPage() {
         if (cancelled) return;
         if (exchangeError) {
           if (resolvedRef.current || cancelled) return;
-          setLinkError(`This reset link is invalid or has expired. ${exchangeError.message}`);
+          setLinkError(`${t("linkInvalid")} ${exchangeError.message}`);
           setChecking(false);
           return;
         }
@@ -133,7 +135,7 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         if (!resolvedRef.current && !cancelled) {
           setChecking(false);
-          setLinkError("This reset link is invalid or has expired. Request a new one below.");
+          setLinkError(t("linkInvalidRequestNew"));
         }
       }, 4000);
     }
@@ -163,15 +165,15 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setFormError(null);
     if (!supabase) {
-      setFormError("Password reset isn't available right now. The backend isn't configured.");
+      setFormError(t("backendUnavailable"));
       return;
     }
     if (password.length < 8) {
-      setFormError("Password must be at least 8 characters.");
+      setFormError(t("passwordTooShort"));
       return;
     }
     if (password !== confirmPassword) {
-      setFormError("Passwords don't match.");
+      setFormError(t("passwordsDontMatch"));
       return;
     }
     setSubmitting(true);
@@ -186,7 +188,7 @@ export default function ResetPasswordPage() {
   }
 
   if (checking) {
-    return <LoadingScreen message="Verifying your reset link…" />;
+    return <LoadingScreen message={t("verifyingLink")} />;
   }
 
   if (linkError) {
@@ -195,17 +197,17 @@ export default function ResetPasswordPage() {
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/15">
           <AlertTriangle className="h-6 w-6 text-danger" />
         </span>
-        <h1 className="text-xl font-bold text-foreground">Link expired</h1>
+        <h1 className="text-xl font-bold text-foreground">{t("linkExpired")}</h1>
         <p className="max-w-xs text-sm text-muted-foreground">{linkError}</p>
         <div className="mt-4 flex w-full max-w-xs flex-col gap-3">
           <Link href="/forgot-password">
             <Button size="lg" className="w-full">
-              Request a new link
+              {t("requestNewLink")}
             </Button>
           </Link>
           <Link href="/login">
             <Button size="lg" variant="secondary" className="w-full">
-              Back to log in
+              {t("backToLogIn")}
             </Button>
           </Link>
         </div>
@@ -221,26 +223,26 @@ export default function ResetPasswordPage() {
         <div className="mx-auto w-full max-w-sm">
           <LogoMark size={44} className="mx-auto lg:mx-0" />
           <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground lg:text-left">
-            Set a new password
+            {t("title")}
           </h1>
           <p className="mt-1.5 text-center text-sm text-muted-foreground lg:text-left">
-            Choose a new password for your {branding.name} account.
+            {t("subtitle", { name: branding.name })}
           </p>
 
           {done ? (
             <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-success/40 bg-success/10 p-5 text-center lg:items-start lg:text-left">
               <CheckCircle2 className="h-6 w-6 text-success" />
-              <p className="text-sm text-foreground">Password updated. Taking you into the app…</p>
+              <p className="text-sm text-foreground">{t("passwordUpdated")}</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
               <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-muted-foreground">New password</span>
+                <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{t("newPassword")}</span>
                 <Input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 8 characters"
+                  placeholder={t("passwordPlaceholder")}
                   autoComplete="new-password"
                   minLength={8}
                   required
@@ -248,12 +250,12 @@ export default function ResetPasswordPage() {
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Confirm password</span>
+                <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{t("confirmPassword")}</span>
                 <Input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter your password"
+                  placeholder={t("confirmPasswordPlaceholder")}
                   autoComplete="new-password"
                   minLength={8}
                   required
@@ -263,7 +265,7 @@ export default function ResetPasswordPage() {
               {formError && <p className="text-sm text-danger">{formError}</p>}
 
               <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Update password <ArrowRight className="h-4 w-4" /></>}
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t("updatePassword")} <ArrowRight className="h-4 w-4" /></>}
               </Button>
             </form>
           )}

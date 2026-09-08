@@ -1,8 +1,11 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/Card";
 import { SectionKicker } from "@/components/marketing/SectionKicker";
-import { PRICING_FAQ } from "@/lib/marketing/faq";
+import { usePricingFaq } from "@/lib/marketing/faq";
 
-// `/`-only section (not used on any standalone route). Content = PRICING_FAQ
+// `/`-only section (not used on any standalone route). Content = usePricingFaq()
 // (all 4 Q&As, imported not re-typed) under a general "Frequently asked
 // questions" heading — deliberately NOT /faq's own 3-question list, since
 // two of those three ("free plan," "switch tracks") are near-verbatim
@@ -14,15 +17,16 @@ import { PRICING_FAQ } from "@/lib/marketing/faq";
 // that already shows more would be misleading. See
 // PRODUCT_SPECS_SCROLL_LANDING.md §4.
 export function FaqSection() {
+  const t = useTranslations("FaqSection");
+  const faq = usePricingFaq();
+
   return (
     <section id="faq" className="scroll-mt-20 border-t border-border bg-background">
       <div className="mx-auto w-full max-w-6xl px-6 pb-24 pt-20 md:px-10 lg:px-16">
-        <SectionKicker>FAQ</SectionKicker>
-        <h2 className="mt-3 text-title-lg font-bold leading-tight tracking-tight text-foreground">
-          Frequently asked questions
-        </h2>
+        <SectionKicker>{t("kicker")}</SectionKicker>
+        <h2 className="mt-3 text-title-lg font-bold leading-tight tracking-tight text-foreground">{t("title")}</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {PRICING_FAQ.map((item) => (
+          {faq.map((item) => (
             <Card key={item.q} variant="flat" className="transition-colors duration-200 hover:border-accent/30">
               <CardContent className="p-5">
                 <p className="font-semibold text-foreground">{item.q}</p>
@@ -31,9 +35,7 @@ export function FaqSection() {
             </Card>
           ))}
         </div>
-        <p className="mt-6 text-sm text-muted-foreground">
-          More questions? We&rsquo;re adding to this list. Reach out and we&rsquo;ll answer directly.
-        </p>
+        <p className="mt-6 text-sm text-muted-foreground">{t("moreQuestions")}</p>
       </div>
     </section>
   );

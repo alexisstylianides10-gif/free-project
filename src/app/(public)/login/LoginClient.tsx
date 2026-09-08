@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -13,6 +14,7 @@ import { branding } from "@/lib/branding";
 
 export function LoginClient() {
   const router = useRouter();
+  const t = useTranslations("LoginPage");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,13 +24,13 @@ export function LoginClient() {
     e.preventDefault();
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setError("Log in isn't available right now. The backend isn't configured.");
+      setError(t("backendUnavailable"));
       return;
     }
     setLoading(true);
     const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError || !data.user) {
-      setError(signInError?.message ?? "Couldn't log you in.");
+      setError(signInError?.message ?? t("couldntLogIn"));
       setLoading(false);
       return;
     }
@@ -63,15 +65,15 @@ export function LoginClient() {
         <div className="mx-auto w-full max-w-sm">
           <LogoMark size={44} className="mx-auto lg:mx-0" />
           <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-foreground lg:text-left">
-            Welcome back
+            {t("title")}
           </h1>
           <p className="mt-1.5 text-center text-sm text-muted-foreground lg:text-left">
-            Log in to {branding.name} to see your plan.
+            {t("subtitle", { name: branding.name })}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
             <label className="block">
-              <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</span>
+              <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{t("email")}</span>
               <Input
                 type="email"
                 value={email}
@@ -83,16 +85,16 @@ export function LoginClient() {
             </label>
             <label className="block">
               <span className="mb-1.5 flex items-center justify-between gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Password</span>
+                <span className="text-xs font-medium text-muted-foreground">{t("password")}</span>
                 <Link href="/forgot-password" className="text-xs font-semibold text-foreground underline underline-offset-4">
-                  Forgot password?
+                  {t("forgotPassword")}
                 </Link>
               </span>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your password"
+                placeholder={t("passwordPlaceholder")}
                 autoComplete="current-password"
                 required
               />
@@ -101,14 +103,14 @@ export function LoginClient() {
             {error && <p className="text-sm text-danger">{error}</p>}
 
             <Button type="submit" size="lg" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Log in <ArrowRight className="h-4 w-4" /></>}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t("logIn")} <ArrowRight className="h-4 w-4" /></>}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground lg:text-left">
-            New here?{" "}
+            {t("newHere")}{" "}
             <Link href="/signup" className="font-semibold text-foreground underline underline-offset-4">
-              Sign up
+              {t("signUp")}
             </Link>
           </p>
         </div>

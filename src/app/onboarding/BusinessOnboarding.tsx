@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Input";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -43,6 +44,8 @@ const QUESTION_COUNT = 8;
 export default function BusinessOnboarding() {
   const router = useRouter();
   const { user, refreshProfile } = useAuth();
+  const t = useTranslations("BusinessOnboarding");
+  const tOptions = useTranslations("OnboardingOptions");
   const [step, setStep] = useState(0); // 0..7 = questions, 8 = results
   const [answers, setAnswers] = useState<Answers>(EMPTY_ANSWERS);
   const [submitting, setSubmitting] = useState(false);
@@ -97,7 +100,7 @@ export default function BusinessOnboarding() {
   }
 
   if (submitting) {
-    return <LoadingScreen message="Researching your idea and building your plan. This can take up to a minute…" />;
+    return <LoadingScreen message={t("buildingPlan")} />;
   }
 
   if (step === QUESTION_COUNT) {
@@ -112,20 +115,17 @@ export default function BusinessOnboarding() {
       track="business"
       footer={
         <Button size="lg" className="w-full" disabled={!isValid} onClick={next}>
-          Continue
+          {t("continue")}
         </Button>
       }
     >
       {step === 0 && (
-        <Question
-          title="What's your business idea?"
-          subtitle="A sentence or two is plenty. No idea yet? Leave this blank and we'll suggest one based on your strengths."
-        >
+        <Question title={t("q0Title")} subtitle={t("q0Subtitle")}>
           <Textarea
             autoFocus
             value={answers.businessIdea}
             onChange={(e) => setAnswers({ ...answers, businessIdea: e.target.value })}
-            placeholder="e.g. A subscription box for... (or leave blank)"
+            placeholder={t("q0Placeholder")}
             rows={5}
             className="resize-none text-body"
           />
@@ -133,12 +133,12 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 1 && (
-        <Question title="What stage are you at?">
+        <Question title={t("q1Title")}>
           <div className="space-y-2.5">
             {BUSINESS_STAGE_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`businessStage.${o.key}`)}
                 selected={answers.stage === o.key}
                 onClick={() => setAnswers({ ...answers, stage: o.key as Answers["stage"] })}
               />
@@ -148,12 +148,12 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 2 && (
-        <Question title="Who's your target customer?" subtitle="Be as specific as you can, or leave blank if you're not sure yet">
+        <Question title={t("q2Title")} subtitle={t("q2Subtitle")}>
           <Textarea
             autoFocus
             value={answers.targetCustomer}
             onChange={(e) => setAnswers({ ...answers, targetCustomer: e.target.value })}
-            placeholder="e.g. Busy parents of toddlers in the US (or leave blank)"
+            placeholder={t("q2Placeholder")}
             rows={4}
             className="resize-none text-body"
           />
@@ -161,12 +161,12 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 3 && (
-        <Question title="What do you want to focus on first?" subtitle="Select as many as you like">
+        <Question title={t("q3Title")} subtitle={t("selectAsManyAsYouLike")}>
           <div className="space-y-2.5">
             {BUSINESS_FOCUS_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`businessFocus.${o.key}`)}
                 selected={answers.focusAreas.includes(o.key)}
                 onClick={() => setAnswers({ ...answers, focusAreas: toggle(answers.focusAreas, o.key) })}
               />
@@ -176,12 +176,12 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 4 && (
-        <Question title="What are you already good at?" subtitle="Select as many as you like">
+        <Question title={t("q4Title")} subtitle={t("selectAsManyAsYouLike")}>
           <div className="space-y-2.5">
             {BUSINESS_STRENGTH_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`businessStrengths.${o.key}`)}
                 selected={answers.strengths.includes(o.key)}
                 onClick={() => setAnswers({ ...answers, strengths: toggle(answers.strengths, o.key) })}
               />
@@ -191,12 +191,12 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 5 && (
-        <Question title="How much time can you realistically commit?">
+        <Question title={t("q5Title")}>
           <div className="space-y-2.5">
             {FREE_TIME_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`freeTime.${o.key}`)}
                 selected={answers.freeTime === o.key}
                 onClick={() => setAnswers({ ...answers, freeTime: o.key })}
               />
@@ -206,12 +206,12 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 6 && (
-        <Question title="What's your biggest goal right now?">
+        <Question title={t("q6Title")}>
           <div className="space-y-2.5">
             {BUSINESS_GOAL_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`businessGoals.${o.key}`)}
                 selected={answers.biggestGoal === o.key}
                 onClick={() => setAnswers({ ...answers, biggestGoal: o.key })}
               />
@@ -221,12 +221,12 @@ export default function BusinessOnboarding() {
       )}
 
       {step === 7 && (
-        <Question title="What's your biggest problem right now?">
+        <Question title={t("q7Title")}>
           <div className="space-y-2.5">
             {BUSINESS_PROBLEM_OPTIONS.map((o) => (
               <SelectableCard
                 key={o.key}
-                label={o.label}
+                label={tOptions(`businessProblems.${o.key}`)}
                 selected={answers.biggestProblem === o.key}
                 onClick={() => setAnswers({ ...answers, biggestProblem: o.key })}
               />
@@ -249,42 +249,35 @@ function Question({ title, subtitle, children }: { title: string; subtitle?: str
 }
 
 function ResultsScreen({ answers, onContinue }: { answers: Answers; onContinue: () => void }) {
+  const t = useTranslations("BusinessOnboarding");
   return (
     <div className="flex min-h-dvh flex-col bg-background px-6 pb-8 pt-16 md:px-10">
       <div className="bg-ambient-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden />
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col md:max-w-lg lg:max-w-xl">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">Business Snapshot</p>
-        <h1 className="mt-1 text-heading font-extrabold tracking-tight text-foreground">Your plan is ready to build.</h1>
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent">{t("businessSnapshot")}</p>
+        <h1 className="mt-1 text-heading font-extrabold tracking-tight text-foreground">{t("resultsTitle")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {answers.businessIdea.trim()
-            ? `${branding.name} will research your idea and set up a starter milestone checklist tailored to it.`
-            : `${branding.name} will suggest a business direction based on your strengths, then set up a starter milestone checklist for it.`}
+          {answers.businessIdea.trim() ? t("resultsSubtitleWithIdea", { name: branding.name }) : t("resultsSubtitleNoIdea", { name: branding.name })}
         </p>
 
         <Card className="mt-8">
           <CardContent className="p-4">
-            <p className="text-sm font-semibold text-foreground">Your idea</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {answers.businessIdea.trim() || "Not sure yet? We'll suggest one based on your strengths."}
-            </p>
+            <p className="text-sm font-semibold text-foreground">{t("yourIdea")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{answers.businessIdea.trim() || t("noIdeaYet")}</p>
           </CardContent>
         </Card>
         <Card className="mt-3">
           <CardContent className="p-4">
-            <p className="text-sm font-semibold text-foreground">Target customer</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {answers.targetCustomer.trim() || "Not sure yet? We'll figure this out together."}
-            </p>
+            <p className="text-sm font-semibold text-foreground">{t("targetCustomer")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{answers.targetCustomer.trim() || t("noCustomerYet")}</p>
           </CardContent>
         </Card>
 
         <div className="mt-auto pt-10">
           <Button size="lg" className="w-full" onClick={onContinue}>
-            Build My Plan
+            {t("buildMyPlan")}
           </Button>
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            {branding.name} is a planning tool, not a guarantee of business or financial outcomes.
-          </p>
+          <p className="mt-3 text-center text-xs text-muted-foreground">{t("planningToolNote", { name: branding.name })}</p>
         </div>
       </div>
     </div>

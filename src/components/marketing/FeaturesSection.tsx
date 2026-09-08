@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   ArrowRight,
   Brain,
@@ -27,7 +30,13 @@ import { cn } from "@/lib/utils";
 // CTA) so the exact same JSX/copy renders on both the standalone /features
 // route and inline on / — see PRODUCT_SPECS_SCROLL_LANDING.md §2, §7.
 
-type FeatureCard = { icon: LucideIcon; title: string; description: string };
+// `id` is a stable, English-only key into the "FeaturesSection" i18n
+// namespace's `student.*`/`business.*` title/description pairs — the
+// English `title` below is only used as a lookup key for
+// STUDENT_HEADLINE_TITLES/BUSINESS_HEADLINE_TITLES (which item gets the
+// larger "headline" card treatment), never rendered directly once `t()` is
+// wired in below.
+type FeatureCard = { id: string; icon: LucideIcon; title: string };
 
 // Shared hover-lift micro-interaction — same recipe already used for
 // interactive cards on the in-app dashboards (StudentHome/BusinessHome's
@@ -41,116 +50,50 @@ const HOVER_LIFT =
   "transition-all duration-200 hover:-translate-y-1 hover:border-accent/40 hover:shadow-raised";
 
 const STUDENT_FEATURES: FeatureCard[] = [
-  {
-    icon: CalendarClock,
-    title: "Timetable",
-    description: "Add your classes once and see today's schedule every morning, room numbers included.",
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Homework tracking",
-    description: "Every assignment with a real due-date countdown, so nothing quietly goes overdue.",
-  },
-  {
-    icon: Target,
-    title: "Exams & readiness",
-    description:
-      "A live countdown per exam, plus an honest readiness % built from how you're actually doing on that subject's topics.",
-  },
-  {
-    icon: BookOpen,
-    title: "Weekly study plan",
-    description: "A real Monday-Friday plan, session by session, that you check off as you go.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI study plans",
-    description: "Generate a study plan for a specific subject or topic instead of guessing where to start.",
-  },
-  {
-    icon: Layers,
-    title: "Flashcards",
-    description: "Spaced-repetition flashcards that resurface exactly when you're about to forget them, not on a random schedule.",
-  },
-  {
-    icon: Brain,
-    title: "AI-generated quizzes",
-    description: "Pick a subject, a difficulty (Easy through Exam Level), and a question count — get a real quiz, not a static bank.",
-  },
-  {
-    icon: TriangleAlert,
-    title: "Weak topics",
-    description: "The topics you're actually struggling with, surfaced plainly with your real attempt history — no vague advice.",
-  },
-  {
-    icon: Compass,
-    title: "Career matches",
-    description: "Career suggestions matched to the subjects, interests, and strengths you gave at onboarding, each with a real % match.",
-  },
-  {
-    icon: MapPin,
-    title: "Future Map (roadmap)",
-    description:
-      "A 6-level Discover → Learn → Build → Launch → Grow roadmap. The first steps advance automatically from what you actually do in the app; later ones you mark done yourself, honestly.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Weekly review",
-    description: "A real weekly recap: study time, quiz accuracy, topics mastered, and how your week actually went.",
-  },
-  {
-    icon: Flame,
-    title: "XP, streaks & achievements",
-    description: "Real actions earn real XP and unlock achievements — no filler gamification.",
-  },
+  { id: "timetable", icon: CalendarClock, title: "Timetable" },
+  { id: "homeworkTracking", icon: ClipboardCheck, title: "Homework tracking" },
+  { id: "examsReadiness", icon: Target, title: "Exams & readiness" },
+  { id: "weeklyStudyPlan", icon: BookOpen, title: "Weekly study plan" },
+  { id: "aiStudyPlans", icon: Sparkles, title: "AI study plans" },
+  { id: "flashcards", icon: Layers, title: "Flashcards" },
+  { id: "aiQuizzes", icon: Brain, title: "AI-generated quizzes" },
+  { id: "weakTopics", icon: TriangleAlert, title: "Weak topics" },
+  { id: "careerMatches", icon: Compass, title: "Career matches" },
+  { id: "futureMap", icon: MapPin, title: "Future Map (roadmap)" },
+  { id: "weeklyReview", icon: TrendingUp, title: "Weekly review" },
+  { id: "xpStreaks", icon: Flame, title: "XP, streaks & achievements" },
 ];
 
 const BUSINESS_FEATURES: FeatureCard[] = [
-  {
-    icon: Target,
-    title: "Milestone tracking",
-    description: "Your idea, its stage (Idea → Validating → Building → Launched), and a milestone checklist you actually complete.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI business snapshot",
-    description: "A short AI-written snapshot of your idea, generated from what you tell it at onboarding.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Metrics log",
-    description: "Log revenue, customers, or signups over time and see the trend versus your last entry.",
-  },
-  {
-    icon: Receipt,
-    title: "Expense tracking",
-    description: "Log spend by category (software, marketing, contractors, and more) and see your running total.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI content helper",
-    description: "Generate a first draft of Instagram, blog, or email content for a topic you give it.",
-  },
-  {
-    icon: Users,
-    title: "Competitor tracker",
-    description: "Keep a running list of who else is in your market, with notes.",
-  },
+  { id: "milestoneTracking", icon: Target, title: "Milestone tracking" },
+  { id: "aiBusinessSnapshot", icon: Sparkles, title: "AI business snapshot" },
+  { id: "metricsLog", icon: TrendingUp, title: "Metrics log" },
+  { id: "expenseTracking", icon: Receipt, title: "Expense tracking" },
+  { id: "aiContentHelper", icon: Sparkles, title: "AI content helper" },
+  { id: "competitorTracker", icon: Users, title: "Competitor tracker" },
 ];
 
 // Per PRODUCT_SPECS_DEVIBE.md §5: eighteen identical icon-chip cards in one
 // flat grid is the "statistically average AI aesthetic" the audit names
-// verbatim — nothing draws the eye anywhere in particular. The three titles
+// verbatim — nothing draws the eye anywhere in particular. The three items
 // per track that most differentiate Alxioum from a plain checklist app get
 // promoted into a larger, chip-free card; the rest render as a denser list,
 // not a second uniform card grid, so the section has two real tiers instead
 // of one flat one.
-const STUDENT_HEADLINE_TITLES = new Set(["AI study plans", "Weak topics", "Career matches"]);
-const BUSINESS_HEADLINE_TITLES = new Set(["AI business snapshot", "Metrics log", "AI content helper"]);
+const STUDENT_HEADLINE_IDS = new Set(["aiStudyPlans", "weakTopics", "careerMatches"]);
+const BUSINESS_HEADLINE_IDS = new Set(["aiBusinessSnapshot", "metricsLog", "aiContentHelper"]);
 
-function FeatureGrid({ items, headline }: { items: FeatureCard[]; headline: Set<string> }) {
-  const headlineItems = items.filter((item) => headline.has(item.title));
-  const listItems = items.filter((item) => !headline.has(item.title));
+function FeatureGrid({
+  items,
+  headline,
+  t,
+}: {
+  items: FeatureCard[];
+  headline: Set<string>;
+  t: (key: string) => string;
+}) {
+  const headlineItems = items.filter((item) => headline.has(item.id));
+  const listItems = items.filter((item) => !headline.has(item.id));
 
   return (
     <div>
@@ -158,11 +101,11 @@ function FeatureGrid({ items, headline }: { items: FeatureCard[]; headline: Set<
         {headlineItems.map((item) => {
           const Icon = item.icon;
           return (
-            <Card key={item.title} variant="flat" className={HOVER_LIFT}>
+            <Card key={item.id} variant="flat" className={HOVER_LIFT}>
               <CardContent className="p-5">
                 <Icon className="h-5 w-5 text-accent" strokeWidth={2.25} />
-                <p className="mt-4 text-body font-bold text-foreground">{item.title}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                <p className="mt-4 text-body font-bold text-foreground">{t(`${item.id}.title`)}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t(`${item.id}.description`)}</p>
               </CardContent>
             </Card>
           );
@@ -174,11 +117,11 @@ function FeatureGrid({ items, headline }: { items: FeatureCard[]; headline: Set<
           {listItems.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.title} className="flex items-start gap-3 border-b border-border/50 py-3">
+              <div key={item.id} className="flex items-start gap-3 border-b border-border/50 py-3">
                 <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2.25} />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
+                  <p className="text-sm font-semibold text-foreground">{t(`${item.id}.title`)}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t(`${item.id}.description`)}</p>
                 </div>
               </div>
             );
@@ -220,6 +163,9 @@ export function FeaturesSection({
   withSectionBreak?: boolean;
   headingLevel?: "h1" | "h2";
 }) {
+  const t = useTranslations("FeaturesSection");
+  const tStudent = useTranslations("FeaturesSection.student");
+  const tBusiness = useTranslations("FeaturesSection.business");
   const Heading = headingLevel;
   return (
     <section
@@ -227,21 +173,17 @@ export function FeaturesSection({
       className={cn("relative scroll-mt-20 overflow-hidden", withSectionBreak && "border-t border-border")}
     >
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-24 pt-20 md:px-10 lg:px-16">
-        <SectionKicker>Features</SectionKicker>
+        <SectionKicker>{t("kicker")}</SectionKicker>
         <Heading className="mt-3 max-w-2xl text-title-lg font-bold leading-tight tracking-tight text-foreground">
-          One plan. Built around what you&rsquo;re actually doing.
+          {t("title")}
         </Heading>
-        <p className="mt-4 max-w-2xl text-body leading-relaxed text-muted-foreground">
-          Alxioum tracks the real details of school or your business, then turns them into a daily plan, an AI Coach
-          that knows your context, and a long-term roadmap you can watch move. Two tracks, one app &mdash; you pick
-          yours once, at signup, and everything below is built around it.
-        </p>
+        <p className="mt-4 max-w-2xl text-body leading-relaxed text-muted-foreground">{t("subtitle")}</p>
 
         <section className="mt-14">
-          <h2 className="text-subsection font-bold tracking-tight text-foreground">Student track</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Live today.</p>
+          <h2 className="text-subsection font-bold tracking-tight text-foreground">{t("studentTrack")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t("liveToday")}</p>
           <div className="mt-6">
-            <FeatureGrid items={STUDENT_FEATURES} headline={STUDENT_HEADLINE_TITLES} />
+            <FeatureGrid items={STUDENT_FEATURES} headline={STUDENT_HEADLINE_IDS} t={tStudent} />
           </div>
         </section>
 
@@ -251,54 +193,38 @@ export function FeaturesSection({
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-brand text-white">
                 <Sparkles className="h-4 w-4" />
               </span>
-              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-accent">AI Coach</p>
-              <h3 className="mt-2 text-heading font-bold tracking-tight text-foreground">
-                A coach that actually knows what&rsquo;s on your plate
-              </h3>
-              <p className="mt-3 max-w-2xl text-body leading-relaxed text-muted-foreground">
-                Ask about a subject, your career options, or what to do today, and the Coach answers using your real
-                homework, exams, and career match &mdash; not generic advice. Keeps full conversation history across
-                as many threads as you want, and (for students) always keeps school first.
-              </p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-accent">{t("aiCoachEyebrow")}</p>
+              <h3 className="mt-2 text-heading font-bold tracking-tight text-foreground">{t("aiCoachTitle")}</h3>
+              <p className="mt-3 max-w-2xl text-body leading-relaxed text-muted-foreground">{t("aiCoachDescription")}</p>
             </CardContent>
           </Card>
         </section>
 
         <section className="mt-16">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-subsection font-bold tracking-tight text-foreground">For founders</h2>
-            <Badge tone="neutral">Coming soon</Badge>
+            <h2 className="text-subsection font-bold tracking-tight text-foreground">{t("forFounders")}</h2>
+            <Badge tone="neutral">{t("comingSoon")}</Badge>
           </div>
-          <h3 className="mt-3 max-w-2xl text-body font-semibold text-foreground">
-            Everything above, rebuilt for a business instead of a transcript
-          </h3>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            The founder track is currently paused for new signups while we polish it. Here&rsquo;s what it already
-            builds:
-          </p>
+          <h3 className="mt-3 max-w-2xl text-body font-semibold text-foreground">{t("founderSubtitle")}</h3>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{t("founderPaused")}</p>
           <div className="mt-6">
-            <FeatureGrid items={BUSINESS_FEATURES} headline={BUSINESS_HEADLINE_TITLES} />
+            <FeatureGrid items={BUSINESS_FEATURES} headline={BUSINESS_HEADLINE_IDS} t={tBusiness} />
           </div>
         </section>
 
         <section className="relative mt-20 overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 text-center shadow-subtle md:px-12 md:py-14">
-          <h2 className="relative z-10 text-heading font-bold tracking-tight text-foreground">
-            Pick your track. We&rsquo;ll build around it.
-          </h2>
-          <p className="relative z-10 mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Alxioum is a planning and study tool that helps you stay organized and explore your options &mdash;
-            it&rsquo;s not a guarantee of grades, a job, or a business outcome.
-          </p>
+          <h2 className="relative z-10 text-heading font-bold tracking-tight text-foreground">{t("ctaTitle")}</h2>
+          <p className="relative z-10 mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">{t("ctaSubtitle")}</p>
           <div className="relative z-10 mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/signup">
               <Button size="lg">
-                Get Started
+                {t("getStarted")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/#pricing">
               <Button size="lg" variant="outline">
-                See pricing
+                {t("seePricing")}
               </Button>
             </Link>
           </div>
