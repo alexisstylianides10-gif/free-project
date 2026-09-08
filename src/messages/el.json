@@ -565,6 +565,16 @@
     "minutes": "{minutes} λεπτά",
     "mode": { "learn": "Εκμάθηση", "practice": "Εξάσκηση", "quiz": "Κουίζ", "review": "Επανάληψη" }
   },
+  "SubjectsPage": {
+    "percentProgress": "{percent}% πρόοδος",
+    "percentQuizAccuracy": "{percent}% ακρίβεια κουίζ",
+    "weak": "Αδύναμο:",
+    "subjectNamePlaceholder": "Όνομα μαθήματος (π.χ. Μαθηματικά)",
+    "creating": "Δημιουργία…",
+    "createSubject": "Δημιουργία Μαθήματος",
+    "cancel": "Ακύρωση",
+    "newSubject": "Νέο Μάθημα"
+  },
   "CheckoutForm": {
     "cardFailed": "Δεν ήταν δυνατή η χρέωση της κάρτας σου. Δοκίμασε ξανά.",
     "paymentIncomplete": "Η πληρωμή δεν ολοκληρώθηκε. Δοκίμασε ξανά.",

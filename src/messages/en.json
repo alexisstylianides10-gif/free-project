@@ -565,6 +565,16 @@
     "minutes": "{minutes} min",
     "mode": { "learn": "Learn", "practice": "Practice", "quiz": "Quiz", "review": "Review" }
   },
+  "SubjectsPage": {
+    "percentProgress": "{percent}% progress",
+    "percentQuizAccuracy": "{percent}% quiz accuracy",
+    "weak": "Weak:",
+    "subjectNamePlaceholder": "Subject name (e.g. Mathematics)",
+    "creating": "Creating…",
+    "createSubject": "Create Subject",
+    "cancel": "Cancel",
+    "newSubject": "New Subject"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",

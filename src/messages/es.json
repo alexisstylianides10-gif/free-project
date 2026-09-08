@@ -565,6 +565,16 @@
     "minutes": "{minutes} min",
     "mode": { "learn": "Aprender", "practice": "Practicar", "quiz": "Cuestionario", "review": "Repaso" }
   },
+  "SubjectsPage": {
+    "percentProgress": "{percent}% de progreso",
+    "percentQuizAccuracy": "{percent}% de precisión en cuestionarios",
+    "weak": "Débil:",
+    "subjectNamePlaceholder": "Nombre de la asignatura (p. ej. Matemáticas)",
+    "creating": "Creando…",
+    "createSubject": "Crear Asignatura",
+    "cancel": "Cancelar",
+    "newSubject": "Nueva Asignatura"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",
