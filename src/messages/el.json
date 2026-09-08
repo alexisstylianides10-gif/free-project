@@ -575,6 +575,26 @@
     "cancel": "Ακύρωση",
     "newSubject": "Νέο Μάθημα"
   },
+  "SubjectDetailPage": {
+    "confirmDelete": "Διαγραφή {name}; Αυτό διαγράφει επίσης το υλικό, τα πλάνα, τα κουίζ και τις κάρτες του.",
+    "loading": "Φόρτωση…",
+    "percentProgress": "{percent}% πρόοδος",
+    "percentQuizAccuracy": "{percent}% ακρίβεια κουίζ",
+    "minutesStudied": "{minutes} λεπτά μελέτης",
+    "deleteSubject": "Διαγραφή μαθήματος",
+    "subjectExam": "Διαγώνισμα {subject}",
+    "startStudying": "Έναρξη Μελέτης",
+    "studyPlan": "Πρόγραμμα Μελέτης",
+    "generateQuiz": "Δημιουργία Κουίζ",
+    "flashcards": "Κάρτες",
+    "homeworkHelp": "Βοήθεια Εργασιών",
+    "weakTopics": "Αδύναμα Θέματα",
+    "notes": "Σημειώσεις",
+    "add": "Προσθήκη",
+    "noNotesYet": "Δεν υπάρχουν ακόμα σημειώσεις",
+    "noNotesSubtitle": "Ανέβασε ένα PDF, μια φωτογραφία ή τις σημειώσεις σου για να ξεκινήσεις.",
+    "allTopics": "Όλα τα Θέματα"
+  },
   "CheckoutForm": {
     "cardFailed": "Δεν ήταν δυνατή η χρέωση της κάρτας σου. Δοκίμασε ξανά.",
     "paymentIncomplete": "Η πληρωμή δεν ολοκληρώθηκε. Δοκίμασε ξανά.",

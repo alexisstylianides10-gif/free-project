@@ -575,6 +575,26 @@
     "cancel": "Cancelar",
     "newSubject": "Nueva Asignatura"
   },
+  "SubjectDetailPage": {
+    "confirmDelete": "¿Eliminar {name}? Esto también elimina sus materiales, planes, cuestionarios y tarjetas.",
+    "loading": "Cargando…",
+    "percentProgress": "{percent}% de progreso",
+    "percentQuizAccuracy": "{percent}% de precisión en cuestionarios",
+    "minutesStudied": "{minutes} min estudiados",
+    "deleteSubject": "Eliminar asignatura",
+    "subjectExam": "Examen de {subject}",
+    "startStudying": "Empezar a Estudiar",
+    "studyPlan": "Plan de Estudio",
+    "generateQuiz": "Generar Cuestionario",
+    "flashcards": "Tarjetas",
+    "homeworkHelp": "Ayuda con Deberes",
+    "weakTopics": "Temas Débiles",
+    "notes": "Apuntes",
+    "add": "Añadir",
+    "noNotesYet": "Aún no hay apuntes",
+    "noNotesSubtitle": "Sube un PDF, una foto o tus apuntes para empezar.",
+    "allTopics": "Todos los Temas"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",

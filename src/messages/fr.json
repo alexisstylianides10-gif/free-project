@@ -575,6 +575,26 @@
     "cancel": "Annuler",
     "newSubject": "Nouvelle Matière"
   },
+  "SubjectDetailPage": {
+    "confirmDelete": "Supprimer {name} ? Cela supprime aussi ses documents, plans, quiz et cartes mémo.",
+    "loading": "Chargement…",
+    "percentProgress": "{percent} % de progression",
+    "percentQuizAccuracy": "{percent} % de précision aux quiz",
+    "minutesStudied": "{minutes} min étudiées",
+    "deleteSubject": "Supprimer la matière",
+    "subjectExam": "Examen de {subject}",
+    "startStudying": "Commencer à Étudier",
+    "studyPlan": "Programme d'Étude",
+    "generateQuiz": "Générer un Quiz",
+    "flashcards": "Cartes Mémo",
+    "homeworkHelp": "Aide aux Devoirs",
+    "weakTopics": "Points Faibles",
+    "notes": "Notes",
+    "add": "Ajouter",
+    "noNotesYet": "Pas encore de notes",
+    "noNotesSubtitle": "Importe un PDF, une photo, ou tes notes pour commencer.",
+    "allTopics": "Tous les Sujets"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

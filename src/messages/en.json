@@ -575,6 +575,26 @@
     "cancel": "Cancel",
     "newSubject": "New Subject"
   },
+  "SubjectDetailPage": {
+    "confirmDelete": "Delete {name}? This removes its materials, plans, quizzes, and flashcards too.",
+    "loading": "Loading…",
+    "percentProgress": "{percent}% progress",
+    "percentQuizAccuracy": "{percent}% quiz accuracy",
+    "minutesStudied": "{minutes}m studied",
+    "deleteSubject": "Delete subject",
+    "subjectExam": "{subject} Exam",
+    "startStudying": "Start Studying",
+    "studyPlan": "Study Plan",
+    "generateQuiz": "Generate Quiz",
+    "flashcards": "Flashcards",
+    "homeworkHelp": "Homework Help",
+    "weakTopics": "Weak Topics",
+    "notes": "Notes",
+    "add": "Add",
+    "noNotesYet": "No notes yet",
+    "noNotesSubtitle": "Upload a PDF, photo, or your notes to get started.",
+    "allTopics": "All Topics"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",
