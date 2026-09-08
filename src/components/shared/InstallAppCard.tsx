@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Share, MoreVertical, Smartphone, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { branding } from "@/lib/branding";
@@ -45,6 +46,7 @@ function isAlreadyInstalled(): boolean {
 export function InstallAppCard() {
   const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<Platform>("other");
+  const t = useTranslations("InstallAppCard");
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
@@ -79,22 +81,26 @@ export function InstallAppCard() {
           <Smartphone className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground">Get the {branding.name} app</p>
+          <p className="text-sm font-semibold text-foreground">{t("title", { name: branding.name })}</p>
           {platform === "ios" ? (
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Tap <Share className="inline h-3 w-3 -translate-y-px" aria-hidden /> Share in Safari, then choose{" "}
-              <span className="font-medium text-foreground">&ldquo;Add to Home Screen.&rdquo;</span>
+              {t.rich("ios", {
+                share: () => <Share className="inline h-3 w-3 -translate-y-px" aria-hidden />,
+                strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+              })}
             </p>
           ) : (
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Tap <MoreVertical className="inline h-3 w-3 -translate-y-px" aria-hidden /> the menu in Chrome, then choose{" "}
-              <span className="font-medium text-foreground">&ldquo;Install app&rdquo;</span> (or &ldquo;Add to Home screen&rdquo;).
+              {t.rich("android", {
+                menu: () => <MoreVertical className="inline h-3 w-3 -translate-y-px" aria-hidden />,
+                strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+              })}
             </p>
           )}
         </div>
         <button
           type="button"
-          aria-label="Dismiss"
+          aria-label={t("dismiss")}
           onClick={dismiss}
           className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:text-foreground"
         >

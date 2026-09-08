@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandPanel } from "@/components/shared/BrandPanel";
@@ -24,6 +25,7 @@ export function OnboardingShell({
    * relevant to each rather than reusing one generic blurb for both. */
   track?: "student" | "business";
 }) {
+  const t = useTranslations("OnboardingShell");
   return (
     <div className="flex min-h-dvh bg-background">
       <div className="flex flex-1 flex-col px-6 pb-8 pt-6 md:px-10 lg:justify-center lg:px-16 lg:py-10 xl:px-20">
@@ -33,7 +35,7 @@ export function OnboardingShell({
               type="button"
               onClick={onBack}
               disabled={!onBack}
-              aria-label="Back"
+              aria-label={t("back")}
               className={cn(
                 "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
                 onBack ? "text-foreground hover:bg-muted" : "opacity-0"

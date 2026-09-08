@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import { LogoMark } from "@/components/shared/LogoMark";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
@@ -14,12 +15,12 @@ import { cn } from "@/lib/utils";
 // "navigate to / then scroll" (clicked from another page) and "scroll in
 // place" (already on /) natively for /#section hrefs, no scroll-spy library
 // needed. See PRODUCT_SPECS_SCROLL_LANDING.md §3.
-const LINKS = [
-  { href: "/#features", label: "Features" },
-  { href: "/#pricing", label: "Pricing" },
-  { href: "/#about", label: "About" },
-  { href: "/#faq", label: "FAQ" },
-];
+const LINK_KEYS = [
+  { href: "/#features", key: "features" },
+  { href: "/#pricing", key: "pricing" },
+  { href: "/#about", key: "about" },
+  { href: "/#faq", key: "faq" },
+] as const;
 
 /** Sticky top nav for the marketing pages only (/, /features, /pricing,
  * /about) — deliberately NOT rendered on /faq, /privacy, /terms, or any
@@ -41,6 +42,7 @@ const LINKS = [
  * duplicate-logo bug this fixes. */
 export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: boolean }) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("MarketingNav");
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background">
@@ -63,13 +65,13 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
               render as text-muted-foreground always, matching their existing
               "not the active page" look, with hover:text-foreground doing
               the only state work. */}
-          {LINKS.map((l) => (
+          {LINK_KEYS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className="group relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              {l.label}
+              {t(l.key)}
               <span className="absolute inset-x-0 -bottom-1 h-px scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
             </Link>
           ))}
@@ -77,10 +79,10 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
         <div className="hidden items-center gap-2 md:flex">
           <LanguageSwitcher variant="compact" />
           <Link href="/login" className="px-3 text-sm font-semibold text-muted-foreground hover:text-foreground">
-            Log in
+            {t("login")}
           </Link>
           <Link href="/signup">
-            <Button size="sm">Get Started</Button>
+            <Button size="sm">{t("getStarted")}</Button>
           </Link>
         </div>
 
@@ -90,7 +92,7 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t("closeMenu") : t("openMenu")}
             className="flex h-9 w-9 items-center justify-center rounded-full text-foreground"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -100,22 +102,22 @@ export function MarketingNav({ hideLogoOnMobile = false }: { hideLogoOnMobile?: 
 
       {open && (
         <div className="mx-4 mb-4 space-y-1 rounded-card border border-border bg-surface p-2 shadow-raised md:hidden">
-          {LINKS.map((l) => (
+          {LINK_KEYS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
               className="block rounded-xl px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
             >
-              {l.label}
+              {t(l.key)}
             </Link>
           ))}
           <div className="flex items-center gap-2 border-t border-border pt-2">
             <Link href="/login" onClick={() => setOpen(false)} className="flex-1">
-              <Button variant="secondary" size="md" className="w-full">Log in</Button>
+              <Button variant="secondary" size="md" className="w-full">{t("login")}</Button>
             </Link>
             <Link href="/signup" onClick={() => setOpen(false)} className="flex-1">
-              <Button size="md" className="w-full">Get Started</Button>
+              <Button size="md" className="w-full">{t("getStarted")}</Button>
             </Link>
           </div>
         </div>

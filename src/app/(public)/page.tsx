@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowRight, CheckCircle2, X } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { LogoMark } from "@/components/shared/LogoMark";
@@ -18,11 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { branding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
-const PROOF = [
-  { value: "Student · Founder", label: "Two tracks, one app" },
-  { value: "Built from your data", label: "Daily plan" },
-  { value: "No card required", label: "Free to start" },
-];
+const PROOF_KEYS = ["track", "plan", "free"] as const;
 
 /**
  * Reads the `?deleted=1` query param set by profile/page.tsx after a
@@ -35,6 +32,7 @@ const PROOF = [
 function DeletedAccountBanner() {
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
+  const t = useTranslations("LandingPage");
 
   useEffect(() => {
     setVisible(searchParams.get("deleted") === "1");
@@ -45,11 +43,11 @@ function DeletedAccountBanner() {
   return (
     <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-success/40 bg-success/10 p-4 text-sm text-foreground">
       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-      <span className="flex-1">Your account has been deleted.</span>
+      <span className="flex-1">{t("accountDeleted")}</span>
       <button
         type="button"
         onClick={() => setVisible(false)}
-        aria-label="Dismiss"
+        aria-label={t("dismiss")}
         className="shrink-0 text-muted-foreground hover:text-foreground"
       >
         <X className="h-4 w-4" />
@@ -61,6 +59,7 @@ function DeletedAccountBanner() {
 export default function WelcomePage() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
+  const t = useTranslations("LandingPage");
 
   useEffect(() => {
     if (loading || !user) return;
@@ -91,28 +90,26 @@ export default function WelcomePage() {
               </div>
 
               <h1 className="mt-14 text-display font-extrabold leading-[1.15] tracking-tight text-foreground lg:mt-10 lg:text-[46px] lg:leading-[1.12]">
-                Build your future
+                {t("heroLine1")}
                 <br />
-                while you build your{" "}
-                <span className="text-gradient-brand">grades.</span>
+                {t.rich("heroLine2", {
+                  grades: (chunks) => <span className="text-gradient-brand">{chunks}</span>,
+                })}
               </h1>
-              <p className="mt-4 max-w-sm text-body leading-relaxed text-muted-foreground lg:max-w-md">
-                Your AI coach turns a locked-in track, school or startup, into a daily plan, real deadlines, and a
-                future you can actually see.
-              </p>
+              <p className="mt-4 max-w-sm text-body leading-relaxed text-muted-foreground lg:max-w-md">{t("heroSubtitle")}</p>
             </div>
 
             <div className="mt-16 space-y-4 lg:mt-0">
               <Link href="/signup" className="block w-full lg:w-auto">
                 <Button size="lg" className="w-full text-body lg:w-auto lg:px-10">
-                  Get Started
+                  {t("getStarted")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <p className="text-center text-sm text-muted-foreground lg:text-left">
-                Already building your future?{" "}
+                {t("alreadyBuilding")}{" "}
                 <Link href="/login" className="font-semibold text-foreground underline underline-offset-4">
-                  Log in
+                  {t("logIn")}
                 </Link>
               </p>
               <InstallAppCard />
@@ -123,10 +120,10 @@ export default function WelcomePage() {
                 severe on desktop, present on mobile too) between the pitch and
                 the CTA. */}
             <div className="flex items-stretch justify-between gap-3 border-t border-border pt-6 lg:pt-7">
-              {PROOF.map((p, i) => (
-                <div key={p.label} className={cn("min-w-0", i > 0 && "border-l border-border pl-3")}>
-                  <p className="text-xs font-extrabold leading-snug text-foreground lg:text-body">{p.value}</p>
-                  <p className="mt-1 text-2xs text-muted-foreground lg:text-caption">{p.label}</p>
+              {PROOF_KEYS.map((key, i) => (
+                <div key={key} className={cn("min-w-0", i > 0 && "border-l border-border pl-3")}>
+                  <p className="text-xs font-extrabold leading-snug text-foreground lg:text-body">{t(`proof.${key}.value`)}</p>
+                  <p className="mt-1 text-2xs text-muted-foreground lg:text-caption">{t(`proof.${key}.label`)}</p>
                 </div>
               ))}
             </div>
