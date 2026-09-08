@@ -709,6 +709,23 @@
     "finishAndSave": "Finish & Save",
     "keepStudying": "Keep Studying"
   },
+  "DeadlinesPage": {
+    "source": { "exam": "Exam", "homework": "Homework", "milestone": "Milestone" },
+    "bucket": { "overdue": "Overdue", "today": "Today", "thisWeek": "This week", "later": "Later" },
+    "subjectExam": "{subject} Exam",
+    "title": "Deadlines",
+    "subtitle": "Everything with a due date, in one place.",
+    "loadError": "Couldn't load your deadlines. {error}",
+    "gathering": "Gathering your deadlines…",
+    "noMilestonesWithDueDate": "No milestones with a due date",
+    "noMilestonesWithDueDateSubtitle": "Set a due date when you add a milestone in Plan to see it here.",
+    "goToPlan": "Go to Plan",
+    "noMilestonesYet": "No milestones yet",
+    "noMilestonesYetSubtitle": "Add your first milestone in Plan to start tracking deadlines.",
+    "nothingDue": "Nothing due",
+    "nothingDueSubtitle": "Add exams and homework in School to see them here.",
+    "goToSchool": "Go to School"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",

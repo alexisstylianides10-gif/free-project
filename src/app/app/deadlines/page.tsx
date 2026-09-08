@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CalendarClock, ClipboardList, Target, CalendarCheck2, TriangleAlert, type LucideIcon } from "lucide-react";
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useHomework, useExams, useBusinessMilestones } from "@/lib/hooks/domain";
 import { formatCountdown, todayISO, daysBetween } from "@/lib/utils";
@@ -19,16 +20,22 @@ const SOURCE_ICON: Record<DeadlineSource, LucideIcon> = {
   milestone: Target,
 };
 
-const SOURCE_LABEL: Record<DeadlineSource, string> = {
-  exam: "Exam",
-  homework: "Homework",
-  milestone: "Milestone",
-};
-
 export default function DeadlinesPage() {
   const { user, profile } = useAuth();
   const isBusiness = profile?.track === "business";
   const today = todayISO();
+  const t = useTranslations("DeadlinesPage");
+  const SOURCE_LABEL: Record<DeadlineSource, string> = {
+    exam: t("source.exam"),
+    homework: t("source.homework"),
+    milestone: t("source.milestone"),
+  };
+  const BUCKET_LABEL: Record<string, string> = {
+    overdue: t("bucket.overdue"),
+    today: t("bucket.today"),
+    "this-week": t("bucket.thisWeek"),
+    later: t("bucket.later"),
+  };
 
   const { data: exams, loading: examsLoading, error: examsError } = useExams(isBusiness ? undefined : user?.id);
   const { data: homework, loading: homeworkLoading, error: homeworkError } = useHomework(isBusiness ? undefined : user?.id);
@@ -56,7 +63,7 @@ export default function DeadlinesPage() {
         .map((e) => ({
           id: e.id,
           source: "exam" as const,
-          title: `${e.subject} Exam`,
+          title: t("subjectExam", { subject: e.subject }),
           subtitle: e.title !== e.subject ? e.title : undefined,
           dueDate: e.exam_date,
           href: "/app/school/exams",
@@ -79,49 +86,49 @@ export default function DeadlinesPage() {
 
   return (
     <div className="space-y-7 pb-4 animate-fade-in">
-      <ScreenHeader title="Deadlines" subtitle="Everything with a due date, in one place." />
+      <ScreenHeader title={t("title")} subtitle={t("subtitle")} />
 
       {error && (
         <Card className="border border-danger/40">
           <CardContent className="flex items-start gap-2.5 p-4 text-sm text-danger">
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Couldn&rsquo;t load your deadlines. {error}</span>
+            <span>{t("loadError", { error })}</span>
           </CardContent>
         </Card>
       )}
 
       {loading ? (
-        <LoadingScreen message="Gathering your deadlines…" fullScreen={false} />
+        <LoadingScreen message={t("gathering")} fullScreen={false} />
       ) : groups.length === 0 ? (
         isBusiness ? (
           hasAnySourceData ? (
             <EmptyState
               icon={CalendarCheck2}
-              title="No milestones with a due date"
-              subtitle="Set a due date when you add a milestone in Plan to see it here."
-              cta={{ label: "Go to Plan", href: "/app/school" }}
+              title={t("noMilestonesWithDueDate")}
+              subtitle={t("noMilestonesWithDueDateSubtitle")}
+              cta={{ label: t("goToPlan"), href: "/app/school" }}
             />
           ) : (
             <EmptyState
               icon={Target}
-              title="No milestones yet"
-              subtitle="Add your first milestone in Plan to start tracking deadlines."
-              cta={{ label: "Go to Plan", href: "/app/school" }}
+              title={t("noMilestonesYet")}
+              subtitle={t("noMilestonesYetSubtitle")}
+              cta={{ label: t("goToPlan"), href: "/app/school" }}
             />
           )
         ) : (
           <EmptyState
             icon={CalendarCheck2}
-            title="Nothing due"
-            subtitle="Add exams and homework in School to see them here."
-            cta={{ label: "Go to School", href: "/app/school" }}
+            title={t("nothingDue")}
+            subtitle={t("nothingDueSubtitle")}
+            cta={{ label: t("goToSchool"), href: "/app/school" }}
           />
         )
       ) : (
         groups.map((group) => (
           <section key={group.bucket}>
             <div className="mb-3 flex items-center gap-2">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{group.label}</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{BUCKET_LABEL[group.bucket]}</h2>
               <span className="text-xs font-semibold text-muted-foreground">{group.items.length}</span>
             </div>
             <div className="space-y-2">

@@ -709,6 +709,23 @@
     "finishAndSave": "Terminer et Enregistrer",
     "keepStudying": "Continuer à Étudier"
   },
+  "DeadlinesPage": {
+    "source": { "exam": "Examen", "homework": "Devoir", "milestone": "Jalon" },
+    "bucket": { "overdue": "En retard", "today": "Aujourd'hui", "thisWeek": "Cette semaine", "later": "Plus tard" },
+    "subjectExam": "Examen de {subject}",
+    "title": "Échéances",
+    "subtitle": "Tout ce qui a une date d'échéance, au même endroit.",
+    "loadError": "Tes échéances n'ont pas pu être chargées. {error}",
+    "gathering": "Rassemblement de tes échéances…",
+    "noMilestonesWithDueDate": "Aucun jalon avec une date d'échéance",
+    "noMilestonesWithDueDateSubtitle": "Définis une date d'échéance en ajoutant un jalon dans Plan pour le voir ici.",
+    "goToPlan": "Aller à Plan",
+    "noMilestonesYet": "Pas encore de jalons",
+    "noMilestonesYetSubtitle": "Ajoute ton premier jalon dans Plan pour commencer à suivre les échéances.",
+    "nothingDue": "Rien à échéance",
+    "nothingDueSubtitle": "Ajoute des examens et des devoirs dans École pour les voir ici.",
+    "goToSchool": "Aller à École"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

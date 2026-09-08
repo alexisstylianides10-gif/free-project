@@ -709,6 +709,23 @@
     "finishAndSave": "Terminar y Guardar",
     "keepStudying": "Seguir Estudiando"
   },
+  "DeadlinesPage": {
+    "source": { "exam": "Examen", "homework": "Deberes", "milestone": "Hito" },
+    "bucket": { "overdue": "Atrasado", "today": "Hoy", "thisWeek": "Esta semana", "later": "Más tarde" },
+    "subjectExam": "Examen de {subject}",
+    "title": "Plazos",
+    "subtitle": "Todo lo que tiene una fecha límite, en un solo lugar.",
+    "loadError": "No se pudieron cargar tus plazos. {error}",
+    "gathering": "Reuniendo tus plazos…",
+    "noMilestonesWithDueDate": "No hay hitos con fecha límite",
+    "noMilestonesWithDueDateSubtitle": "Establece una fecha límite al añadir un hito en Plan para verlo aquí.",
+    "goToPlan": "Ir a Plan",
+    "noMilestonesYet": "Aún no hay hitos",
+    "noMilestonesYetSubtitle": "Añade tu primer hito en Plan para empezar a seguir plazos.",
+    "nothingDue": "Nada pendiente",
+    "nothingDueSubtitle": "Añade exámenes y deberes en Escuela para verlos aquí.",
+    "goToSchool": "Ir a Escuela"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",
