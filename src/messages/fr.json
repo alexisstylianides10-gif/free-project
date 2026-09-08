@@ -726,6 +726,40 @@
     "nothingDueSubtitle": "Ajoute des examens et des devoirs dans École pour les voir ici.",
     "goToSchool": "Aller à École"
   },
+  "MissionsPage": {
+    "categoryTitles": {
+      "school": "Missions Scolaires",
+      "skill": "Missions Compétence",
+      "career": "Missions Carrière",
+      "business": "Missions Business",
+      "creative": "Missions Créatives"
+    },
+    "title": "Missions",
+    "subtitle": "De vraies réussites, pas des séries d'utilisation de l'appli. Chacune fait avancer ton avenir."
+  },
+  "MissionDetailPage": {
+    "notFound": "Mission introuvable.",
+    "backToMissions": "Retour aux Missions",
+    "builds": "Développe {skill}",
+    "missionComplete": "Mission terminée · +{xp} XP gagnés.",
+    "saving": "Enregistrement…",
+    "iCompletedThis": "J'ai terminé ça",
+    "beHonest": "Sois honnête. Les missions ne comptent que si tu les as vraiment faites."
+  },
+  "Skills": {
+    "communication": "Communication",
+    "creativity": "Créativité",
+    "problem_solving": "Résolution de Problèmes",
+    "leadership": "Leadership",
+    "coding": "Programmation",
+    "mathematics": "Mathématiques",
+    "writing": "Écriture",
+    "video_editing": "Montage Vidéo",
+    "selling": "Vente",
+    "organisation": "Organisation",
+    "working_with_people": "Travail avec les Autres",
+    "building_things": "Construction de Choses"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

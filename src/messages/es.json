@@ -726,6 +726,40 @@
     "nothingDueSubtitle": "Añade exámenes y deberes en Escuela para verlos aquí.",
     "goToSchool": "Ir a Escuela"
   },
+  "MissionsPage": {
+    "categoryTitles": {
+      "school": "Misiones Escolares",
+      "skill": "Misiones de Habilidades",
+      "career": "Misiones de Carrera",
+      "business": "Misiones de Negocio",
+      "creative": "Misiones Creativas"
+    },
+    "title": "Misiones",
+    "subtitle": "Logros reales, no rachas de uso de la app. Cada una impulsa tu futuro."
+  },
+  "MissionDetailPage": {
+    "notFound": "Misión no encontrada.",
+    "backToMissions": "Volver a Misiones",
+    "builds": "Desarrolla {skill}",
+    "missionComplete": "Misión completada · +{xp} XP ganados.",
+    "saving": "Guardando…",
+    "iCompletedThis": "Completé esto",
+    "beHonest": "Sé honesto. Las misiones solo cuentan si realmente las hiciste."
+  },
+  "Skills": {
+    "communication": "Comunicación",
+    "creativity": "Creatividad",
+    "problem_solving": "Resolución de Problemas",
+    "leadership": "Liderazgo",
+    "coding": "Programación",
+    "mathematics": "Matemáticas",
+    "writing": "Escritura",
+    "video_editing": "Edición de Vídeo",
+    "selling": "Ventas",
+    "organisation": "Organización",
+    "working_with_people": "Trabajo con Personas",
+    "building_things": "Construcción de Cosas"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",

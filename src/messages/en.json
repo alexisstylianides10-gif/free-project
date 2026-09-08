@@ -726,6 +726,40 @@
     "nothingDueSubtitle": "Add exams and homework in School to see them here.",
     "goToSchool": "Go to School"
   },
+  "MissionsPage": {
+    "categoryTitles": {
+      "school": "School Missions",
+      "skill": "Skill Missions",
+      "career": "Career Missions",
+      "business": "Business Missions",
+      "creative": "Creative Missions"
+    },
+    "title": "Missions",
+    "subtitle": "Real accomplishments, not app-usage streaks. Each one moves your future forward."
+  },
+  "MissionDetailPage": {
+    "notFound": "Mission not found.",
+    "backToMissions": "Back to Missions",
+    "builds": "Builds {skill}",
+    "missionComplete": "Mission complete · +{xp} XP earned.",
+    "saving": "Saving…",
+    "iCompletedThis": "I completed this",
+    "beHonest": "Be honest. Missions only count for something if you actually did them."
+  },
+  "Skills": {
+    "communication": "Communication",
+    "creativity": "Creativity",
+    "problem_solving": "Problem Solving",
+    "leadership": "Leadership",
+    "coding": "Coding",
+    "mathematics": "Mathematics",
+    "writing": "Writing",
+    "video_editing": "Video Editing",
+    "selling": "Selling",
+    "organisation": "Organisation",
+    "working_with_people": "Working With People",
+    "building_things": "Building Things"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",

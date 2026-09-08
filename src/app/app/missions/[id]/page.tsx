@@ -4,10 +4,10 @@ import { use, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, CheckCircle2, PartyPopper } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useUserMissions } from "@/lib/hooks/domain";
 import { getMission } from "@/lib/catalog/missions";
-import { skillLabel } from "@/lib/catalog/skills";
 import { completeMission } from "@/lib/actions/missions";
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
@@ -20,6 +20,10 @@ export default function MissionDetailPage({ params }: { params: Promise<{ id: st
   const { data: userMissions, refetch } = useUserMissions(user?.id);
   const [completing, setCompleting] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
+  const t = useTranslations("MissionDetailPage");
+  const tMissions = useTranslations("Missions");
+  const tSkills = useTranslations("Skills");
+  const tMissionCard = useTranslations("MissionCard");
 
   const mission = getMission(id);
   const record = userMissions.find((m) => m.mission_id === id);
@@ -33,9 +37,9 @@ export default function MissionDetailPage({ params }: { params: Promise<{ id: st
   if (!mission) {
     return (
       <div className="animate-fade-in py-16 text-center text-sm text-muted-foreground">
-        Mission not found.{" "}
+        {t("notFound")}{" "}
         <Link href="/app/missions" className="text-accent underline underline-offset-4">
-          Back to Missions
+          {t("backToMissions")}
         </Link>
       </div>
     );
@@ -57,22 +61,22 @@ export default function MissionDetailPage({ params }: { params: Promise<{ id: st
       </button>
 
       <div className="mt-2 rounded-3xl bg-gradient-mission p-5 text-white">
-        <p className="text-xs font-bold uppercase tracking-wide text-white/85">{mission.category} mission</p>
-        <h1 className="mt-2 text-xl font-bold leading-snug">{mission.title}</h1>
+        <p className="text-xs font-bold uppercase tracking-wide text-white/85">{tMissionCard(`categoryLabel.${mission.category}`)}</p>
+        <h1 className="mt-2 text-xl font-bold leading-snug">{tMissions(`${mission.id}.title`)}</h1>
         <div className="mt-3 flex items-center gap-2 text-xs font-semibold">
-          <span className="rounded-full bg-white/15 px-2.5 py-1 capitalize">{mission.difficulty}</span>
-          <span className="rounded-full bg-white/15 px-2.5 py-1">{mission.minutes} min</span>
+          <span className="rounded-full bg-white/15 px-2.5 py-1 capitalize">{tMissionCard(`difficulty.${mission.difficulty}`)}</span>
+          <span className="rounded-full bg-white/15 px-2.5 py-1">{tMissionCard("minutes", { minutes: mission.minutes })}</span>
           <span className="rounded-full bg-white/15 px-2.5 py-1">+{mission.xp} XP</span>
         </div>
       </div>
 
-      <p className="mt-5 text-sm leading-relaxed text-foreground">{mission.description}</p>
+      <p className="mt-5 text-sm leading-relaxed text-foreground">{tMissions(`${mission.id}.description`)}</p>
 
       {mission.skillKeys && mission.skillKeys.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
           {mission.skillKeys.map((k) => (
             <Badge key={k} tone="accent">
-              Builds {skillLabel(k)}
+              {t("builds", { skill: tSkills(k) })}
             </Badge>
           ))}
         </div>
@@ -82,16 +86,16 @@ export default function MissionDetailPage({ params }: { params: Promise<{ id: st
         {alreadyCompleted || justCompleted ? (
           <div className="flex items-center gap-2.5 rounded-2xl border border-success/40 bg-success-soft px-4 py-3.5 text-sm font-semibold text-success">
             <PartyPopper className="h-4.5 w-4.5" />
-            Mission complete · +{mission.xp} XP earned.
+            {t("missionComplete", { xp: mission.xp })}
           </div>
         ) : (
           <Button size="lg" variant="mission" className="w-full" onClick={handleComplete} disabled={completing}>
             <CheckCircle2 className="h-4 w-4" />
-            {completing ? "Saving…" : "I completed this"}
+            {completing ? t("saving") : t("iCompletedThis")}
           </Button>
         )}
         <p className="mt-3 text-center text-xs text-muted-foreground">
-          Be honest. Missions only count for something if you actually did them.
+          {t("beHonest")}
         </p>
       </div>
     </div>
