@@ -639,6 +639,33 @@
     "makeFlashcards": "Make Flashcards",
     "startStudying": "Start Studying"
   },
+  "PlanDetailPage": {
+    "loading": "Loading…",
+    "studyPlan": "Study Plan",
+    "daysDone": "{done}/{total} days done",
+    "day": "Day {day}",
+    "markAsDone": "Mark as done",
+    "markAsNotDone": "Mark as not done",
+    "minutes": "{minutes} min"
+  },
+  "NewPlanPage": {
+    "couldNotGenerate": "Couldn't generate a plan.",
+    "loading": "Loading…",
+    "title": "New Study Plan",
+    "subtitle": "A personalized day-by-day plan, weighted toward your weakest topics.",
+    "targetAnExam": "Target an exam",
+    "noSpecificExam": "No specific exam, set my own timeframe",
+    "daysAvailable": "Days available",
+    "minutesPerDay": "Minutes per day",
+    "generating": "Generating…",
+    "generatePlan": "Generate Plan",
+    "day": "Day {day}",
+    "minutes": "{minutes} min",
+    "accept": "Accept",
+    "done": "Done",
+    "edit": "Edit",
+    "redo": "Redo"
+  },
   "CheckoutForm": {
     "cardFailed": "Your card couldn't be charged. Try again.",
     "paymentIncomplete": "Payment wasn't completed. Try again.",

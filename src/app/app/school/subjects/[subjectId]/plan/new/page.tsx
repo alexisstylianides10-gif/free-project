@@ -4,6 +4,7 @@ import { use, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CalendarClock, Loader2, RefreshCw, Pencil, Check, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { authedFetch } from "@/lib/api";
@@ -22,6 +23,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
   const materialId = searchParams.get("material") ?? undefined;
 
   const { user } = useAuth();
+  const t = useTranslations("NewPlanPage");
   const { data: subjects } = useStudySubjects(user?.id);
   const { data: exams } = useExams(user?.id);
 
@@ -69,12 +71,12 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Couldn't generate a plan.");
+      if (!res.ok) throw new Error(json.error || t("couldNotGenerate"));
       setPlan(json.plan as StudyPlan);
       setItems(json.items as StudyPlanItem[]);
       setEditing(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't generate a plan.");
+      setError(e instanceof Error ? e.message : t("couldNotGenerate"));
     } finally {
       setGenerating(false);
     }
@@ -112,7 +114,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
   }
 
   if (!subject) {
-    return <p className="py-12 text-center text-sm text-muted-foreground">Loading…</p>;
+    return <p className="py-12 text-center text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   return (
@@ -122,8 +124,8 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
       </Link>
 
       <div>
-        <h1 className="text-xl font-extrabold text-foreground">New Study Plan</h1>
-        <p className="mt-1 text-sm text-muted-foreground">A personalized day-by-day plan, weighted toward your weakest topics.</p>
+        <h1 className="text-xl font-extrabold text-foreground">{t("title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {!plan && (
@@ -131,7 +133,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
           <CardContent className="space-y-4 p-4">
             {upcomingExams.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Target an exam</p>
+                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("targetAnExam")}</p>
                 <div className="space-y-2">
                   {upcomingExams.map((exam) => (
                     <button
@@ -153,7 +155,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
                       examId === "none" ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface text-foreground"
                     }`}
                   >
-                    No specific exam, set my own timeframe
+                    {t("noSpecificExam")}
                   </button>
                 </div>
               </div>
@@ -161,7 +163,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
 
             {examId === "none" && (
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted-foreground">Days available</label>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("daysAvailable")}</label>
                 <Input
                   type="number"
                   min={1}
@@ -173,7 +175,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
             )}
 
             <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted-foreground">Minutes per day</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("minutesPerDay")}</label>
               <Input
                 type="number"
                 min={10}
@@ -189,11 +191,11 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
             <Button size="lg" className="w-full" onClick={generate} disabled={generating}>
               {generating ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Generating…
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t("generating")}
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" /> Generate Plan
+                  <Sparkles className="h-4 w-4" /> {t("generatePlan")}
                 </>
               )}
             </Button>
@@ -208,7 +210,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
               <Card key={day}>
                 <CardContent className="p-4">
                   <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-accent">
-                    <CalendarClock className="h-3.5 w-3.5" /> Day {day}
+                    <CalendarClock className="h-3.5 w-3.5" /> {t("day", { day })}
                   </p>
                   <div className="space-y-2.5">
                     {dayItems.map((item) => (
@@ -232,7 +234,7 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
                         ) : (
                           <>
                             <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{item.label}</span>
-                            <span className="shrink-0 text-sm font-bold text-muted-foreground">{item.duration_min} min</span>
+                            <span className="shrink-0 text-sm font-bold text-muted-foreground">{t("minutes", { minutes: item.duration_min })}</span>
                           </>
                         )}
                       </div>
@@ -248,15 +250,15 @@ export default function NewPlanPage({ params }: { params: Promise<{ subjectId: s
           <div className="grid grid-cols-3 gap-2">
             <Button size="lg" onClick={acceptPlan} disabled={accepting || generating}>
               {accepting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Accept
+              {t("accept")}
             </Button>
             <Button size="lg" variant="secondary" onClick={() => setEditing((e) => !e)} disabled={generating}>
               <Pencil className="h-4 w-4" />
-              {editing ? "Done" : "Edit"}
+              {editing ? t("done") : t("edit")}
             </Button>
             <Button size="lg" variant="secondary" onClick={regenerate} disabled={generating}>
               {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              Redo
+              {t("redo")}
             </Button>
           </div>
         </div>

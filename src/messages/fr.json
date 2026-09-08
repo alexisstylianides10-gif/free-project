@@ -639,6 +639,33 @@
     "makeFlashcards": "Créer des Cartes Mémo",
     "startStudying": "Commencer à Étudier"
   },
+  "PlanDetailPage": {
+    "loading": "Chargement…",
+    "studyPlan": "Programme d'Étude",
+    "daysDone": "{done}/{total} jours terminés",
+    "day": "Jour {day}",
+    "markAsDone": "Marquer comme fait",
+    "markAsNotDone": "Marquer comme non fait",
+    "minutes": "{minutes} min"
+  },
+  "NewPlanPage": {
+    "couldNotGenerate": "Impossible de générer un programme.",
+    "loading": "Chargement…",
+    "title": "Nouveau Programme d'Étude",
+    "subtitle": "Un programme personnalisé jour par jour, axé sur tes points faibles.",
+    "targetAnExam": "Viser un examen",
+    "noSpecificExam": "Pas d'examen précis, définir mon propre délai",
+    "daysAvailable": "Jours disponibles",
+    "minutesPerDay": "Minutes par jour",
+    "generating": "Génération…",
+    "generatePlan": "Générer le Programme",
+    "day": "Jour {day}",
+    "minutes": "{minutes} min",
+    "accept": "Accepter",
+    "done": "Terminé",
+    "edit": "Modifier",
+    "redo": "Refaire"
+  },
   "CheckoutForm": {
     "cardFailed": "Ta carte n'a pas pu être débitée. Réessaie.",
     "paymentIncomplete": "Le paiement n'a pas été finalisé. Réessaie.",

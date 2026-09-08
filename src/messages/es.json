@@ -639,6 +639,33 @@
     "makeFlashcards": "Crear Tarjetas",
     "startStudying": "Empezar a Estudiar"
   },
+  "PlanDetailPage": {
+    "loading": "Cargando…",
+    "studyPlan": "Plan de Estudio",
+    "daysDone": "{done}/{total} días completados",
+    "day": "Día {day}",
+    "markAsDone": "Marcar como hecho",
+    "markAsNotDone": "Marcar como no hecho",
+    "minutes": "{minutes} min"
+  },
+  "NewPlanPage": {
+    "couldNotGenerate": "No se pudo generar un plan.",
+    "loading": "Cargando…",
+    "title": "Nuevo Plan de Estudio",
+    "subtitle": "Un plan personalizado día a día, centrado en tus temas más débiles.",
+    "targetAnExam": "Apuntar a un examen",
+    "noSpecificExam": "Sin examen específico, elegir mi propio plazo",
+    "daysAvailable": "Días disponibles",
+    "minutesPerDay": "Minutos por día",
+    "generating": "Generando…",
+    "generatePlan": "Generar Plan",
+    "day": "Día {day}",
+    "minutes": "{minutes} min",
+    "accept": "Aceptar",
+    "done": "Hecho",
+    "edit": "Editar",
+    "redo": "Rehacer"
+  },
   "CheckoutForm": {
     "cardFailed": "No se pudo cobrar a tu tarjeta. Inténtalo de nuevo.",
     "paymentIncomplete": "El pago no se completó. Inténtalo de nuevo.",
