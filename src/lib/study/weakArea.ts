@@ -34,18 +34,18 @@ export async function generateWeakAreaPlan(params: {
     `Respond with ONLY JSON matching:\n` +
     `{\n` +
     `  "summary": string (1-2 sentences reflecting back what the real problem is),\n` +
-    `  "roadmap": [{ "title": string, "detail": string }] (3-6 concrete steps, in order — omit entirely if a roadmap wouldn't help here),\n` +
-    `  "exercises": [{ "title": string, "passage": string (only for passage-based exercises like reading comprehension — omit for others), "questions": [{ "question": string, "answer": string }] }] (2-4 exercises with real content, not placeholders — omit entirely if practice exercises wouldn't help here),\n` +
-    `  "resources": [{ "title": string, "author": string (omit if not a book), "why": string (1 sentence on why this specific resource helps this specific problem) }] (2-4 real, genuinely relevant resources — omit entirely if you don't have a genuinely good recommendation)\n` +
+    `  "roadmap": [{ "title": string, "detail": string }] (3-4 concrete steps, in order — omit entirely if a roadmap wouldn't help here),\n` +
+    `  "exercises": [{ "title": string, "passage": string (only for passage-based exercises like reading comprehension — keep it under 120 words; omit entirely for other exercise types), "questions": [{ "question": string, "answer": string }] }] (1-2 exercises with real content, not placeholders — 2-3 questions each, omit entirely if practice exercises wouldn't help here),\n` +
+    `  "resources": [{ "title": string, "author": string (omit if not a book), "why": string (1 sentence on why this specific resource helps this specific problem) }] (2-3 real, genuinely relevant resources — omit entirely if you don't have a genuinely good recommendation)\n` +
     `}\n` +
-    `At least one of roadmap/exercises/resources must be present. Every exercise question must have a real, correct answer, not a placeholder.`;
+    `At least one of roadmap/exercises/resources must be present. Every exercise question must have a real, correct answer, not a placeholder. Be concise everywhere — short, useful, no filler.`;
 
   let plan: WeakAreaPlanContent;
   try {
     plan = await callStudyAIForJSON<WeakAreaPlanContent>({
       system,
       userText,
-      maxTokens: 3072,
+      maxTokens: 1536,
       effort: "medium",
       language,
     });

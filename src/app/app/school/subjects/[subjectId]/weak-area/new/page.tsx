@@ -40,7 +40,7 @@ export default function NewWeakAreaPlanPage({ params }: { params: Promise<{ subj
   }
 
   if (busy) {
-    return <LoadingScreen message="Building your improvement plan…" fullScreen={false} />;
+    return <LoadingScreen message="Building your improvement plan… this takes a little while, hang tight." fullScreen={false} />;
   }
 
   return (
