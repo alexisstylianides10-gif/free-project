@@ -12,7 +12,16 @@ const MAX_MESSAGE_LENGTH = 2000;
 interface HomeworkHelpBody {
   homeworkId?: string;
   message?: string;
+  /** Prior turns from this same open chat session, oldest first — there's
+   * no persistence table for this feature (see below), so the client is
+   * the only place this history lives; without it, a "explain that
+   * differently" follow-up would land with no memory of what was already
+   * said, making the "try a genuinely different approach" instruction
+   * below impossible for the model to actually honor. */
+  history?: { role: "user" | "assistant"; content: string }[];
 }
+
+const HISTORY_LIMIT = 10;
 
 /**
  * Backs the per-homework-item AI help screen. Unlike the study-subject
@@ -70,11 +79,17 @@ The student may ask you to explain something at a particular level — adapt you
 
 Never claim a guaranteed exam outcome or grade. Keep your tone premium and mature, not childish. Keep replies focused and not overly long — this is a chat, not an essay.`;
 
+  const history = Array.isArray(body.history)
+    ? body.history
+        .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+        .slice(-HISTORY_LIMIT)
+    : [];
+
   let replyText: string;
   try {
     replyText = await callStudyAIForText({
       system,
-      messages: [{ role: "user", content: message }],
+      messages: [...history, { role: "user", content: message }],
       maxTokens: 900,
       effort: "low",
       language: await getUserLanguage(client, user.id),

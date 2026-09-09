@@ -59,12 +59,13 @@ export default function HomeworkHelpPage({ params }: { params: Promise<{ homewor
   async function ask(framedMessage: string) {
     if (!framedMessage.trim() || sending) return;
     setError(null);
+    const history = messages;
     setMessages((prev) => [...prev, { role: "user", content: framedMessage }]);
     setSending(true);
     try {
       const res = await authedFetch("/api/school/homework-help", {
         method: "POST",
-        body: JSON.stringify({ homeworkId, message: framedMessage }),
+        body: JSON.stringify({ homeworkId, message: framedMessage, history }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || t("somethingWentWrong"));
