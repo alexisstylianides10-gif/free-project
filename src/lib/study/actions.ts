@@ -68,6 +68,46 @@ export async function updateTopicMastery(supabase: SupabaseClient, topicId: stri
 }
 
 /**
+ * Same mastery math as updateTopicMastery, but for grading a whole quiz at
+ * once: folds every result for a given topic into a single read + single
+ * write instead of one round trip per question. A 20-question quiz on one
+ * topic previously meant 20 sequential (read, write) pairs before the
+ * student could see their results — this cuts it to one pair per distinct
+ * topic touched, run in parallel across topics. The per-answer math is
+ * still applied in order, so the final mastery value is identical to
+ * calling updateTopicMastery once per answer sequentially.
+ */
+export async function updateTopicMasteryBatch(supabase: SupabaseClient, updates: { topicId: string; correct: boolean }[]): Promise<void> {
+  const byTopic = new Map<string, boolean[]>();
+  for (const u of updates) {
+    const list = byTopic.get(u.topicId) ?? [];
+    list.push(u.correct);
+    byTopic.set(u.topicId, list);
+  }
+
+  await Promise.all(
+    Array.from(byTopic.entries()).map(async ([topicId, corrects]) => {
+      const { data: topic } = await supabase.from("study_topics").select("mastery, quiz_attempts, correct_answers").eq("id", topicId).maybeSingle();
+      if (!topic) return;
+
+      let mastery = topic.mastery;
+      let quizAttempts = topic.quiz_attempts;
+      let correctAnswers = topic.correct_answers;
+      for (const correct of corrects) {
+        mastery = clamp(Math.round(mastery * 0.7 + (correct ? 100 : 0) * 0.3), 0, 100);
+        quizAttempts += 1;
+        if (correct) correctAnswers += 1;
+      }
+
+      await supabase
+        .from("study_topics")
+        .update({ mastery, quiz_attempts: quizAttempts, correct_answers: correctAnswers, last_practiced_at: new Date().toISOString() })
+        .eq("id", topicId);
+    })
+  );
+}
+
+/**
  * Simple SM-2-style spaced repetition update for one flashcard review.
  * "Knew it" grows the interval (multiplied by ease, which itself grows
  * slightly); "Almost" resets to a short interval without punishing ease

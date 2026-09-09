@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/supabase/server";
 import { checkEntitlement } from "@/lib/billing/entitlement";
 import { callStudyAIForJSON } from "@/lib/study/ai";
 import { getUserLanguage } from "@/lib/i18n/serverLocale";
-import { logFocusSession, updateTopicMastery } from "@/lib/study/actions";
+import { logFocusSession, updateTopicMasteryBatch } from "@/lib/study/actions";
 import { awardAchievementOnce } from "@/lib/actions/achievements";
 import type { AnswerVerdict, QuizQuestion, QuizResultItem, StudyQuiz, StudyTopic } from "@/lib/study/types";
 import type { Profile as AppProfile } from "@/lib/types";
@@ -185,16 +185,20 @@ export async function POST(req: NextRequest) {
   // Update mastery for every question that resolves to a real study_topics row.
   if (quiz.topic_id) {
     // Single-topic quiz — every question maps to the same stored topic.
-    for (const r of results) {
-      await updateTopicMastery(client, quiz.topic_id, r.verdict === "correct");
-    }
+    await updateTopicMasteryBatch(
+      client,
+      results.map((r) => ({ topicId: quiz.topic_id as string, correct: r.verdict === "correct" }))
+    );
   } else {
     const { data: subjectTopics } = await client.from("study_topics").select("id, name").eq("subject_id", quiz.subject_id);
     const topics = (subjectTopics ?? []) as Pick<StudyTopic, "id" | "name">[];
-    for (const r of results) {
-      const match = topics.find((t) => normalize(t.name) === normalize(r.topic));
-      if (match) await updateTopicMastery(client, match.id, r.verdict === "correct");
-    }
+    const matched = results
+      .map((r) => {
+        const match = topics.find((t) => normalize(t.name) === normalize(r.topic));
+        return match ? { topicId: match.id, correct: r.verdict === "correct" } : null;
+      })
+      .filter((m): m is { topicId: string; correct: boolean } => !!m);
+    await updateTopicMasteryBatch(client, matched);
   }
 
   // Log the study activity (XP + streak) exactly like every other study surface.
