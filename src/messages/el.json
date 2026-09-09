@@ -1725,7 +1725,7 @@
     "moAbbrev": "μήνα",
     "yrAbbrev": "έτος",
     "manageSubscription": "Διαχείριση συνδρομής",
-    "payAmount": "Πληρωμή ${price}/{unit}",
+    "payAmount": "Πληρωμή {symbol}{price}/{unit}",
     "changePlan": "Αλλαγή πλάνου",
     "continueToPayment": "Συνέχεια στην πληρωμή",
     "backToApp": "Πίσω στην εφαρμογή"

@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { authedFetch } from "@/lib/api";
 import { isEntitled } from "@/lib/billing/entitlement";
-import { getPlanOption, type BillingInterval } from "@/lib/billing/plans";
+import { getPlanOption, currencyForCountry, priceForCurrency, CURRENCY_SYMBOL, type BillingInterval } from "@/lib/billing/plans";
 import { CheckoutForm } from "@/components/billing/CheckoutForm";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -42,10 +42,15 @@ export default function UpgradePage() {
 
   const onPlus = Boolean(profile && isEntitled(profile) && profile.plan === "plus");
   const track = profile?.track ?? "student";
+  const currency = currencyForCountry(profile?.country);
+  const currencySymbol = CURRENCY_SYMBOL[currency];
   const planOption = getPlanOption(track, interval);
   const monthlyOption = getPlanOption(track, "monthly");
   const yearlyOption = getPlanOption(track, "yearly");
-  const yearlySavingsPercent = Math.round((1 - yearlyOption.priceUsd / (monthlyOption.priceUsd * 12)) * 100);
+  const price = priceForCurrency(planOption, currency);
+  const yearlySavingsPercent = Math.round(
+    (1 - priceForCurrency(yearlyOption, currency) / (priceForCurrency(monthlyOption, currency) * 12)) * 100
+  );
 
   // Once the card is confirmed, the webhook is what actually flips the
   // profile to plan="plus" — poll refreshProfile a few times so the UI
@@ -203,7 +208,7 @@ export default function UpgradePage() {
             )}
 
             <p className="mt-4 text-3xl font-extrabold text-foreground">
-              ${planOption.priceUsd}
+              {currencySymbol}{price}
               <span className="text-base font-medium text-muted-foreground">/{interval === "monthly" ? t("moAbbrev") : t("yrAbbrev")}</span>
             </p>
 
@@ -229,7 +234,7 @@ export default function UpgradePage() {
                 <>
                   <CheckoutForm
                     clientSecret={clientSecret}
-                    submitLabel={t("payAmount", { price: planOption.priceUsd, unit: interval === "monthly" ? t("moAbbrev") : t("yrAbbrev") })}
+                    submitLabel={t("payAmount", { symbol: currencySymbol, price, unit: interval === "monthly" ? t("moAbbrev") : t("yrAbbrev") })}
                     onSuccess={() => setPaymentSucceeded(true)}
                   />
                   <Button size="sm" variant="ghost" className="w-full" onClick={() => setClientSecret(null)}>

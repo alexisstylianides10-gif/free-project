@@ -1725,7 +1725,7 @@
     "moAbbrev": "mo",
     "yrAbbrev": "yr",
     "manageSubscription": "Manage subscription",
-    "payAmount": "Pay ${price}/{unit}",
+    "payAmount": "Pay {symbol}{price}/{unit}",
     "changePlan": "Change plan",
     "continueToPayment": "Continue to payment",
     "backToApp": "Back to app"

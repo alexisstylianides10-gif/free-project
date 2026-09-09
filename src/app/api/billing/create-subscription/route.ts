@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { requireUser, supabaseServiceRole } from "@/lib/supabase/server";
 import { stripeClient } from "@/lib/billing/stripe";
-import { getPlanOption, type BillingInterval } from "@/lib/billing/plans";
+import { getPlanOption, currencyForCountry, envVarForCurrency, type BillingInterval } from "@/lib/billing/plans";
 
 export const runtime = "nodejs";
 
@@ -40,13 +40,14 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await client
     .from("profiles")
-    .select("stripe_customer_id, stripe_subscription_id, track")
+    .select("stripe_customer_id, stripe_subscription_id, track, country")
     .eq("id", user.id)
     .maybeSingle();
   if (!profile) return NextResponse.json({ error: "Profile not found." }, { status: 404 });
 
   const planOption = getPlanOption(profile.track, interval);
-  const priceId = process.env[planOption.envVar];
+  const currency = currencyForCountry(profile.country);
+  const priceId = process.env[envVarForCurrency(planOption, currency)];
   if (!priceId) {
     return NextResponse.json({ error: "This plan isn't configured yet." }, { status: 503 });
   }
