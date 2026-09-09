@@ -115,7 +115,8 @@ revoke update on public.profiles from authenticated;
 grant update (
   full_name, year_group, country, avatar_emoji, xp_school, xp_career,
   xp_skill, xp_project, streak_count, longest_streak, last_active_date,
-  onboarding_completed, track, billing_interval, tutorial_seen, age, language
+  onboarding_completed, track, billing_interval, tutorial_seen, age, language,
+  calendar_token
 ) on public.profiles to authenticated;
 
 -- ---------------------------------------------------------------------------
@@ -374,6 +375,17 @@ create table if not exists public.study_materials (
 alter table public.study_materials enable row level security;
 create policy "study_materials_all_own" on public.study_materials for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 alter table public.study_materials add column if not exists is_textbook boolean not null default false;
+
+-- Lets a student subscribe their exams/homework (or a founder's milestones)
+-- to their phone/computer calendar app via a webcal:// feed URL
+-- (/api/calendar/[token]) that calendar apps re-fetch on their own schedule
+-- — no manual re-export needed as deadlines change. A random token rather
+-- than the user's own id, since this URL is fetched with no auth header at
+-- all (calendar apps can't do OAuth) and must not be guessable; regenerable
+-- from Settings if it ever leaks, hence living in the client UPDATE grant
+-- below rather than being immutable.
+alter table public.profiles add column if not exists calendar_token uuid not null default gen_random_uuid();
+create unique index if not exists profiles_calendar_token_idx on public.profiles (calendar_token);
 
 create table if not exists public.study_topics (
   id uuid primary key default gen_random_uuid(),

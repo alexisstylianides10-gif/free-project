@@ -11,6 +11,7 @@ import { groupDeadlines, badgeToneForBucket, type DeadlineItem, type DeadlineSou
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { CalendarSyncCard } from "@/components/shared/CalendarSyncCard";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
@@ -87,6 +88,8 @@ export default function DeadlinesPage() {
   return (
     <div className="space-y-7 pb-4 animate-fade-in">
       <ScreenHeader title={t("title")} subtitle={t("subtitle")} />
+
+      <CalendarSyncCard />
 
       {error && (
         <Card className="border border-danger/40">

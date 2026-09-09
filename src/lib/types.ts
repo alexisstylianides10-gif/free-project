@@ -34,6 +34,10 @@ export interface Profile {
   plan_status: "trialing" | "active" | "canceled" | "past_due";
   trial_ends_at: string;
   created_at: string;
+  /** Random, regenerable id used in the public /api/calendar/[token] feed
+   * URL — never the user's own id, since that route has no auth header to
+   * check (calendar apps can't send one). */
+  calendar_token: string;
 }
 
 export interface OnboardingResponse {
