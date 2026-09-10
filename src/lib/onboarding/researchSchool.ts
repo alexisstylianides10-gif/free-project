@@ -1,0 +1,110 @@
+import { authedFetch } from "@/lib/api";
+import { addDaysISO, todayISO, mondayOfThisWeek } from "@/lib/utils";
+import type { DemoDataResult } from "@/lib/seed/demoData";
+import type { Priority } from "@/lib/types";
+
+interface ResearchApiResponse {
+  curriculumSummary?: string;
+  timetable?: { day_of_week: number; start_time: string; end_time: string; subject: string; room: string | null }[];
+  homework?: { subject: string; title: string; due_in_days: number; priority: Priority }[];
+  exams?: { subject: string; title: string; exam_in_days: number }[];
+  studySessions?: { day_of_week: number; subject: string; duration_min: number }[];
+  error?: string;
+}
+
+/**
+ * Calls /api/onboarding/research-school (Claude + web search) to work out
+ * the real curriculum a student is likely following, then converts the
+ * AI's relative day offsets into real ISO dates. Throws on any failure or
+ * malformed response — completeOnboarding falls back to buildDemoData so
+ * onboarding never gets stuck on this.
+ */
+export async function researchSchoolData(params: {
+  country: string;
+  schoolName: string;
+  yearGroup: string;
+  subjects: string[];
+  freeTime: string;
+  userId: string;
+}): Promise<{ data: DemoDataResult; curriculumSummary: string }> {
+  // Bounded to 55s: this AI call runs web search on Opus and routinely
+  // takes 25-40s+, so the timeout needs real headroom above that — a
+  // tighter bound was causing this to abort (and silently fall back to
+  // buildDemoData's generic placeholder data) on most runs. Onboarding
+  // still can't hang forever — completeOnboarding's catch below falls
+  // back to buildDemoData on a timeout just like any other failure here.
+  const res = await authedFetch(
+    "/api/onboarding/research-school",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        country: params.country,
+        schoolName: params.schoolName,
+        yearGroup: params.yearGroup,
+        subjects: params.subjects,
+      }),
+    },
+    55000
+  );
+  if (!res.ok) throw new Error("Research request failed.");
+
+  const body = (await res.json()) as ResearchApiResponse;
+  if (
+    !body.curriculumSummary ||
+    !Array.isArray(body.timetable) ||
+    !Array.isArray(body.homework) ||
+    !Array.isArray(body.exams) ||
+    !Array.isArray(body.studySessions) ||
+    // Every list needs at least one item, not just "is an array" — the
+    // prompt asks for 2 exams specifically, but nothing previously
+    // enforced that, so a response that dropped the exams array to []
+    // (seen in production: a real account got a fully-researched
+    // curriculum/timetable/homework but zero exams, silently) still
+    // passed this check and got seeded with a permanent gap.
+    body.timetable.length === 0 ||
+    body.homework.length === 0 ||
+    body.exams.length === 0 ||
+    body.studySessions.length === 0
+  ) {
+    throw new Error("Malformed research response.");
+  }
+
+  const { userId } = params;
+  const today = todayISO();
+  const weekStart = mondayOfThisWeek();
+
+  const data: DemoDataResult = {
+    timetable: body.timetable.map((t) => ({
+      user_id: userId,
+      day_of_week: t.day_of_week,
+      start_time: t.start_time,
+      end_time: t.end_time,
+      subject: t.subject,
+      room: t.room ?? null,
+    })),
+    homework: body.homework.map((h) => ({
+      user_id: userId,
+      subject: h.subject,
+      title: h.title,
+      due_date: addDaysISO(today, h.due_in_days),
+      priority: h.priority,
+      status: "pending" as const,
+    })),
+    exams: body.exams.map((e) => ({
+      user_id: userId,
+      subject: e.subject,
+      title: e.title,
+      exam_date: addDaysISO(today, e.exam_in_days),
+    })),
+    studySessions: body.studySessions.map((s) => ({
+      user_id: userId,
+      week_start: weekStart,
+      day_of_week: s.day_of_week,
+      subject: s.subject,
+      duration_min: s.duration_min,
+      completed: false,
+    })),
+  };
+
+  return { data, curriculumSummary: body.curriculumSummary };
+}

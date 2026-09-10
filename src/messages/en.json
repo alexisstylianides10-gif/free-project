@@ -1,0 +1,2316 @@
+{
+  "LanguageSwitcher": {
+    "label": "Language",
+    "srCurrentLanguage": "Current language: {language}. Click to change."
+  },
+  "MarketingNav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "faq": "FAQ",
+    "login": "Log in",
+    "getStarted": "Get Started",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "SiteFooter": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "faq": "FAQ",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "copyright": "© {year} {name}. All rights reserved."
+  },
+  "CookieBanner": {
+    "srLabel": "Cookie notice",
+    "message": "{name} only uses strictly necessary cookies, the ones that keep you signed in. We don't use analytics or advertising cookies today. See our <link>Privacy Policy</link> for details.",
+    "accept": "Accept"
+  },
+  "InstallAppCard": {
+    "getApp": "Get the {name} app",
+    "iosInstructions": "Tap <icon></icon> Share in Safari, then choose <strong>\"Add to Home Screen.\"</strong>",
+    "androidInstructions": "Tap <icon></icon> the menu in Chrome, then choose <strong>\"Install app\"</strong> (or \"Add to Home screen\").",
+    "dismiss": "Dismiss"
+  },
+  "BrandPanel": {
+    "landing": {
+      "quote": "Every subject, every deadline, every next step: one plan that actually knows what you're working toward.",
+      "cardEyebrow": "TODAY'S MISSION",
+      "cardTitle": "Explore 3 real job postings",
+      "cardBody": "+45 XP · 15 min"
+    },
+    "login": {
+      "quote": "Pick up exactly where you left off: your plan, your streak, your Future Map.",
+      "cardEyebrow": "WELCOME BACK",
+      "cardTitle": "6 day streak",
+      "cardBody": "Your plan for today is already built."
+    },
+    "signup": {
+      "quote": "Two tracks, one app. Whichever you're building, a transcript or a business, Alxioum locks in and builds around it.",
+      "cardEyebrow": "CHOOSE YOUR TRACK",
+      "cardTitle": "Student or Founder",
+      "cardBody": "Locked in at signup, built around from day one."
+    },
+    "onboardingStudent": {
+      "quote": "Every question builds toward your Future Map: real career directions, matched to how you actually think.",
+      "cardEyebrow": "PREVIEW",
+      "cardTitle": "Software Engineer · 82% match",
+      "cardBody": "Based on the subjects, interests and strengths you're about to tell us."
+    },
+    "onboardingBusiness": {
+      "quote": "We turn your answers into a starter milestone checklist: not generic advice, but an actual plan for this idea.",
+      "cardEyebrow": "PREVIEW",
+      "cardTitle": "Launch landing page",
+      "cardBody": "Milestone 1 of your starter checklist, built from what you tell us next."
+    },
+    "dayStreak": "day streak"
+  },
+  "StaticContentPage": {
+    "backToHome": "Back to home",
+    "draftUpdated": "Draft last updated: {date}",
+    "legalDraftNotice": "<strong>Draft pending legal review.</strong> This page is a good-faith, substantive draft written to accurately describe how {name} actually works today. It has not been reviewed by a lawyer and is not final, binding legal text. Do not rely on it as a complete legal document until it has been reviewed and this notice is removed."
+  },
+  "LandingPage": {
+    "heroLine1": "Build your future",
+    "heroLine2": "while you build your <grades>grades.</grades>",
+    "heroSubtitle": "Your AI coach turns a locked-in track, school or startup, into a daily plan, real deadlines, and a future you can actually see.",
+    "getStarted": "Get Started",
+    "alreadyBuilding": "Already building your future?",
+    "logIn": "Log in",
+    "accountDeleted": "Your account has been deleted.",
+    "dismiss": "Dismiss",
+    "proof": {
+      "track": {
+        "value": "Student · Founder",
+        "label": "Two tracks, one app"
+      },
+      "plan": {
+        "value": "Built from your data",
+        "label": "Daily plan"
+      },
+      "free": {
+        "value": "No card required",
+        "label": "Free to start"
+      }
+    }
+  },
+  "FeaturesSection": {
+    "kicker": "Features",
+    "title": "One plan. Built around what you're actually doing.",
+    "subtitle": "Alxioum tracks the real details of school or your business, then turns them into a daily plan, an AI Coach that knows your context, and a long-term roadmap you can watch move. Two tracks, one app: you pick yours once, at signup, and everything below is built around it.",
+    "studentTrack": "Student track",
+    "liveToday": "Live today.",
+    "aiCoachEyebrow": "AI Coach",
+    "aiCoachTitle": "A coach that actually knows what's on your plate",
+    "aiCoachDescription": "Ask about a subject, your career options, or what to do today, and the Coach answers using your real homework, exams, and career match, not generic advice. Keeps full conversation history across as many threads as you want, and (for students) always keeps school first.",
+    "forFounders": "For founders",
+    "comingSoon": "Coming soon",
+    "founderSubtitle": "Everything above, rebuilt for a business instead of a transcript",
+    "founderPaused": "The founder track is currently paused for new signups while we polish it. Here's what it already builds:",
+    "ctaTitle": "Pick your track. We'll build around it.",
+    "ctaSubtitle": "Alxioum is a planning and study tool that helps you stay organized and explore your options. It's not a guarantee of grades, a job, or a business outcome.",
+    "getStarted": "Get Started",
+    "seePricing": "See pricing",
+    "student": {
+      "timetable": {
+        "title": "Timetable",
+        "description": "Add your classes once and see today's schedule every morning, room numbers included."
+      },
+      "homeworkTracking": {
+        "title": "Homework tracking",
+        "description": "Every assignment with a real due-date countdown, so nothing quietly goes overdue."
+      },
+      "examsReadiness": {
+        "title": "Exams & readiness",
+        "description": "A live countdown per exam, plus an honest readiness % built from how you're actually doing on that subject's topics."
+      },
+      "weeklyStudyPlan": {
+        "title": "Weekly study plan",
+        "description": "A real Monday-Friday plan, session by session, that you check off as you go."
+      },
+      "aiStudyPlans": {
+        "title": "AI study plans",
+        "description": "Generate a study plan for a specific subject or topic instead of guessing where to start."
+      },
+      "flashcards": {
+        "title": "Flashcards",
+        "description": "Spaced-repetition flashcards that resurface exactly when you're about to forget them, not on a random schedule."
+      },
+      "aiQuizzes": {
+        "title": "AI-generated quizzes",
+        "description": "Pick a subject, a difficulty (Easy through Exam Level), and a question count to get a real quiz, not a static bank."
+      },
+      "weakTopics": {
+        "title": "Weak topics",
+        "description": "The topics you're actually struggling with, surfaced plainly with your real attempt history, no vague advice."
+      },
+      "careerMatches": {
+        "title": "Career matches",
+        "description": "Career suggestions matched to the subjects, interests, and strengths you gave at onboarding, each with a real % match."
+      },
+      "futureMap": {
+        "title": "Future Map (roadmap)",
+        "description": "A 6-level Discover → Learn → Build → Launch → Grow roadmap. The first steps advance automatically from what you actually do in the app; later ones you mark done yourself, honestly."
+      },
+      "weeklyReview": {
+        "title": "Weekly review",
+        "description": "A real weekly recap: study time, quiz accuracy, topics mastered, and how your week actually went."
+      },
+      "xpStreaks": {
+        "title": "XP, streaks & achievements",
+        "description": "Real actions earn real XP and unlock achievements, not filler gamification."
+      }
+    },
+    "business": {
+      "milestoneTracking": {
+        "title": "Milestone tracking",
+        "description": "Your idea, its stage (Idea → Validating → Building → Launched), and a milestone checklist you actually complete."
+      },
+      "aiBusinessSnapshot": {
+        "title": "AI business snapshot",
+        "description": "A short AI-written snapshot of your idea, generated from what you tell it at onboarding."
+      },
+      "metricsLog": {
+        "title": "Metrics log",
+        "description": "Log revenue, customers, or signups over time and see the trend versus your last entry."
+      },
+      "expenseTracking": {
+        "title": "Expense tracking",
+        "description": "Log spend by category (software, marketing, contractors, and more) and see your running total."
+      },
+      "aiContentHelper": {
+        "title": "AI content helper",
+        "description": "Generate a first draft of Instagram, blog, or email content for a topic you give it."
+      },
+      "competitorTracker": {
+        "title": "Competitor tracker",
+        "description": "Keep a running list of who else is in your market, with notes."
+      }
+    }
+  },
+  "PricingSection": {
+    "kicker": "Pricing",
+    "title": "Simple pricing. The organizing tools are always free.",
+    "subtitle": "Pay only if you want the AI on top.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "mo": "mo",
+    "yr": "yr",
+    "free": "Free",
+    "freeTaglineStudent": "School tracking (timetable, homework, exams, career matches, and your roadmap) is always free.",
+    "freeTaglineBusiness": "Your business plan basics, milestone checklist, and metrics log are always free.",
+    "freePerks": [
+      "Timetable, homework & exam tracking",
+      "Career matches & Future Map roadmap",
+      "Weekly review, deadlines, XP & achievements"
+    ],
+    "businessPerkPrefix": "Business plan, milestones, metrics & expenses",
+    "comingSoonParen": "(coming soon)",
+    "getStarted": "Get Started",
+    "liveNow": "Live now",
+    "studentPerks": [
+      "AI Coach: your always-on mentor for school, skills, and career",
+      "AI study plans built around your real exams and deadlines",
+      "Upload notes, photos, or PDFs and get an instant AI breakdown",
+      "AI tutor sessions, quizzes, and spaced-repetition flashcards"
+    ],
+    "trialNote": "3-day free trial, no card required. Cancel anytime.",
+    "comingSoon": "Coming soon",
+    "businessPerks": [
+      "AI Coach: your always-on mentor for building your business",
+      "An AI-generated snapshot and starter milestones for your idea",
+      "AI-drafted marketing and content ideas for any platform",
+      "Milestone, metrics, and competitor tracking in one place"
+    ],
+    "trackNameStudent": "Student",
+    "trackNameBusiness": "Business",
+    "pricingQuestions": "Pricing questions",
+    "moreQuestionsPrefix": "More questions?",
+    "seeFullFaq": "See the full FAQ"
+  },
+  "PricingFaq": {
+    "freePlan": {
+      "q": "Is there really a free plan?",
+      "a": "Yes. Core organization (timetable, homework, exams, career matches, or your business plan and milestones) is always free. AI features like the Coach, study plans, and quiz generation are part of Plus."
+    },
+    "trial": {
+      "q": "What happens after my trial?",
+      "a": "Every new account gets a 3-day free trial of Plus automatically, no card required. When it ends, AI features pause until you subscribe, your core tracking (timetable, homework, exams, or your business plan) stays free either way."
+    },
+    "billingInterval": {
+      "q": "Can I switch between monthly and yearly?",
+      "a": "Yes, before you subscribe you can toggle between monthly and yearly anytime, right on this page or in-app. If you're already on Plus, switching intervals is done from the billing portal (Manage subscription)."
+    },
+    "switchTracks": {
+      "q": "Can I switch tracks?",
+      "a": "Your track (student or founder) is locked in once you finish onboarding, so the app can build itself fully around it. If you signed up on the wrong track, contact us and we can help. Note: the founder track is currently paused for new signups while we polish it, so new accounts are on the student track for now."
+    }
+  },
+  "FaqSection": {
+    "kicker": "FAQ",
+    "title": "Frequently asked questions",
+    "moreQuestions": "More questions? We're adding to this list. Reach out and we'll answer directly."
+  },
+  "AboutSection": {
+    "kicker": "About",
+    "title": "Built for the two groups everyone else designs around.",
+    "intro": "Most productivity apps are built for people who already have their life figured out: a stable job, a clear five-year plan, deadlines set by someone else. {name} is built for two groups who don't have that yet, students still building their transcript and their sense of what's next, and early founders still building a business with no one telling them what to do next either.",
+    "whyOneAppTitle": "Why one app, two tracks",
+    "whyOneApp": "We didn't want a generic to-do list with a school skin and a business skin bolted on. So {name} asks you, once, at signup: are you building a transcript or a business? Whichever you pick locks in and the entire app (your Home, your daily plan, your AI Coach's context, your long-term roadmap) is built around that answer from day one. No mode-switching, no half-built middle ground. (The founder track is currently paused for new signups while we finish polishing it; see our <faqLink>FAQ</faqLink> for details.)",
+    "whatWeBelieveTitle": "What we actually believe",
+    "belief1": "<strong>No tracking, no ads.</strong> {name} doesn't run behavioral-advertising tracking or third-party ad pixels. The only cookie in play is the one that keeps you signed in. See our <privacyLink>Privacy Policy</privacyLink> for the specifics.",
+    "belief2": "<strong>Honesty over gamification.</strong> Some parts of your roadmap you can only advance by telling us you actually did the real-world thing. We can't verify you launched a project or shipped a business milestone, so we don't pretend to. You mark it done because you did it, not because the app tricked you into a streak.",
+    "belief3": "<strong>This is a planning tool, not a promise.</strong> {name} helps you organize your school work or your business and explore your options with AI support. It doesn't guarantee your grades, a job, or a business outcome. Any AI-generated content (study plans, quizzes, business drafts) is a starting point, not a substitute for your teacher, your own judgment, or a qualified professional.",
+    "whoWeAreTitle": "Who's behind it",
+    "whoWeAreBody": "{name} is built by [COMPANY NAME]. [FOUNDING STORY / TEAM PLACEHOLDER: add real detail here once there's a public-facing story to tell; nothing in this codebase currently establishes a founding date, team size, or company history, so nothing is invented here].",
+    "contactLine": "Questions? Reach us at [CONTACT EMAIL], the same address as our Privacy Policy and Terms of Service.",
+    "getStarted": "Get Started",
+    "seeWhatItDoes": "See what it does"
+  },
+  "FaqPage": {
+    "title": "Frequently Asked Questions",
+    "whatIsAlxioum": {
+      "q": "What is Alxioum?",
+      "a": "{name} is a daily planning app for students and founders: one AI-built plan that tracks your school work or your business milestones and turns them into real next steps."
+    },
+    "isThereFree": {
+      "q": "Is there a free plan?",
+      "a": "Yes. Core organization (timetable, homework, exams, career matches, or your business plan and milestones) is always free. AI features like the Coach, study plans, and quiz generation are part of Plus."
+    },
+    "canSwitchTracks": {
+      "q": "Can I switch tracks after signing up?",
+      "a": "Your track (student or founder) is locked in once you finish onboarding, so the app can build itself fully around it. If you signed up on the wrong track, contact us and we can help. Note: the founder track is currently paused for new signups while we polish it, so new accounts are on the student track for now."
+    },
+    "moreQuestions": "More questions? We're adding to this list. Reach out and we'll answer directly."
+  },
+  "PrivacyPage": {
+    "title": "Privacy Policy",
+    "lastUpdated": "September 1, 2026",
+    "intro": "This Privacy Policy explains what information {name} collects, how it is used, and the choices you have about it. It applies to the {name} web app and any related services we operate.",
+    "whoWeAreTitle": "Who we are",
+    "whoWeAreBody": "{name} is operated by [COMPANY NAME]. If you have a question about this policy or your data, contact us at [CONTACT EMAIL]. Our registered address is [ADDRESS].",
+    "infoCollectTitle": "Information we collect",
+    "infoCollectIntro": "When you create an account, we collect the information you give us directly:",
+    "infoCollectAccount": "Account information: your name and email address.",
+    "infoCollectOnboarding": "Onboarding information: whether you're using {name} as a student or a founder, and the details that go with that (school/year group and subjects, or your business idea/stage).",
+    "infoCollectContent": "Content you create in the app: homework, exams and timetable entries, study materials and notes, flashcards and quiz results, business plans and milestones, and messages you send to the AI Coach.",
+    "infoCollectBilling": "Billing information: handled by our payment processor, Stripe (see below). We do not store your card details ourselves.",
+    "noAdTrackers": "We do not use third-party advertising trackers, and we do not run persistent behavioral-advertising tracking of any kind on {name}. See the cookie notice at the bottom of every page for the specific cookies we use.",
+    "howWeUseTitle": "How we use your information",
+    "howWeUseIntro": "We use the information above to:",
+    "howWeUseCore": "Provide the core product: your dashboard, plan, study tools, and progress tracking.",
+    "howWeUseAi": "Power AI features (the AI Coach, study-plan generation, quiz generation, and similar tools).",
+    "howWeUseBilling": "Process payments and manage your subscription.",
+    "howWeUseComms": "Communicate with you about your account (e.g. sign-in confirmation, important account notices).",
+    "howWeUseSecurity": "Keep the app secure and diagnose problems when something breaks.",
+    "whereStoredTitle": "Where your data is stored",
+    "whereStoredBody": "Your account data and everything you create in the app is stored using Supabase, our database and authentication provider, on infrastructure located in the United States. By using {name}, you understand your data will be processed and stored in the United States, which may have different data protection laws than your own country.",
+    "aiProcessingTitle": "AI features and third-party processing",
+    "aiProcessingBody": "Some features of {name}, including the AI Coach and AI-generated study plans, quizzes, and research, work by sending relevant information (such as your question, subjects, or study materials) to Anthropic, our AI provider, to generate a response using their Claude models. Anthropic processes this information to return a result to {name}; we do not control Anthropic's own data-handling practices, and we encourage you to review Anthropic's own privacy policy for details on how they handle data submitted to their API. Do not paste sensitive personal information into AI features that you would not want processed by a third-party AI provider.",
+    "paymentsTitle": "Payments",
+    "paymentsBody": "Subscription payments are processed by Stripe. When you subscribe to {name} Plus, your payment details are collected and processed directly by Stripe under Stripe's own privacy policy. {name} never receives or stores your full card number.",
+    "noSellTitle": "We do not sell your data",
+    "noSellBody": "We do not sell your personal data to third parties, and we do not share your homework, business, or conversation content with anyone except the service providers named in this policy (Supabase, Anthropic, Stripe), each of whom processes it only to provide their part of the service to us.",
+    "choicesTitle": "Your choices and account deletion",
+    "choicesBody": "You can review and correct most of your account information from within the app. Self-service account deletion is being added to {name}; until it ships, you can request deletion of your account and associated data at any time by emailing [CONTACT EMAIL], and we will action it in a reasonable timeframe.",
+    "minorsTitle": "Students and minors",
+    "minorsBody": "{name} is used by students, some of whom may be under 18. We do not run behavioral-advertising tracking or public leaderboards, and we do not knowingly sell any user's data, minor or otherwise. If you are a parent or guardian and want to review, correct, or request deletion of your child's data, contact us at [CONTACT EMAIL] and we will work with you directly.",
+    "changesTitle": "Changes to this policy",
+    "changesBody": "We may update this policy as {name} changes. We'll update the “draft last updated” date above when we do. Material changes will be communicated in-app or by email where practical.",
+    "questionsLine": "Questions about this policy or your data? Contact us at [CONTACT EMAIL]."
+  },
+  "TermsPage": {
+    "title": "Terms of Service",
+    "lastUpdated": "September 1, 2026",
+    "intro": "These Terms of Service (“Terms”) govern your use of {name}, operated by [COMPANY NAME]. By creating an account or using {name}, you agree to these Terms. If you do not agree, please do not use {name}.",
+    "accountTitle": "Your account",
+    "accountBody1": "You need an account to use {name}. You're responsible for keeping your login details secure and for all activity that happens under your account. Tell us at [CONTACT EMAIL] if you think your account has been accessed without your permission.",
+    "accountBody2": "When you sign up, you choose a track (student or founder) and complete a short onboarding flow. Note: the founder track is currently paused for new signups while we polish it, so new accounts are on the student track for now. Your track is locked once onboarding is complete so the app can build itself around it correctly; if you signed up on the wrong track, contact us and we'll help.",
+    "usingTitle": "Using {name}",
+    "usingIntro": "You agree to use {name} only for its intended purpose: organizing your schoolwork or your business plan, and using the tools we provide to support that. You agree not to:",
+    "usingRule1": "Use the app to store or share content that is illegal, harmful, or infringes someone else's rights.",
+    "usingRule2": "Attempt to access another user's account or data.",
+    "usingRule3": "Attempt to disrupt, reverse-engineer, or abuse the app or the AI features (for example, using them for purposes unrelated to your studies or business, or in ways designed to bypass usage limits).",
+    "usingRule4": "Resell or provide commercial access to {name} to others without our permission.",
+    "usingSuspend": "We may suspend or terminate accounts that violate these Terms.",
+    "contentTitle": "Your content",
+    "contentBody": "You own the content you create in {name} (your homework, notes, business plans, and similar material). You grant us a limited license to store, process, and display that content back to you, and to send relevant parts of it to our AI provider, Stripe, and Supabase, solely to operate the app for you. See our <privacyLink>Privacy Policy</privacyLink> for details.",
+    "aiFeaturesTitle": "AI features",
+    "aiFeaturesBody": "{name}'s AI features (the AI Coach, generated study plans, quizzes, and research tools) use a third-party AI model to generate responses. AI-generated content can be incomplete or inaccurate. It is provided to help you study or plan, not as a substitute for your teacher, school, professional accountant, lawyer, or other qualified advisor, and you should use your own judgment before relying on it, especially for graded work or business decisions.",
+    "billingTitle": "Subscriptions and billing",
+    "billingBody": "Core organizational features of {name} are free. Some features (including AI tools) require a paid {name} Plus subscription, billed through Stripe on the interval you select at checkout. Subscriptions renew automatically until you cancel. You can manage or cancel your subscription from within the app at any time; cancelling stops future renewals but does not automatically refund the current billing period unless required by law.",
+    "endingTitle": "Ending your account",
+    "endingBody": "You can stop using {name} at any time. Self-service account deletion is being added to the app; until it ships, you can request deletion of your account at any time by emailing [CONTACT EMAIL]. We may also suspend or close accounts that violate these Terms.",
+    "disclaimersTitle": "Disclaimers and limitation of liability",
+    "disclaimersBody": "{name} is provided “as is.” We work to keep it accurate and available, but we do not guarantee it will be uninterrupted, error-free, or that AI-generated content will always be correct. To the fullest extent permitted by law, [COMPANY NAME] is not liable for indirect, incidental, or consequential damages arising from your use of {name}.",
+    "changesTitle": "Changes to these Terms",
+    "changesBody": "We may update these Terms as {name} changes. We'll update the “draft last updated” date above when we do, and material changes will be communicated in-app or by email where practical. Continuing to use {name} after a change means you accept the updated Terms.",
+    "contactTitle": "Contact",
+    "contactBody": "Questions about these Terms? Contact us at [CONTACT EMAIL]. Our registered address is [ADDRESS]."
+  },
+  "LoginPage": {
+    "title": "Welcome back",
+    "subtitle": "Log in to {name} to see your plan.",
+    "email": "Email",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "forgotPassword": "Forgot password?",
+    "logIn": "Log in",
+    "newHere": "New here?",
+    "signUp": "Sign up",
+    "backendUnavailable": "Log in isn't available right now. The backend isn't configured.",
+    "couldntLogIn": "Couldn't log you in."
+  },
+  "SignupPage": {
+    "title": "Create your account",
+    "subtitle": "Create an account, then pick your plan and build your future.",
+    "firstName": "First name",
+    "email": "Email",
+    "password": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "createAccount": "Create account",
+    "alreadyHaveAccount": "Already have an account?",
+    "logIn": "Log in",
+    "agreeNotice": "By continuing you agree that {name} is a study and career-exploration tool, not a substitute for school or a guarantee of any outcome.",
+    "backendUnavailable": "Sign up isn't available right now. The backend isn't configured.",
+    "enterFirstName": "Enter your first name.",
+    "profileSetupFailed": "Your account was created, but we couldn't set it up yet. Try logging in.",
+    "verificationUnavailable": "Verification isn't available right now. The backend isn't configured.",
+    "enterCode": "Enter the 6-digit code from your email.",
+    "couldntVerifyCode": "Couldn't verify that code. Try again or request a new one.",
+    "almostThere": "Almost there",
+    "setupProblem": "Your email is confirmed, but we hit a problem finishing setup for <email></email>.",
+    "tryAgain": "Try again",
+    "logInInstead": "Log in instead",
+    "checkEmail": "Check your email",
+    "codeSentTo": "We sent a 6-digit code to <email></email>. Enter it below to confirm your account.",
+    "confirmAccount": "Confirm account",
+    "sending": "Sending…",
+    "resendCode": "Resend code",
+    "resendCodeCooldown": "Resend code ({seconds}s)",
+    "newCodeSent": "New code sent.",
+    "preferLink": "Prefer the link instead? Click “Confirm your email” in the message we sent, and it'll take you straight into the app."
+  },
+  "ChoosePlanPage": {
+    "title": "What are you here to build?",
+    "subtitle": "Pick the plan that fits. Your billing interval can change whenever you subscribe.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "mo": "mo",
+    "yr": "yr",
+    "comingSoon": "Coming soon",
+    "choose": "Choose {track}",
+    "trialNote": "3-day free trial, no card required. Cancel anytime.",
+    "loading": "Loading…",
+    "saveFailed": "Couldn't save your choice. Try again.",
+    "tracks": {
+      "student": {
+        "name": "Student",
+        "tagline": "Stay on top of school while building your future career.",
+        "perks": [
+          "Timetable, homework & exam tracking",
+          "AI study plans, tutor, quizzes & flashcards",
+          "Career matching & a skills roadmap"
+        ]
+      },
+      "business": {
+        "name": "Business",
+        "tagline": "For people building a business, not in school.",
+        "perks": [
+          "Business plan basics & milestone tracking",
+          "Self-logged metrics & competitor notes",
+          "AI marketing/content drafts & AI Coach"
+        ]
+      }
+    }
+  },
+  "ForgotPasswordPage": {
+    "checkEmail": "Check your email",
+    "checkEmailBody": "If an account exists for <email></email>, we sent a link to reset your password. It expires after a while, so use it soon.",
+    "backToLogIn": "Back to log in",
+    "title": "Forgot your password?",
+    "subtitle": "Enter the email on your {name} account and we'll send you a link to reset it.",
+    "email": "Email",
+    "sendResetLink": "Send reset link",
+    "rememberedIt": "Remembered it?",
+    "logIn": "Log in",
+    "backendUnavailable": "Password reset isn't available right now. The backend isn't configured."
+  },
+  "ResetPasswordPage": {
+    "verifyingLink": "Verifying your reset link…",
+    "linkExpired": "Link expired",
+    "requestNewLink": "Request a new link",
+    "backToLogIn": "Back to log in",
+    "title": "Set a new password",
+    "subtitle": "Choose a new password for your {name} account.",
+    "passwordUpdated": "Password updated. Taking you into the app…",
+    "newPassword": "New password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "updatePassword": "Update password",
+    "backendUnavailable": "Password reset isn't available right now. The backend isn't configured.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordsDontMatch": "Passwords don't match.",
+    "linkInvalid": "This reset link is invalid or has expired.",
+    "linkInvalidRequestNew": "This reset link is invalid or has expired. Request a new one below."
+  },
+  "OnboardingPage": {
+    "gettingReady": "Getting things ready…"
+  },
+  "OnboardingShell": {
+    "back": "Back"
+  },
+  "StudentOnboarding": {
+    "continue": "Continue",
+    "buildingPlan": "Researching your school and building your plan. This can take up to a minute…",
+    "q0Title": "What year are you in?",
+    "q1Title": "What country do you study in?",
+    "q2Title": "What school do you go to?",
+    "q2Subtitle": "This helps us match your real timetable and curriculum",
+    "q2Placeholder": "e.g. Lincoln High School",
+    "q3Title": "What subjects do you enjoy most?",
+    "q4Title": "What are you naturally interested in?",
+    "q5Title": "What are you already good at?",
+    "q6Title": "What would you like to explore?",
+    "q7Title": "How much free time do you realistically have after school?",
+    "q8Title": "What is your biggest goal right now?",
+    "q9Title": "What is your biggest problem?",
+    "q10Title": "How old are you?",
+    "q10Subtitle": "Optional. This just helps us understand our students better.",
+    "q10Placeholder": "e.g. 15",
+    "selectAsManyAsYouLike": "Select as many as you like",
+    "futureMap": "Future Map",
+    "resultsTitle": "Your Future Map is ready.",
+    "resultsSubtitle": "Based on your answers, here are the directions where you're most likely to thrive.",
+    "percentMatch": "{percent}% match",
+    "buildMyPlan": "Build My Plan",
+    "schoolFirstNote": "School always comes first. {name} fits around it, never instead of it."
+  },
+  "BusinessOnboarding": {
+    "continue": "Continue",
+    "buildingPlan": "Researching your idea and building your plan. This can take up to a minute…",
+    "q0Title": "What's your business idea?",
+    "q0Subtitle": "A sentence or two is plenty. No idea yet? Leave this blank and we'll suggest one based on your strengths.",
+    "q0Placeholder": "e.g. A subscription box for... (or leave blank)",
+    "q1Title": "What stage are you at?",
+    "q2Title": "Who's your target customer?",
+    "q2Subtitle": "Be as specific as you can, or leave blank if you're not sure yet",
+    "q2Placeholder": "e.g. Busy parents of toddlers in the US (or leave blank)",
+    "q3Title": "What do you want to focus on first?",
+    "q4Title": "What are you already good at?",
+    "q5Title": "How much time can you realistically commit?",
+    "q6Title": "What's your biggest goal right now?",
+    "q7Title": "What's your biggest problem right now?",
+    "selectAsManyAsYouLike": "Select as many as you like",
+    "businessSnapshot": "Business Snapshot",
+    "resultsTitle": "Your plan is ready to build.",
+    "resultsSubtitleWithIdea": "{name} will research your idea and set up a starter milestone checklist tailored to it.",
+    "resultsSubtitleNoIdea": "{name} will suggest a business direction based on your strengths, then set up a starter milestone checklist for it.",
+    "yourIdea": "Your idea",
+    "noIdeaYet": "Not sure yet? We'll suggest one based on your strengths.",
+    "targetCustomer": "Target customer",
+    "noCustomerYet": "Not sure yet? We'll figure this out together.",
+    "buildMyPlan": "Build My Plan",
+    "planningToolNote": "{name} is a planning tool, not a guarantee of business or financial outcomes."
+  },
+  "OnboardingOptions": {
+    "years": {
+      "year7": "Year 7",
+      "year8": "Year 8",
+      "year9": "Year 9",
+      "year10": "Year 10",
+      "year11": "Year 11",
+      "year12": "Year 12",
+      "year13": "Year 13",
+      "other": "Other"
+    },
+    "subjects": {
+      "mathematics": "Mathematics",
+      "science": "Science",
+      "computer_science": "Computer Science",
+      "business": "Business",
+      "economics": "Economics",
+      "english": "English",
+      "languages": "Languages",
+      "history": "History",
+      "geography": "Geography",
+      "art": "Art",
+      "design": "Design",
+      "pe": "PE",
+      "other": "Other"
+    },
+    "interests": {
+      "technology": "Technology",
+      "ai": "AI",
+      "gaming": "Gaming",
+      "business": "Business",
+      "finance": "Money & Finance",
+      "sports": "Sports",
+      "content_creation": "Content Creation",
+      "social_media": "Social Media",
+      "science": "Science",
+      "design": "Design",
+      "fashion": "Fashion",
+      "engineering": "Engineering",
+      "medicine": "Medicine",
+      "law": "Law",
+      "travel": "Travel",
+      "entertainment": "Entertainment",
+      "other": "Other"
+    },
+    "strengths": {
+      "communication": "Communication",
+      "creativity": "Creativity",
+      "problem_solving": "Problem solving",
+      "leadership": "Leadership",
+      "coding": "Coding",
+      "mathematics": "Mathematics",
+      "writing": "Writing",
+      "video_editing": "Video editing",
+      "selling": "Selling",
+      "organisation": "Organisation",
+      "working_with_people": "Working with people",
+      "building_things": "Building things"
+    },
+    "explore": {
+      "start_business": "Start a business",
+      "become_creator": "Become a creator",
+      "become_professional": "Become a professional",
+      "build_software": "Build apps/software",
+      "freelance": "Freelance",
+      "sports_career": "Sports career",
+      "creative_career": "Creative career",
+      "technology_ai": "Technology/AI",
+      "medicine": "Medicine",
+      "law": "Law",
+      "finance": "Finance",
+      "engineering": "Engineering",
+      "dont_know": "I don't know yet"
+    },
+    "freeTime": {
+      "under_30": "Less than 30 minutes",
+      "30_60": "30–60 minutes",
+      "1_2h": "1–2 hours",
+      "2_3h": "2–3 hours",
+      "3h_plus": "3+ hours"
+    },
+    "goals": {
+      "improve_grades": "Improve my grades",
+      "discover_career": "Discover my career",
+      "learn_skills": "Learn valuable skills",
+      "start_business": "Start a business",
+      "build_something": "Build something",
+      "become_creator": "Become a creator",
+      "good_university": "Get into a good university",
+      "more_productive": "Become more productive",
+      "dont_know": "I don't know yet"
+    },
+    "problems": {
+      "procrastination": "Procrastination",
+      "organisation": "Organisation",
+      "studying": "Studying",
+      "motivation": "Motivation",
+      "finding_direction": "Finding what I want to do",
+      "balancing_school_hobbies": "Managing school and hobbies",
+      "learning_skills": "Learning new skills",
+      "staying_consistent": "Staying consistent"
+    },
+    "businessStage": {
+      "idea": "Just an idea so far",
+      "validating": "Validating with real people",
+      "building": "Building the product/service",
+      "launched": "Already launched"
+    },
+    "businessFocus": {
+      "product": "Product/service",
+      "marketing": "Marketing",
+      "sales": "Sales",
+      "fundraising": "Fundraising",
+      "operations": "Operations"
+    },
+    "businessStrengths": {
+      "sales_persuasion": "Sales & persuasion",
+      "marketing_branding": "Marketing & branding",
+      "product_design": "Product/design thinking",
+      "coding_building": "Coding & building",
+      "financial_planning": "Financial planning",
+      "leadership_hiring": "Leadership & hiring",
+      "networking": "Networking",
+      "content_creation": "Content creation",
+      "operations_systems": "Operations & systems",
+      "customer_service": "Customer service",
+      "negotiation": "Negotiation",
+      "public_speaking": "Public speaking"
+    },
+    "businessGoals": {
+      "first_customer": "Get my first paying customer",
+      "grow_revenue": "Grow revenue",
+      "product_market_fit": "Reach product-market fit",
+      "build_team_process": "Build a reliable team/process",
+      "raise_funding": "Raise funding",
+      "personal_brand": "Build a personal brand around it",
+      "replace_income": "Replace my current income",
+      "dont_know": "I don't know yet"
+    },
+    "businessProblems": {
+      "finding_customers": "Finding customers",
+      "pricing": "Pricing my product/service",
+      "not_enough_time": "Not enough time",
+      "unclear_what_to_build": "Not sure what to build",
+      "marketing_visibility": "Marketing & getting noticed",
+      "cash_flow": "Managing money/cash flow",
+      "staying_consistent": "Staying motivated & consistent",
+      "doing_it_alone": "Doing it all alone"
+    }
+  },
+  "OnboardingContext": {
+    "listTwo": "{a} and {b}",
+    "listMore": "{shown} and {rest} more",
+    "afterYear": "{year}. Let's find out where you're studying.",
+    "afterCountry": "Got it, {country}. What school do you go to?",
+    "afterSchool": "{school}, noted. What subjects do you enjoy most?",
+    "afterSubjects": "You're into {subjects}. What pulls you in beyond the classroom?",
+    "afterInterests": "Since you're drawn to {interests}, what are you already good at?",
+    "afterStrengths": "With strengths like {strengths}, what do you want to explore?",
+    "afterExplore": "Building toward {explore} takes real time. How much do you actually have?",
+    "afterFreeTime": "{freeTime} a day, noted. What's the one thing you most want to move forward?",
+    "afterGoal": "Got it, {goal}. What's most likely to get in your way?"
+  },
+  "CountrySelect": {
+    "searchPlaceholder": "Search countries",
+    "noMatch": "No countries match."
+  },
+  "Countries": {
+    "United Kingdom": "United Kingdom",
+    "United States": "United States",
+    "Cyprus": "Cyprus",
+    "Greece": "Greece",
+    "Ireland": "Ireland",
+    "Australia": "Australia",
+    "Canada": "Canada",
+    "Austria": "Austria",
+    "Belgium": "Belgium",
+    "Brazil": "Brazil",
+    "Bulgaria": "Bulgaria",
+    "China": "China",
+    "Croatia": "Croatia",
+    "Czech Republic": "Czech Republic",
+    "Denmark": "Denmark",
+    "Egypt": "Egypt",
+    "Estonia": "Estonia",
+    "Finland": "Finland",
+    "France": "France",
+    "Germany": "Germany",
+    "Hong Kong": "Hong Kong",
+    "Hungary": "Hungary",
+    "Iceland": "Iceland",
+    "India": "India",
+    "Indonesia": "Indonesia",
+    "Israel": "Israel",
+    "Italy": "Italy",
+    "Japan": "Japan",
+    "Jordan": "Jordan",
+    "Kenya": "Kenya",
+    "Latvia": "Latvia",
+    "Lebanon": "Lebanon",
+    "Lithuania": "Lithuania",
+    "Luxembourg": "Luxembourg",
+    "Malaysia": "Malaysia",
+    "Malta": "Malta",
+    "Mexico": "Mexico",
+    "Netherlands": "Netherlands",
+    "New Zealand": "New Zealand",
+    "Nigeria": "Nigeria",
+    "Norway": "Norway",
+    "Pakistan": "Pakistan",
+    "Philippines": "Philippines",
+    "Poland": "Poland",
+    "Portugal": "Portugal",
+    "Qatar": "Qatar",
+    "Romania": "Romania",
+    "Saudi Arabia": "Saudi Arabia",
+    "Singapore": "Singapore",
+    "Slovakia": "Slovakia",
+    "Slovenia": "Slovenia",
+    "South Africa": "South Africa",
+    "South Korea": "South Korea",
+    "Spain": "Spain",
+    "Sri Lanka": "Sri Lanka",
+    "Sweden": "Sweden",
+    "Switzerland": "Switzerland",
+    "Thailand": "Thailand",
+    "Turkey": "Turkey",
+    "Ukraine": "Ukraine",
+    "United Arab Emirates": "United Arab Emirates",
+    "Vietnam": "Vietnam",
+    "Other": "Other"
+  },
+  "NavTabs": {
+    "home": "Home",
+    "school": "School",
+    "future": "Future",
+    "coach": "Coach",
+    "profile": "Profile",
+    "plan": "Plan",
+    "grow": "Grow"
+  },
+  "TopBar": {
+    "overview": "Overview",
+    "you": "You",
+    "level": "Lvl {level}"
+  },
+  "SidebarNav": {
+    "signOut": "Sign out"
+  },
+  "RoadmapTimeline": {
+    "level": "Level {level}",
+    "saving": "Saving…",
+    "confirmHint": "Be honest. This one's on you to confirm."
+  },
+  "NotificationBell": {
+    "notifications": "Notifications",
+    "notificationsUnread": "Notifications, {count} unread",
+    "markAllRead": "Mark all read",
+    "allCaughtUp": "You're all caught up.",
+    "dueDate": "Due {date}",
+    "examTitle": "{subject} Exam"
+  },
+  "PaywallGate": {
+    "trialEnded": "Your free trial has ended",
+    "activatePlus": "Activate {name} Plus",
+    "studentDescription": "AI Coach and the full Study system (material analysis, AI study plans, quizzes, flashcards, and your AI tutor) are part of {name} Plus.",
+    "businessDescription": "AI Coach, your business snapshot, milestone AI, and the marketing/content helper are part of {name} Plus.",
+    "activateFor": "Activate for ${price}/mo"
+  },
+  "NewUserTutorial": {
+    "quickTourTitle": "Quick tour",
+    "quickTourDescription": "Here's where everything lives. Takes about 20 seconds.",
+    "back": "Back",
+    "next": "Next",
+    "getStarted": "Get started",
+    "student": {
+      "0": {
+        "title": "Home · your daily snapshot",
+        "body": "Your streak, XP, and today's plan, pulled from School and Future, so you always know what to do first."
+      },
+      "1": {
+        "title": "School · everything school-related",
+        "body": "Your classes, homework, exams, and an AI study coach that knows your subjects."
+      },
+      "2": {
+        "title": "Future · where this is heading",
+        "body": "See your top career matches and follow a 6-level roadmap from exploring to building something real."
+      },
+      "3": {
+        "title": "Coach · ask it anything",
+        "body": "Stuck on homework or not sure what's next? Your AI coach knows your subjects and your plan."
+      },
+      "4": {
+        "title": "Profile · everything you've built",
+        "body": "Your stats, skills, streak, and achievements, plus billing and account settings."
+      }
+    },
+    "business": {
+      "0": {
+        "title": "Home · your daily snapshot",
+        "body": "Your streak, XP, and today's plan, pulled from Plan and Grow, so you always know what to do first."
+      },
+      "1": {
+        "title": "Plan · your milestones",
+        "body": "Track the milestones that move your business forward, one at a time."
+      },
+      "2": {
+        "title": "Grow · your numbers and market",
+        "body": "Log your metrics and expenses, draft content, and keep an eye on your market."
+      },
+      "3": {
+        "title": "Coach · ask it anything",
+        "body": "Not sure what to do next, or need to think through a decision? Your AI coach knows your business and your plan."
+      },
+      "4": {
+        "title": "Profile · everything you've built",
+        "body": "Your stats, streak, and achievements, plus billing and account settings."
+      }
+    }
+  },
+  "LoadingScreen": {
+    "defaultMessage": "Getting things ready…"
+  },
+  "AchievementToast": {
+    "achievementUnlocked": "Achievement Unlocked"
+  },
+  "Achievements": {
+    "first_study_session": {
+      "title": "First Study Session",
+      "description": "Completed your first study session."
+    },
+    "first_career_mission": {
+      "title": "First Career Mission",
+      "description": "Completed your first career mission."
+    },
+    "first_project": {
+      "title": "First Project",
+      "description": "Built your first real project."
+    },
+    "career_path_chosen": {
+      "title": "Career Path Chosen",
+      "description": "Added a career to your path."
+    },
+    "streak_7": {
+      "title": "7 Day Streak",
+      "description": "Stayed consistent for 7 days in a row."
+    },
+    "study_sessions_10": {
+      "title": "10 Study Sessions",
+      "description": "Completed 10 study sessions."
+    },
+    "first_quiz": {
+      "title": "First Quiz",
+      "description": "Completed your first AI-generated quiz."
+    },
+    "first_mock_exam": {
+      "title": "First Mock Exam",
+      "description": "Completed your first full mock exam."
+    },
+    "flashcards_mastered_20": {
+      "title": "Flashcard Master",
+      "description": "Mastered 20 flashcards through spaced repetition."
+    }
+  },
+  "MissionCard": {
+    "futureMission": "Future Mission",
+    "startMission": "Start Mission",
+    "done": "Done",
+    "minutes": "{minutes} min",
+    "difficulty": {
+      "easy": "easy",
+      "medium": "medium",
+      "hard": "hard"
+    },
+    "categoryLabel": {
+      "school": "School mission",
+      "skill": "Skill mission",
+      "career": "Career mission",
+      "business": "Business mission",
+      "creative": "Creative mission"
+    }
+  },
+  "AppLayout": {
+    "signingIn": "Signing you in…",
+    "profileNotFoundTitle": "We couldn't find your profile",
+    "profileNotFoundSubtitle": "Your account exists, but setup didn't finish. Logging back in usually fixes this.",
+    "goToLogin": "Go to log in",
+    "justAMoment": "Just a moment…"
+  },
+  "Home": {
+    "there": "there",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "planForToday": "Here's your plan for today.",
+    "loadError": "Couldn't load some of your data. {error}",
+    "school": "School",
+    "future": "Future",
+    "dayStreak": "day streak",
+    "todaysPlan": "Today's Plan",
+    "nothingScheduled": "Nothing scheduled yet",
+    "nothingScheduledSubtitle": "Add homework and exams in School to build today's plan.",
+    "goToSchool": "Go to School",
+    "upcomingExam": "Upcoming exam",
+    "noExamsYet": "No exams yet",
+    "homeworkDue": "Homework due",
+    "allCaughtUp": "All caught up",
+    "viewAllDeadlines": "View all deadlines",
+    "careerProgress": "Career progress",
+    "level": "Level {level}",
+    "aiRecommendation": "AI recommendation",
+    "planLabels": {
+      "school": "School",
+      "homework": "{subject} homework",
+      "minutes": "{minutes} min",
+      "freeTime": "Activity / free time",
+      "revision": "{subject} revision",
+      "futureMission": "Future Mission"
+    },
+    "recommendation": {
+      "examSoon": "Your {subject} exam is in {days, plural, one {# day} other {# days}}. Protect that first, then spend a little time on {career}.",
+      "genericCareer": "your future path",
+      "highPriorityHomework": "{subject} ({title}) is high priority. Clear that today, then spend your extra time on your future.",
+      "pushCareer": "School's under control right now. Good time to push further on {career}. Try today's Future Mission.",
+      "exploreCareer": "School's under control right now. A great time to explore a career direction with today's Future Mission."
+    }
+  },
+  "CoachPage": {
+    "coach": "Coach",
+    "newChat": "New chat",
+    "chatHistory": "Chat history",
+    "noConversations": "No conversations yet.",
+    "chatNamePlaceholder": "Chat name…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "renameChat": "Rename chat",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{days}d ago",
+    "somethingWentWrong": "Something went wrong.",
+    "emptyStateBusiness": "Ask me anything about building your business. I'll keep it real, not hype.",
+    "emptyStateStudent": "Ask me anything about school, skills, or your future. I'll always make sure school comes first.",
+    "thinking": "Thinking…",
+    "todaysRecommendation": "Today's Recommendation",
+    "minutes": "{minutes} min",
+    "inputPlaceholder": "Ask Future Coach anything…",
+    "send": "Send",
+    "disclaimer": "Future Coach is a study & career guide, not a substitute for a teacher, parent, or professional.",
+    "skillBuilding": "Skill building",
+    "exploreCareerChip": "Explore a career",
+    "suggestedPrompts": [
+      "What career fits me?",
+      "How do I improve my grades?",
+      "Help me choose a business idea.",
+      "What should I learn this month?",
+      "Help me plan my week.",
+      "What should I do today?"
+    ]
+  },
+  "BusinessHome": {
+    "there": "there",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "subtitle": "Here's where your business stands today.",
+    "loadError": "Couldn't load some of your data. {error}",
+    "milestones": "Milestones",
+    "milestonesDone": "{done} of {total} milestones done",
+    "dayStreak": "day streak",
+    "yourIdea": "Your idea",
+    "doThisNext": "Do this next",
+    "plan": "Plan",
+    "noMilestonesYet": "No milestones yet",
+    "noMilestonesSubtitle": "Add milestones in Plan to see what's next.",
+    "goToPlan": "Go to Plan",
+    "allCaughtUp": "All caught up",
+    "allCaughtUpSubtitle": "Every milestone is done. Add a new one in Plan.",
+    "viewAllDeadlines": "View all deadlines",
+    "latestMetric": "Latest metric",
+    "grow": "Grow",
+    "noMetricsYet": "No metrics logged yet",
+    "noMetricsSubtitle": "Log your first number in Grow to start tracking trends.",
+    "goToGrow": "Go to Grow",
+    "askCoach": "Ask AI Coach what to focus on next."
+  },
+  "BusinessGrowHome": {
+    "metricOptions": {
+      "revenue": "Revenue ($)",
+      "customers": "Customers",
+      "signups": "Signups"
+    },
+    "platformOptions": {
+      "instagram": "Instagram",
+      "blog": "Blog",
+      "email": "Email",
+      "other": "Other"
+    },
+    "expenseCategoryOptions": {
+      "software_tools": "Software/tools",
+      "marketing": "Marketing/ads",
+      "inventory": "Inventory/supplies",
+      "contractors": "Contractors/freelancers",
+      "shipping": "Shipping",
+      "rent": "Rent/office",
+      "other": "Other"
+    },
+    "title": "Grow",
+    "subtitle": "Track your numbers, draft content, and watch the market.",
+    "loadError": "Couldn't load some of your data. {error}",
+    "metrics": "Metrics",
+    "value": "Value",
+    "log": "Log",
+    "vsLastEntry": "vs last {metric} entry",
+    "noMetricsYet": "No metrics logged yet",
+    "noMetricsSubtitle": "Log your first number above to start tracking trends.",
+    "recent": "Recent",
+    "expenses": "Expenses",
+    "amount": "Amount ($)",
+    "whatWasItFor": "What was it for? (optional)",
+    "noExpensesYet": "No expenses logged yet",
+    "noExpensesSubtitle": "Log your first expense above to start tracking spend.",
+    "totalSpent": "Total spent",
+    "contentHelper": "Content Helper",
+    "topicPlaceholder": "What's it about?",
+    "generateDraft": "Generate draft",
+    "couldNotGenerate": "Couldn't generate content.",
+    "competitors": "Competitors",
+    "noCompetitorsYet": "No competitors added yet",
+    "noCompetitorsSubtitle": "Add one below to start watching the market.",
+    "namePlaceholder": "Name",
+    "urlPlaceholder": "URL (optional)",
+    "addCompetitor": "Add competitor"
+  },
+  "Weekdays": {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
+  },
+  "StudentSchoolHome": {
+    "confirmDeleteClass": "Delete this class? This can't be undone.",
+    "loadError": "Couldn't load some of your data. {error}",
+    "today": "Today",
+    "minutesStudied": "{minutes}m studied",
+    "streak": "Streak",
+    "daysCount": "{days} days",
+    "due": "Due",
+    "cardsCount": "{count} cards",
+    "yourProgram": "Your program",
+    "starterTemplate": "Starter template",
+    "starterTemplateBody": "We couldn't research your school's real curriculum when you signed up, so your timetable, homework, and exams below are a generic starting point, not deadlines we found for you. Edit or delete anything that doesn't match your real schedule.",
+    "subjectExam": "{subject} Exam",
+    "percentReady": "{percent}% ready",
+    "todaysRecommendation": "Today's recommendation",
+    "startStudy": "Start Study",
+    "todaysClasses": "Today's Classes",
+    "noClassesToday": "No classes today",
+    "noClassesTodaySubtitle": "Nothing on your timetable for today.",
+    "deleteClass": "Delete class",
+    "day": "Day",
+    "addClassPlaceholder": "Add a class (e.g. Biology)…",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "roomPlaceholder": "Room (optional)…",
+    "addClass": "Add class",
+    "homework": "Homework",
+    "pendingCount": "{count} pending",
+    "nextHomework": "Next: {subject}: {title} · {countdown}",
+    "allCaughtUpHomework": "You're all caught up. Tap to add homework.",
+    "weeklyStudyPlan": "This Week's Study Plan",
+    "noWeeklyPlan": "No weekly plan yet",
+    "noWeeklyPlanSubtitle": "Build a study plan in Subjects to see it here.",
+    "goToSubjects": "Go to Subjects",
+    "minutes": "{minutes} min",
+    "askAiAboutSubject": "Ask AI about this subject",
+    "recommendation": {
+      "examWeakTopic": "Practice {topic} for 30 minutes: it's your weakest topic with the {examSubject} exam coming up.",
+      "weakTopic": "Practice {topic} for 30 minutes: your recent results show this is currently your weakest topic.",
+      "flashcardsDue": "You have {count, plural, one {# flashcard} other {# flashcards}} due for review today, a quick way to keep what you've learned fresh.",
+      "noSubjects": "Add a subject and upload your first material to get a personalized study plan.",
+      "uploadMaterial": "Upload some material for one of your subjects so your AI coach can find what to focus on."
+    }
+  },
+  "SchoolLayout": {
+    "title": "My School",
+    "subtitle": "Class, homework, exams, and your AI study coach."
+  },
+  "SchoolSubNav": {
+    "home": "Home",
+    "subjects": "Subjects",
+    "notes": "Notes",
+    "exams": "Exams",
+    "homework": "Homework",
+    "flashcards": "Flashcards",
+    "quizzes": "Quizzes",
+    "progress": "Progress"
+  },
+  "BusinessPlanHome": {
+    "stage": {
+      "idea": "Idea",
+      "validating": "Validating",
+      "building": "Building",
+      "launched": "Launched"
+    },
+    "loadError": "Couldn't load your milestones. {error}",
+    "yourBusiness": "Your Business",
+    "noIdeaSaved": "No idea saved yet",
+    "noSnapshotBody": "We couldn't generate a personalized snapshot when you signed up, so your milestones below are a generic starting point. Edit them to match your actual plan.",
+    "milestones": "Milestones",
+    "noMilestonesYet": "No milestones yet",
+    "noMilestonesSubtitle": "Add your first milestone below to start your plan.",
+    "markAsDone": "Mark as done",
+    "addMilestonePlaceholder": "Add a milestone…",
+    "addMilestone": "Add milestone",
+    "dueDate": "Due date",
+    "optional": "(optional)",
+    "askCoachForGuidance": "Ask AI Coach for guidance"
+  },
+  "NotesPage": {
+    "subtitle": "Every note, across every subject.",
+    "addNote": "Add Note",
+    "noNotesYet": "No notes yet",
+    "noNotesSubtitle": "Paste text, upload a PDF, or snap a photo — we'll pull out the topics, terms, and practice questions."
+  },
+  "MaterialStatus": {
+    "pending": "Pending",
+    "analyzing": "Analyzing",
+    "analyzed": "Analyzed",
+    "failed": "Failed"
+  },
+  "NewNotePage": {
+    "quickQuestion": "Quick one before we start — what subject is this note for? You can add more subjects later.",
+    "subjectPlaceholder": "e.g. Biology",
+    "creating": "Creating…",
+    "continue": "Continue",
+    "whichSubject": "Which subject is this note for?"
+  },
+  "WeakTopicsPage": {
+    "finding": "Finding your weak spots…",
+    "subtitle": "Every topic under {cutoff}% mastery, across every subject, weakest first.",
+    "noWeakTopics": "No weak topics right now",
+    "noWeakTopicsSubtitle": "Everything you've studied is at {cutoff}% mastery or better.",
+    "subject": "Subject",
+    "notTestedYet": "Not tested yet, a good next topic to practice.",
+    "attemptsSummary": "You've gotten this right in {correct} of your last {attempts, plural, one {# attempt} other {# attempts}}.",
+    "practiceNow": "Practice Now"
+  },
+  "PriorityBadge": {
+    "high": "High priority",
+    "medium": "Medium priority",
+    "low": "Low priority"
+  },
+  "ExamsPage": {
+    "confirmDelete": "Delete this exam? This can't be undone.",
+    "addExamPlaceholder": "Add an exam (e.g. Biology)…",
+    "examDate": "Exam date",
+    "addExam": "Add exam",
+    "loadError": "Couldn't load your exams. {error}",
+    "noExamsYet": "No exams on the horizon yet",
+    "noExamsSubtitle": "Add an exam above to start tracking your countdown.",
+    "subjectExam": "{subject} Exam",
+    "editExamDate": "Edit exam date",
+    "deleteExam": "Delete exam",
+    "newExamDate": "New exam date",
+    "save": "Save",
+    "cancel": "Cancel",
+    "percentReady": "{percent}% ready",
+    "linkSubjectHint": "Link a subject to track your readiness.",
+    "studyForThis": "Study for this",
+    "chooseSubject": "Choose a subject…",
+    "linkSubject": "Link a subject"
+  },
+  "HomeworkPage": {
+    "confirmDelete": "Delete this homework item? This can't be undone.",
+    "subjectPlaceholder": "Subject…",
+    "addHomeworkPlaceholder": "Add homework…",
+    "dueDate": "Due date",
+    "addHomework": "Add homework",
+    "loadError": "Couldn't load your homework. {error}",
+    "nothingSet": "Nothing set right now",
+    "nothingSetSubtitle": "Add homework above to start tracking it.",
+    "markComplete": "Mark as complete",
+    "completed": "Completed",
+    "getAiHelp": "Get AI help",
+    "editDueDate": "Edit due date",
+    "deleteHomework": "Delete homework",
+    "newDueDate": "New due date",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "HomeworkHelpPage": {
+    "somethingWentWrong": "Something went wrong.",
+    "loading": "Loading…",
+    "school": "School",
+    "notFound": "That homework item couldn't be found.",
+    "intro": "Tell your tutor what you're stuck on, or use a quick action below. It'll help you work through it, not do it for you.",
+    "questionPlaceholder": "Optional: describe exactly what you're stuck on…",
+    "thinking": "Thinking…",
+    "footerNote": "Homework Help teaches the concept. It won't just hand you the answer.",
+    "actions": {
+      "hint": {
+        "label": "Hint",
+        "framed": "Here's what I'm stuck on: \"{question}\". Give me a hint to get started, but don't solve it for me.",
+        "unframed": "Give me a hint to get started on this homework, but don't solve it for me."
+      },
+      "explain": {
+        "label": "Explain",
+        "framed": "Here's what I'm stuck on: \"{question}\". Help me understand the concept behind this.",
+        "unframed": "Help me understand the concept behind this homework."
+      },
+      "example": {
+        "label": "Show Similar Example",
+        "framed": "Here's what I'm stuck on: \"{question}\". Show me a similar worked example (not this exact problem) so I can figure mine out.",
+        "unframed": "Show me a similar worked example for this kind of homework so I can figure mine out."
+      },
+      "walkthrough": {
+        "label": "Walk Me Through It",
+        "framed": "Here's what I'm stuck on: \"{question}\". Walk me through it step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer.",
+        "unframed": "Walk me through this homework step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer."
+      }
+    }
+  },
+  "FlashcardsPage": {
+    "loadingFlashcards": "Loading flashcards…",
+    "couldNotGenerate": "Couldn't generate those flashcards.",
+    "generateError": "Something went wrong generating those flashcards.",
+    "writingFlashcards": "Writing your flashcards…",
+    "generateFlashcards": "Generate Flashcards",
+    "myFlashcards": "My flashcards",
+    "addSubjectFirst": "Add a subject first",
+    "addSubjectFirstSubtitle": "Come back here once you've added a subject to generate flashcards.",
+    "addSubject": "Add subject",
+    "subject": "Subject",
+    "generatingFrom": "Generating from",
+    "topic": "Topic",
+    "allTopics": "All topics",
+    "howMany": "How many",
+    "tapASet": "Tap a set below to start reviewing.",
+    "dueToday": "Due Today",
+    "cardsCount": "{count} cards",
+    "comingSoon": "Coming Soon",
+    "mastered": "Mastered",
+    "generateNewFlashcards": "Generate New Flashcards"
+  },
+  "FlashcardsReviewPage": {
+    "loadingReview": "Loading review…",
+    "dueToday": "Due Today",
+    "comingSoon": "Coming Soon",
+    "mastered": "Mastered",
+    "nothingToReview": "Nothing to review here",
+    "noCardsInBucket": "You don't have any \"{bucket}\" cards right now.",
+    "emptySession": "This review session is empty.",
+    "backToFlashcards": "Back to Flashcards",
+    "reviewComplete": "Review complete",
+    "resultsSummary": "{count, plural, one {# card} other {# cards}} reviewed: {knew} knew it, {almost} almost, {didnt} didn't know.",
+    "done": "Done",
+    "saving": "Saving…",
+    "cardXOfY": "Card {current} of {total}",
+    "tapToReveal": "Tap to reveal answer",
+    "didntKnow": "Didn't know",
+    "almost": "Almost",
+    "knewIt": "Knew it"
+  },
+  "QuizzesPage": {
+    "loadingQuizzes": "Loading quizzes…",
+    "couldNotGenerate": "Couldn't generate that quiz.",
+    "generateError": "Something went wrong generating that quiz.",
+    "writingQuiz": "Writing your quiz…",
+    "newQuiz": "New Quiz",
+    "examMode": "Exam Mode",
+    "addSubjectFirst": "Add a subject first",
+    "addSubjectFirstSubtitle": "Come back here once you've added a subject to generate a quiz.",
+    "addSubject": "Add subject",
+    "subject": "Subject",
+    "topic": "Topic",
+    "allTopics": "All topics",
+    "questions": "Questions",
+    "difficultyLabel": "Difficulty",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "exam": "Exam Level"
+    },
+    "generateQuiz": "Generate Quiz",
+    "history": "History",
+    "noQuizzesYet": "No quizzes yet",
+    "noQuizzesSubtitle": "Generate one above to start practicing.",
+    "mockExam": "Mock Exam",
+    "questionCount": "{count} questions",
+    "notStarted": "Not started"
+  },
+  "TakeQuizPage": {
+    "couldNotGrade": "Couldn't grade that quiz.",
+    "submitError": "Something went wrong submitting your answers.",
+    "loadingQuiz": "Loading your quiz…",
+    "quizNotFound": "Couldn't find that quiz.",
+    "quiz": "Quiz",
+    "mockExam": "Mock Exam",
+    "questionXOfY": "Question {current} of {total}",
+    "scenario": "Scenario",
+    "fillInTheBlank": "Fill in the blank…",
+    "typeYourAnswer": "Type your answer…",
+    "correct": "Correct",
+    "notQuite": "Not quite. Correct answer: {answer}",
+    "submitting": "Submitting…",
+    "submitQuiz": "Submit Quiz",
+    "next": "Next",
+    "gradingAnswers": "Grading your answers…"
+  },
+  "QuizResultsPage": {
+    "verdict": {
+      "correct": "Correct",
+      "almost": "Almost",
+      "review": "Review"
+    },
+    "loadingResults": "Loading your results…",
+    "resultNotFound": "Couldn't find that result.",
+    "score": "Score",
+    "mockExam": "Mock Exam",
+    "strong": "Strong",
+    "noneYet": "None yet, keep practicing.",
+    "needsWork": "Needs work",
+    "greatJob": "Nothing. Great job across the board.",
+    "practiceWeakTopics": "Practice Weak Topics",
+    "reviewAnswers": "Review Answers",
+    "yourAnswer": "Your answer:",
+    "noAnswer": "(no answer)",
+    "correctAnswer": "Correct answer:"
+  },
+  "ExamModeSetupPage": {
+    "couldNotStart": "Couldn't start the mock exam.",
+    "startError": "Something went wrong starting the mock exam.",
+    "buildingExam": "Building your mock exam…",
+    "backToQuizzes": "Back to Quizzes",
+    "examMode": "Exam Mode",
+    "subtitle": "A timed mock exam, no hints until it's graded.",
+    "addSubjectFirst": "Add a subject first",
+    "addSubjectFirstSubtitle": "Come back here once you've added a subject to start a mock exam.",
+    "addSubject": "Add subject",
+    "subject": "Subject",
+    "linkedExam": "Linked exam (optional)",
+    "none": "None",
+    "pastPaper": "Past paper (optional)",
+    "noMaterialsYet": "No uploaded materials yet for this subject.",
+    "uploadOne": "Upload one",
+    "thenComeBack": ", then come back here.",
+    "groundedInPaper": "The exam will be grounded in this paper's real topics, format, and difficulty, not just the subject's general curriculum.",
+    "length": "Length",
+    "questionsAbbrev": "{count} Qs",
+    "minutes": "{minutes} min",
+    "difficultyLabel": "Difficulty",
+    "difficulty": {
+      "medium": "Medium",
+      "hard": "Hard",
+      "exam": "Exam Level"
+    },
+    "startMockExam": "Start Mock Exam",
+    "practiceDisclaimer": "Practice-based signal only. A strong mock score is a good sign, not a guarantee for your real exam."
+  },
+  "ProgressPage": {
+    "addingUp": "Adding up your progress…",
+    "noChange": "No change",
+    "vsLastWeek": "{value} vs last week",
+    "thisWeek": "This Week",
+    "studyTime": "Study Time",
+    "quizAccuracy": "Quiz Accuracy",
+    "topicsMastered": "Topics Mastered",
+    "weakTopicsImproved": "Weak Topics Improved",
+    "comparedNote": "Compared with the previous 7 days.",
+    "studyHistory": "Study History",
+    "noSessionsYet": "No study sessions logged yet",
+    "noSessionsSubtitle": "They'll show up here once you start studying.",
+    "subject": "Subject",
+    "minutes": "{minutes} min",
+    "mode": {
+      "learn": "Learn",
+      "practice": "Practice",
+      "quiz": "Quiz",
+      "review": "Review"
+    }
+  },
+  "SubjectsPage": {
+    "percentProgress": "{percent}% progress",
+    "percentQuizAccuracy": "{percent}% quiz accuracy",
+    "weak": "Weak:",
+    "subjectNamePlaceholder": "Subject name (e.g. Mathematics)",
+    "creating": "Creating…",
+    "createSubject": "Create Subject",
+    "cancel": "Cancel",
+    "newSubject": "New Subject"
+  },
+  "SubjectDetailPage": {
+    "confirmDelete": "Delete {name}? This removes its materials, plans, quizzes, and flashcards too.",
+    "loading": "Loading…",
+    "percentProgress": "{percent}% progress",
+    "percentQuizAccuracy": "{percent}% quiz accuracy",
+    "minutesStudied": "{minutes}m studied",
+    "deleteSubject": "Delete subject",
+    "subjectExam": "{subject} Exam",
+    "startStudying": "Start Studying",
+    "studyPlan": "Study Plan",
+    "generateQuiz": "Generate Quiz",
+    "flashcards": "Flashcards",
+    "homeworkHelp": "Homework Help",
+    "weakTopics": "Weak Topics",
+    "notes": "Notes",
+    "add": "Add",
+    "noNotesYet": "No notes yet",
+    "noNotesSubtitle": "Upload a PDF, photo, or your notes to get started.",
+    "allTopics": "All Topics",
+    "strugglingHeader": "Struggling with something?",
+    "getHelp": "Get help",
+    "noPlansYet": "No plans yet",
+    "noPlansSubtitle": "Tell us what you're struggling with in this subject and we'll build you practice materials, a plan, or resources.",
+    "textbook": "Textbook",
+    "noTextbookYet": "No textbook added yet",
+    "noTextbookSubtitle": "Add your textbook so quizzes, flashcards, and study plans can draw on it."
+  },
+  "SubjectHomeworkHelpPage": {
+    "somethingWentWrong": "Something went wrong.",
+    "loading": "Loading…",
+    "title": "Homework Help",
+    "intro": "Describe the question you're stuck on. Your tutor will help you work through it, not do it for you.",
+    "questionPlaceholder": "Type or paste your homework question here…",
+    "thinking": "Thinking…",
+    "footerNote": "Homework Help teaches the concept. It won't just hand you the answer.",
+    "actions": {
+      "hint": {
+        "label": "Hint",
+        "framed": "Here's my homework question: \"{question}\". Give me a hint to get started, but don't solve it for me."
+      },
+      "explain": {
+        "label": "Explain",
+        "framed": "Here's my homework question: \"{question}\". Help me understand the concept behind this question."
+      },
+      "example": {
+        "label": "Show Similar Example",
+        "framed": "Here's my homework question: \"{question}\". Show me a similar worked example (not this exact problem) so I can figure mine out."
+      },
+      "walkthrough": {
+        "label": "Walk Me Through It",
+        "framed": "Here's my homework question: \"{question}\". Walk me through it step by step. Ask me what I already know before telling me the next step. Don't just give me the final answer."
+      }
+    }
+  },
+  "MaterialKind": {
+    "pdf": "PDF",
+    "image": "Image",
+    "notes": "Notes",
+    "paste": "Pasted text"
+  },
+  "MaterialDetailPage": {
+    "analysisFailedAgain": "Analysis failed again. Try again in a moment.",
+    "couldNotReachServer": "Couldn't reach the server. Try again in a moment.",
+    "confirmDelete": "Delete \"{title}\"? Topics already extracted from it will stay.",
+    "loadingMaterial": "Loading material…",
+    "materialNotFound": "This material couldn't be found. It may have been deleted.",
+    "analyzingMaterial": "Analyzing your material…",
+    "analysisFailed": "Analysis failed",
+    "analysisFailedBody": "Something went wrong reading this material. You can try again.",
+    "retrying": "Retrying…",
+    "tryAgain": "Try again",
+    "deleteMaterial": "Delete material",
+    "topics": "Topics",
+    "keyConcepts": "Key Concepts",
+    "importantTerms": "Important Terms",
+    "potentialQuestions": "Potential Questions",
+    "found": "Found",
+    "whatNext": "What next",
+    "createStudyPlan": "Create Study Plan",
+    "generateQuiz": "Generate Quiz",
+    "makeFlashcards": "Make Flashcards",
+    "startStudying": "Start Studying",
+    "textbookBadge": "Textbook"
+  },
+  "PlanDetailPage": {
+    "loading": "Loading…",
+    "studyPlan": "Study Plan",
+    "daysDone": "{done}/{total} days done",
+    "day": "Day {day}",
+    "markAsDone": "Mark as done",
+    "markAsNotDone": "Mark as not done",
+    "minutes": "{minutes} min"
+  },
+  "NewPlanPage": {
+    "couldNotGenerate": "Couldn't generate a plan.",
+    "loading": "Loading…",
+    "title": "New Study Plan",
+    "subtitle": "A personalized day-by-day plan, weighted toward your weakest topics.",
+    "targetAnExam": "Target an exam",
+    "noSpecificExam": "No specific exam, set my own timeframe",
+    "daysAvailable": "Days available",
+    "minutesPerDay": "Minutes per day",
+    "generating": "Generating…",
+    "generatePlan": "Generate Plan",
+    "day": "Day {day}",
+    "minutes": "{minutes} min",
+    "accept": "Accept",
+    "done": "Done",
+    "edit": "Edit",
+    "redo": "Redo"
+  },
+  "StudySessionPage": {
+    "modes": {
+      "learn": "Learn",
+      "practice": "Practice",
+      "quiz": "Quiz",
+      "review": "Review"
+    },
+    "levels": {
+      "simple": "Simple",
+      "normal": "Normal",
+      "detailed": "Detailed",
+      "exam": "Exam Level"
+    },
+    "verdict": {
+      "correct": "CORRECT",
+      "almost": "ALMOST",
+      "review": "REVIEW THIS"
+    },
+    "buildUnderstanding": "Build real understanding of {topic}.",
+    "makeProgress": "Make focused progress across {subject}.",
+    "somethingWentWrong": "Something went wrong.",
+    "couldNotLoadQuestion": "Couldn't load a question.",
+    "couldNotGrade": "Couldn't grade that answer.",
+    "loading": "Loading…",
+    "generalStudy": "General study",
+    "reduceTimer": "Reduce timer by 5 minutes",
+    "addTimer": "Add 5 minutes",
+    "pauseTimer": "Pause timer",
+    "resumeTimer": "Resume timer",
+    "timesUp": "Time's up. Keep going if you're in the zone, or end the session whenever you're ready.",
+    "askOrPickLevel": "Ask a question, or pick a level below to get an explanation of {topic} started.",
+    "thinking": "Thinking…",
+    "explainAtLevel": "Explain {topic} at a {level} level.",
+    "askAnything": "Ask anything, or say you don't understand…",
+    "send": "Send",
+    "addMaterialToPractice": "Add some material to this subject first so there's content to practice.",
+    "practicingWeakest": "Practicing your weakest topic:",
+    "loadingQuestion": "Loading a question…",
+    "typeYourAnswer": "Type your answer…",
+    "submitAnswer": "Submit Answer",
+    "nextQuestion": "Next question",
+    "addMaterialToQuiz": "Add some material to this subject first so there's content to quiz on.",
+    "quickCheckComplete": "Quick Check Complete",
+    "retakeQuickCheck": "Retake Quick Check",
+    "quickCheckWeakest": "Quick check on your weakest topic:",
+    "questionXOfY": "Question {current} of {total}",
+    "seeScore": "See score",
+    "addMaterialToReview": "Add some material to this subject first so there's content to review.",
+    "reviewingWeakest": "Reviewing your weakest topic:",
+    "noSummary": "No summary saved for this topic yet.",
+    "keyConcepts": "Key Concepts",
+    "endSession": "End Session",
+    "endConfirm": "End this session? You'll have studied about <b>{minutes} min</b>.",
+    "endConfirmWithAccuracy": "End this session? You'll have studied about <b>{minutes} min</b> with <b>{accuracy}%</b> accuracy.",
+    "finishAndSave": "Finish & Save",
+    "keepStudying": "Keep Studying"
+  },
+  "DeadlinesPage": {
+    "source": {
+      "exam": "Exam",
+      "homework": "Homework",
+      "milestone": "Milestone"
+    },
+    "bucket": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "thisWeek": "This week",
+      "later": "Later"
+    },
+    "subjectExam": "{subject} Exam",
+    "title": "Deadlines",
+    "subtitle": "Everything with a due date, in one place.",
+    "loadError": "Couldn't load your deadlines. {error}",
+    "gathering": "Gathering your deadlines…",
+    "noMilestonesWithDueDate": "No milestones with a due date",
+    "noMilestonesWithDueDateSubtitle": "Set a due date when you add a milestone in Plan to see it here.",
+    "goToPlan": "Go to Plan",
+    "noMilestonesYet": "No milestones yet",
+    "noMilestonesYetSubtitle": "Add your first milestone in Plan to start tracking deadlines.",
+    "nothingDue": "Nothing due",
+    "nothingDueSubtitle": "Add exams and homework in School to see them here.",
+    "goToSchool": "Go to School"
+  },
+  "MissionsPage": {
+    "categoryTitles": {
+      "school": "School Missions",
+      "skill": "Skill Missions",
+      "career": "Career Missions",
+      "business": "Business Missions",
+      "creative": "Creative Missions"
+    },
+    "title": "Missions",
+    "subtitle": "Real accomplishments, not app-usage streaks. Each one moves your future forward."
+  },
+  "MissionDetailPage": {
+    "notFound": "Mission not found.",
+    "backToMissions": "Back to Missions",
+    "builds": "Builds {skill}",
+    "missionComplete": "Mission complete · +{xp} XP earned.",
+    "saving": "Saving…",
+    "iCompletedThis": "I completed this",
+    "beHonest": "Be honest. Missions only count for something if you actually did them."
+  },
+  "Skills": {
+    "communication": "Communication",
+    "creativity": "Creativity",
+    "problem_solving": "Problem Solving",
+    "leadership": "Leadership",
+    "coding": "Coding",
+    "mathematics": "Mathematics",
+    "writing": "Writing",
+    "video_editing": "Video Editing",
+    "selling": "Selling",
+    "organisation": "Organisation",
+    "working_with_people": "Working With People",
+    "building_things": "Building Things"
+  },
+  "ProfilePage": {
+    "deleteFailed": "Couldn't delete your account. Try again.",
+    "deleteNetworkError": "Couldn't reach the server. Check your connection and try again.",
+    "eyebrow": "Profile",
+    "title": "Your progress",
+    "subtitle": "Everything you've built, in one place.",
+    "level": "Level {level}",
+    "progress": "Progress",
+    "planXp": "Plan XP",
+    "schoolXp": "School XP",
+    "businessXp": "Business XP",
+    "careerXp": "Career XP",
+    "skillXp": "Skill XP",
+    "projectXp": "Project XP",
+    "achievements": "Achievements",
+    "skills": "Skills",
+    "noSkillsYet": "No skills yet",
+    "noSkillsSubtitle": "Complete missions to start building skills.",
+    "careerJourney": "Career Journey",
+    "weeklyReview": "Weekly Review",
+    "settings": "Settings",
+    "appearance": "Appearance",
+    "language": "Language",
+    "planName": "{name} Plus",
+    "manageSubscription": "Manage your subscription",
+    "businessPlanBlurb": "AI Coach, business snapshot & content helper",
+    "studentPlanBlurb": "AI Coach, study plans, quizzes & more",
+    "manage": "Manage",
+    "activate": "Activate",
+    "signOut": "Sign out",
+    "dangerZone": "Danger zone",
+    "deleteAccount": "Delete account",
+    "deleteAccountBody": "Permanently deletes your account and everything in it. This can't be undone.",
+    "delete": "Delete",
+    "deleteModalTitle": "Delete your account?",
+    "deleteModalDescription": "This permanently deletes your profile, progress, XP, missions, study materials, chat history, and (if you're subscribed) cancels your {name} Plus subscription. There is no way to undo this.",
+    "onPlusWarning": "You're on {name} Plus. Your subscription will be canceled automatically as part of deletion.",
+    "typeToConfirm": "Type <b>{phrase}</b> to confirm",
+    "cancel": "Cancel",
+    "deletePermanently": "Delete permanently"
+  },
+  "UpgradePage": {
+    "trackLabel": {
+      "student": "Student",
+      "business": "Business"
+    },
+    "perks": {
+      "student": [
+        "AI Coach: your always-on mentor for school, skills, and career",
+        "AI study plans built around your real exams and deadlines",
+        "Upload notes, photos, or PDFs and get an instant AI breakdown",
+        "AI tutor sessions, quizzes, and spaced-repetition flashcards"
+      ],
+      "business": [
+        "AI Coach: your always-on mentor for building your business",
+        "An AI-generated snapshot and starter milestones for your idea",
+        "AI-drafted marketing and content ideas for any platform",
+        "Milestone, metrics, and competitor tracking in one place"
+      ]
+    },
+    "freeTagline": {
+      "student": "School tracking (timetable, homework, exams, career matches, and your roadmap) is always free.",
+      "business": "Your business plan basics, milestone checklist, and metrics log are always free."
+    },
+    "couldNotStartCheckout": "Couldn't start checkout.",
+    "couldNotOpenPortal": "Couldn't open the billing portal.",
+    "eyebrow": "{name} Plus",
+    "activateYourPlan": "Activate your {track} plan",
+    "onPlusEnjoy": "You're on {name} Plus. Enjoy!",
+    "activationDelayed": "Payment received, but activation is taking longer than usual.",
+    "activatingPlan": "Payment received. Activating your plan…",
+    "continueToApp": "Continue to app",
+    "activationDelayedBody": "Your card was charged successfully. This is just a delay confirming it on our side. Try refreshing, or head into the app now; it'll unlock as soon as it catches up.",
+    "refresh": "Refresh",
+    "goToApp": "Go to app",
+    "daysLeftInTrial": "{days, plural, one {# day} other {# days}} left in your free trial.",
+    "trialEnded": "Your free trial has ended.",
+    "planPlusTrack": "{name} Plus · {track}",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "moAbbrev": "mo",
+    "yrAbbrev": "yr",
+    "manageSubscription": "Manage subscription",
+    "payAmount": "Pay {symbol}{price}/{unit}",
+    "changePlan": "Change plan",
+    "continueToPayment": "Continue to payment",
+    "backToApp": "Back to app"
+  },
+  "WeeklyReviewPage": {
+    "eyebrow": "This Week",
+    "title": "Weekly Review",
+    "puttingWeekTogether": "Putting your week together…",
+    "plan": "Plan",
+    "milestonesCompleted": "Milestones completed:",
+    "expensesLoggedThisWeek": "Expenses logged this week:",
+    "school": "School",
+    "completedAssignments": "Completed assignments:",
+    "studyTime": "Study time:",
+    "skills": "Skills",
+    "noSkillActivityTitle": "No skill activity yet",
+    "noSkillActivitySubtitle": "Complete missions to start building skills.",
+    "future": "Future",
+    "missionsCompleted": "<b>{count}</b> {count, plural, one {mission} other {missions}} completed this week.",
+    "consistency": "Consistency",
+    "daysActive": "<b>{days}/7</b> days active this week.",
+    "nextWeeksFocus": "Next Week’s Focus",
+    "workToward": "Work toward: {title}",
+    "nextUp": "Next up: {title}",
+    "keepLoggingMetrics": "Keep logging your metrics and expenses",
+    "prepareForExam": "Prepare for {subject} exam",
+    "finishHomework": "Finish {subject}: {title}",
+    "keepBuildingToward": "Keep building toward {career}",
+    "maintainStudyRoutine": "Maintain your daily study routine"
+  },
+  "CheckoutForm": {
+    "cardFailed": "Your card couldn't be charged. Try again.",
+    "paymentIncomplete": "Payment wasn't completed. Try again.",
+    "securedByStripe": "Payments are processed securely by Stripe."
+  },
+  "AddNoteFlow": {
+    "pastedTextTitle": "Pasted text",
+    "notesTitle": "Notes",
+    "couldNotSave": "Couldn't save that material.",
+    "uploadError": "Something went wrong uploading that file.",
+    "saveError": "Something went wrong saving that.",
+    "analyzing": "Analyzing your material…",
+    "intro": "Add a note and we'll pull out its topics, key concepts, and terms automatically.",
+    "uploadPdf": "Upload PDF",
+    "uploadPdfHint": "Lecture slides, textbook chapters",
+    "takePhoto": "Take Photo",
+    "takePhotoHint": "Snap a page or whiteboard",
+    "uploadImage": "Upload Image",
+    "uploadImageHint": "From your camera roll",
+    "typeNotes": "Type Notes",
+    "typeNotesHint": "Type up what you've got",
+    "pasteText": "Paste Text",
+    "saving": "Saving…",
+    "back": "Back",
+    "addNotes": "Add Notes",
+    "pasteHint": "Paste in text copied from a textbook, slides, or a document.",
+    "typeHint": "Type up what you've got, even rough notes work.",
+    "pastePlaceholder": "Paste your text here…",
+    "typePlaceholder": "Start typing your notes…",
+    "analyze": "Analyze",
+    "introTextbook": "Add your textbook and we'll pull out its topics, key concepts, and terms automatically so quizzes and flashcards can draw on it.",
+    "addTextbook": "Add Textbook"
+  },
+  "Missions": {
+    "school-30min-revision": {
+      "title": "Complete 30 minutes of focused revision",
+      "description": "Pick your weakest topic from School and revise it with no distractions for 30 minutes."
+    },
+    "school-past-paper": {
+      "title": "Complete one past-paper question set",
+      "description": "Find a past paper or practice set for an upcoming exam and complete it under timed conditions."
+    },
+    "school-summarise-topic": {
+      "title": "Summarise a topic in your own words",
+      "description": "Turn one lesson's notes into a one-page summary you could teach to a friend."
+    },
+    "skill-coding-concept": {
+      "title": "Learn a new coding concept",
+      "description": "Watch or read one short lesson on a coding concept you don't know yet, then write 5 lines using it."
+    },
+    "skill-public-speaking": {
+      "title": "Practice explaining an idea out loud",
+      "description": "Record a 60-second voice memo explaining something you learned this week, as if teaching someone else."
+    },
+    "skill-design-basics": {
+      "title": "Learn one design principle",
+      "description": "Look up one design principle (e.g. contrast, hierarchy) and find 3 examples of it in apps you use."
+    },
+    "career-research": {
+      "title": "Research a career in depth",
+      "description": "Pick one career match and research a typical day, salary range, and required education."
+    },
+    "career-shadow-conversation": {
+      "title": "Talk to someone in a career you're curious about",
+      "description": "Ask a parent, teacher, or family friend about their job: what they actually do day to day."
+    },
+    "career-linkedin-explore": {
+      "title": "Explore 3 real job postings",
+      "description": "Look up 3 real job listings in a field you're interested in and note the skills they ask for."
+    },
+    "business-find-problems": {
+      "title": "Find 5 problems customers have",
+      "description": "Talk to or observe people around you and write down 5 real problems they complain about."
+    },
+    "business-one-pager": {
+      "title": "Write a one-page business idea",
+      "description": "Pick one problem you found and write a one-page plan: who has it, and how you'd solve it."
+    },
+    "business-pitch-practice": {
+      "title": "Pitch your idea to someone",
+      "description": "Explain your idea out loud to a friend or family member in under 2 minutes and get their honest reaction."
+    },
+    "creative-portfolio-piece": {
+      "title": "Create your first portfolio piece",
+      "description": "Make one small creative piece (design, video, writing, or code) you'd be proud to show someone."
+    },
+    "creative-short-video": {
+      "title": "Film and edit a short video",
+      "description": "Plan, film, and edit a video under 60 seconds on a topic you care about."
+    },
+    "creative-study-inspiration": {
+      "title": "Study 3 creators or designers you admire",
+      "description": "Break down what makes 3 pieces of creative work (channels, designs, brands) effective."
+    }
+  },
+  "StatTile": {
+    "streak": "Streak",
+    "days": "days"
+  },
+  "StudentFutureHome": {
+    "title": "Your Future",
+    "subtitle": "Top career matches, based on you.",
+    "topMatches": "Your Top Career Matches",
+    "loadingMatches": "Loading your matches…",
+    "emptyTitle": "No career matches yet",
+    "emptySubtitle": "Complete onboarding to see careers matched to your subjects, interests, and strengths.",
+    "roadmap": "Roadmap",
+    "markAsDone": "Mark as done"
+  },
+  "CareerDetailPage": {
+    "notFound": "Career not found.",
+    "backToFuture": "Back to Your Future",
+    "whyMatches": "Why this matches you",
+    "percentMatch": "{percent}% match",
+    "schoolSubjects": "School subjects",
+    "skillsToBuild": "Skills to build",
+    "projectsToTry": "Projects to try",
+    "tryNow": "Try now",
+    "educationRoutes": "Education routes",
+    "careerProgression": "Career progression",
+    "addedToPath": "Added to your path",
+    "adding": "Adding…",
+    "addToPath": "Add This Career To My Path"
+  },
+  "RoadmapLevels": {
+    "1": {
+      "title": "Discover your interests",
+      "description": "Complete onboarding and explore your top career matches."
+    },
+    "2": {
+      "title": "Learn the basics",
+      "description": "Build one core skill your top career needs: coding, design, writing, or numbers."
+    },
+    "3": {
+      "title": "Build your first project",
+      "description": "Turn what you're learning into something real you can show."
+    },
+    "4": {
+      "title": "Launch it",
+      "description": "Share your project or idea with a real audience, even a small one."
+    },
+    "5": {
+      "title": "Get your first users or feedback",
+      "description": "Get real feedback from people outside your immediate circle."
+    },
+    "6": {
+      "title": "Build something bigger",
+      "description": "Turn an early win into a bigger project, portfolio, or small business."
+    }
+  },
+  "Careers": {
+    "matchLabel": "match",
+    "software-engineer": {
+      "name": "Software Engineer",
+      "tagline": "Build the apps and systems people use every day.",
+      "whyItMatches": "You're drawn to technology and problem solving, and you like building things that actually work.",
+      "subjects": [
+        "Mathematics",
+        "Computer Science"
+      ],
+      "skills": [
+        "Python",
+        "Problem solving",
+        "Web development",
+        "Git & version control"
+      ],
+      "projects": [
+        "Build a personal website",
+        "Build a simple to-do app",
+        "Create an AI chatbot"
+      ],
+      "tryNow": [
+        "Try a free intro-to-Python tutorial",
+        "Rebuild a simple website you like",
+        "Join a beginner coding community"
+      ],
+      "educationRoutes": [
+        "Computer Science degree",
+        "Coding bootcamp",
+        "Self-taught + portfolio",
+        "Apprenticeship"
+      ],
+      "progression": [
+        "Junior developer",
+        "Mid-level engineer",
+        "Senior engineer",
+        "Tech lead / Staff engineer"
+      ]
+    },
+    "entrepreneur": {
+      "name": "Entrepreneur",
+      "tagline": "Spot real problems and build something that solves them.",
+      "whyItMatches": "You're interested in business and money, and you like the idea of building something of your own.",
+      "subjects": [
+        "Business",
+        "Economics",
+        "Mathematics"
+      ],
+      "skills": [
+        "Selling",
+        "Communication",
+        "Leadership",
+        "Basic finance"
+      ],
+      "projects": [
+        "Run a small online shop",
+        "Sell a service to 3 real customers",
+        "Write a one-page business plan"
+      ],
+      "tryNow": [
+        "Find 3 problems people around you actually complain about",
+        "Interview a local small business owner",
+        "Read one book on starting a business"
+      ],
+      "educationRoutes": [
+        "Business/Economics degree (optional)",
+        "Start while still in school, learn by doing",
+        "Business incubator or young-entrepreneur programme"
+      ],
+      "progression": [
+        "First small side project",
+        "First paying customer",
+        "Sustainable small business",
+        "Scaling a real company"
+      ]
+    },
+    "ai-engineer": {
+      "name": "AI Engineer",
+      "tagline": "Design and train the models behind modern AI products.",
+      "whyItMatches": "You're curious about AI and enjoy math and computer science, the two subjects that matter most here.",
+      "subjects": [
+        "Mathematics",
+        "Computer Science",
+        "Science"
+      ],
+      "skills": [
+        "Python",
+        "Statistics",
+        "Machine learning basics",
+        "Problem solving"
+      ],
+      "projects": [
+        "Train a simple image classifier",
+        "Build a chatbot with an AI API",
+        "Analyse a public dataset"
+      ],
+      "tryNow": [
+        "Play with a free AI playground tool",
+        "Watch an intro-to-machine-learning video",
+        "Learn basic Python if you haven't yet"
+      ],
+      "educationRoutes": [
+        "Computer Science / Maths degree",
+        "Online ML specialisations",
+        "Research internship"
+      ],
+      "progression": [
+        "ML/AI intern",
+        "Junior AI engineer",
+        "AI engineer",
+        "AI research lead"
+      ]
+    },
+    "data-scientist": {
+      "name": "Data Scientist",
+      "tagline": "Turn messy data into decisions people actually act on.",
+      "whyItMatches": "You like maths and problem solving, and you're interested in how data drives technology and business.",
+      "subjects": [
+        "Mathematics",
+        "Computer Science",
+        "Economics"
+      ],
+      "skills": [
+        "Statistics",
+        "Python or R",
+        "Data visualisation",
+        "Problem solving"
+      ],
+      "projects": [
+        "Analyse a dataset and present 3 findings",
+        "Build a simple dashboard",
+        "Predict something from public data"
+      ],
+      "tryNow": [
+        "Explore a free public dataset",
+        "Try a beginner spreadsheet data-analysis exercise",
+        "Learn basic statistics"
+      ],
+      "educationRoutes": [
+        "Maths, Statistics, or CS degree",
+        "Online data science courses",
+        "Internship with a real dataset"
+      ],
+      "progression": [
+        "Data analyst",
+        "Junior data scientist",
+        "Data scientist",
+        "Lead data scientist"
+      ]
+    },
+    "digital-creator": {
+      "name": "Digital Creator",
+      "tagline": "Build an audience and tell stories people want to watch.",
+      "whyItMatches": "You enjoy content creation and social media, and you like expressing ideas creatively.",
+      "subjects": [
+        "English",
+        "Art",
+        "Design"
+      ],
+      "skills": [
+        "Video editing",
+        "Storytelling",
+        "Consistency",
+        "Basic design"
+      ],
+      "projects": [
+        "Post 5 short videos on one topic",
+        "Design a simple brand for your channel",
+        "Edit a 60-second highlight reel"
+      ],
+      "tryNow": [
+        "Film one short video this week",
+        "Learn a free video-editing tool",
+        "Study 3 creators you admire and note what works"
+      ],
+      "educationRoutes": [
+        "No formal requirement, built through practice",
+        "Media/Design courses (optional)",
+        "Marketing or Communications degree (optional)"
+      ],
+      "progression": [
+        "First posts",
+        "Small consistent audience",
+        "Monetised channel",
+        "Full creative brand/business"
+      ]
+    },
+    "doctor": {
+      "name": "Doctor",
+      "tagline": "Diagnose, treat, and care for people through science.",
+      "whyItMatches": "You're interested in medicine and science, and you like working with and helping people.",
+      "subjects": [
+        "Science",
+        "Mathematics"
+      ],
+      "skills": [
+        "Scientific reasoning",
+        "Communication",
+        "Resilience",
+        "Attention to detail"
+      ],
+      "projects": [
+        "Volunteer or shadow in a healthcare setting (age-appropriate)",
+        "Research one area of medicine in depth",
+        "Present a health-science topic to your class"
+      ],
+      "tryNow": [
+        "Read about a medical breakthrough",
+        "Ask your school about work-experience options",
+        "Strengthen your Biology and Chemistry foundations"
+      ],
+      "educationRoutes": [
+        "Biology/Chemistry through school",
+        "Medical degree (long, competitive path)",
+        "Work experience in healthcare"
+      ],
+      "progression": [
+        "Pre-med study",
+        "Medical school",
+        "Junior doctor",
+        "Specialist consultant"
+      ]
+    },
+    "lawyer": {
+      "name": "Lawyer",
+      "tagline": "Argue, negotiate, and use the law to solve real disputes.",
+      "whyItMatches": "You're interested in law, and you're strong at communication and structured argument.",
+      "subjects": [
+        "English",
+        "History",
+        "Economics"
+      ],
+      "skills": [
+        "Communication",
+        "Writing",
+        "Critical thinking",
+        "Research"
+      ],
+      "projects": [
+        "Join a debate or mock-trial club",
+        "Write a persuasive essay on a real issue",
+        "Research how a real case was decided"
+      ],
+      "tryNow": [
+        "Watch or read about a real court case",
+        "Join your school debate club",
+        "Practice writing a persuasive argument"
+      ],
+      "educationRoutes": [
+        "Law degree",
+        "Legal apprenticeship (where available)",
+        "Work experience at a law firm"
+      ],
+      "progression": [
+        "Law student",
+        "Trainee solicitor / pupil barrister",
+        "Qualified lawyer",
+        "Partner / senior counsel"
+      ]
+    },
+    "product-designer": {
+      "name": "Product Designer",
+      "tagline": "Design the look and feel of the products people use.",
+      "whyItMatches": "You're interested in design and creativity, and you like making things that look and feel good to use.",
+      "subjects": [
+        "Art",
+        "Design",
+        "Computer Science"
+      ],
+      "skills": [
+        "Visual design",
+        "Creativity",
+        "Problem solving",
+        "Feedback & iteration"
+      ],
+      "projects": [
+        "Redesign an app screen you use daily",
+        "Design a logo and mini brand kit",
+        "Create a simple prototype in a free design tool"
+      ],
+      "tryNow": [
+        "Try a free design tool for an hour",
+        "Study the design of 3 apps you use",
+        "Sketch 5 icon ideas for a made-up app"
+      ],
+      "educationRoutes": [
+        "Design/UX degree",
+        "Self-taught + strong portfolio",
+        "Design bootcamp"
+      ],
+      "progression": [
+        "Design student / junior designer",
+        "Product designer",
+        "Senior designer",
+        "Design lead"
+      ]
+    },
+    "mechanical-engineer": {
+      "name": "Mechanical Engineer",
+      "tagline": "Design and build the machines and systems that power the world.",
+      "whyItMatches": "You're interested in engineering, and you like understanding how things work and building them.",
+      "subjects": [
+        "Mathematics",
+        "Science"
+      ],
+      "skills": [
+        "Problem solving",
+        "Maths & physics",
+        "CAD basics",
+        "Hands-on building"
+      ],
+      "projects": [
+        "Build a small mechanical model",
+        "Take something apart and rebuild it",
+        "Enter a school engineering/robotics challenge"
+      ],
+      "tryNow": [
+        "Watch how a real machine works and sketch the parts",
+        "Try a free beginner CAD tool",
+        "Build something with your hands this week"
+      ],
+      "educationRoutes": [
+        "Engineering degree",
+        "Engineering apprenticeship",
+        "Technical college pathway"
+      ],
+      "progression": [
+        "Engineering student",
+        "Graduate engineer",
+        "Design/project engineer",
+        "Senior/chief engineer"
+      ]
+    },
+    "finance-analyst": {
+      "name": "Finance Analyst",
+      "tagline": "Understand money, markets, and how businesses make decisions.",
+      "whyItMatches": "You're interested in money and business, and you're comfortable with numbers.",
+      "subjects": [
+        "Mathematics",
+        "Economics",
+        "Business"
+      ],
+      "skills": [
+        "Numeracy",
+        "Analysis",
+        "Attention to detail",
+        "Communication"
+      ],
+      "projects": [
+        "Track and analyse a mock investment portfolio",
+        "Build a simple budget spreadsheet",
+        "Research how a real company makes money"
+      ],
+      "tryNow": [
+        "Read one beginner-friendly finance article a week",
+        "Learn how compound interest works",
+        "Try a free budgeting spreadsheet template"
+      ],
+      "educationRoutes": [
+        "Finance/Economics degree",
+        "Professional finance qualifications",
+        "Internship at a bank or firm"
+      ],
+      "progression": [
+        "Finance intern",
+        "Junior analyst",
+        "Analyst",
+        "Senior analyst / portfolio manager"
+      ]
+    },
+    "sports-professional": {
+      "name": "Sports Professional",
+      "tagline": "Turn discipline and performance into a career in sport.",
+      "whyItMatches": "You're interested in sport, and you already put in the discipline it takes to compete and improve.",
+      "subjects": [
+        "PE",
+        "Science"
+      ],
+      "skills": [
+        "Discipline",
+        "Physical fitness",
+        "Resilience",
+        "Teamwork"
+      ],
+      "projects": [
+        "Build a structured 4-week training plan",
+        "Track your performance stats over a season",
+        "Join a competitive league or trial"
+      ],
+      "tryNow": [
+        "Set one measurable fitness goal for this month",
+        "Ask a coach for honest feedback",
+        "Study the training routine of a pro in your sport"
+      ],
+      "educationRoutes": [
+        "Sports academy / talent pathway",
+        "Sports Science degree (backup route)",
+        "Coaching qualifications"
+      ],
+      "progression": [
+        "Youth/academy level",
+        "Competitive amateur",
+        "Professional contract",
+        "Elite / national level"
+      ]
+    }
+  }
+}

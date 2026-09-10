@@ -1,9 +1,9 @@
-// Minimal service worker: exists so the browser considers Alxioum
+// Minimal service worker: exists so the browser considers FutureOS
 // installable (Add to Home Screen). Deliberately does NOT cache API
 // responses, auth state, or app data — everything stays network-first so
 // users never see stale or wrong-account content. It only caches a couple
 // of static assets for a faster repeat load.
-const CACHE = "alxioum-static-v1";
+const CACHE = "futureos-static-v1";
 const STATIC_ASSETS = ["/icons/icon-192.png", "/icons/icon-512.png", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -30,34 +30,37 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+// Web Push (Android Chrome, and iOS 16.4+ once added to the home screen).
+// The payload is always our own JSON from src/lib/push/webpush.ts's
+// PushPayload shape — never anything from a third party — so no origin
+// check is needed here the way the fetch handler above needs one.
 self.addEventListener("push", (event) => {
-  if (!event.data) return;
-  let payload;
+  let payload = { title: "Alxioum", body: "", href: "/app" };
   try {
-    payload = event.data.json();
+    if (event.data) payload = { ...payload, ...event.data.json() };
   } catch {
-    payload = { title: "Alxioum", body: event.data.text() };
+    // Malformed/empty push payload — fall back to the generic title above
+    // rather than dropping the notification entirely.
   }
-  const { title, body, url } = payload;
   event.waitUntil(
-    self.registration.showNotification(title || "Alxioum", {
-      body: body || "",
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
-      data: { url: url || "/app/today" },
+      data: { href: payload.href },
     })
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || "/app/today";
+  const href = event.notification.data?.href || "/app";
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if (client.url.includes(url) && "focus" in client) return client.focus();
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
+      for (const client of clientsList) {
+        if (client.url.includes(href) && "focus" in client) return client.focus();
       }
-      if (self.clients.openWindow) return self.clients.openWindow(url);
+      if (self.clients.openWindow) return self.clients.openWindow(href);
     })
   );
 });

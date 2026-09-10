@@ -2,61 +2,156 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * ---------------------------------------------------------------------------
+ * DESIGN TOKENS — Premium Design System (see PREMIUM_DESIGN_SYSTEM.md)
+ * ---------------------------------------------------------------------------
+ * Phase 1 foundation pass. Every color below is transcribed directly from
+ * the spec's hex values (§1/§2), converted to space-separated HSL triplets
+ * (Tailwind's `hsl(var(--x))` convention, unchanged from before this pass).
+ *
+ * Values NOT given an explicit hex by the spec (border-strong, muted fills,
+ * accent-soft chip backgrounds, success/warning/danger, school/future
+ * track colors, shadow tint) are derived judgment calls, documented inline.
+ *
+ * KEY DECISION — gradients (§11): `--accent-end` is now defined EQUAL to
+ * `--accent` in both themes. `bg-gradient-brand` / `text-gradient-brand`
+ * (tailwind.config.ts + below) are left mechanically intact as two-stop
+ * gradients, but because the stops are now identical, every one of their
+ * ~50 call sites across the app (icon badges, active nav pills, CTA
+ * buttons, chat bubbles) renders as a flat solid accent fill with zero
+ * page-file edits. This is the "foundation-first" fix: the anti-pattern
+ * (purple→cyan brand gradient) is gone app-wide today; Phase 2 can do the
+ * purely-cosmetic mechanical cleanup of swapping the now-dead gradient
+ * class names for `bg-accent`/`text-accent` per call site at its leisure
+ * (zero visual diff when it does).
+ *
+ * `--mission-from/via/to` are DELIBERATELY NOT collapsed the same way —
+ * MissionCard.tsx's categoryMeta uses `mission-from` vs `mission-via` as
+ * two distinct tag colors to visually tell "creative" and "business"
+ * mission categories apart, and MissionCard.tsx is out of this pass's
+ * scope (not one of the named shared components), so collapsing those
+ * three vars to one value risked silently erasing a real semantic
+ * distinction on a page/component this pass can't verify. Instead only the
+ * *gradient utility itself* (`bg-gradient-mission` / `text-gradient-mission`
+ * in tailwind.config.ts) has been flattened to a single stop (mission-via
+ * only) — the multi-hue "coral→pink→purple" gradient effect is gone
+ * wherever it was literally used as a background/text gradient, while the
+ * three individual mission-* tokens remain distinct, muted tag colors
+ * elsewhere. See tailwind.config.ts for the flattened gradient definition.
+ */
+
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto,
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
 
-  --background: 48 30% 97%;
-  --foreground: 30 15% 12%;
-  --surface: 0 0% 100%;
-  --surface-raised: 45 26% 96%;
-  --border: 40 18% 88%;
-  --border-strong: 35 12% 74%;
-  --muted: 42 22% 93.5%;
-  --muted-foreground: 30 8% 45%;
+  /* ---- DARK (spec §2) — kept as the unclassed base for historical reasons;
+     light (below, via .light) is the default/primary look; ThemeProvider
+     defaults new users into light and applies the class before first
+     paint. ---- */
+  --background: 216 19% 5%;        /* #0B0D10 */
+  --foreground: 216 33% 97%;       /* #F5F7FA */
+  --surface: 218 19% 8%;           /* #111419 */
+  --surface-raised: 220 16% 11%;   /* #171A20 — spec's "elevated surface" */
+  --border: 222 15% 17%;           /* #252932 */
+  /* Not given by spec — a lighter step above --border for dividers that
+     need more contrast than the default hairline (unchanged concept from
+     before this pass, retinted to the new neutral hue family). */
+  --border-strong: 222 14% 26%;
+  --muted: 220 14% 13%;            /* fill tone for chips/track backgrounds — between surface and surface-raised */
+  --muted-foreground: 220 10% 64%; /* #9BA1AD — spec's "secondary text" */
+  /* Spec only names two dark text tiers (primary/secondary); this third,
+     dimmer "muted text" tier is this pass's own interpolation (no dark hex
+     given), for de-emphasized content (timestamps, disabled hints) once
+     Phase 2 wants finer hierarchy than --muted-foreground alone. Not wired
+     into any existing call site — purely additive. */
+  --muted-foreground-subtle: 220 8% 48%;
 
-  --accent: 18 55% 50%;
-  --accent-end: 32 60% 55%;
+  /* Accent — replaced the initial #635BFF (Stripe's own brand color,
+     correctly flagged as looking "generic/borrowed") with a deep emerald
+     green: distinctive, on-theme for a "build your future/growth" product,
+     and not the default indigo/violet every AI-scaffolded SaaS reaches for.
+     Same WCAG-driven dark-mode adjustment method as the color it replaces:
+     the light-mode hex (#0F7B5C, hsl(163 78% 27%)) against #0B0D10 measures
+     well under 4.5:1, so dark mode is brightened + desaturated to
+     hsl(163 58% 34%) (~#24896D), which measures ~4.5:1 text-on-background
+     and ~4.3:1 white-on-accent for button labels (computed via WCAG
+     relative luminance) — comparable margins to the token it replaces. */
+  --accent: 163 58% 34%;
   --accent-foreground: 0 0% 100%;
-  --accent-soft: 18 55% 94%;
+  --accent-soft: 163 40% 16%;
+  --accent-end: 163 58% 34%; /* == --accent, see file-header note */
 
-  --success: 152 40% 32%;
-  --success-soft: 140 30% 92%;
-  --warning: 38 75% 42%;
-  --warning-soft: 42 60% 92%;
-  --danger: 6 55% 46%;
-  --danger-soft: 6 55% 94%;
+  /* Mission tag colors — desaturated/muted from the previous coral/pink/
+     purple trio (was 92%/82%/78% saturation) but kept as three distinct
+     hues; see file-header note on why these are not collapsed to one. */
+  --mission-from: 14 45% 52%;
+  --mission-via: 336 40% 55%;
+  --mission-to: 262 38% 60%;
 
-  --shadow-color: 30 20% 20%;
+  /* Success/warning/error — spec: "subtle ... not neon." Desaturated from
+     the previous values (was up to 92% saturation). */
+  --success: 152 38% 52%;
+  --success-soft: 152 30% 18%;
+  --warning: 38 60% 56%;
+  --warning-soft: 38 45% 18%;
+  --danger: 350 50% 60%;
+  --danger-soft: 350 40% 20%;
 
-  color-scheme: light;
-}
+  /* Functional track-differentiation colors (school vs. future/business
+     content), not decorative brand colors — kept as a legitimate two-hue
+     exception per spec §1 ("use sparingly for ... important highlights"),
+     desaturated to match the new restrained palette. */
+  --school: 206 55% 58%;
+  --future: 28 55% 56%;
 
-:root.dark {
-  --background: 30 10% 8%;
-  --foreground: 40 20% 94%;
-  --surface: 28 9% 12%;
-  --surface-raised: 28 9% 15%;
-  --border: 30 9% 20%;
-  --border-strong: 30 8% 29%;
-  --muted: 28 9% 15%;
-  --muted-foreground: 35 8% 63%;
-
-  --accent: 20 65% 58%;
-  --accent-end: 34 65% 60%;
-  --accent-foreground: 0 0% 100%;
-  --accent-soft: 20 40% 20%;
-
-  --success: 152 35% 45%;
-  --success-soft: 152 25% 15%;
-  --warning: 40 70% 55%;
-  --warning-soft: 38 45% 16%;
-  --danger: 6 60% 58%;
-  --danger-soft: 6 40% 17%;
-
-  --shadow-color: 30 30% 2%;
+  /* Used at low alpha inside boxShadow tokens below (tailwind.config.ts) —
+     spec §10 shadows are "no shadow or extremely subtle," so the tint
+     itself matters less than the very low opacities applied to it. */
+  --shadow-color: 230 45% 2%;
 
   color-scheme: dark;
+}
+
+/* Light mode — opt-in via a `.light` class on <html>, toggled by
+   ThemeProvider. Dark stays the unclassed default above. */
+.light {
+  /* ---- LIGHT (spec §1) — hex values transcribed verbatim, converted to HSL. ---- */
+  --background: 220 27% 98%;       /* #F8F9FB */
+  --foreground: 223 17% 8%;        /* #111318 */
+  --surface: 0 0% 100%;            /* #FFFFFF */
+  /* Not given by spec (light mode only names background+surface) — a
+     recessed fill tone for input backgrounds / hover rows, one step below
+     pure white. */
+  --surface-raised: 220 20% 96%;
+  --border: 223 17% 92%;           /* #E7E9EE */
+  --border-strong: 223 14% 82%;
+  --muted: 220 18% 95%;
+  --muted-foreground: 221 9% 42%;  /* #626875 — spec's "secondary text" */
+  --muted-foreground-subtle: 220 8% 58%; /* #8B919D — spec's "muted text" */
+
+  --accent: 163 78% 27%;           /* #0F7B5C — deep emerald, see dark-mode block for rationale */
+  --accent-foreground: 0 0% 100%;
+  --accent-soft: 163 78% 96%;
+  --accent-end: 163 78% 27%;       /* == --accent, see file-header note */
+
+  --mission-from: 14 55% 55%;
+  --mission-via: 336 45% 55%;
+  --mission-to: 262 40% 58%;
+
+  --success: 152 40% 34%;
+  --success-soft: 152 45% 92%;
+  --warning: 38 65% 40%;
+  --warning-soft: 38 60% 91%;
+  --danger: 350 55% 46%;
+  --danger-soft: 350 55% 93%;
+
+  --school: 206 55% 40%;
+  --future: 28 55% 42%;
+
+  --shadow-color: 220 20% 25%;
+
+  color-scheme: light;
 }
 
 * {
@@ -66,6 +161,11 @@
 html {
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
 }
 
 body {
@@ -76,11 +176,27 @@ body {
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
   width: 100%;
+  min-height: 100dvh;
 }
 
 ::selection {
   background: hsl(var(--accent-soft));
   color: hsl(var(--accent));
+}
+
+/* Global keyboard focus treatment — halo ring (background-colored gap +
+   accent ring) so it automatically follows whatever border-radius the
+   focused element already has instead of looking like a mismatched
+   rectangle. */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px hsl(var(--background)), 0 0 0 5.5px hsl(var(--accent) / 0.55);
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
 ::-webkit-scrollbar {
@@ -112,15 +228,36 @@ body {
   display: none;
 }
 
-.bg-gradient-accent {
-  background-image: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-end)));
-}
-.text-gradient-accent {
+.text-gradient-brand {
   background-image: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-end)));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-.shadow-glow-accent {
-  box-shadow: 0 10px 28px -8px hsl(var(--accent) / 0.45);
+
+/* Flattened to a single mission-via stop — see file-header note. */
+.text-gradient-mission {
+  background-image: linear-gradient(135deg, hsl(var(--mission-via)), hsl(var(--mission-via)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft ambient glow behind hero/header content. Spec §21 explicitly lists
+   "decorative blobs" / "glowing backgrounds" as an anti-pattern to remove;
+   this is kept (several onboarding/marketing/error screens reference the
+   class directly) but the opacity has been cut roughly in half and the
+   spread tightened so it reads as a faint ambient tint rather than a
+   visible glow/blob — verified on the public landing page render (see
+   Phase 1 report). */
+.bg-ambient-glow {
+  position: relative;
+}
+.bg-ambient-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(50% 35% at 50% 0%, hsl(var(--accent) / 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
