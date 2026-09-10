@@ -110,6 +110,15 @@ export async function callStudyAIForJSON<T>(params: {
     output_config: { effort: params.effort ?? "medium" },
   });
 
+  // A response cut off by the token budget produces JSON that can never
+  // balance — extractJSON would just report "unbalanced JSON", which reads
+  // like a model glitch rather than what actually happened (the request was
+  // too broad for the space given). Surfacing stop_reason here lets every
+  // caller give a much more honest, actionable error instead.
+  if (response.stop_reason === "max_tokens") {
+    throw new StudyAIError("That request was too broad to finish — try narrowing it to one specific thing and asking again.");
+  }
+
   const textBlock = response.content.find((b): b is Anthropic.Messages.TextBlock => b.type === "text");
   if (!textBlock) throw new StudyAIError("The AI didn't return a text response.");
   return extractJSON<T>(textBlock.text);

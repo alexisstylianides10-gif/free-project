@@ -66,7 +66,11 @@ export async function generateWeakAreaPlan(params: {
     `specific problem — never pad the response with irrelevant sections just to fill out a template. ` +
     `A reading/writing weakness usually benefits most from passage-based exercises; a conceptual weakness (e.g. "I don't ` +
     `understand fractions") usually benefits most from a step-by-step roadmap and practice problems; ask yourself what ` +
-    `would actually help this specific student, not what looks complete.`;
+    `would actually help this specific student, not what looks complete. ` +
+    `If the description names several distinct skills at once (e.g. "grammar, vocabulary, reading, AND writing" or just ` +
+    `"everything"/"all of it"), do NOT try to cover all of them — pick the ONE that would move the needle most and build a ` +
+    `focused, genuinely useful plan for just that, saying in the summary which one you picked and why. A focused plan on ` +
+    `one real skill beats a shallow plan spread across five.`;
 
   const userText =
     `Subject: ${subjectName}\n` +
@@ -85,7 +89,7 @@ export async function generateWeakAreaPlan(params: {
     const raw = await callStudyAIForJSON<WeakAreaPlanContent>({
       system,
       userText,
-      maxTokens: 1536,
+      maxTokens: 2048,
       effort: "medium",
       language,
     });
@@ -94,6 +98,10 @@ export async function generateWeakAreaPlan(params: {
       throw new StudyAIError("The AI didn't return anything usable. Try again.");
     }
   } catch (err) {
+    // Previously swallowed entirely — every past failure left no trace of
+    // *why* beyond a generic message, which is how a 100%-failing feature
+    // went undiagnosed. Always log the real cause before falling back.
+    console.error("generateWeakAreaPlan failed:", err);
     await client.from("weak_area_plans").insert({
       user_id: userId,
       subject_id: subjectId,
