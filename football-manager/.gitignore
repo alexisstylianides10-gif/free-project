@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+test-results/
+playwright-report/
+src-tauri/target/
+src-tauri/gen/
+*.tsbuildinfo
+next-env.d.ts
+prisma/dev.db*

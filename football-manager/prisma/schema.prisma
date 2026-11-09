@@ -1,0 +1,767 @@
+// Canonical relational schema for a career save file (one SQLite file per career).
+//
+// The SQL migrations in prisma/migrations are generated from this file with
+//   npm run db:migrations
+// and are applied at runtime by src/db/migrate.ts (sql.js / SQLite). Prisma
+// Client itself is not used at runtime because the game runs inside a Tauri
+// webview without a Node.js process — see docs/ARCHITECTURE.md.
+//
+// Nested value objects that are always read/written together (attribute
+// blocks, instruction sets, JSON stats) are stored in TEXT columns holding JSON.
+
+datasource db {
+  provider = "sqlite"
+}
+
+model SchemaMigration {
+  name      String @id
+  appliedAt String
+}
+
+model GameVersion {
+  id            Int    @id
+  gameVersion   String
+  schemaVersion Int
+  savedAt       String
+}
+
+model Career {
+  id                String  @id
+  saveName          String
+  createdAt         String
+  datasetId         String
+  datasetLabel      String
+  datasetIsReal     Boolean
+  datasetVersion    String
+  coverageNote      String
+  seed              Int
+  rngState          Int
+  currentDate       String
+  lastProcessedDate String?
+  currentSeasonId   String
+  userClubId        String
+  idCounter         Int
+  autosaveEveryDays Int
+  daysSinceAutosave Int
+  qualifiersJson    String
+}
+
+model UserManager {
+  staffId       String  @id
+  name          String
+  clubId        String?
+  contractEnd   String?
+  wage          Int
+  reputation    Int
+  sacked        Boolean
+  jobOffersJson String
+  staff         Staff   @relation(fields: [staffId], references: [id])
+  club          Club?   @relation(fields: [clubId], references: [id])
+}
+
+model Nation {
+  id          String   @id
+  name        String
+  code        String
+  continent   String
+  reputation  Int
+  youthRating Int
+  namePool    String
+  clubs       Club[]
+  players     Player[]
+  staff       Staff[]
+  competitions Competition[]
+}
+
+model Stadium {
+  id               String           @id
+  name             String
+  city             String
+  capacity         Int
+  seatedRatio      Float
+  pitchQuality     Float
+  lighting         Int
+  facilities       Int
+  hospitality      Int
+  vipBoxes         Int
+  condition        Float
+  maintenanceLevel Int
+  namingRightsName String?
+  ownerClubId      String?
+  source           String
+  clubs            Club[]           @relation("ClubStadium")
+  tempClubs        Club[]           @relation("ClubTempStadium")
+  projects         StadiumProject[]
+
+  @@index([ownerClubId])
+}
+
+model StadiumProject {
+  id                 String  @id
+  stadiumId          String
+  type               String
+  description        String
+  cost               Int
+  startDate          String
+  endDate            String
+  capacityDelta      Int
+  capacityReduction  Int
+  requiresRelocation Boolean
+  levelTarget        Int?
+  paid               Int
+  stadium            Stadium @relation(fields: [stadiumId], references: [id], onDelete: Cascade)
+
+  @@index([stadiumId])
+}
+
+model Competition {
+  id                     String              @id
+  name                   String
+  shortName              String
+  type                   String
+  nationId               String?
+  tier                   Int
+  reputation             Int
+  cupJson                String?
+  matchdayJson           String
+  yellowCardBanThreshold Int
+  preferredWeekday       Int
+  source                 String
+  nation                 Nation?             @relation(fields: [nationId], references: [id])
+  league                 League?
+  clubs                  Club[]
+  seasons                CompetitionSeason[]
+  fixtures               Fixture[]
+  trophies               Trophy[]
+  suspensions            Suspension[]
+}
+
+model League {
+  competitionId     String      @id
+  rounds            Int
+  pointsJson        String
+  tiebreakersJson   String
+  promotionJson     String?
+  relegationJson    String?
+  qualificationJson String
+  prizeMoneyTop     Int
+  tvMoneyPerClub    Int
+  competition       Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+}
+
+model Club {
+  id               String               @id
+  name             String
+  shortName        String
+  code             String
+  nationId         String
+  leagueId         String?
+  reputation       Int
+  strategy         String
+  founded          Int?
+  primaryColor     String
+  secondaryColor   String
+  stadiumId        String
+  tempStadiumId    String?
+  boardConfidence  Float
+  supporterMood    Float
+  isUser           Boolean
+  aiActivityJson   String
+  youthIntakeDate  String
+  source           String
+  coverageJson     String
+  selectionJson    String?
+  nation           Nation               @relation(fields: [nationId], references: [id])
+  league           Competition?         @relation(fields: [leagueId], references: [id])
+  stadium          Stadium              @relation("ClubStadium", fields: [stadiumId], references: [id])
+  tempStadium      Stadium?             @relation("ClubTempStadium", fields: [tempStadiumId], references: [id])
+  facilities       TrainingFacility?
+  training         TrainingSchedule?
+  finance          ClubFinance?
+  bankLoans        ClubLoan[]
+  kits             ClubKit[]
+  tactics          TacticalSystem[]
+  manager          Manager?
+  players          Player[]             @relation("PlayerClub")
+  loanedOut        Player[]             @relation("PlayerLoanParent")
+  staff            Staff[]
+  homeFixtures     Fixture[]            @relation("HomeFixtures")
+  awayFixtures     Fixture[]            @relation("AwayFixtures")
+  homeMatches      Match[]              @relation("HomeMatches")
+  awayMatches      Match[]              @relation("AwayMatches")
+  transfersOut     Transfer[]           @relation("TransferFrom")
+  transfersIn      Transfer[]           @relation("TransferTo")
+  loansOut         Loan[]               @relation("LoanParent")
+  loansIn          Loan[]               @relation("LoanClub")
+  negotiations     Negotiation[]
+  scouting         ScoutingAssignment[]
+  sponsorDeals     SponsorDeal[]
+  transactions     FinancialTransaction[]
+  objectives       BoardObjective[]
+  trophies         Trophy[]
+  history          ClubSeasonHistory[]
+  youthIntakes     YouthIntake[]
+  userManager      UserManager[]
+
+  @@index([leagueId])
+  @@index([nationId])
+}
+
+model TrainingFacility {
+  clubId           String @id
+  training         Int
+  youth            Int
+  youthRecruitment Int
+  medical          Int
+  club             Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model TrainingSchedule {
+  clubId         String @id
+  focus          String
+  intensity      Int
+  youthIntensity Int
+  club           Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model ClubFinance {
+  clubId              String @id
+  balance             Int
+  transferBudget      Int
+  wageBudget          Int
+  debt                Int
+  overdraftLimit      Int
+  ticketPrice         Int
+  seasonTicketHolders Int
+  revenueSeasonJson   String
+  expenseSeasonJson   String
+  club                Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model ClubLoan {
+  id             String @id
+  clubId         String
+  principal      Int
+  remaining      Int
+  interestRate   Float
+  monthlyPayment Int
+  startDate      String
+  endDate        String
+  club           Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
+}
+
+model ClubKit {
+  id           String @id
+  clubId       String
+  slot         String
+  primary      String
+  secondary    String
+  accent       String
+  pattern      String
+  collar       String
+  sleeves      String
+  shorts       String
+  socks        String
+  manufacturer String
+  sponsorText  String
+  club         Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, slot])
+}
+
+model Player {
+  id                  String                @id
+  firstName           String
+  lastName            String
+  dob                 String
+  nationId            String
+  clubId              String?
+  loanParentClubId    String?
+  position            String
+  altPositionsJson    String
+  foot                String
+  heightCm            Int
+  attributesJson      String
+  potential           Int
+  personalityJson     String
+  squadStatus         String
+  askingPrice         Int?
+  fitness             Float
+  fatigue             Float
+  morale              Float
+  form                Float
+  sharpness           Float
+  tacticalFamiliarity Float
+  yellowAccJson       String
+  seasonStatsJson     String
+  trainingFocus       String
+  retrainPosition     String?
+  retired             Boolean
+  generated           Boolean
+  source              String
+  value               Int
+  happiness           Float
+  nation              Nation                @relation(fields: [nationId], references: [id])
+  club                Club?                 @relation("PlayerClub", fields: [clubId], references: [id])
+  loanParent          Club?                 @relation("PlayerLoanParent", fields: [loanParentClubId], references: [id])
+  contract            Contract?
+  injury              Injury?
+  suspensions         Suspension[]
+  transfers           Transfer[]
+  loans               Loan[]
+  negotiations        Negotiation[]
+  history             PlayerCareerHistory[]
+  development         PlayerDevelopment[]
+  scouted             ScoutedPlayer?
+
+  @@index([clubId])
+  @@index([nationId])
+  @@index([position])
+  @@index([lastName, firstName, dob])
+}
+
+model Contract {
+  playerId        String  @id
+  wage            Int
+  startDate       String
+  endDate         String
+  releaseClause   Int?
+  squadRole       String
+  appearanceBonus Int
+  goalBonus       Int
+  youth           Boolean
+  player          Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([endDate])
+}
+
+model Injury {
+  playerId String @id
+  type     String
+  until    String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model Suspension {
+  id            String       @id
+  playerId      String
+  competitionId String?
+  matches       Int
+  reason        String
+  player        Player       @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  competition   Competition? @relation(fields: [competitionId], references: [id])
+
+  @@index([playerId])
+}
+
+model Staff {
+  id                 String        @id
+  firstName          String
+  lastName           String
+  dob                String
+  nationId           String
+  clubId             String?
+  role               String
+  attributesJson     String
+  experience         Int
+  reputation         Int
+  specialisation     String
+  contractWage       Int?
+  contractStart      String?
+  contractEnd        String?
+  preferredFormation String?
+  isUser             Boolean
+  source             String
+  nation             Nation        @relation(fields: [nationId], references: [id])
+  club               Club?         @relation(fields: [clubId], references: [id])
+  managing           Manager[]
+  userManager        UserManager?
+
+  @@index([clubId])
+  @@index([role])
+}
+
+model Manager {
+  clubId  String @id
+  staffId String
+  club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  staff   Staff  @relation(fields: [staffId], references: [id])
+
+  @@unique([staffId])
+}
+
+model TacticalSystem {
+  id             String                @id
+  clubId         String
+  name           String
+  formationLabel String
+  teamJson       String
+  setPiecesJson  String
+  familiarity    Float
+  createdDate    String
+  ordering       Int
+  club           Club                  @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  slots          TacticalInstruction[]
+
+  @@index([clubId])
+}
+
+model TacticalInstruction {
+  id               String         @id
+  tacticId         String
+  slotId           String
+  ordering         Int
+  position         String
+  role             String
+  duty             String
+  ipX              Float
+  ipY              Float
+  opX              Float
+  opY              Float
+  instructionsJson String
+  tactic           TacticalSystem @relation(fields: [tacticId], references: [id], onDelete: Cascade)
+
+  @@unique([tacticId, slotId])
+}
+
+model SavedFormation {
+  id          String @id
+  name        String
+  slotsJson   String
+  createdDate String
+}
+
+model Season {
+  id              String              @id
+  label           String
+  startDate       String
+  endDate         String
+  windowsJson     String
+  status          String
+  competitions    CompetitionSeason[]
+  fixtures        Fixture[]
+  objectives      BoardObjective[]
+  trophies        Trophy[]
+}
+
+model CompetitionSeason {
+  id                String      @id
+  competitionId     String
+  seasonId          String
+  clubIdsJson       String
+  groupsJson        String
+  tiesJson          String
+  currentRound      Int
+  roundDatesJson    String
+  stage             String
+  status            String
+  championId        String?
+  finalPositionsJson String
+  competition       Competition @relation(fields: [competitionId], references: [id])
+  season            Season      @relation(fields: [seasonId], references: [id])
+  fixtures          Fixture[]
+
+  @@unique([competitionId, seasonId])
+}
+
+model Fixture {
+  id                  String            @id
+  competitionSeasonId String
+  competitionId       String
+  seasonId            String
+  date                String
+  round               Int
+  roundName           String
+  homeClubId          String
+  awayClubId          String
+  stadiumId           String?
+  tieId               String?
+  leg                 Int?
+  groupIndex          Int?
+  status              String
+  matchId             String?
+  requiresWinner      Boolean
+  competitionSeason   CompetitionSeason @relation(fields: [competitionSeasonId], references: [id])
+  competition         Competition       @relation(fields: [competitionId], references: [id])
+  season              Season            @relation(fields: [seasonId], references: [id])
+  homeClub            Club              @relation("HomeFixtures", fields: [homeClubId], references: [id])
+  awayClub            Club              @relation("AwayFixtures", fields: [awayClubId], references: [id])
+  match               Match?
+
+  @@unique([competitionSeasonId, round, homeClubId, awayClubId])
+  @@index([date])
+  @@index([homeClubId])
+  @@index([awayClubId])
+}
+
+model Match {
+  id              String       @id
+  fixtureId       String       @unique
+  date            String
+  homeClubId      String
+  awayClubId      String
+  homeGoals       Int
+  awayGoals       Int
+  extraTime       Boolean
+  penaltiesJson   String?
+  attendance      Int
+  statsJson       String
+  linesJson       String
+  detailed        Boolean
+  seed            Int
+  playerOfMatchId String?
+  shapesJson      String?
+  fixture         Fixture      @relation(fields: [fixtureId], references: [id])
+  homeClub        Club         @relation("HomeMatches", fields: [homeClubId], references: [id])
+  awayClub        Club         @relation("AwayMatches", fields: [awayClubId], references: [id])
+  events          MatchEvent[]
+
+  @@index([date])
+}
+
+model MatchEvent {
+  id            String  @id
+  matchId       String
+  seq           Int
+  minute        Int
+  second        Int
+  type          String
+  side          Int
+  playerId      String?
+  otherPlayerId String?
+  x             Float
+  y             Float
+  xg            Float?
+  text          String
+  match         Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, seq])
+}
+
+model Transfer {
+  id                      String  @id
+  playerId                String
+  fromClubId              String?
+  toClubId                String?
+  date                    String
+  fee                     Int
+  type                    String
+  seasonId                String
+  sellOnPct               Float
+  sellOnBeneficiaryClubId String?
+  addOnsJson              String
+  appsSince               Int?
+  goalsSince              Int?
+  player                  Player  @relation(fields: [playerId], references: [id])
+  fromClub                Club?   @relation("TransferFrom", fields: [fromClubId], references: [id])
+  toClub                  Club?   @relation("TransferTo", fields: [toClubId], references: [id])
+
+  @@index([playerId])
+  @@index([date])
+}
+
+model Loan {
+  id             String  @id
+  playerId       String
+  parentClubId   String
+  loanClubId     String
+  startDate      String
+  endDate        String
+  wageSharePct   Float
+  optionToBuyFee Int?
+  fee            Int
+  active         Boolean
+  player         Player  @relation(fields: [playerId], references: [id])
+  parentClub     Club    @relation("LoanParent", fields: [parentClubId], references: [id])
+  loanClub       Club    @relation("LoanClub", fields: [loanClubId], references: [id])
+
+  @@index([playerId])
+}
+
+model Negotiation {
+  id                  String  @id
+  playerId            String
+  buyingClubId        String
+  sellingClubId       String?
+  kind                String
+  staffId             String?
+  status              String
+  roundsJson          String
+  agreedTransferJson  String?
+  agreedContractJson  String?
+  counterTransferJson String?
+  counterContractJson String?
+  createdDate         String
+  updatedDate         String
+  incoming            Boolean
+  patience            Int
+  player              Player  @relation(fields: [playerId], references: [id])
+  buyingClub          Club    @relation(fields: [buyingClubId], references: [id])
+
+  @@index([playerId])
+  @@index([status])
+}
+
+model ScoutingAssignment {
+  id          String @id
+  clubId      String
+  scoutId     String?
+  targetJson  String
+  startDate   String
+  endDate     String
+  status      String
+  reportJson  String
+  club        Club   @relation(fields: [clubId], references: [id])
+}
+
+model ScoutedPlayer {
+  playerId String @id
+  date     String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model Sponsor {
+  id            String        @id
+  name          String
+  industry      String
+  wealth        Int
+  minReputation Int
+  fictional     Boolean
+  deals         SponsorDeal[]
+}
+
+model SponsorDeal {
+  id               String  @id
+  clubId           String
+  sponsorId        String
+  slot             String
+  annualValue      Int
+  startDate        String
+  endDate          String
+  bonusLeagueTitle Int
+  bonusTopFour     Int
+  bonusCupWin      Int
+  isOffer          Boolean
+  club             Club    @relation(fields: [clubId], references: [id])
+  sponsor          Sponsor @relation(fields: [sponsorId], references: [id])
+
+  @@index([clubId])
+}
+
+model FinancialTransaction {
+  id             String @id
+  clubId         String
+  date           String
+  amount         Int
+  category       String
+  description    String
+  balanceAfter   Int
+  idempotencyKey String @unique
+  club           Club   @relation(fields: [clubId], references: [id])
+
+  @@index([clubId, date])
+}
+
+model AppliedTransactionKey {
+  key String @id
+}
+
+model BoardObjective {
+  id            String  @id
+  clubId        String
+  seasonId      String
+  kind          String
+  competitionId String?
+  target        Int
+  description   String
+  importance    String
+  status        String
+  progress      Int?
+  club          Club    @relation(fields: [clubId], references: [id])
+  season        Season  @relation(fields: [seasonId], references: [id])
+}
+
+model Trophy {
+  id            String      @id
+  clubId        String
+  competitionId String
+  seasonId      String
+  seasonLabel   String
+  club          Club        @relation(fields: [clubId], references: [id])
+  competition   Competition @relation(fields: [competitionId], references: [id])
+  season        Season      @relation(fields: [seasonId], references: [id])
+
+  @@unique([competitionId, seasonId])
+}
+
+model PlayerCareerHistory {
+  id          String  @id
+  playerId    String
+  seasonId    String
+  seasonLabel String
+  clubId      String?
+  apps        Int
+  goals       Int
+  assists     Int
+  avgRating   Float
+  overall     Int
+  potential   Int
+  value       Int
+  player      Player  @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
+}
+
+model ClubSeasonHistory {
+  id             String  @id
+  clubId         String
+  seasonId       String
+  seasonLabel    String
+  competitionId  String?
+  position       Int?
+  points         Int
+  goalsFor       Int
+  goalsAgainst   Int
+  cupResultsJson String
+  revenue        Int
+  expenses       Int
+  managerId      String?
+  club           Club    @relation(fields: [clubId], references: [id])
+
+  @@unique([clubId, seasonId])
+}
+
+model NewsItem {
+  id            String  @id
+  date          String
+  category      String
+  title         String
+  body          String
+  clubIdsJson   String
+  playerIdsJson String
+  read          Boolean
+  important     Boolean
+
+  @@index([date])
+}
+
+model YouthIntake {
+  id            String @id
+  clubId        String
+  date          String
+  playerIdsJson String
+  club          Club   @relation(fields: [clubId], references: [id])
+}
+
+model PlayerDevelopment {
+  id        String @id
+  playerId  String
+  date      String
+  overall   Int
+  potential Int
+  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+}
