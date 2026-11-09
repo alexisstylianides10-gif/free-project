@@ -2,7 +2,7 @@ import type { Club, ContractOffer, ID, Negotiation, NegotiationRound, Player, Tr
 import { newId } from "../core/ids";
 import { addYears, diffDays } from "../core/dates";
 import { expectedWage, overall } from "../core/ratings";
-import { clamp, niceMoney } from "../core/util";
+import { clamp, niceMoney, niceMoneyUp } from "../core/util";
 import { isTransferWindowOpen } from "../competition/season";
 import { checkTransferSpend, postTransaction, weeklyWageBill } from "../finance/ledger";
 import { assignSquadRoles, fullName, playerAge } from "../world/players";
@@ -93,7 +93,7 @@ export function evaluateBid(world: World, p: Player, buyer: Club, o: TransferOff
   const worth = offerWorth(world, o, p);
   if (worth >= minimum) return { decision: "accepted", message: `${seller.shortName} accept your offer.` };
   if (worth >= minimum * 0.7 && patience > 0) {
-    const ask = niceMoney(o.fee + (minimum - worth) / Math.max(0.5, o.upfrontPct / 100 * 0.08 + 0.92));
+    const ask = niceMoneyUp(o.fee + (minimum - worth) / Math.max(0.5, o.upfrontPct / 100 * 0.08 + 0.92));
     return { decision: "countered", counter: { ...o, fee: ask }, message: `${seller.shortName} would accept a fee of ${ask.toLocaleString()}.` };
   }
   return { decision: "rejected", message: worth < minimum * 0.5 ? `${seller.shortName} found the offer insulting.` : `${seller.shortName} reject the offer.` };
@@ -141,7 +141,7 @@ export function evaluateContract(world: World, p: Player, club: Club, o: Contrac
   const offered = o.wage * 52 + o.signingBonus / o.years + o.appearanceBonus * 25 + o.goalBonus * expectedGoals;
   if (offered >= required) return { decision: "accepted", message: `${fullName(p)} accepts the contract.` };
   if (offered >= required * 0.78 && patience > 0) {
-    const counter: ContractOffer = { ...o, wage: niceMoney(Math.max(o.wage, (required - o.signingBonus / o.years - o.appearanceBonus * 25 - o.goalBonus * expectedGoals) / 52)), squadRole: roleGap > 1 ? demand.squadRole : o.squadRole };
+    const counter: ContractOffer = { ...o, wage: niceMoneyUp(Math.max(o.wage, (required - o.signingBonus / o.years - o.appearanceBonus * 25 - o.goalBonus * expectedGoals) / 52)), squadRole: roleGap > 1 ? demand.squadRole : o.squadRole };
     return { decision: "countered", counter, message: `${fullName(p)}'s agent asks for ${counter.wage.toLocaleString()} per week${counter.squadRole !== o.squadRole ? ` and a ${counter.squadRole.replace("_", " ")} role` : ""}.` };
   }
   return { decision: "rejected", message: `${fullName(p)} rejects the contract offer.` };

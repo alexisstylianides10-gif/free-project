@@ -29,3 +29,9 @@ export function niceMoney(v: number): number {
   const mag = 10 ** Math.max(0, Math.floor(Math.log10(v)) - 1);
   return Math.round(v / mag) * mag;
 }
+/** Like niceMoney but never rounds below the input (used for asking prices). */
+export function niceMoneyUp(v: number): number {
+  if (v <= 0) return 0;
+  const mag = 10 ** Math.max(0, Math.floor(Math.log10(v)) - 1);
+  return Math.ceil(v / mag) * mag;
+}

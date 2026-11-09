@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 7 10 15;
+  --surface: 14 19 26;
+  --surface-2: 20 27 36;
+  --line: 33 43 56;
+  --fg: 230 237 243;
+  --muted: 139 155 176;
+  --accent: 34 211 139;
+  --gold: 245 196 81;
+  --danger: 239 83 80;
+  --warn: 255 183 77;
+  --info: 79 195 247;
+  --pitch: 22 101 52;
+  color-scheme: dark;
+}
+
+html, body { background: rgb(var(--bg)); color: rgb(var(--fg)); }
+body { font-feature-settings: "tnum" 1, "cv11" 1; -webkit-font-smoothing: antialiased; }
+* { scrollbar-width: thin; scrollbar-color: rgb(var(--line)) transparent; }
+::selection { background: rgb(var(--accent) / 0.3); }
+
+@layer components {
+  .panel { @apply rounded-xl border border-line bg-surface shadow-panel; }
+  .panel-head { @apply flex items-center justify-between gap-3 border-b border-line px-4 py-3; }
+  .panel-title { @apply text-[13px] font-semibold uppercase tracking-[0.08em] text-muted; }
+  .tbl { @apply w-full border-collapse text-sm; }
+  .tbl th { @apply sticky top-0 z-10 bg-surface2 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted; }
+  .tbl td { @apply border-t border-line/70 px-3 py-2 align-middle; }
+  .tbl tbody tr { @apply transition-colors hover:bg-surface2/60; }
+  .num { @apply text-right tabular-nums; }
+  .field { @apply h-9 w-full rounded-lg border border-line bg-surface2 px-3 text-sm text-fg outline-none transition placeholder:text-muted/60 focus:border-accent/70 focus:ring-2 focus:ring-accent/20; }
+  .label { @apply mb-1 block text-xs font-medium text-muted; }
+  .chip { @apply inline-flex items-center gap-1 rounded-md border border-line bg-surface2 px-2 py-0.5 text-xs text-muted; }
+}

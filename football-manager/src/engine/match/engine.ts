@@ -276,7 +276,7 @@ export class MatchSimulation {
     if (attacking) {
       const base = ps.slot.inPossession;
       x = base.x + (ballOwnX - 50) * 0.3 + lvl(ti.mentality) * 4;
-      const widthF = 0.82 + (ti.width - 1) * 0.09;
+      const widthF = 0.7 + (ti.width - 1) * 0.15;
       y = 50 + (base.y - 50) * widthF;
       // attackers hold the edge of the box rather than standing on the goal line
       if (x > 86) x = 86 + (x - 86) * 0.3;
@@ -653,7 +653,7 @@ export class MatchSimulation {
     if (wide && this.bx > 62) {
       const ws = ti.crossStyle === "high" ? 1.1 : ti.crossStyle === "low" ? 0.9 : 1;
       actions.push("cross");
-      weights.push(0.55 * (1 + c.mods.cross * 0.8) * (0.8 + lvl(ti.width) * 0.3) * ws * (this.eff(c, "crossing") / 12));
+      weights.push(0.55 * (1 + c.mods.cross * 0.8) * (1 + lvl(ti.width) * 0.55) * ws * (this.eff(c, "crossing") / 12));
     }
     // dribble
     {
@@ -736,6 +736,8 @@ export class MatchSimulation {
       if (type === "switch") w *= (0.35 + lvl(ti.width) * 0.25 + c.mods.longPass * 0.2) * (this.eff(c, "vision") / 13);
       if (dx < -15) w *= 0.35;
       // focus of play
+      // team width: wide teams look for the flanks, narrow teams play through the middle
+      if (Math.abs(pos.y - 50) > 28) w *= 1 + lvl(ti.width) * 0.45;
       if (ti.focus === "left" && pos.y < 35) w *= 1.4;
       if (ti.focus === "right" && pos.y > 65) w *= 1.4;
       if (ti.focus === "centre" && pos.y >= 35 && pos.y <= 65) w *= 1.35;

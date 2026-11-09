@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3210",
     "build": "next build",
-    "start": "serve out -l 3210 -s",
+    "start": "serve out -l 3210",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
@@ -14,11 +14,15 @@
     "test:e2e": "playwright test --trace off",
     "data:dev": "tsx scripts/generate-dev-dataset.ts",
     "data:validate": "tsx scripts/validate-dataset.ts",
-    "db:migrations": "prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script",
-    "db:check": "tsx scripts/check-migrations.ts",
+    "db:check": "prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --exit-code",
     "tauri": "tauri",
     "desktop:dev": "tauri dev",
-    "desktop:build": "tauri build"
+    "desktop:build": "tauri build",
+    "db:migrate:new": "prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --script",
+    "db:embed": "tsx scripts/embed-migrations.ts",
+    "postinstall": "node -e \"require('fs').copyFileSync('node_modules/sql.js/dist/sql-wasm.wasm','public/sql-wasm.wasm')\"",
+    "sim:season": "tsx scripts/simulate-season.ts",
+    "calibrate": "tsx scripts/calibrate.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
