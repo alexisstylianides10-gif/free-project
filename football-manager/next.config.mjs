@@ -5,7 +5,7 @@ const nextConfig = {
   trailingSlash: true,
   images: { unoptimized: true },
   reactStrictMode: true,
-  // Engine-heavy pages are client components; there is no server at runtime.
+  // ESLint is not configured for this package (strict TypeScript is the static check).
   eslint: { ignoreDuringBuilds: true },
 };
 export default nextConfig;

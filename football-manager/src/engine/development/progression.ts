@@ -85,7 +85,8 @@ export function weeklyDevelopment(world: World, rng: Rng): void {
     const staff = club ? staffByClub.get(club.id) ?? [] : [];
     const coach = club ? coachingQuality(staff, p) : 4;
     const fac = club ? club.facilities.training : 3;
-    const intensity = club ? club.training.intensity : 2;
+    // academy players (19 and under) follow the youth training intensity
+    const intensity = club ? (age <= 19 ? club.training.youthIntensity : club.training.intensity) : 2;
     let minutes = 0;
     for (const s of Object.values(p.seasonStats)) minutes += s.minutes;
     const playRatio = clamp(minutes / (weeksIn * 75), 0, 1);

@@ -47,7 +47,7 @@ export function attendanceFor(world: World, f: Fixture): number {
   let demand = 0.32 + home.reputation / 160 + (home.supporterMood - 50) / 250 + away.reputation / 450 + (comp.type === "continental" ? 0.15 : comp.type === "cup" ? -0.05 : 0);
   if (f.roundName.includes("Final") || f.roundName.includes("Semi")) demand += 0.2;
   demand -= (priceRatio - 1) * 0.45;
-  demand += (st.facilities - 3) * 0.02;
+  demand += (st.facilities - 3) * 0.02 + (st.lighting - 3) * 0.01 + (st.pitchQuality - 75) * 0.001;
   const base = clamp(demand, 0.12, 1.0);
   const fanbase = 6_000 + home.reputation * home.reputation * 9;
   return Math.max(0, Math.round(Math.min(cap, fanbase * base * 1.6, cap * base * 1.15)));
