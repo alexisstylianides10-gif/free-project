@@ -16,6 +16,7 @@ import { overall } from "../src/engine/core/ratings";
 import { validateDataset } from "../src/data/importer";
 import type { Position, StaffRole } from "../src/engine/core/types";
 import type { DatasetInput } from "../src/data/schema";
+import { addEuropeanCompetitions } from "./lib/european";
 
 interface WPlayer { name: string; nat: string; positions: Position[]; dob: string | null; height: number | null; hasArticle: boolean }
 interface WClub { name: string; tier: 1 | 2; city: string; stadium: string; capacity: number; base: number; founded: number | null; players: WPlayer[] }
@@ -53,7 +54,7 @@ dataset();
 function dataset() {
   ds.competitions.push(
     { id: "l_zyp1", name: "Cypriot First Division", shortName: "ZYP1", type: "league", nationId: CY, tier: 1, reputation: 60,
-      league: { rounds: 2, points: { win: 3, draw: 1, loss: 0 }, tiebreakers: ["points", "head_to_head_points", "head_to_head_goal_difference", "goal_difference", "goals_for"], promotion: null, relegation: { toCompetitionId: "l_zyp2", places: 3 }, qualification: [{ competitionId: "c_ucl", fromPosition: 1, toPosition: 1 }], prizeMoneyTop: 3_000_000, tvMoneyPerClub: 2_000_000 },
+      league: { rounds: 2, points: { win: 3, draw: 1, loss: 0 }, tiebreakers: ["points", "head_to_head_points", "head_to_head_goal_difference", "goal_difference", "goals_for"], promotion: null, relegation: { toCompetitionId: "l_zyp2", places: 3 }, qualification: [], prizeMoneyTop: 3_000_000, tvMoneyPerClub: 2_000_000 },
       cup: null, matchday: { substitutes: 5, benchSize: 9 }, yellowCardBanThreshold: 4, preferredWeekday: 6 },
     { id: "l_zyp2", name: "Cypriot Second Division", shortName: "ZYP2", type: "league", nationId: CY, tier: 2, reputation: 40,
       league: { rounds: 2, points: { win: 3, draw: 1, loss: 0 }, tiebreakers: ["points", "head_to_head_points", "head_to_head_goal_difference", "goal_difference", "goals_for"], promotion: { toCompetitionId: "l_zyp1", places: 3 }, relegation: null, qualification: [], prizeMoneyTop: 400_000, tvMoneyPerClub: 250_000 },
@@ -120,7 +121,8 @@ function dataset() {
       ds.staff!.push({ ...s, contract: { wage: Math.round((200 + q * q * (role === "manager" ? 60 : 15)) / 50) * 50, endDate: "2028-06-30" } });
     }
   }
-  ds.meta.version = `${ds.meta.version}+cy-wikipedia`;
+  addEuropeanCompetitions(ds, (nid) => ds.nations.find((n) => n.id === nid)?.continent === "Europe");
+  ds.meta.version = `${ds.meta.version.replace(/\+cy-wikipedia$/, "")}+cy-wikipedia`;
   ds.meta.name = "Real world 2026 + Cyprus";
   ds.meta.coverageNote += " CYPRUS: First Division (14 clubs) and Second Division (16 clubs) 2026/27 from English Wikipedia (CC BY-SA 4.0): clubs, stadiums, squads, nationalities, positions, birth dates where available. Cypriot player ratings are estimated from club level and age; 3 Second Division clubs had no published squad and use generated players.";
   const { report } = validateDataset(ds);

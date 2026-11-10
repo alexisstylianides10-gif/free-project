@@ -168,6 +168,7 @@ function monthlyProcessing(world: World, rng: Rng): void {
 export function endSeason(world: World, rng: Rng): void {
   const season = world.seasons[world.meta.currentSeasonId];
   const nextQualifiers: Record<ID, ID[]> = {};
+  const qualifierRank = new Map<string, number>(); // league position each qualifier finished in
   const moves: { clubId: ID; to: ID }[] = [];
   const positions: Record<ID, { comp: ID; pos: number; points: number; gf: number; ga: number }> = {};
   for (const comp of Object.values(world.competitions)) {
@@ -190,6 +191,7 @@ export function endSeason(world: World, rng: Rng): void {
         addNews(world, { category: "competition", title: `${world.clubs[cs.championId].name} are ${comp.name} champions`, body: `${world.clubs[cs.championId].name} finished top with ${table[0].points} points.`, clubIds: [cs.championId], important: comp.tier === 1 || cs.clubIds.includes(world.meta.userClubId) });
       }
       for (const q of comp.league.qualification) {
+        table.slice(q.fromPosition - 1, q.toPosition).forEach((r, i) => qualifierRank.set(`${q.competitionId}|${r.clubId}`, q.fromPosition + i));
         const ids = table.slice(q.fromPosition - 1, q.toPosition).map((r) => r.clubId);
         (nextQualifiers[q.competitionId] ||= []).push(...ids);
       }
@@ -197,18 +199,34 @@ export function endSeason(world: World, rng: Rng): void {
       if (comp.league.promotion) for (const r of table.slice(0, comp.league.promotion.places)) moves.push({ clubId: r.clubId, to: comp.league.promotion.toCompetitionId });
     } else if (cs.status !== "completed") cs.status = "completed";
   }
-  // fill continental places if rules supply fewer clubs than the format needs
-  for (const comp of Object.values(world.competitions).filter((c) => c.type === "continental" && c.cup)) {
+  // A club plays in at most one continental competition per season (the most prestigious it earned),
+  // then each competition is topped up from the same region by reputation if rules supplied too few.
+  const continental = Object.values(world.competitions).filter((c) => c.type === "continental" && c.cup).sort((a, b) => b.reputation - a.reputation);
+  const taken = new Set<ID>();
+  let overflow: ID[] = []; // clubs that earned a place but didn't fit drop to the next competition down
+  for (const comp of continental) {
     const need = comp.cup!.groupStage ? comp.cup!.groupStage.groups * comp.cup!.groupStage.teamsPerGroup : comp.cup!.bracketSize;
-    const list = Array.from(new Set(nextQualifiers[comp.id] ?? []));
+    // if more clubs earned places than the format holds: every champion first, then the strongest leagues' places
+    const rankOf = (id: ID) => qualifierRank.get(`${comp.id}|${id}`) ?? 99;
+    const leagueRep = (id: ID) => world.competitions[world.clubs[id]?.leagueId ?? ""]?.reputation ?? 0;
+    const earned = Array.from(new Set(nextQualifiers[comp.id] ?? [])).filter((id) => !taken.has(id))
+      .sort((a, b) => Number(rankOf(a) > 1) - Number(rankOf(b) > 1) || leagueRep(b) - leagueRep(a) || rankOf(a) - rankOf(b));
+    const list = [...new Set([...overflow.filter((id) => !taken.has(id)), ...earned])];
+    // region = nations of the leagues that send clubs to this competition
+    const region = new Set(Object.values(world.competitions).filter((l) => l.league?.qualification.some((q) => q.competitionId === comp.id)).map((l) => l.nationId));
     if (list.length < need) {
-      const extras = Object.values(world.clubs).filter((c) => !list.includes(c.id) && c.leagueId && world.competitions[c.leagueId].tier === 1).sort((a, b) => b.reputation - a.reputation);
+      // top up with the next-best finishers, alternating between leagues (strongest leagues first)
+      const extras = Object.values(world.clubs)
+        .filter((c) => !list.includes(c.id) && !taken.has(c.id) && c.leagueId && world.competitions[c.leagueId].tier === 1 && (region.size === 0 || region.has(c.nationId)))
+        .sort((a, b) => (positions[a.id]?.pos ?? 99) - (positions[b.id]?.pos ?? 99) || world.competitions[b.leagueId!].reputation - world.competitions[a.leagueId!].reputation || b.reputation - a.reputation);
       for (const c of extras) {
         if (list.length >= need) break;
         list.push(c.id);
       }
     }
     nextQualifiers[comp.id] = list.slice(0, need);
+    overflow = list.slice(need);
+    for (const id of nextQualifiers[comp.id]) taken.add(id);
   }
   // board, sponsors, history
   for (const club of Object.values(world.clubs)) {

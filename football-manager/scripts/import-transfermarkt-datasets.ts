@@ -19,6 +19,7 @@ import { generatePlayer, generateStaff, generatePersonality } from "../src/engin
 import { overall } from "../src/engine/core/ratings";
 import type { Position, StaffRole } from "../src/engine/core/types";
 import type { DatasetInput } from "../src/data/schema";
+import { addEuropeanCompetitions } from "./lib/european";
 
 const dir = process.argv[2];
 const out = process.argv[3] ?? path.resolve(__dirname, "../public/data/real-world-2026.json");
@@ -207,21 +208,8 @@ for (let i = 0; i < 150; i++) {
   dataset.staff!.push({ ...s, contract: null });
 }
 
-// ---------------------------------------------------------------- continental competition (Europe), 32 clubs
-const euroLeagues = dataset.competitions.filter((c) => c.type === "league" && nations.get(c.nationId!)!.continent === "Europe").sort((a, b) => b.reputation - a.reputation);
-const quota = (rank: number) => (rank < 4 ? 4 : rank < 6 ? 3 : rank < 10 ? 2 : 1);
-const qualifiers: string[] = [];
-euroLeagues.forEach((l, rank) => {
-  const top = dataset.clubs.filter((c) => c.leagueId === l.id).sort((a, b) => b.reputation - a.reputation).slice(0, quota(rank));
-  qualifiers.push(...top.map((c) => c.id));
-  l.league!.qualification = [{ competitionId: "c_ucl", fromPosition: 1, toPosition: quota(rank) }];
-});
-dataset.competitions.push({
-  id: "c_ucl", name: "Champions League", shortName: "UCL", type: "continental", nationId: null, tier: 1, reputation: 98, league: null,
-  cup: { entrantLeagueIds: [], groupStage: { groups: 8, teamsPerGroup: 4, rounds: 2, advancePerGroup: 2 }, rounds: [{ name: "Round of 16", legs: 2 }, { name: "Quarter-final", legs: 2 }, { name: "Semi-final", legs: 2 }, { name: "Final", legs: 1 }], extraTime: true, penalties: true, awayGoals: false, homeAdvantageToLowerTier: false, prizeMoneyWinner: 80_000_000, bracketSize: 32 },
-  matchday: { substitutes: 5, benchSize: 12 }, yellowCardBanThreshold: 3, preferredWeekday: 2,
-});
-dataset.initialQualifiers = { c_ucl: qualifiers.slice(0, 32) };
+// ---------------------------------------------------------------- European competitions (UCL, UEL, UECL)
+addEuropeanCompetitions(dataset, (id) => nations.get(id)?.continent === "Europe");
 
 // ---------------------------------------------------------------- sponsors (generic, generated)
 const WORDS = ["Nova", "Vertex", "Halcyon", "Orbis", "Zephyr", "Lumen", "Aurelia", "Kestrel", "Meridian", "Quanta", "Brightwave", "Northstar", "Bluepeak", "Cobalt", "Helix", "Kinetic", "Monarch", "Nimbus", "Pinnacle", "Zenith", "Arcadia", "Boreal", "Cascade", "Elevate"];
