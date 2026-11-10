@@ -45,8 +45,8 @@ export default function Dashboard() {
             {next ? (
               <div className="flex items-center justify-between gap-4" data-testid="next-match">
                 <div className="flex flex-1 items-center justify-end gap-3 text-right">
-                  <div className="text-lg font-semibold">{world.clubs[next.homeClubId].name}</div>
-                  <Crest club={world.clubs[next.homeClubId]} size={42} />
+                  <div className="text-sm font-semibold sm:text-lg">{world.clubs[next.homeClubId].name}</div>
+                  <Crest club={world.clubs[next.homeClubId]} size={32} />
                 </div>
                 <div className="text-center">
                   <div className="text-xs uppercase tracking-wider text-muted">{world.competitions[next.competitionId].shortName}</div>
@@ -54,8 +54,8 @@ export default function Dashboard() {
                   <div className="text-xs text-muted">{shortDate(next.date)} · {next.roundName}</div>
                 </div>
                 <div className="flex flex-1 items-center gap-3">
-                  <Crest club={world.clubs[next.awayClubId]} size={42} />
-                  <div className="text-lg font-semibold">{world.clubs[next.awayClubId].name}</div>
+                  <Crest club={world.clubs[next.awayClubId]} size={32} />
+                  <div className="text-sm font-semibold sm:text-lg">{world.clubs[next.awayClubId].name}</div>
                 </div>
               </div>
             ) : (

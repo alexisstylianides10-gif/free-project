@@ -121,7 +121,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
           {world.meta.dataset.isReal ? world.meta.dataset.label : <span className="text-warn">Fictional dataset</span>}
         </div>
       </aside>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
         <header className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-line bg-bg/90 px-4 py-2.5 backdrop-blur">
           <Link href="/game/club/" className="flex min-w-0 items-center gap-2">
             <Crest club={club} size={26} />
@@ -135,7 +135,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
           </select>
           <div className="ml-auto flex items-center gap-2">
             <Button size="sm" variant="ghost" onClick={() => save("manual")} data-testid="save-button" title="Save career">
-              <Save size={14} /> {dirty ? "Save*" : "Save"}
+              <Save size={14} /> <span className="hidden sm:inline">{dirty ? "Save*" : "Save"}</span>
             </Button>
             {todayMatch ? (
               <Button size="sm" variant="gold" onClick={() => router.push(`/game/match/?fixture=${todayMatch.id}`)} data-testid="go-to-match">
@@ -144,10 +144,10 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
             ) : (
               <>
                 <Button size="sm" variant="secondary" onClick={() => go("week")} disabled={!!busy || world.manager.sacked} data-testid="advance-week" title="Advance up to one week">
-                  <FastForward size={14} /> Week
+                  <FastForward size={14} /> <span className="hidden sm:inline">Week</span>
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => go("match")} disabled={!!busy || world.manager.sacked} data-testid="advance-match" title="Advance to your next match">
-                  <ChevronsRight size={14} /> Next match
+                  <ChevronsRight size={14} /> <span className="hidden sm:inline">Next match</span>
                 </Button>
                 <Button size="sm" variant="primary" onClick={() => go("day")} disabled={!!busy || world.manager.sacked} data-testid="advance-day">
                   <Play size={14} /> Continue
