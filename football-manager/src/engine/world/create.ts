@@ -2,15 +2,15 @@ import type { Club, ClubKit, ClubStrategy, Competition, ID, Player, Position, St
 import type { Dataset } from "@/data/schema";
 import { Rng, deriveSeed } from "../core/rng";
 import { addYears } from "../core/dates";
-import { createTactic } from "../tactics/formations";
+import { createTactic, FORMATION_PRESETS } from "../tactics/formations";
 import { createSeason, setupCompetitionSeasons } from "../competition/season";
 import { generatePlayer, randomDob } from "./generate";
 import { assignSquadRoles, refreshValues } from "./players";
 import { generateBoardObjectives } from "./board";
 import { createInitialSponsorDeals } from "./commercial";
 import { addNews } from "./news";
-import { overall } from "../core/ratings";
-import { invalidateSquadIndex } from "./index";
+import { overall, ratingInPosition } from "../core/ratings";
+import { clubPlayers, invalidateSquadIndex } from "./index";
 
 export const GAME_VERSION = "0.1.0";
 export const SCHEMA_VERSION = 1;
@@ -35,9 +35,44 @@ function kitsFor(rng: Rng, club: { colors: { primary: string; secondary: string 
   ];
 }
 
+/**
+ * The formation that best suits the players the club actually has (sum of the
+ * best XI's ratings in position), with a small bonus for the manager's preference.
+ */
+export function bestFormationFor(world: World, club: Club, preferred: string | null): string | null {
+  const squad = clubPlayers(world, club.id);
+  if (squad.length < 11) return null;
+  let best: string | null = null;
+  let bestScore = -Infinity;
+  for (const preset of Object.keys(FORMATION_PRESETS)) {
+    const used = new Set<string>();
+    let score = 0;
+    for (const [, pos] of FORMATION_PRESETS[preset]) {
+      let top = 0;
+      let pick: string | null = null;
+      for (const p of squad) {
+        if (used.has(p.id) || (pos === "GK") !== (p.position === "GK")) continue;
+        const r = ratingInPosition(p, pos);
+        if (r > top) {
+          top = r;
+          pick = p.id;
+        }
+      }
+      if (pick) used.add(pick);
+      score += top;
+    }
+    if (preset === preferred) score += 6;
+    if (score > bestScore) {
+      bestScore = score;
+      best = preset;
+    }
+  }
+  return best;
+}
+
 /** Default AI tactic for a club, derived from its manager's preferred formation and the club strategy. */
 export function aiTacticFor(world: World, club: Club, managerFormation: string | null, rng: Rng): TacticalSystem {
-  const preset = managerFormation && ["4-3-3", "4-2-3-1", "4-4-2", "3-5-2", "4-1-4-1", "3-4-3", "5-3-2", "4-3-1-2", "3-2-4-1"].includes(managerFormation) ? managerFormation : rng.pick(["4-3-3", "4-2-3-1", "4-4-2", "4-1-4-1"]);
+  const preset = bestFormationFor(world, club, managerFormation) ?? rng.pick(["4-3-3", "4-2-3-1", "4-1-4-1"]);
   const s: ClubStrategy = club.strategy;
   const team =
     s === "title_contender" ? { mentality: 4, pressing: 4, defensiveLine: 4, tempo: 3, passingRisk: 3, buildUp: "short", width: 4, defensiveTransition: "counter_press", attackingTransition: "balanced" }
@@ -81,7 +116,7 @@ export function createCareer(datasetIn: Dataset, opts: CreateCareerOptions): Wor
       currentSeasonId: "",
       userClubId: opts.clubId,
       idCounter: 0,
-      autosaveEveryDays: 7,
+      autosaveEveryDays: 14,
       daysSinceAutosave: 0,
     },
     manager: { staffId: "", name: `${opts.managerFirstName} ${opts.managerLastName}`.trim(), clubId: opts.clubId, contractEnd: addYears(start, 2).slice(0, 4) + "-06-30", wage: 0, reputation: 40, sacked: false, jobOffers: [] },
@@ -128,7 +163,9 @@ export function createCareer(datasetIn: Dataset, opts: CreateCareerOptions): Wor
     const st: Staff = { ...s, contract: s.contract ? { wage: s.contract.wage, startDate: start, endDate: s.contract.endDate } : null, isUser: false, source: "dataset" };
     world.staff[s.id] = st;
   }
-  const managerOf = (clubId: ID) => Object.values(world.staff).find((s) => s.clubId === clubId && s.role === "manager");
+  const managers = new Map<ID, Staff>();
+  for (const s of Object.values(world.staff)) if (s.clubId && s.role === "manager" && !managers.has(s.clubId)) managers.set(s.clubId, s);
+  const managerOf = (clubId: ID) => managers.get(clubId);
   for (const c of ds.clubs) {
     const tier = c.leagueId ? (world.competitions[c.leagueId]?.tier ?? 1) : 1;
     const club: Club = {
@@ -148,8 +185,9 @@ export function createCareer(datasetIn: Dataset, opts: CreateCareerOptions): Wor
   // Fill incomplete squads with clearly-marked generated players.
   const NEED: Position[] = ["GK", "GK", "LB", "RB", "CB", "CB", "CB", "DM", "CM", "CM", "AM", "LM", "RM", "LW", "RW", "ST", "ST", "CM"];
   for (const club of Object.values(world.clubs)) {
-    const squad = Object.values(world.players).filter((p) => p.clubId === club.id);
+    const squad = clubPlayers(world, club.id);
     if (squad.length >= 18) continue;
+    let count = squad.length;
     const nation = world.nations[club.nationId];
     const have = squad.map((p) => p.position);
     for (const pos of NEED) {
@@ -158,7 +196,8 @@ export function createCareer(datasetIn: Dataset, opts: CreateCareerOptions): Wor
         have.splice(idx, 1);
         continue;
       }
-      if (Object.values(world.players).filter((p) => p.clubId === club.id).length >= 18) break;
+      if (count >= 18) break;
+      count++;
       const age = rng.int(18, 30);
       const ovr = Math.round(40 + club.reputation * 0.33);
       const p = generatePlayer(rng, { id: `gen_${club.id}_${pos}_${rng.int(0, 1e9).toString(36)}`, nationId: club.nationId, namePool: nation?.namePool ?? "anglic", position: pos, overall: ovr, potential: ovr + rng.int(0, 8), dob: randomDob(rng, start, age), clubId: club.id, generated: true });
@@ -170,6 +209,7 @@ export function createCareer(datasetIn: Dataset, opts: CreateCareerOptions): Wor
   // User manager replaces the club's existing manager (who becomes unattached).
   const old = managerOf(opts.clubId);
   if (old) {
+    managers.delete(opts.clubId);
     old.clubId = null;
     old.contract = null;
   }

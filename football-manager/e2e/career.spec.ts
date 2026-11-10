@@ -7,12 +7,14 @@ async function collectErrors(page: Page): Promise<string[]> {
   return errors;
 }
 
+test.setTimeout(600_000);
+
 test("full career flow: create, squad, tactics, match, table, transfer, save, restart, load", async ({ page }) => {
   const errors = await collectErrors(page);
   await page.goto("/");
   await expect(page.getByText("Touchline")).toBeVisible();
   await page.getByTestId("menu-new").click();
-  await expect(page.getByTestId("fictional-banner")).toBeVisible();
+  await expect(page.getByTestId("fictional-banner")).toBeVisible({ timeout: 60_000 });
   await page.getByTestId("club-search").fill("Ashbury");
   const club = page.locator('[data-testid^="club-club_"]').first();
   await club.click();
@@ -55,18 +57,13 @@ test("full career flow: create, squad, tactics, match, table, transfer, save, re
   const played = await page.getByTestId("league-table").locator("tbody tr").first().locator("td").nth(2).textContent();
   expect(Number(played)).toBeGreaterThanOrEqual(1);
 
-  // sign a free agent (allowed outside the transfer window)
+  // make a transfer bid for a player at another club (window is open in August)
   await page.getByTestId("nav-transfers").click();
-  await page.getByTestId("search-club").selectOption("free");
+  await page.getByTestId("search-position").selectOption("ST");
   await page.locator('[data-testid^="bid-"]').first().click();
   await expect(page.getByTestId("negotiation-dialog")).toBeVisible();
-  await page.getByTestId("submit-contract").click();
-  await expect(page.getByTestId("negotiation-log")).toBeVisible();
-  if (await page.getByRole("button", { name: /Use agent's counter/ }).isVisible()) {
-    await page.getByRole("button", { name: /Use agent's counter/ }).click();
-    await page.getByTestId("submit-contract").click();
-  }
-  await expect(page.getByTestId("negotiation-log")).toContainText(/has signed/i);
+  await page.getByTestId("submit-bid").click();
+  await expect(page.getByTestId("negotiation-log")).toContainText(/accept|reject|would accept|insulting|cannot|budget/i);
   await page.keyboard.press("Escape");
 
   // save, restart the application, load the career

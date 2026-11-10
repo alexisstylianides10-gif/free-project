@@ -28,7 +28,7 @@ export interface BackupMeta {
   sizeBytes: number;
 }
 
-const MAX_ROLLING = 3;
+const MAX_ROLLING = 2;
 
 function slug(s: string): string {
   return s.replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "save";

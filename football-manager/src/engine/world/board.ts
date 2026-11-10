@@ -3,7 +3,7 @@ import { newId } from "../core/ids";
 import { clamp } from "../core/util";
 import { currentCompetitionSeason, leagueStandings } from "../competition/season";
 import { squadStrength } from "./players";
-import { weeklyWageBill } from "../finance/ledger";
+import { weeklyWageBill, weeklyPlayerWages } from "../finance/ledger";
 import { ageOn } from "../core/dates";
 
 /** Predicted league finish from squad strength ranking. */
@@ -99,7 +99,7 @@ export function evaluateObjective(world: World, o: BoardObjective, final: boolea
       return { progress: r, met: r >= o.target ? true : final || done ? false : null };
     }
     case "wage_budget": {
-      const w = weeklyWageBill(world, o.clubId).players;
+      const w = weeklyPlayerWages(world, o.clubId);
       const budget = world.clubs[o.clubId].finance.wageBudget;
       return { progress: w, met: final ? w <= budget * 1.02 : null };
     }
@@ -126,8 +126,12 @@ export function monthlyBoardReview(world: World, clubId: ID): void {
     if (ev.met === false && o.status === "pending") o.status = "failed";
     const w = WEIGHT[o.importance] / 8;
     if (o.kind === "league_position" && ev.progress) {
-      const gap = o.target - ev.progress; // positive = ahead of target
-      delta += clamp(gap, -6, 6) * 0.9 * w;
+      // positive = ahead of target; a place or two behind early in the season is tolerated
+      const gap = o.target - ev.progress;
+      const season = world.seasons[world.meta.currentSeasonId];
+      const progress = clamp((Date.parse(world.meta.currentDate) - Date.parse(season.startDate)) / (Date.parse(season.endDate) - Date.parse(season.startDate)), 0.15, 1);
+      const tolerated = gap >= -2 ? Math.max(0, gap) + 0.5 : gap + 2;
+      delta += clamp(tolerated, -5, 5) * 0.6 * w * progress;
     } else if (o.status === "met") delta += 1 * w;
     else if (o.status === "failed") delta -= 2 * w;
   }
@@ -143,10 +147,12 @@ export function resolveSeasonObjectives(world: World, clubId: ID): number {
     const ev = evaluateObjective(world, o, true);
     o.progress = ev.progress;
     if (o.status === "pending") o.status = ev.met ? "met" : "failed";
-    score += (o.status === "met" ? 1 : -1) * WEIGHT[o.importance];
+    // narrowly missing a league target (e.g. 2nd when asked to win it) is a disappointment, not a disaster
+    const nearMiss = o.kind === "league_position" && o.status === "failed" && o.progress !== null && o.progress <= o.target + 2;
+    score += (o.status === "met" ? 1 : nearMiss ? -0.25 : -1) * WEIGHT[o.importance];
   }
   const club = world.clubs[clubId];
-  club.boardConfidence = clamp(club.boardConfidence + score * 0.6, 0, 100);
+  club.boardConfidence = clamp(club.boardConfidence + score * 0.45, 0, 100);
   return score;
 }
 

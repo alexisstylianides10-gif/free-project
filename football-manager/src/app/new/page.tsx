@@ -60,9 +60,13 @@ export default function NewCareerPage() {
 
   useEffect(() => {
     if (!dsId) return;
+    let cancelled = false; // ignore a slower, outdated load if the user switched database meanwhile
     setDs(null);
     setSel(null);
-    datasets().load(dsId).then(setDs).catch((e) => toast((e as Error).message, "error"));
+    setNation("all");
+    setLeague("all");
+    datasets().load(dsId).then((d) => { if (!cancelled) setDs(d); }).catch((e) => { if (!cancelled) toast((e as Error).message, "error"); });
+    return () => { cancelled = true; };
   }, [dsId, toast]);
 
   const clubs = useMemo<ClubCard[]>(() => {
@@ -142,6 +146,10 @@ export default function NewCareerPage() {
           <div>
             <span className="font-medium text-warn">{info.name}</span> — {info.coverageNote || "Fictional development data."} Clubs, players, staff and stadiums in this database are invented and do not represent real-world records.
           </div>
+        </div>
+      ) : info?.isReal ? (
+        <div className="mb-4 rounded-xl border border-info/30 bg-info/5 px-4 py-3 text-sm text-info" data-testid="coverage-banner">
+          <span className="font-medium">{info.name}.</span> {info.coverageNote}
         </div>
       ) : null}
       <div className="grid gap-4 lg:grid-cols-[1fr_380px]">

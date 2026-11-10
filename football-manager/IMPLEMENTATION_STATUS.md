@@ -26,7 +26,7 @@ instructions → advance to match → simulate → league table → sign a playe
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Real 2026/27 football database | ❌ | No licensed data is available in this environment. Nothing real is invented or labelled as real. |
+| Real football database | 🟡 | 528 real clubs / 18,542 real players in 31 top divisions from the open transfermarkt-datasets snapshot (6 Jul 2026). Ratings, wages, finances are estimated. League line-ups are 2025/26; no lower divisions (so no promotion/relegation). |
 | Fictional development dataset | ✅ | 4 invented nations (+4 nationality-only), 8 leagues, 4 cups, 1 continental cup, 128 clubs, ~3,500 players, ~1,240 staff, 40 companies. Flagged `isReal: false` and shown as "Fictional" in UI. |
 | JSON & CSV import, schema validation, duplicates, references, missing fields, coverage, summaries, rollback | ✅ | `src/data/importer.ts`, `datasets.ts`; CLI `npm run data:validate`. |
 | Update packages (CSV upsert on a base dataset) | ✅ | |
@@ -104,3 +104,13 @@ Windows (`.msi`/`.exe`) and macOS (`.dmg`) bundles are configured but untested h
 5. UI components follow the shadcn/ui pattern (Radix + cva + tailwind-merge) but were written
    by hand because the shadcn CLI registry was not used offline.
 6. ESLint is not configured; TypeScript strict mode is the static check.
+
+## Real-world database notes (added later)
+
+- Background leagues in other countries use a fast statistical match model (`src/engine/match/quick.ts`)
+  calibrated against the full engine; your country's matches and continental matches use the full engine.
+- Engine rebalanced: tactical settings each within about ±0.15 points per game of neutral; formation
+  height is normalised so formations change structure rather than simply pushing more players forward.
+- AI managers pick the formation that best fits their squad.
+- Performance on the real world: ~80 s per simulated season on a desktop CPU (slower on phones);
+  saves are ~27 MB at the start and grow to roughly 80–90 MB per season.

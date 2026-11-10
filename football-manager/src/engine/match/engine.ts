@@ -98,6 +98,21 @@ interface TeamState {
   possessionSeconds: number;
   cohesion: number;
   timeWasting: boolean;
+  /** Shape normalisation: formations change structure, not the team's overall height. */
+  ipShift: number;
+  opShift: number;
+}
+
+const IP_TARGET = 63; // average outfield x in possession
+const OP_TARGET = 37; // average outfield x out of possession
+
+function shapeShifts(t: TacticalSystem): { ip: number; op: number } {
+  const out = t.slots.filter((s) => s.position !== "GK");
+  if (!out.length) return { ip: 0, op: 0 };
+  const ip = out.reduce((a, s) => a + s.inPossession.x, 0) / out.length;
+  const op = out.reduce((a, s) => a + s.outOfPossession.x, 0) / out.length;
+  // keep a little of the formation's own character (25%)
+  return { ip: (IP_TARGET - ip) * 0.75, op: (OP_TARGET - op) * 0.75 };
 }
 
 const KEY_EVENTS: ReadonlySet<MatchEventType> = new Set([
@@ -189,8 +204,11 @@ export class MatchSimulation {
     const players: PState[] = [];
     const team: TeamState = {
       side, input, tactic, players, bench: [...input.bench], subsUsed: 0, stats: emptyStats(), possessionSeconds: 0,
-      cohesion: clamp(input.cohesion, 0, 100), timeWasting: tactic.team.timeWasting,
+      cohesion: clamp(input.cohesion, 0, 100), timeWasting: tactic.team.timeWasting, ipShift: 0, opShift: 0,
     };
+    const sh = shapeShifts(tactic);
+    team.ipShift = sh.ip;
+    team.opShift = sh.op;
     for (const { slotId, player } of input.starters) {
       const slot = tactic.slots.find((s) => s.id === slotId);
       if (!slot) continue;
@@ -205,7 +223,7 @@ export class MatchSimulation {
     const form = clamp(0.97 + (p.form - 6.5) * 0.02, 0.94, 1.04);
     const famF = 0.7 + 0.3 * fam;
     const cohesion = 0.95 + (team.cohesion / 100) * 0.07;
-    const home = team.side === 0 && this.options.homeAdvantage ? 1.03 : 1;
+    const home = team.side === 0 && this.options.homeAdvantage ? 1.05 : 1;
     const mods = roleMods(slot.role, slot.duty);
     const ins = slot.instructions;
     mods.passRisk += ins.passRisk * 0.5;
@@ -275,8 +293,8 @@ export class MatchSimulation {
     let x: number, y: number;
     if (attacking) {
       const base = ps.slot.inPossession;
-      x = base.x + (ballOwnX - 50) * 0.3 + lvl(ti.mentality) * 4;
-      const widthF = 0.7 + (ti.width - 1) * 0.15;
+      x = base.x + (ps.pos === "GK" ? 0 : t.ipShift) + (ballOwnX - 50) * 0.3 + lvl(ti.mentality) * 4;
+      const widthF = 0.78 + (ti.width - 1) * 0.11;
       y = 50 + (base.y - 50) * widthF;
       // attackers hold the edge of the box rather than standing on the goal line
       if (x > 86) x = 86 + (x - 86) * 0.3;
@@ -287,8 +305,8 @@ export class MatchSimulation {
         const ip = ps.slot.inPossession;
         base = { x: base.x + (ip.x - base.x) * k, y: base.y + (ip.y - base.y) * k };
       }
-      const line = lvl(ti.defensiveLine) * 7 + lvl(ti.mentality) * 2;
-      x = base.x + line + (ballOwnX - 50) * 0.3;
+      const line = lvl(ti.defensiveLine) * 5 + lvl(ti.mentality) * 2;
+      x = base.x + (ps.pos === "GK" ? 0 : t.opShift) + line + (ballOwnX - 50) * 0.3;
       y = base.y + (ballOwnY - 50) * 0.28;
       if (ps.pos === "GK") x = 3 + Math.max(0, line * 0.6) + ps.mods.sweeper * 4;
     }
@@ -338,7 +356,7 @@ export class MatchSimulation {
     if (loserTi.defensiveTransition === "counter_press") {
       const presser = this.nearestTo(lost, 100 - this.bx, 100 - this.by);
       if (presser) {
-        const p = 0.13 + lvl(loserTi.pressing) * 0.05 + (this.eff(presser, "workRate") - 12) * 0.008 - (this.carrier ? (this.eff(this.carrier, "composure") - 12) * 0.008 : 0);
+        const p = 0.07 + lvl(loserTi.pressing) * 0.03 + (this.eff(presser, "workRate") - 12) * 0.006 - (this.carrier ? (this.eff(this.carrier, "composure") - 12) * 0.008 : 0);
         presser.energy -= 0.4;
         if (this.rng.chance(clamp(p, 0.04, 0.35))) {
           this.teams[lost].stats.pressWins++;
@@ -357,7 +375,8 @@ export class MatchSimulation {
     // counter-attacking intent of the team that won the ball
     const advanced = this.teams[lost].tactic.team.mentality + this.teams[lost].tactic.team.defensiveLine;
     if (winnerTi.attackingTransition === "counter" && this.bx < 70) {
-      this.counterMode = 3;
+      // counters only really bite when the opponent was caught upfield
+      this.counterMode = advanced >= 7 ? 2 : 1;
       if (advanced >= 7 || loserTi.defensiveTransition !== "regroup") this.push("counter", this.poss, this.carrier, null, `${this.teams[this.poss].input.name} break quickly!`);
     } else if (winnerTi.attackingTransition === "balanced" && this.bx < 55 && advanced >= 8) {
       this.counterMode = 2;
@@ -512,6 +531,9 @@ export class MatchSimulation {
     const copy: TacticalSystem = JSON.parse(JSON.stringify(tactic));
     t.tactic = copy;
     t.timeWasting = copy.team.timeWasting;
+    const sh = shapeShifts(copy);
+    t.ipShift = sh.ip;
+    t.opShift = sh.op;
     const onPitch = t.players.filter((p) => p.onPitch);
     const usedSlots = new Set<string>();
     if (assignment) {
@@ -653,7 +675,7 @@ export class MatchSimulation {
     if (wide && this.bx > 62) {
       const ws = ti.crossStyle === "high" ? 1.1 : ti.crossStyle === "low" ? 0.9 : 1;
       actions.push("cross");
-      weights.push(0.55 * (1 + c.mods.cross * 0.8) * (1 + lvl(ti.width) * 0.55) * ws * (this.eff(c, "crossing") / 12));
+      weights.push(0.55 * (1 + c.mods.cross * 0.8) * (1 + lvl(ti.width) * 0.35) * ws * (this.eff(c, "crossing") / 12));
     }
     // dribble
     {
@@ -730,14 +752,15 @@ export class MatchSimulation {
       if (d > 30) type = dy > 38 ? "switch" : "long";
       else type = dx > 5 ? "forward" : "short";
       let w = (0.3 + Math.min(open, 14) / 6) * (1 + m.mods.playmaker * 0.5);
-      if (type === "short") w *= (ti.buildUp === "short" ? 1.5 : ti.buildUp === "direct" ? 0.6 : 1) * (1.2 - lvl(ti.tempo) * 0.3) * (counter ? 0.4 : 1);
+      const buildPhase = this.bx < 55; // build-up style governs the first two thirds
+      if (type === "short") w *= (ti.buildUp === "short" && buildPhase ? 1.5 : ti.buildUp === "direct" ? 0.6 : 1) * (1.2 - lvl(ti.tempo) * 0.3) * (counter ? 0.4 : 1);
       if (type === "forward") w *= 1.1 + lvl(ti.tempo) * 0.25 + risk * 0.15 + (counter ? 0.8 : 0) + lvl(ti.mentality) * 0.15;
       if (type === "long") w *= (ti.buildUp === "direct" ? 1.6 : ti.buildUp === "short" ? 0.25 : 0.6) * (1 + c.mods.longPass * 0.6) * (dx > 10 ? 1 : 0.3);
       if (type === "switch") w *= (0.35 + lvl(ti.width) * 0.25 + c.mods.longPass * 0.2) * (this.eff(c, "vision") / 13);
       if (dx < -15) w *= 0.35;
       // focus of play
       // team width: wide teams look for the flanks, narrow teams play through the middle
-      if (Math.abs(pos.y - 50) > 28) w *= 1 + lvl(ti.width) * 0.45;
+      if (Math.abs(pos.y - 50) > 28) w *= 1 + lvl(ti.width) * 0.3;
       if (ti.focus === "left" && pos.y < 35) w *= 1.4;
       if (ti.focus === "right" && pos.y > 65) w *= 1.4;
       if (ti.focus === "centre" && pos.y >= 35 && pos.y <= 65) w *= 1.35;
@@ -748,7 +771,7 @@ export class MatchSimulation {
       if (this.bx > 30 && m.mods.forwardRuns > -0.2 && pos.x > this.bx + 4 && ["ST", "LW", "RW", "AM", "LM", "RM", "LWB", "RWB", "CM"].includes(m.pos)) {
         const tx = clamp(Math.max(lastLine + 6, pos.x + 6), 0, 96);
         const space = 100 - lastLine; // space behind the line
-        let tw = (0.1 + risk * 0.07 + (counter ? 0.22 : 0)) * (1 + m.mods.forwardRuns * 0.6) * (this.eff(c, "vision") / 13) * (0.4 + space / 40);
+        let tw = (0.1 + risk * 0.07 + (counter ? 0.22 : 0)) * (1 + m.mods.forwardRuns * 0.6) * (this.eff(c, "vision") / 13) * (0.6 + space / 80);
         tw *= 1 + c.mods.passRisk * 0.4;
         opts.push({ to: m, x: tx, y: pos.y, type: "through", w: Math.max(0.001, tw) });
       }
@@ -765,10 +788,13 @@ export class MatchSimulation {
     const technique = this.eff(c, "technique");
     let p = base + (passing - 12) * 0.016 + (technique - 12) * 0.005 + (choice.type === "through" || choice.type === "long" ? (vision - 12) * 0.012 : 0);
     p += (this.eff(choice.to, "firstTouch") - 12) * 0.005;
-    p -= pressureN * 0.08;
+    p -= pressureN * (ti.buildUp === "short" && this.bx < 40 ? 0.04 : 0.08); // teams drilled to play out stay calmer under pressure
     p -= Math.max(0, d - 25) * 0.003;
     p -= risk * 0.02;
     p += (att.cohesion - 60) * 0.0008;
+    if (this.counterMode > 0 && ti.attackingTransition === "counter") p -= 0.035; // rushed passes in transition
+    if (ti.buildUp === "short" && (choice.type === "short" || choice.type === "forward")) p += this.bx > 60 ? 0.02 : 0.015; // rehearsed short combinations
+    if (choice.type !== "through") p -= lvl(dti.defensiveLine) * 0.02; // a high line squeezes the space between the lines
     // pass lane interception
     let laneBlock = 0;
     let interceptor: PState | null = null;
@@ -802,7 +828,9 @@ export class MatchSimulation {
     }
     if (choice.type === "through") {
       // defensive line height: more space behind a high line
-      p += lvl(dti.defensiveLine) * 0.06;
+      // a high line leaves space but the keeper sweeps behind it
+      const sweeper = this.gk(def.side);
+      if (lvl(dti.defensiveLine) > 0 && sweeper) p -= lvl(dti.defensiveLine) * (0.04 + Math.max(0, sweeper.mods.sweeper) * 0.04 + (this.eff(sweeper, "oneOnOnes") - 12) * 0.004);
       if (dti.offsideTrap) p -= 0.02;
     }
     p = clamp(p, 0.05, 0.985);
@@ -812,7 +840,7 @@ export class MatchSimulation {
     this.advanceClock(this.rng.range(2.5, 5.5) * this.timeFactor() * (choice.type === "long" || choice.type === "switch" ? 1.2 : 1));
     // offside on through balls
     if (choice.type === "through") {
-      let offP = 0.12 + lvl(dti.defensiveLine) * 0.05 + (dti.offsideTrap ? 0.1 : 0) - (this.eff(choice.to, "offTheBall") - 12) * 0.012 - (this.eff(choice.to, "anticipation") - 12) * 0.006;
+      let offP = 0.12 + lvl(dti.defensiveLine) * 0.07 + (dti.offsideTrap ? 0.1 : 0) - (this.eff(choice.to, "offTheBall") - 12) * 0.012 - (this.eff(choice.to, "anticipation") - 12) * 0.006;
       if (this.counterMode > 0) offP *= 0.6;
       if (this.rng.chance(clamp(offP, 0.02, 0.35))) {
         att.stats.offsides++;

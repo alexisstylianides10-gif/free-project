@@ -51,7 +51,8 @@ describe("dataset validation", () => {
   it("installs nothing when validation fails (rollback)", async () => {
     const store = new MemoryStore();
     const text = readFileSync(path.resolve(__dirname, "../../public/data/dev-world.json"), "utf8");
-    const lib = new DatasetLibrary(store, async () => text);
+    const index = JSON.stringify([{ url: "/data/dev-world.json", info: { id: "dev-world-fictional" } }]);
+    const lib = new DatasetLibrary(store, async (url) => (url.endsWith("index.json") ? index : text));
     const bad = small();
     bad.clubs[0].nationId = "nope";
     const r = await lib.import([{ name: "bad.json", text: JSON.stringify(bad) }]);

@@ -5,7 +5,7 @@ import { POSITION_GROUP } from "../core/ratings";
 import { addDays, ageOn, diffDays } from "../core/dates";
 import { clamp, niceMoney } from "../core/util";
 import { isTransferWindowOpen } from "../competition/season";
-import { weeklyWageBill } from "../finance/ledger";
+import { weeklyWageBill, weeklyPlayerWages } from "../finance/ledger";
 import {
   completeLoan, completeTransfer, contractDemand, defaultTransferOffer, evaluateBid, evaluateContract, MAX_SQUAD, MIN_SQUAD, openNegotiation, renewContract, squadCount,
 } from "../transfers/market";
@@ -58,7 +58,9 @@ function ageFits(club: Club, age: number): boolean {
 }
 
 /** One AI club's transfer activity for the day. Returns number of moves made. */
-function aiClubTransfers(world: World, club: Club, rng: Rng, allPlayers: Player[]): number {
+interface PoolEntry { p: Player; ovr: number; age: number }
+
+function aiClubTransfers(world: World, club: Club, rng: Rng, pool: Record<string, PoolEntry[]>): number {
   const key = windowKey(world);
   if (club.aiTransferActivity.windowKey !== key) club.aiTransferActivity = { windowKey: key, signings: 0, sales: 0 };
   if (club.aiTransferActivity.signings >= 3) return 0;
@@ -69,15 +71,13 @@ function aiClubTransfers(world: World, club: Club, rng: Rng, allPlayers: Player[
   const need = needs[0];
   const today = world.meta.currentDate;
   const budget = club.finance.transferBudget;
-  const wageRoom = club.finance.wageBudget - weeklyWageBill(world, club.id).players;
+  const wageRoom = club.finance.wageBudget - weeklyPlayerWages(world, club.id);
   const positions = GROUP_POSITIONS[need.group];
   const candidates: { p: Player; score: number }[] = [];
-  for (const p of allPlayers) {
+  for (const { p, ovr, age } of pool[need.group] ?? []) {
     if (p.clubId === club.id || p.retired || p.loanParentClubId) continue;
     if (!positions.includes(p.position)) continue;
-    const ovr = overall(p);
     if (ovr < need.minOverall) continue;
-    const age = ageOn(p.dob, today);
     if (!ageFits(club, age)) continue;
     const seller = p.clubId ? world.clubs[p.clubId] : null;
     if (seller && seller.reputation > club.reputation + 8) continue;
@@ -167,7 +167,18 @@ function aiSquadTrimming(world: World, club: Club, rng: Rng): void {
 export function aiTransferDay(world: World, rng: Rng): void {
   const today = world.meta.currentDate;
   const open = isTransferWindowOpen(world, today);
-  const all = Object.values(world.players).filter((p) => !p.retired);
+  // ratings and ages are computed once per day, not once per club
+  // candidate pools (by position group) are built at most once per day, and only when needed
+  let full: Record<string, PoolEntry[]> | null = null;
+  let free: Record<string, PoolEntry[]> | null = null;
+  const buildPool = (onlyFree: boolean): Record<string, PoolEntry[]> => {
+    const out: Record<string, PoolEntry[]> = { GK: [], DEF: [], MID: [], ATT: [] };
+    for (const p of Object.values(world.players)) {
+      if (p.retired || (onlyFree && p.clubId)) continue;
+      out[POSITION_GROUP[p.position]].push({ p, ovr: overall(p), age: ageOn(p.dob, today) });
+    }
+    return out;
+  };
   const clubs = Object.values(world.clubs).filter((c) => !c.isUser).sort((a, b) => a.id.localeCompare(b.id));
   const dayHash = hashString(today);
   for (const club of clubs) {
@@ -175,10 +186,10 @@ export function aiTransferDay(world: World, rng: Rng): void {
     if ((hashString(club.id) + dayHash) % 6 !== 0) continue;
     if (open) {
       aiSquadTrimming(world, club, rng);
-      aiClubTransfers(world, club, rng, all);
+      aiClubTransfers(world, club, rng, (full ??= buildPool(false)));
     } else if (squadCount(world, club.id).total < MIN_SQUAD + 2) {
       // outside the window only free agents can be signed
-      aiClubTransfers(world, club, rng, all.filter((p) => !p.clubId));
+      aiClubTransfers(world, club, rng, (free ??= buildPool(true)));
     }
   }
   if (open) incomingBidsForUser(world, rng);
@@ -277,7 +288,8 @@ export function aiContractRenewals(world: World): void {
       if (!p.contract || p.contract.endDate > season.endDate) continue;
       const rank = ranked.indexOf(p);
       const age = ageOn(p.dob, world.meta.currentDate);
-      const wanted = (rank < 18 && age < 33) || (age <= 21 && p.potential - overall(p) > 8);
+      // keep a realistic squad: first-teamers, depth and young talent
+      const wanted = (rank < 24 && age < 33) || (rank < 14 && age < 35) || (age <= 23 && p.potential - overall(p) > 5);
       if (!wanted) continue;
       const demand = contractDemand(world, p, club, true);
       const res = evaluateContract(world, p, club, demand, true, 1);

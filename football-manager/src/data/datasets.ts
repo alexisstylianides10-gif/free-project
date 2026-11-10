@@ -17,9 +17,10 @@ export interface DatasetInfo {
   importedAt: string | null;
 }
 
-export const BUILT_IN_DATASET_URL = "/data/dev-world.json";
+export const BUILT_IN_INDEX_URL = "/data/index.json";
+interface BuiltInEntry { url: string; info: DatasetInfo }
 
-function infoFrom(d: Dataset, builtIn: boolean, report: ImportReport | null, importedAt: string | null): DatasetInfo {
+export function infoFrom(d: Dataset, builtIn: boolean, report: ImportReport | null, importedAt: string | null): DatasetInfo {
   return {
     id: d.meta.id, name: d.meta.name, version: d.meta.version, season: d.meta.season, isReal: d.meta.isReal, builtIn, license: d.meta.license, source: d.meta.source,
     coverageNote: d.meta.coverageNote, counts: report?.counts ?? { clubs: d.clubs.length, players: d.players.length }, coverage: report?.coverage ?? null, importedAt,
@@ -27,25 +28,31 @@ function infoFrom(d: Dataset, builtIn: boolean, report: ImportReport | null, imp
 }
 
 export class DatasetLibrary {
-  private builtInCache: Dataset | null = null;
+  private builtInCache = new Map<string, Dataset>();
+  private index: BuiltInEntry[] | null = null;
   constructor(private readonly store: BlobStore = getStore(), private readonly fetcher: (url: string) => Promise<string> = defaultFetch) {}
 
-  async builtIn(): Promise<Dataset> {
-    if (!this.builtInCache) {
-      const text = await this.fetcher(BUILT_IN_DATASET_URL);
-      this.builtInCache = datasetSchema.parse(JSON.parse(text));
+  /** Bundled databases (described by a small index so listing never parses the big files). */
+  async builtIns(): Promise<BuiltInEntry[]> {
+    if (!this.index) this.index = JSON.parse(await this.fetcher(BUILT_IN_INDEX_URL)) as BuiltInEntry[];
+    return this.index;
+  }
+
+  private async loadBuiltIn(entry: BuiltInEntry): Promise<Dataset> {
+    let d = this.builtInCache.get(entry.info.id);
+    if (!d) {
+      d = datasetSchema.parse(JSON.parse(await this.fetcher(entry.url)));
+      this.builtInCache.set(entry.info.id, d);
     }
-    return this.builtInCache;
+    return d;
   }
 
   async list(): Promise<DatasetInfo[]> {
     const out: DatasetInfo[] = [];
     try {
-      const d = await this.builtIn();
-      const { report } = validateDataset(d);
-      out.push(infoFrom(d, true, report, null));
+      for (const e of await this.builtIns()) out.push(e.info);
     } catch (e) {
-      console.error("Built-in dataset unavailable", e);
+      console.error("Built-in datasets unavailable", e);
     }
     for (const n of await this.store.list("meta")) {
       if (!n.startsWith("dataset_")) continue;
@@ -56,11 +63,15 @@ export class DatasetLibrary {
   }
 
   async load(id: string): Promise<Dataset> {
-    const built = await this.builtIn().catch(() => null);
-    if (built && built.meta.id === id) return built;
+    const entry = (await this.builtIns().catch(() => [] as BuiltInEntry[])).find((e) => e.info.id === id);
+    if (entry) return this.loadBuiltIn(entry);
+    const cached = this.builtInCache.get(id);
+    if (cached) return cached;
     const raw = await this.store.read("datasets", `${id}.json`);
     if (!raw) throw new Error(`Dataset ${id} is not installed.`);
-    return datasetSchema.parse(JSON.parse(dec(raw)));
+    const d = datasetSchema.parse(JSON.parse(dec(raw)));
+    this.builtInCache.set(id, d);
+    return d;
   }
 
   /**
@@ -71,8 +82,8 @@ export class DatasetLibrary {
     const base = baseId ? await this.load(baseId) : undefined;
     const { report, dataset } = importFiles(files, base);
     if (!report.ok || !dataset) return report;
-    const built = await this.builtIn().catch(() => null);
-    if (built && built.meta.id === dataset.meta.id) {
+    const builtIns = await this.builtIns().catch(() => [] as BuiltInEntry[]);
+    if (builtIns.some((e) => e.info.id === dataset.meta.id)) {
       return { ...report, ok: false, errors: [{ level: "error", entity: "meta", message: `Dataset id "${dataset.meta.id}" is reserved by the built-in dataset. Choose another id.` }] };
     }
     const info = infoFrom(dataset, false, report, new Date().toISOString());

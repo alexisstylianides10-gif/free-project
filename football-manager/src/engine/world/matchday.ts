@@ -3,6 +3,7 @@ import { deriveSeed, Rng } from "../core/rng";
 import { addDays } from "../core/dates";
 import { clamp } from "../core/util";
 import { MatchSimulation, type EngineResult, type EngineTeamInput } from "../match/engine";
+import { quickSimulate } from "../match/quick";
 import { activeTactic, autoSelect, validateSelection } from "../tactics/selection";
 import { onKnockoutFixturePlayed, priorForFixture } from "../competition/season";
 import { postTransaction } from "../finance/ledger";
@@ -244,7 +245,31 @@ export function applyMatchResult(world: World, fixtureId: ID, r: EngineResult, d
 }
 
 /** Instant simulation of a fixture (used for every AI match and for the user's "instant result"). */
+/**
+ * Matches the user can follow (their own country's competitions and continental
+ * competitions) use the full match engine; distant background leagues use the
+ * faster statistical model (see match/quick.ts).
+ */
+export function isBackgroundFixture(world: World, f: Fixture): boolean {
+  const comp = world.competitions[f.competitionId];
+  const user = world.clubs[world.meta.userClubId];
+  if (f.homeClubId === user.id || f.awayClubId === user.id) return false;
+  if (comp.type === "continental" || comp.nationId === null) return false;
+  return comp.nationId !== user.nationId;
+}
+
+/** Instant simulation of a fixture (used for every AI match and for the user's "instant result"). */
 export function playFixture(world: World, fixtureId: ID, detailed = false): MatchRecord {
+  const f = world.fixtures[fixtureId];
+  if (!detailed && isBackgroundFixture(world, f)) {
+    if (f.status === "played") throw new Error("This fixture has already been played.");
+    const comp = world.competitions[f.competitionId];
+    const hi = buildTeamInput(world, world.clubs[f.homeClubId], comp, f, false);
+    const ai = buildTeamInput(world, world.clubs[f.awayClubId], comp, f, false);
+    const { prior, priorAway } = priorForFixture(world, f);
+    const r = quickSimulate(hi, ai, { seed: deriveSeed(world.meta.seed, f.id), homeAdvantage: !(f.roundName.startsWith("Final") && comp.type !== "league"), requiresWinner: f.requiresWinner, extraTime: !!comp.cup?.extraTime, penalties: comp.cup?.penalties ?? true, priorGoals: prior, priorAwayGoals: priorAway, awayGoalsRule: !!comp.cup?.awayGoals, detailed: false });
+    return applyMatchResult(world, fixtureId, r, false);
+  }
   const sim = createMatchSimulation(world, fixtureId, { userManual: false, detailed });
   const r = sim.simulateToEnd();
   return applyMatchResult(world, fixtureId, r, detailed);

@@ -100,8 +100,10 @@ export function advanceDay(world: World, opts: { simulateUserMatch: boolean } = 
 
 function weeklyProcessing(world: World, rng: Rng): void {
   const date = world.meta.currentDate;
+  const staffWages = new Map<ID, number>();
+  for (const st of Object.values(world.staff)) if (st.clubId && st.contract) staffWages.set(st.clubId, (staffWages.get(st.clubId) ?? 0) + st.contract.wage);
   for (const club of Object.values(world.clubs).sort((a, b) => a.id.localeCompare(b.id))) {
-    const w = weeklyWageBill(world, club.id);
+    const w = { players: weeklyWageBill(world, club.id, false).players, staff: Math.round(staffWages.get(club.id) ?? 0) };
     if (w.players) postTransaction(world, club.id, -w.players, "player_wages", "Player wages", `wages:p:${club.id}:${date}`);
     if (w.staff) postTransaction(world, club.id, -w.staff, "staff_wages", "Staff wages", `wages:s:${club.id}:${date}`);
     postTransaction(world, club.id, -(club.facilities.training * 3500 * (0.7 + club.training.intensity * 0.1)), "training_costs", "Training ground running costs", `train:${club.id}:${date}`);

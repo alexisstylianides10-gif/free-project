@@ -1,7 +1,7 @@
 import type { Club, FinancialTransaction, ID, ISODate, TransactionCategory, World } from "../core/types";
 import { newId } from "../core/ids";
 import { addMonths } from "../core/dates";
-import { clubPlayers } from "../world/index";
+import { activeLoans, clubPlayers } from "../world/index";
 
 export class FinanceError extends Error {}
 
@@ -42,23 +42,25 @@ export function checkTransferSpend(club: Club, upfront: number, total: number): 
   return null;
 }
 
-export function weeklyWageBill(world: World, clubId: ID): { players: number; staff: number } {
+/** Player wage bill only (cheap; used by AI decisions). */
+export function weeklyPlayerWages(world: World, clubId: ID): number {
+  return weeklyWageBill(world, clubId, false).players;
+}
+
+export function weeklyWageBill(world: World, clubId: ID, includeStaff = true): { players: number; staff: number } {
   let players = 0;
   let staff = 0;
+  const loans = activeLoans(world);
   for (const p of clubPlayers(world, clubId)) {
     if (!p.contract) continue;
     if (!p.loanParentClubId) players += p.contract.wage;
-    else {
-      const loan = Object.values(world.loans).find((l) => l.active && l.playerId === p.id);
-      players += p.contract.wage * ((loan?.wageSharePct ?? 100) / 100);
-    }
+    else players += p.contract.wage * ((loans.byPlayer.get(p.id)?.wageSharePct ?? 100) / 100);
   }
-  for (const l of Object.values(world.loans)) {
-    if (!l.active || l.parentClubId !== clubId) continue;
+  for (const l of loans.byParent.get(clubId) ?? []) {
     const p = world.players[l.playerId];
     if (p?.contract) players += p.contract.wage * (1 - l.wageSharePct / 100);
   }
-  for (const id in world.staff) {
+  if (includeStaff) for (const id in world.staff) {
     const s = world.staff[id];
     if (s.clubId === clubId && s.contract) staff += s.contract.wage;
   }

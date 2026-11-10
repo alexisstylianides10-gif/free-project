@@ -121,7 +121,12 @@ export function autoSelect(world: World, club: Club, tactic: TacticalSystem, com
     }
   }
   const openSlots = tactic.slots.filter((s) => !starters[s.id]);
-  const scarcity = (pos: Player["position"]) => pool.filter((p) => positionFamiliarity(p, pos) >= 0.8).length;
+  const scarcityCache = new Map<string, number>();
+  const scarcity = (pos: Player["position"]) => {
+    let v = scarcityCache.get(pos);
+    if (v === undefined) scarcityCache.set(pos, (v = pool.filter((p) => positionFamiliarity(p, pos) >= 0.8).length));
+    return v;
+  };
   openSlots.sort((a, b) => (a.position === "GK" ? -1 : b.position === "GK" ? 1 : scarcity(a.position) - scarcity(b.position)));
   for (const slot of openSlots) {
     let best: Player | null = null;

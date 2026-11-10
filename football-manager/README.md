@@ -4,11 +4,17 @@ An offline, single-player football management simulator. Pick an existing club f
 installed football database and manage it across seasons — squad, tactics, transfers, staff,
 training, stadium, kits, sponsors, finances and the board — while every other club is run by AI.
 
-> **Data honesty:** this repository ships **no licensed real-world data**. The bundled
-> *Development World* (`public/data/dev-world.json`) is entirely fictional (invented nations,
-> clubs, people, stadiums and companies) and is labelled as such everywhere in the UI. Real
-> 2026/27 data must be supplied through the offline import pipeline (see
-> [docs/DATA_IMPORT.md](docs/DATA_IMPORT.md)).
+> **Data:** one fictional database is bundled; a real-world one can be generated and imported privately.
+> - **Real world 2026** (personal use, *not* committed or deployed — import it on the Data page): 528 real clubs in 31 top
+>   divisions and 18,542 real players, converted from the open
+>   [transfermarkt-datasets](https://github.com/dcaribou/transfermarkt-datasets) snapshot of
+>   6 July 2026 (for personal use). Real: clubs, league membership (2025/26), stadiums and seats,
+>   names, birth dates, nationalities, positions, contract expiries where known, market values.
+>   **Estimated:** player ratings (from market value, age and position), wages, finances, colours,
+>   most staff, cup formats. No second divisions exist in the source, so there is no promotion
+>   or relegation in this database. Regenerate with
+>   `npx tsx scripts/import-transfermarkt-datasets.ts <csv dir> real-world-2026.json`, then import the file in the app.
+> - **Development World** (`public/data/dev-world.json`): entirely fictional, used by the tests.
 
 - Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Feature completion report & known limitations: [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)
@@ -64,8 +70,8 @@ Regenerate the fictional dev dataset: `npm run data:dev`
 
 ## Saves & backups
 
-- **Manual save:** the *Save* button (top bar). **Autosave:** every 7 in-game days and at season end.
-- Each save keeps up to 3 rolling automatic backups of its previous version.
+- **Manual save:** the *Save* button (top bar). **Autosave:** every 14 in-game days and at season end.
+- Each save keeps up to 2 rolling automatic backups of its previous version.
 - **Load career** screen: load, create a manual backup, restore any backup (the current file is
   backed up first), export a save as a `.sqlite` file, import a `.sqlite` save, delete.
 - Desktop saves are SQLite files in the OS app-data directory

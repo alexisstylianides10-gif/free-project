@@ -4,7 +4,7 @@ import { addYears, diffDays } from "../core/dates";
 import { expectedWage, overall } from "../core/ratings";
 import { clamp, niceMoney, niceMoneyUp } from "../core/util";
 import { isTransferWindowOpen } from "../competition/season";
-import { checkTransferSpend, postTransaction, weeklyWageBill } from "../finance/ledger";
+import { checkTransferSpend, postTransaction, weeklyWageBill, weeklyPlayerWages } from "../finance/ledger";
 import { assignSquadRoles, fullName, playerAge } from "../world/players";
 import { addNews } from "../world/news";
 import { clubPlayers, invalidateSquadIndex } from "../world/index";
@@ -231,7 +231,7 @@ export function submitContractOffer(world: World, negotiationId: ID, offer: Cont
     return { decision: done.ok ? "accepted" : "rejected", message: done.message, negotiation: n, completed: done.ok };
   }
   // wage budget check (renewals measure the increase only)
-  const bill = weeklyWageBill(world, club.id).players;
+  const bill = weeklyPlayerWages(world, club.id);
   const delta = offer.wage - (n.kind === "renewal" && p.contract ? p.contract.wage : 0);
   if (club.isUser && bill + delta > club.finance.wageBudget * 1.05) return { decision: "rejected", message: `This wage would take the bill to ${(bill + delta).toLocaleString()}/wk, above the board's limit of ${club.finance.wageBudget.toLocaleString()}/wk.`, negotiation: n };
   const res = evaluateContract(world, p, club, offer, n.kind === "renewal", n.patience);
