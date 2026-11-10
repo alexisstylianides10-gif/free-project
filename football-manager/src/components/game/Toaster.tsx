@@ -7,7 +7,7 @@ export function Toaster() {
   const toasts = useGame((s) => s.toasts);
   const dismiss = useGame((s) => s.dismissToast);
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex w-[min(380px,92vw)] flex-col gap-2" role="status" aria-live="polite">
+    <div className="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[100] flex w-[min(380px,92vw)] flex-col gap-2" role="status" aria-live="polite">
       {toasts.map((t) => (
         <div key={t.id} className={cn("pointer-events-auto flex items-start gap-3 rounded-xl border bg-surface px-4 py-3 text-sm shadow-2xl animate-fadein", t.tone === "success" && "border-accent/40", t.tone === "error" && "border-danger/50", t.tone === "warn" && "border-warn/40", t.tone === "info" && "border-line")}>
           <span className={cn("mt-1 h-2 w-2 shrink-0 rounded-full", t.tone === "success" && "bg-accent", t.tone === "error" && "bg-danger", t.tone === "warn" && "bg-warn", t.tone === "info" && "bg-info")} />

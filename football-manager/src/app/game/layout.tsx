@@ -122,7 +122,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
-        <header className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-line bg-bg/90 px-4 py-2.5 backdrop-blur">
+        <header className="safe-top sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur"><div className="flex flex-wrap items-center gap-3 px-4 py-2.5">
           <Link href="/game/club/" className="flex min-w-0 items-center gap-2">
             <Crest club={club} size={26} />
             <div className="min-w-0">
@@ -155,6 +155,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
               </>
             )}
           </div>
+        </div>
         </header>
         {world.manager.sacked ? (
           <div className="border-b border-danger/40 bg-danger/10 px-4 py-2 text-sm text-danger">You have been dismissed by the board. Load an earlier save or start a new career from the main menu.</div>
@@ -162,7 +163,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
         <main className="min-w-0 flex-1 px-4 py-5 sm:px-6">{children}</main>
       </div>
       {busy ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur" data-testid="busy-bar">
+        <div className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-4 pt-3 backdrop-blur" data-testid="busy-bar">
           <div className="mx-auto flex max-w-3xl items-center gap-3">
             <Loader2 className="animate-spin text-accent" size={16} />
             <div className="min-w-0 flex-1">

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Touchline Manager",
   description: "Offline single-player football management simulator.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "Touchline", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Touchline", statusBarStyle: "black" },
   icons: { icon: "/icon-192.png", apple: "/apple-touch-icon.png" },
 };
 

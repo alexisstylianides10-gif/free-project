@@ -36,3 +36,11 @@ body { font-feature-settings: "tnum" 1, "cv11" 1; -webkit-font-smoothing: antial
   .label { @apply mb-1 block text-xs font-medium text-muted; }
   .chip { @apply inline-flex items-center gap-1 rounded-md border border-line bg-surface2 px-2 py-0.5 text-xs text-muted; }
 }
+
+/* iPhone: keep content clear of the notch, rounded corners and home indicator */
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.safe-top { padding-top: max(env(safe-area-inset-top), 0px); }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.75rem); }
