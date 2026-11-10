@@ -1,6 +1,6 @@
 import type { ID, Player, SquadRole, World } from "../core/types";
 import { ageOn } from "../core/dates";
-import { marketValue, overall } from "../core/ratings";
+import { marketValue, overall, realMarketValue } from "../core/ratings";
 import { clubPlayers } from "./index";
 
 export function playerAge(world: World, p: Player): number {
@@ -20,13 +20,14 @@ export function leagueReputationOfClub(world: World, clubId: ID | null): number 
 
 export function refreshValues(world: World): void {
   const today = world.meta.currentDate;
+  const value = world.meta.dataset.isReal ? realMarketValue : marketValue;
   for (const id in world.players) {
     const p = world.players[id];
     if (p.retired) {
       p.value = 0;
       continue;
     }
-    p.value = marketValue(p, today, leagueReputationOfClub(world, p.loanParentClubId ?? p.clubId));
+    p.value = value(p, today, leagueReputationOfClub(world, p.loanParentClubId ?? p.clubId));
   }
 }
 

@@ -852,6 +852,53 @@ export interface WorldMeta {
   daysSinceAutosave: number;
 }
 
+// ---------------------------------------------------------------------------
+// Career-mode layer: awards, player conversations
+// ---------------------------------------------------------------------------
+
+export type AwardKind = "player_of_month" | "manager_of_month" | "golden_boot" | "player_of_season" | "young_player" | "team_of_season" | "golden_ball" | "club_player_of_season";
+
+export interface Award {
+  id: ID;
+  kind: AwardKind;
+  competitionId: ID | null;
+  seasonId: ID;
+  /** "September 2026" or "2026/27". */
+  label: string;
+  playerId: ID | null;
+  clubId: ID | null;
+  note: string;
+}
+
+export type ConversationTopic = "playing_time" | "contract" | "wants_move";
+
+export interface ConversationOption {
+  id: string;
+  text: string;
+  hint: string;
+}
+
+export interface PlayerConversation {
+  id: ID;
+  date: ISODate;
+  playerId: ID;
+  topic: ConversationTopic;
+  message: string;
+  options: ConversationOption[];
+  status: "open" | "resolved" | "expired";
+  chosen: string | null;
+  outcome: string | null;
+  /** A playing-time promise: start at least `target` of the club's next `window` matches. */
+  promise: { target: number; window: number; startsAtPromise: number; matchesAtPromise: number } | null;
+}
+
+export interface CareerState {
+  awards: Award[];
+  conversations: PlayerConversation[];
+  /** Per-player stat snapshot at the start of the month (league only): goals, assists, apps, ratingSum, cleanSheets. */
+  monthSnap: Record<ID, [number, number, number, number, number]>;
+}
+
 export interface World {
   meta: WorldMeta;
   manager: UserManager;
@@ -886,6 +933,8 @@ export interface World {
   appliedTransactionKeys: Record<string, true>;
   /** Qualified clubs for next season's continental competitions, computed at season end. */
   qualifiers: Record<ID, ID[]>;
+  /** Career-mode extras (awards, player conversations). */
+  career: CareerState;
   /** User-saved formation templates (reusable across tactical systems). */
   savedFormations: SavedFormation[];
 }

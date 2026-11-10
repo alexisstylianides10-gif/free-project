@@ -31,15 +31,15 @@ export function coachingQuality(staff: Staff[], p: Player): number {
 }
 
 export function ageCurve(age: number): number {
-  if (age <= 18) return 0.34;
-  if (age <= 20) return 0.28;
-  if (age <= 22) return 0.21;
-  if (age <= 24) return 0.12;
-  if (age <= 27) return 0.04;
-  if (age <= 29) return -0.015;
-  if (age <= 31) return -0.06;
-  if (age <= 33) return -0.11;
-  return -0.17;
+  if (age <= 18) return 0.19;
+  if (age <= 20) return 0.16;
+  if (age <= 22) return 0.15;
+  if (age <= 24) return 0.09;
+  if (age <= 27) return 0.025;
+  if (age <= 29) return -0.035;
+  if (age <= 31) return -0.12;
+  if (age <= 33) return -0.21;
+  return -0.3;
 }
 
 function trainingFocusWeights(p: Player, club: Club | null): Partial<Record<AttributeKey, number>> {
@@ -93,9 +93,9 @@ export function weeklyDevelopment(world: World, rng: Rng): void {
     let points: number;
     if (base > 0) {
       const gap = p.potential - ovr;
-      const gapF = clamp(gap / 10, 0, 1.4);
+      const gapF = clamp(gap / 12, 0, 1);
       const youthBonus = age <= 19 && club ? (staff.find((s) => s.role === "youth_coach")?.attributes.youth ?? 6) / 20 * 0.3 : 0;
-      points = base * gapF * (0.7 + (coach / 20) * 0.6 + youthBonus) * (0.85 + (fac / 20) * 0.3) * (0.8 + intensity * 0.08) * (0.75 + 0.5 * playRatio) * (0.7 + (p.personality.professionalism / 20) * 0.6);
+      points = base * gapF * (0.7 + (coach / 20) * 0.6 + youthBonus) * (0.85 + (fac / 20) * 0.3) * (0.8 + intensity * 0.08) * (0.8 + 0.35 * playRatio) * (0.7 + (p.personality.professionalism / 20) * 0.6);
       if (p.injury && p.injury.until > today) points *= 0.3;
     } else {
       const fitnessCoach = staff.filter((s) => s.role === "fitness_coach").reduce((m, s) => Math.max(m, s.attributes.fitness), 6);

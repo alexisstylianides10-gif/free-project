@@ -5,6 +5,10 @@ import type {
 import { queryAll, transaction } from "./sqlite";
 import { runMigrations } from "./migrate";
 
+function normalizeCareer(v: Partial<World["career"]> | null): World["career"] {
+  return { awards: v?.awards ?? [], conversations: v?.conversations ?? [], monthSnap: v?.monthSnap ?? {} };
+}
+
 type Row = Record<string, string | number | null>;
 type Val = string | number | boolean | null | undefined;
 
@@ -46,8 +50,8 @@ export function writeWorld(db: Database, world: World): void {
     for (const t of [...TABLE_ORDER].reverse()) db.run(`DELETE FROM "${t}"`);
     const m = world.meta;
     insertMany(db, "GameVersion", ["id", "gameVersion", "schemaVersion", "savedAt"], [[1, m.gameVersion, m.schemaVersion, new Date().toISOString()]]);
-    insertMany(db, "Career", ["id", "saveName", "createdAt", "datasetId", "datasetLabel", "datasetIsReal", "datasetVersion", "coverageNote", "seed", "rngState", "currentDate", "lastProcessedDate", "currentSeasonId", "userClubId", "idCounter", "autosaveEveryDays", "daysSinceAutosave", "qualifiersJson"],
-      [[m.careerId, m.saveName, m.createdAt, m.dataset.id, m.dataset.label, m.dataset.isReal, m.dataset.version, m.dataset.coverageNote, m.seed, m.rngState, m.currentDate, m.lastProcessedDate, m.currentSeasonId, m.userClubId, m.idCounter, m.autosaveEveryDays, m.daysSinceAutosave, j(world.qualifiers)]]);
+    insertMany(db, "Career", ["id", "saveName", "createdAt", "datasetId", "datasetLabel", "datasetIsReal", "datasetVersion", "coverageNote", "seed", "rngState", "currentDate", "lastProcessedDate", "currentSeasonId", "userClubId", "idCounter", "autosaveEveryDays", "daysSinceAutosave", "qualifiersJson", "careerJson"],
+      [[m.careerId, m.saveName, m.createdAt, m.dataset.id, m.dataset.label, m.dataset.isReal, m.dataset.version, m.dataset.coverageNote, m.seed, m.rngState, m.currentDate, m.lastProcessedDate, m.currentSeasonId, m.userClubId, m.idCounter, m.autosaveEveryDays, m.daysSinceAutosave, j(world.qualifiers), j(world.career)]]);
     insertMany(db, "Nation", ["id", "name", "code", "continent", "reputation", "youthRating", "namePool"], Object.values(world.nations).map((x) => [x.id, x.name, x.code, x.continent, x.reputation, x.youthRating, x.namePool]));
     const stadiums = Object.values(world.stadiums);
     insertMany(db, "Stadium", ["id", "name", "city", "capacity", "seatedRatio", "pitchQuality", "lighting", "facilities", "hospitality", "vipBoxes", "condition", "maintenanceLevel", "namingRightsName", "ownerClubId", "source"],
@@ -145,7 +149,7 @@ export function readWorld(db: Database): World {
     manager: { staffId: s(um.staffId), name: s(um.name), clubId: ns(um.clubId), contractEnd: ns(um.contractEnd), wage: n(um.wage), reputation: n(um.reputation), sacked: b(um.sacked), jobOffers: pj(um.jobOffersJson) ?? [] },
     nations: {}, clubs: {}, players: {}, staff: {}, stadiums: {}, competitions: {}, seasons: {}, competitionSeasons: {}, fixtures: {}, matches: {}, negotiations: {}, transfers: [], loans: {},
     scouting: {}, scoutedPlayerIds: {}, sponsors: {}, sponsorDeals: {}, sponsorOffers: [], transactions: [], objectives: {}, trophies: [], playerHistory: [], clubHistory: [], news: [],
-    youthIntakes: [], development: [], appliedTransactionKeys: {}, qualifiers: pj(career.qualifiersJson) ?? {}, savedFormations: [],
+    youthIntakes: [], development: [], appliedTransactionKeys: {}, qualifiers: pj(career.qualifiersJson) ?? {}, career: normalizeCareer(pj(career.careerJson)), savedFormations: [],
   };
   for (const r of all(db, "Nation")) world.nations[s(r.id)] = { id: s(r.id), name: s(r.name), code: s(r.code), continent: s(r.continent), reputation: n(r.reputation), youthRating: n(r.youthRating), namePool: s(r.namePool) };
   const projects = all(db, "StadiumProject", "ORDER BY rowid");

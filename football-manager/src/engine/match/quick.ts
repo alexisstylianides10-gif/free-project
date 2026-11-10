@@ -71,7 +71,8 @@ export function quickSimulate(home: EngineTeamInput, away: EngineTeamInput, o: E
     const x = (S[i].att - S[j].def) * 0.12 + (S[i].mid - S[j].mid) * 0.1 - (S[j].gk - 12) * 0.04 + mentality + (i === 0 && o.homeAdvantage ? 0.1 : 0);
     return clamp(1.3 * Math.exp(x), 0.15, 4.5);
   };
-  const lam: [number, number] = [lambda(0), lambda(1)];
+  // match-day form: some days a side is simply sharper or flatter than its squad suggests
+  const lam: [number, number] = [clamp(lambda(0) * Math.exp(rng.normal(0, 0.15)), 0.15, 4.5), clamp(lambda(1) * Math.exp(rng.normal(0, 0.15)), 0.15, 4.5)];
   const goals: [number, number] = [poisson(rng, lam[0]), poisson(rng, lam[1])];
   const events: MatchEvent[] = [];
   const lines: PlayerMatchLine[] = [];
@@ -94,10 +95,10 @@ export function quickSimulate(home: EngineTeamInput, away: EngineTeamInput, o: E
       const assist = others.length && rng.chance(0.72) ? rng.weighted(others, others.map((x) => x.w)).id : null;
       const ls = lineMap.get(scorer)!;
       ls.goals++;
-      ls.rating += 0.9;
+      ls.rating += 0.55;
       if (assist) {
         lineMap.get(assist)!.assists++;
-        lineMap.get(assist)!.rating += 0.5;
+        lineMap.get(assist)!.rating += 0.3;
       }
       events.push({ minute: rng.int(from, to), second: 0, type: "goal", side, playerId: scorer, otherPlayerId: assist, x: side === 0 ? 92 : 8, y: 50, text: "Goal" });
     }
@@ -178,7 +179,7 @@ export function quickSimulate(home: EngineTeamInput, away: EngineTeamInput, o: E
     const lost = goals[side] < goals[1 - side];
     for (const id of ids) {
       const l = lineMap.get(id)!;
-      l.rating = Math.round(clamp(l.rating + (won ? 0.3 : lost ? -0.3 : 0) - (["GK", "CB", "LB", "RB"].includes(l.position) ? goals[1 - side] * 0.15 : 0) + rng.normal(0, 0.35) - l.yellow * 0.2 - l.red, 4, 10) * 10) / 10;
+      l.rating = Math.round(clamp(l.rating + (won ? 0.25 : lost ? -0.3 : 0) - (["GK", "CB", "LB", "RB"].includes(l.position) ? goals[1 - side] * 0.15 : 0) + rng.normal(0, 0.35) - l.yellow * 0.2 - l.red, 4, 9.8) * 10) / 10;
       l.passes = Math.round(st.passes / 11);
       l.passesCompleted = Math.round(st.passesCompleted / 11);
       if (l.position === "GK") l.saves = st.saves;

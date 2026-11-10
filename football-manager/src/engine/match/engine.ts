@@ -184,6 +184,8 @@ export class MatchSimulation {
   private by = 50;
   private transition: { side: 0 | 1; ticks: number; max: number } | null = null;
   private counterMode = 0;
+  /** Shifts every attribute so the match average sits at a reference level: quality is relative to the opponent, not absolute. */
+  private attrShift = 0;
   private bigChanceNext = false;
   private lastPasser: PState | null = null;
   private stoppage = 0;
@@ -200,6 +202,13 @@ export class MatchSimulation {
       if (seen.has(p.lastName)) this.dupSurnames.add(p.lastName);
       seen.add(p.lastName);
     }
+    let sum = 0, n = 0;
+    for (const t of [home, away]) for (const { player } of t.starters) {
+      if (player.position === "GK") continue;
+      for (const v of Object.values(player.attributes)) { sum += v; n++; }
+    }
+    // 10.6 is the average attribute of a 70-rated side, where the engine is calibrated
+    if (n) this.attrShift = clamp(10.6 - sum / n, -3, 3) * 0.85;
     this.teams = [this.buildTeam(home, 0), this.buildTeam(away, 1)];
     for (const t of this.teams) for (const ps of t.players) this.shapes.push({ side: t.side, playerId: ps.p.id, ip: { ...ps.slot.inPossession }, op: { ...ps.slot.outOfPossession } });
     this.kickoff(0);
@@ -232,7 +241,7 @@ export class MatchSimulation {
     const form = clamp(0.97 + (p.form - 6.5) * 0.02, 0.94, 1.04);
     const famF = 0.7 + 0.3 * fam;
     const cohesion = 0.95 + (team.cohesion / 100) * 0.07;
-    const home = team.side === 0 && this.options.homeAdvantage ? 1.05 : 1;
+    const home = team.side === 0 && this.options.homeAdvantage ? 1.03 : 1;
     const mods = roleMods(slot.role, slot.duty);
     const ins = slot.instructions;
     mods.passRisk += ins.passRisk * 0.5;
@@ -263,7 +272,7 @@ export class MatchSimulation {
 
   private eff(ps: PState, key: AttributeKey): number {
     const cond = 0.72 + 0.28 * (ps.energy / 100);
-    return ps.p.attributes[key] * cond * ps.baseFactor;
+    return Math.max(1, ps.p.attributes[key] + this.attrShift) * cond * ps.baseFactor;
   }
 
   private gk(side: 0 | 1): PState | null {
@@ -676,7 +685,7 @@ export class MatchSimulation {
     if (shotDist < 32 && c.pos !== "GK") {
       const xgEst = expectedGoals({ x: this.bx, y: this.by, header: false, bigChance: this.bigChanceNext, directFreeKick: false, penalty: false, pressure: pressureN });
       const shooter = (this.eff(c, "finishing") + this.eff(c, "longShots") * (shotDist > 18 ? 1 : 0.3)) / (shotDist > 18 ? 2 : 1.3);
-      let w = Math.pow(xgEst, 0.85) * 1.25 * (1 - 0.45 * pressureN) * (1 + c.mods.shoot * 0.6) * (1 + mentality * 0.2) * (0.7 + shooter / 40);
+      let w = Math.pow(xgEst, 0.85) * 0.88 * (1 - 0.45 * pressureN) * (1 + c.mods.shoot * 0.6) * (1 + mentality * 0.2) * (0.7 + shooter / 40);
       if (shotDist > 22) w *= 0.6 + (c.p.attributes.longShots - 8) * 0.06;
       actions.push("shoot");
       weights.push(Math.max(0.01, w));
@@ -723,8 +732,8 @@ export class MatchSimulation {
 
   private timeFactor(): number {
     const ti = this.teams[this.poss].tactic.team;
-    let f = 1.25 - (ti.tempo - 1) * 0.11;
-    if (this.counterMode > 0) f *= 0.7;
+    let f = 1.2 - (ti.tempo - 1) * 0.07;
+    if (this.counterMode > 0) f *= 0.8;
     if (this.teams[this.poss].timeWasting) f *= 1.3;
     return f;
   }
@@ -764,7 +773,7 @@ export class MatchSimulation {
       let w = (0.3 + Math.min(open, 14) / 6) * (1 + m.mods.playmaker * 0.5);
       const buildPhase = this.bx < 55; // build-up style governs the first two thirds
       if (type === "short") w *= (ti.buildUp === "short" && buildPhase ? 1.5 : ti.buildUp === "direct" ? 0.6 : 1) * (1.2 - lvl(ti.tempo) * 0.3) * (counter ? 0.4 : 1);
-      if (type === "forward") w *= 1.1 + lvl(ti.tempo) * 0.25 + risk * 0.15 + (counter ? 0.8 : 0) + lvl(ti.mentality) * 0.15;
+      if (type === "forward") w *= 1.1 + lvl(ti.tempo) * 0.15 + risk * 0.15 + (counter ? 0.5 : 0) + lvl(ti.mentality) * 0.15;
       if (type === "long") w *= (ti.buildUp === "direct" ? 1.6 : ti.buildUp === "short" ? 0.25 : 0.6) * (1 + c.mods.longPass * 0.6) * (dx > 10 ? 1 : 0.3);
       if (type === "switch") w *= (0.35 + lvl(ti.width) * 0.25 + c.mods.longPass * 0.2) * (this.eff(c, "vision") / 13);
       if (dx < -15) w *= 0.35;
@@ -885,7 +894,7 @@ export class MatchSimulation {
         winner.line.interceptions++;
         winner.rating += 0.08;
       }
-      if (choice.x > 83 && this.rng.chance(0.12)) {
+      if (choice.x > 83 && this.rng.chance(0.07)) {
         this.push("clearance", def.side, winner, c, `${name(winner)} turns it behind.`);
         this.corner();
         return;
@@ -1109,7 +1118,7 @@ export class MatchSimulation {
     } else {
       c.rating -= 0.02;
       if (best) best.rating += 0.06;
-      if (this.rng.chance(fromCorner ? 0.15 : 0.3)) {
+      if (this.rng.chance(fromCorner ? 0.08 : 0.17)) {
         this.push("cross_fail", att.side, c, best, `${name(best)} heads behind for a corner.`);
         this.corner();
         return;
@@ -1282,7 +1291,7 @@ export class MatchSimulation {
       const blocker = this.nearestTo(def.side, 100 - this.bx, 100 - this.by);
       if (blocker) blocker.rating += 0.1;
       this.push("shot_blocked", att.side, s, blocker, `${name(s)} shoots but ${name(blocker)} blocks it.`, xg);
-      if (this.rng.chance(0.4)) this.corner();
+      if (this.rng.chance(0.28)) this.corner();
       else this.turnover(blocker, "loose");
       return;
     }
@@ -1308,7 +1317,7 @@ export class MatchSimulation {
         this.turnover(gk, "gk");
         this.bx = 6;
         this.by = 50;
-      } else if (this.rng.chance(0.55)) this.corner();
+      } else if (this.rng.chance(0.32)) this.corner();
       else {
         // rebound
         this.bx = 90;

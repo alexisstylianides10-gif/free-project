@@ -79,6 +79,41 @@ export function ratingInPosition(p: Player, pos: Position): number {
  * Market value model (explicit and deterministic).
  * value = base(overall) × age factor × potential bonus × contract factor × reputation factor
  */
+/** Real-world market value scale (prime-age ability -> euros), mirrors the importer's value->ability table. */
+const REAL_VALUE_TABLE: [number, number][] = [[40, 25_000], [44, 50_000], [49, 150_000], [53, 300_000], [57, 600_000], [60, 1_000_000], [64, 2_000_000], [68, 4_000_000], [72, 8_000_000], [75, 15_000_000], [79, 30_000_000], [84, 60_000_000], [88, 100_000_000], [92, 180_000_000], [96, 260_000_000]];
+
+function realScaleValue(effective: number): number {
+  const t = REAL_VALUE_TABLE;
+  if (effective <= t[0][0]) return t[0][1];
+  for (let i = 1; i < t.length; i++) {
+    if (effective <= t[i][0]) {
+      const [a0, v0] = t[i - 1];
+      const [a1, v1] = t[i];
+      const f = (effective - a0) / (a1 - a0);
+      return Math.pow(10, Math.log10(v0) + (Math.log10(v1) - Math.log10(v0)) * f);
+    }
+  }
+  return t[t.length - 1][1];
+}
+
+/** Market value on the real-world (Transfermarkt-like) euro scale, used for real datasets. */
+export function realMarketValue(p: Player, today: string, leagueReputation = 60): number {
+  const ovr = overall(p);
+  const age = ageOn(p.dob, today);
+  let eff = ovr;
+  if (age < 23) eff += Math.min(7, (23 - age) * 1.3) * Math.min(1, Math.max(0.2, (p.potential - ovr) / 8));
+  if (age > 29) eff -= Math.min(9, (age - 29) * 1.4);
+  let v = realScaleValue(eff);
+  if (p.contract) {
+    const yearsLeft = yearsBetween(today, p.contract.endDate);
+    v *= yearsLeft < 0.5 ? 0.45 : yearsLeft < 1 ? 0.7 : yearsLeft < 2 ? 0.9 : 1;
+  } else return 0;
+  v *= 0.85 + leagueReputation / 400;
+  if (v < 10_000) return 10_000;
+  const mag = 10 ** Math.max(0, Math.floor(Math.log10(v)) - 1);
+  return Math.round(v / mag) * mag;
+}
+
 export function marketValue(p: Player, today: string, leagueReputation = 60): number {
   const ovr = overall(p);
   const age = ageOn(p.dob, today);

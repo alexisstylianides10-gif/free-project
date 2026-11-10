@@ -44,6 +44,7 @@ model Career {
   autosaveEveryDays Int
   daysSinceAutosave Int
   qualifiersJson    String
+  careerJson        String  @default("{}")
 }
 
 model UserManager {

@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Empty } from "@/components/ui/misc";
 import { PageTitle } from "@/components/game/common";
+import { Conversations } from "@/components/game/Conversations";
 import { userNews } from "@/engine/world/news";
 import { longDate, label } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -23,6 +24,7 @@ export default function InboxPage() {
   return (
     <div>
       <PageTitle title="Inbox" sub="Club news, match reports, board messages and transfer offers" actions={<><Select label="Category" value={cat} onChange={setCat} options={[{ value: "all", label: "All categories" }, ...cats.map((c) => ({ value: c, label: label(c) }))]} className="w-44" /><Button size="sm" onClick={markAll}>Mark all read</Button></>} />
+      <div className="mb-4"><Conversations /></div>
       <div className="grid gap-4 lg:grid-cols-[380px_1fr]">
         <Card className="max-h-[75vh] overflow-auto">
           {items.length === 0 ? <Empty title="No messages" /> : items.map((n) => (

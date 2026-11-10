@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Users, Shapes, ArrowLeftRight, UserCog, Dumbbell, CalendarDays, Trophy, Building2, Shirt, Wallet, Landmark, BarChart3, Inbox, Save, Home,
-  ChevronsRight, FastForward, Play, Loader2, Pause,
+  ChevronsRight, FastForward, Play, Loader2, Pause, Award,
 } from "lucide-react";
 import { saves, useGame } from "@/store/game";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ const NAV = [
   { href: "/game/training/", label: "Training", icon: Dumbbell },
   { href: "/game/matches/", label: "Matches", icon: CalendarDays },
   { href: "/game/competitions/", label: "Competitions", icon: Trophy },
+  { href: "/game/awards/", label: "Awards", icon: Award },
   { href: "/game/stadium/", label: "Stadium", icon: Building2 },
   { href: "/game/kits/", label: "Kits", icon: Shirt },
   { href: "/game/finances/", label: "Finances", icon: Wallet },

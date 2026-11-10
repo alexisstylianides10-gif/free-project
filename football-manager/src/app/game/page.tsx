@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { KV, Progress, Stat } from "@/components/ui/misc";
 import { ClubName, FormDots, PageTitle, PlayerLink, resultFor, scoreOf } from "@/components/game/common";
 import { Crest } from "@/components/game/Crest";
+import { Conversations } from "@/components/game/Conversations";
+import { HubTiles } from "@/components/game/HubTiles";
 import { nextUserFixture } from "@/engine/world/matchday";
 import { currentCompetitionSeason, leagueStandings } from "@/engine/competition/season";
 import { userNews } from "@/engine/world/news";
@@ -38,6 +40,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-4">
       <PageTitle title="Dashboard" sub={`${world.manager.name} · ${longDate(world.meta.currentDate)}`} actions={win !== null ? <Badge tone="accent">Transfer window open · {win} days left</Badge> : <Badge>Transfer window closed</Badge>} />
+      <Conversations />
       <div className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader title="Next match" action={next ? <Link className="text-xs text-accent hover:underline" href={`/game/match/?fixture=${next.id}`}>Match centre →</Link> : null} />
@@ -77,6 +80,7 @@ export default function Dashboard() {
           </CardBody>
         </Card>
       </div>
+      <HubTiles world={world} />
       <div className="grid gap-4 xl:grid-cols-3">
         <Card>
           <CardHeader title="Latest results" />
@@ -142,7 +146,7 @@ export default function Dashboard() {
             ))}
           </div>
         </Card>
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Card>
             <CardHeader title="Financial overview" action={<Link className="text-xs text-accent hover:underline" href="/game/finances/">Finances →</Link>} />
             <CardBody>

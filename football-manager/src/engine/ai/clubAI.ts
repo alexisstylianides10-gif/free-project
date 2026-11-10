@@ -1,3 +1,4 @@
+import { blockedMoveConversation } from "../world/career";
 import type { Club, ID, Player, Position, StaffRole, World } from "../core/types";
 import { Rng, hashString } from "../core/rng";
 import { expectedWage, overall } from "../core/ratings";
@@ -67,6 +68,14 @@ function aiClubTransfers(world: World, club: Club, rng: Rng, pool: Record<string
   const counts = squadCount(world, club.id);
   if (counts.total >= MAX_SQUAD - 2) return 0;
   const needs = clubNeeds(world, club);
+  // rich, ambitious clubs also go for "statement" upgrades on a starting spot
+  if (!needs.length && club.reputation >= 74 && club.finance.transferBudget >= 15_000_000 && rng.chance(0.35)) {
+    const g = rng.pick(["DEF", "MID", "ATT", "ATT", "MID"] as const);
+    const squad = clubPlayers(world, club.id).filter((p) => POSITION_GROUP[p.position] === g).map((p) => overall(p)).sort((a, b) => b - a);
+    const starters = g === "DEF" ? 4 : 3;
+    const weakest = squad[starters - 1] ?? 60;
+    needs.push({ group: g, urgency: 1, minOverall: weakest + 3 });
+  }
   if (!needs.length) return 0;
   const need = needs[0];
   const today = world.meta.currentDate;
@@ -273,6 +282,7 @@ export function rejectIncomingBid(world: World, negotiationId: ID): void {
   const p = world.players[n.playerId];
   if (p && overall(p) >= 70 && p.personality.ambition >= 15 && world.clubs[n.buyingClubId].reputation > (world.clubs[p.clubId ?? ""]?.reputation ?? 0) + 10) {
     p.happiness = clamp(p.happiness - 15, 0, 100);
+    blockedMoveConversation(world, p.id, n.buyingClubId);
     addNews(world, { category: "transfer", title: `${fullName(p)} unhappy after blocked move`, body: `${fullName(p)} wanted to join ${world.clubs[n.buyingClubId].name} and is disappointed the move was blocked.`, clubIds: [world.meta.userClubId], playerIds: [p.id] });
   }
 }

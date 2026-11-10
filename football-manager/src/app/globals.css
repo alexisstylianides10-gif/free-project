@@ -24,7 +24,7 @@ body { font-feature-settings: "tnum" 1, "cv11" 1; -webkit-font-smoothing: antial
 ::selection { background: rgb(var(--accent) / 0.3); }
 
 @layer components {
-  .panel { @apply rounded-xl border border-line bg-surface shadow-panel; }
+  .panel { @apply min-w-0 rounded-xl border border-line bg-surface shadow-panel; }
   .panel-head { @apply flex items-center justify-between gap-3 border-b border-line px-4 py-3; }
   .panel-title { @apply text-[13px] font-semibold uppercase tracking-[0.08em] text-muted; }
   .tbl { @apply w-full border-collapse text-sm; }

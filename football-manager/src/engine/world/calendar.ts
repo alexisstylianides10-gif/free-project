@@ -16,6 +16,7 @@ import { paySponsorships, payPerformanceBonuses, generateSponsorOffers } from ".
 import { generateBoardObjectives, monthlyBoardReview, resolveSeasonObjectives, ordinal } from "./board";
 import { playFixture, userFixtureOn } from "./matchday";
 import { assignSquadRoles, fullName, refreshValues } from "./players";
+import { dailyTransferBuzz, monthlyCareer, seasonAwards, weeklyConversations } from "./career";
 import { addNews } from "./news";
 import { aiTacticFor } from "./create";
 
@@ -71,6 +72,7 @@ export function advanceDay(world: World, opts: { simulateUserMatch: boolean } = 
     if (p && (world.clubs[l.parentClubId]?.isUser || world.clubs[l.loanClubId]?.isUser)) addNews(world, { category: "transfer", title: `${fullName(p)} returns from loan`, body: `${fullName(p)}'s loan spell has ended.`, clubIds: [l.parentClubId, l.loanClubId], playerIds: [p.id] });
   }
   expireStaleNegotiations(world);
+  dailyTransferBuzz(world, rng);
   // 3. weekly (Mondays)
   if (weekday(date) === 1) weeklyProcessing(world, rng);
   // 4. monthly
@@ -131,6 +133,7 @@ function weeklyProcessing(world: World, rng: Rng): void {
     p.happiness = clamp(p.happiness + delta, 0, 100);
   }
   if (rng.chance(0.25)) generateSponsorOffers(world, world.meta.userClubId, rng);
+  weeklyConversations(world, rng);
 }
 
 function monthlyProcessing(world: World, rng: Rng): void {
@@ -162,6 +165,7 @@ function monthlyProcessing(world: World, rng: Rng): void {
   }
   aiManagerChanges(world, rng);
   aiFinancialReview(world);
+  monthlyCareer(world);
 }
 
 /** Close the season: tables, prizes, promotion/relegation, history, contracts, budgets, and set up the next season. */
@@ -259,6 +263,8 @@ export function endSeason(world: World, rng: Rng): void {
     club.finance.revenueSeason = {};
     club.finance.expenseSeason = {};
   }
+  // individual awards (before stats reset)
+  seasonAwards(world);
   // player history and stat reset
   rollAddOnCounters(world);
   for (const p of Object.values(world.players)) {

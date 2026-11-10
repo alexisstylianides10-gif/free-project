@@ -46,6 +46,8 @@ function PlayerSearch() {
   const world = useWorld();
   const uc = world.meta.userClubId;
   const [q, setQ] = useState("");
+  const [moreFilters, setMoreFilters] = useState(false);
+  const [mobileShown, setMobileShown] = useState(30);
   const [pos, setPos] = useState("any");
   const [ageMin, setAgeMin] = useState(15);
   const [ageMax, setAgeMax] = useState(40);
@@ -102,6 +104,8 @@ function PlayerSearch() {
         <CardBody className="space-y-3">
           <div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={14} /><Input className="pl-8" placeholder="Name…" value={q} onChange={(e) => setQ(e.target.value)} data-testid="search-name" /></div>
           <div><label className="label">Position</label><Select value={pos} onChange={setPos} options={[{ value: "any", label: "Any" }, ...POSITIONS.map((p) => ({ value: p, label: p }))]} testId="search-position" /></div>
+          <button type="button" className="w-full rounded-lg border border-line px-3 py-2 text-left text-sm text-accent md:hidden" onClick={() => setMoreFilters((v) => !v)} data-testid="more-filters">{moreFilters ? "Hide filters ▲" : "More filters (age, league, value…) ▼"}</button>
+          <div className={moreFilters ? "space-y-3" : "hidden space-y-3 md:block"}>
           <div className="grid grid-cols-2 gap-2">
             <div><label className="label">Min age</label><Input type="number" value={ageMin} onChange={(e) => setAgeMin(Number(e.target.value))} /></div>
             <div><label className="label">Max age</label><Input type="number" value={ageMax} onChange={(e) => setAgeMax(Number(e.target.value))} /></div>
@@ -121,9 +125,32 @@ function PlayerSearch() {
             <div><label className="label">Attribute</label><Select value={attr} onChange={(v) => setAttr(v as AttributeKey | "none")} options={[{ value: "none", label: "Any" }, ...ATTRIBUTE_KEYS.map((a) => ({ value: a, label: label(a.replace(/([A-Z])/g, " $1")) }))]} /></div>
             <div><label className="label">Min</label><Input type="number" min={1} max={20} value={attrMin} onChange={(e) => setAttrMin(Number(e.target.value))} /></div>
           </div>
+          </div>
         </CardBody>
       </Card>
-      <Card className="overflow-auto">
+      <div className="min-w-0 space-y-2 md:hidden" data-testid="search-cards">
+        <div className="px-1 text-xs text-muted">{results.length}{results.length === 150 ? "+" : ""} players · unscouted players show estimated ranges</div>
+        {results.slice(0, mobileShown).map(({ p, age, k }) => (
+          <div key={p.id} className="panel flex items-center gap-3 p-3">
+            <div className="flex w-12 shrink-0 flex-col items-center gap-1">
+              <RatingChip value={k.exact ? overall(p) : `${k.overall[0]}-${k.overall[1]}`} className="w-full py-1" />
+              <PosBadge pos={p.position} className="w-full" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-semibold"><PlayerLink p={p} />{p.squadStatus === "listed" ? <Badge tone="gold" className="ml-1">Listed</Badge> : null}</div>
+              <div className="truncate text-xs text-muted">{age} yrs · <ClubName world={world} id={p.clubId} short /></div>
+              <div className="text-xs"><span className="font-medium">{money(p.value)}</span> <span className="text-muted">· POT {k.potential[0]}–{k.potential[1]} · {p.contract?.endDate.slice(0, 7) ?? "Free"}</span></div>
+            </div>
+            <div className="flex shrink-0 flex-col gap-1">
+              <Button size="sm" variant="outline" onClick={() => setNeg({ id: p.id, mode: "buy" })} data-testid={`mbid-${p.id}`} disabled={!!p.loanParentClubId}>{p.clubId ? "Bid" : "Sign"}</Button>
+              {p.clubId && !p.loanParentClubId ? <Button size="sm" variant="ghost" onClick={() => setNeg({ id: p.id, mode: "loan" })}>Loan</Button> : null}
+            </div>
+          </div>
+        ))}
+        {results.length > mobileShown ? <Button variant="secondary" className="w-full" onClick={() => setMobileShown((n) => n + 30)}>Show more</Button> : null}
+        {results.length === 0 ? <Card><Empty title="No players match" /></Card> : null}
+      </div>
+      <Card className="hidden overflow-auto md:block">
         <CardHeader title={`${results.length}${results.length === 150 ? "+" : ""} players`} sub="Unscouted players show estimated ranges." />
         {results.length === 0 ? <Empty title="No players match" /> : (
           <table className="tbl min-w-[900px]" data-testid="search-results">

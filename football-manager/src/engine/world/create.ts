@@ -122,7 +122,7 @@ export function createCareer(datasetIn: Dataset, opts: CreateCareerOptions): Wor
     manager: { staffId: "", name: `${opts.managerFirstName} ${opts.managerLastName}`.trim(), clubId: opts.clubId, contractEnd: addYears(start, 2).slice(0, 4) + "-06-30", wage: 0, reputation: 40, sacked: false, jobOffers: [] },
     nations: {}, clubs: {}, players: {}, staff: {}, stadiums: {}, competitions: {}, seasons: {}, competitionSeasons: {}, fixtures: {}, matches: {}, negotiations: {},
     transfers: [], loans: {}, scouting: {}, scoutedPlayerIds: {}, sponsors: {}, sponsorDeals: {}, sponsorOffers: [], transactions: [], objectives: {}, trophies: [],
-    playerHistory: [], clubHistory: [], news: [], youthIntakes: [], development: [], appliedTransactionKeys: {}, qualifiers: {}, savedFormations: [],
+    playerHistory: [], clubHistory: [], news: [], youthIntakes: [], development: [], appliedTransactionKeys: {}, qualifiers: {}, career: { awards: [], conversations: [], monthSnap: {} }, savedFormations: [],
   };
   for (const n of ds.nations) world.nations[n.id] = { ...n };
   for (const c of ds.competitions) world.competitions[c.id] = { ...(c as unknown as Competition), source: "dataset" };
