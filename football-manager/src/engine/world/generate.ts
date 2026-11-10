@@ -39,6 +39,10 @@ export const NAME_POOLS: Record<string, { first: string[]; last: string[] }> = {
     first: ["João", "Rodrigo", "Tiago", "Diogo", "Gonçalo", "Rafael", "Martim", "Duarte", "Tomás", "Afonso", "Bruno", "Pedro", "Ricardo", "Nuno", "Rúben", "Vitinha", "Gabriel", "Henrique", "Lucas", "Matheus", "Thiago", "Caio", "Vinícius", "Felipe"],
     last: ["Albuquerque", "Barros", "Cardoso", "Damasceno", "Esteves", "Figueiredo", "Gouveia", "Henriques", "Leitão", "Magalhães", "Nogueira", "Pacheco", "Queirós", "Rebelo", "Sampaio", "Teixeira", "Valente", "Xavier", "Brandão", "Coutinho", "Fonseca", "Medeiros", "Paiva", "Simões"],
   },
+  hellenic: {
+    first: ["Andreas", "Georgios", "Christos", "Konstantinos", "Nikolas", "Michalis", "Panagiotis", "Marios", "Charalambos", "Kyriakos", "Stelios", "Antonis", "Loizos", "Savvas", "Pieros", "Fotis", "Ioannis", "Demetris", "Kostas", "Petros", "Neophytos", "Evagoras", "Marinos", "Valentinos"],
+    last: ["Georgiou", "Charalambous", "Constantinou", "Christodoulou", "Ioannou", "Panayiotou", "Kyriakou", "Antoniou", "Michael", "Nicolaou", "Demetriou", "Savva", "Papadopoulos", "Hadjigeorgiou", "Stylianou", "Theodorou", "Loizou", "Christofi", "Efthymiou", "Sotiriou", "Kyprianou", "Andreou", "Pavlou", "Zacharias"],
+  },
   slavic: {
     first: ["Luka", "Marko", "Ivan", "Nikola", "Filip", "Petar", "Stefan", "Mateo", "Josip", "Dario", "Tomáš", "Jakub", "Ondřej", "Kamil", "Mateusz", "Piotr", "Dominik", "Patrik", "Bartosz", "Milan", "Andrej", "Nemanja"],
     last: ["Andrić", "Babić", "Čolak", "Dragović", "Ercegović", "Filipović", "Grgić", "Horvat", "Ilić", "Jurić", "Kovač", "Lovrić", "Marković", "Novak", "Orlić", "Pavlović", "Radić", "Šimić", "Tomić", "Vuković", "Zelenka", "Kowalczyk", "Nowicki", "Dvořák", "Procházka", "Wiśniewski"],
