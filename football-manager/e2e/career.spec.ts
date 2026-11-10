@@ -92,10 +92,11 @@ test("live match with substitution and tactical change", async ({ page }) => {
   await page.getByTestId("play-live").click();
   await expect(page.getByTestId("match-pitch")).toBeVisible();
   await page.getByTestId("live-pause").click();
-  await page.getByTestId("sub-off").selectOption({ index: 5 });
-  await page.getByTestId("sub-on").selectOption({ index: 2 });
+  await page.getByTestId("tab-subs").click();
+  await page.getByTestId("sub-off-option").nth(5).click();
+  await page.getByTestId("sub-on-option").nth(1).click();
   await page.getByTestId("make-sub").click();
-  await expect(page.getByTestId("commentary")).toContainText(/Substitution/);
+  await expect(page.getByTestId("last-event")).toContainText(/Substitution/);
   await page.getByTestId("live-pause").click();
   await page.getByTestId("sim-to-end").click();
   await expect(page.getByTestId("match-stats")).toBeVisible();

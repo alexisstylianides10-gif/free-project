@@ -85,6 +85,8 @@ interface PState {
   injured: boolean;
   rating: number;
   line: PlayerMatchLine;
+  /** Commentary name: surname, or initial + surname when two players in the match share it. */
+  label: string;
 }
 
 interface TeamState {
@@ -145,7 +147,7 @@ function distToSegment(px: number, py: number, ax: number, ay: number, bx: numbe
 }
 
 function name(ps: PState | null | undefined): string {
-  return ps ? ps.p.lastName : "someone";
+  return ps ? ps.label : "someone";
 }
 
 // ---------------------------------------------------------------------------
@@ -188,9 +190,16 @@ export class MatchSimulation {
   private injuries: InjuryOutcome[] = [];
   private shapes: EngineResult["shapes"] = [];
 
+  private dupSurnames = new Set<string>();
+
   constructor(home: EngineTeamInput, away: EngineTeamInput, options: EngineOptions) {
     this.rng = new Rng(options.seed);
     this.options = options;
+    const seen = new Set<string>();
+    for (const p of [...home.starters.map((s) => s.player), ...home.bench, ...away.starters.map((s) => s.player), ...away.bench]) {
+      if (seen.has(p.lastName)) this.dupSurnames.add(p.lastName);
+      seen.add(p.lastName);
+    }
     this.teams = [this.buildTeam(home, 0), this.buildTeam(away, 1)];
     for (const t of this.teams) for (const ps of t.players) this.shapes.push({ side: t.side, playerId: ps.p.id, ip: { ...ps.slot.inPossession }, op: { ...ps.slot.outOfPossession } });
     this.kickoff(0);
@@ -233,8 +242,9 @@ export class MatchSimulation {
     mods.press += ins.press * 0.5;
     mods.forwardRuns += ins.forwardRuns * 0.5 - (ins.holdPosition ? 0.8 : 0);
     mods.cutInside += ins.width === -1 ? 0.5 : ins.width === 1 ? -0.5 : 0;
+    const label = this.dupSurnames.has(p.lastName) && p.firstName ? `${p.firstName.charAt(0)}. ${p.lastName}` : p.lastName;
     return {
-      p, side: team.side, slot, pos: slot.position, mods,
+      p, side: team.side, slot, pos: slot.position, mods, label,
       energy: clamp(p.fitness, 30, 100),
       baseFactor: morale * form * famF * cohesion * home,
       onPitch: true, started, minuteOn: minute, minuteOff: null, yellow: 0, red: false, injured: false, rating: 6.0,
@@ -1511,7 +1521,7 @@ export class MatchSimulation {
       for (const ps of t.players) {
         if (!ps.onPitch) continue;
         const pos = this.playerPos(ps, 0);
-        players.push({ id: ps.p.id, side: t.side, x: pos.x, y: pos.y, name: ps.p.lastName, number: n++, energy: Math.round(ps.energy), hasBall: ps === this.carrier });
+        players.push({ id: ps.p.id, side: t.side, x: pos.x, y: pos.y, name: ps.label, number: n++, energy: Math.round(ps.energy), hasBall: ps === this.carrier });
       }
     }
     const hx = this.poss === 0 ? this.bx : 100 - this.bx;

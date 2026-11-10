@@ -12,6 +12,7 @@ import { Input, Progress, RatingChip } from "@/components/ui/misc";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageTitle, PosBadge } from "@/components/game/common";
 import { TacticsPitch } from "@/components/game/TacticsPitch";
+import { LineupSwapper } from "@/components/game/LineupSwapper";
 import type { Duty, Level, Player, PlayerInstructions, Position, TacticalSystem, World } from "@/engine/core/types";
 import { POSITIONS } from "@/engine/core/types";
 import { ROLES, ROLE_MAP, rolesForPosition } from "@/engine/tactics/roles";
@@ -144,13 +145,23 @@ export default function TacticsPage() {
             </CardBody>
           </Card>
         </div>
-        <Tabs defaultValue="player">
+        <Tabs defaultValue="lineup">
           <TabsList>
+            <TabsTrigger value="lineup" data-testid="tab-lineup">Line-up</TabsTrigger>
             <TabsTrigger value="player">Position & role</TabsTrigger>
             <TabsTrigger value="team" data-testid="tab-team">Team instructions</TabsTrigger>
             <TabsTrigger value="setpieces">Set pieces</TabsTrigger>
             <TabsTrigger value="squad" data-testid="tab-matchday">Matchday squad</TabsTrigger>
           </TabsList>
+          <TabsContent value="lineup">
+            <Card>
+              <CardBody>
+                {sel && isActive ? (
+                  <LineupSwapper world={world} club={club} tactic={tactic} sel={sel} benchSize={comp?.matchday.benchSize ?? 9} externalSlot={selSlot} onChange={(fn) => mutate(() => fn(sel))} />
+                ) : <div className="text-sm text-muted">Activate this system (“Use for next match”) to pick its line-up.</div>}
+              </CardBody>
+            </Card>
+          </TabsContent>
           <TabsContent value="player">
             <Card>
               {!slot ? <CardBody className="text-sm text-muted">Click a player on the pitch to edit their position, role, duty, individual instructions and who plays there.</CardBody> : (

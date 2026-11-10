@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Empty, KV, Progress, RatingChip } from "@/components/ui/misc";
 import { ClubName, PageTitle, PosBadge } from "@/components/game/common";
 import { NegotiationDialog } from "@/components/game/Negotiation";
+import { PlayerCard } from "@/components/game/PlayerCard";
 import { ATTRIBUTE_GROUPS, POSITIONS, type AttributeKey, type Position, type TrainingFocus } from "@/engine/core/types";
 import { overall, ratingInPosition } from "@/engine/core/ratings";
 import { ageOn } from "@/engine/core/dates";
@@ -78,6 +79,7 @@ function PlayerView() {
           )
         }
       />
+      <div className="flex justify-center md:justify-start"><PlayerCard world={world} p={p} hidden={hidden} /></div>
       {hidden ? <div className="rounded-lg border border-info/30 bg-info/5 px-3 py-2 text-sm text-info">Your scouts have limited knowledge of this player. Attributes are shown as ranges until he is scouted.</div> : null}
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
         <Card>

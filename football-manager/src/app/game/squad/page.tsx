@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { RatingChip, Progress } from "@/components/ui/misc";
 import { PageTitle, PlayerLink, PosBadge } from "@/components/game/common";
+import { MiniStats } from "@/components/game/PlayerCard";
 import { overall, POSITION_GROUP } from "@/engine/core/ratings";
 import { ageOn } from "@/engine/core/dates";
 import type { Player, TransferStatus } from "@/engine/core/types";
@@ -59,7 +60,31 @@ export default function SquadPage() {
   return (
     <div>
       <PageTitle title="Squad" sub={`${counts.total} players · ${counts.gk} goalkeepers`} actions={<Select label="Position group" value={group} onChange={setGroup} options={[{ value: "all", label: "All positions" }, { value: "GK", label: "Goalkeepers" }, { value: "DEF", label: "Defenders" }, { value: "MID", label: "Midfielders" }, { value: "ATT", label: "Attackers" }]} className="w-44" testId="squad-filter" />} />
-      <Card className="overflow-auto">
+      <div className="space-y-2 md:hidden" data-testid="squad-cards">
+        {rows.map(({ p, ovr, age, pot }) => (
+          <Link key={p.id} href={`/game/player/?id=${p.id}`} className="panel flex items-center gap-3 p-3 active:bg-surface2" data-testid="squad-row-mobile">
+            <div className="flex w-12 shrink-0 flex-col items-center">
+              <RatingChip value={ovr} className="w-full py-1 text-base" />
+              <PosBadge pos={p.position} className="mt-1 w-full" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1 truncate font-semibold">
+                {p.firstName.charAt(0)}. {p.lastName}
+                {p.injury && p.injury.until > world.meta.currentDate ? <HeartPulse size={13} className="text-danger" aria-label="Injured" /> : null}
+                {p.suspensions.some((x) => x.matches > 0) ? <Ban size={13} className="text-warn" aria-label="Suspended" /> : null}
+                {p.squadStatus === "listed" ? <Badge tone="gold">Listed</Badge> : null}
+              </div>
+              <div className="text-xs text-muted">{age} yrs · POT {pot[0]}–{pot[1]} · {money(p.value)}</div>
+              <div className="mt-1"><MiniStats p={p} /></div>
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
+                <Progress value={p.fitness} tone={p.fitness < 70 ? "warn" : "accent"} />
+                <Progress value={p.morale} tone={p.morale < 40 ? "danger" : "info"} />
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+      <Card className="hidden overflow-auto md:block">
         <table className="tbl min-w-[1100px]" data-testid="squad-table">
           <thead>
             <tr>{th("pos", "Pos")}{th("name", "Name")}{th("age", "Age", true)}<th>Nat</th>{th("ovr", "Ovr", true)}{th("pot", "Pot", true)}{th("fitness", "Cond.")}{th("morale", "Morale")}{th("form", "Form", true)}{th("apps", "Apps", true)}{th("goals", "Gls", true)}{th("value", "Value", true)}{th("wage", "Wage", true)}{th("contract", "Contract")}<th>Role</th><th>Status</th></tr>

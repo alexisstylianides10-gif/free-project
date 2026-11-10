@@ -11,9 +11,16 @@ export interface PitchDot {
   y: number;
   label: string;
   hasBall?: boolean;
+  number?: number;
 }
 
-export function MatchPitch({ dots, ball, homeColor, awayColor, highlight }: { dots: PitchDot[]; ball: { x: number; y: number }; homeColor: string; awayColor: string; highlight?: string | null }) {
+function textOn(hex: string): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  return r * 0.299 + g * 0.587 + b * 0.114 > 150 ? "#111" : "#fff";
+}
+
+export function MatchPitch({ dots, ball, homeColor, awayColor, highlight, banner }: { dots: PitchDot[]; ball: { x: number; y: number }; homeColor: string; awayColor: string; highlight?: string | null; banner?: string | null }) {
   const px = (x: number) => 25 + (x / 100) * (W - 50);
   const py = (y: number) => 25 + (y / 100) * (H - 50);
   return (
@@ -33,13 +40,21 @@ export function MatchPitch({ dots, ball, homeColor, awayColor, highlight }: { do
       </g>
       {dots.map((d) => (
         <g key={d.id} style={{ transform: `translate(${px(d.x)}px, ${py(d.y)}px)`, transition: "transform 380ms linear" }}>
-          <circle r={d.id === highlight ? 17 : 14} fill={d.side === 0 ? homeColor : awayColor} stroke={d.hasBall ? "#ffffff" : "rgba(0,0,0,0.6)"} strokeWidth={d.hasBall ? 4 : 2} />
-          <text y={34} textAnchor="middle" fontSize={15} fill="#fff" style={{ paintOrder: "stroke" }} stroke="rgba(0,0,0,0.7)" strokeWidth={4}>{d.label}</text>
+          {d.hasBall ? <circle r={30} fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth={3} /> : null}
+          <circle r={d.id === highlight ? 24 : 21} fill={d.side === 0 ? homeColor : awayColor} stroke={d.hasBall ? "#ffffff" : "rgba(0,0,0,0.65)"} strokeWidth={d.hasBall ? 5 : 3} />
+          {d.number ? <text y={7} textAnchor="middle" fontSize={20} fontWeight={800} fill={textOn(d.side === 0 ? homeColor : awayColor)}>{d.number}</text> : null}
+          <text y={48} textAnchor="middle" fontSize={22} fontWeight={600} fill="#fff" style={{ paintOrder: "stroke" }} stroke="rgba(0,0,0,0.75)" strokeWidth={5}>{d.label}</text>
         </g>
       ))}
       <g style={{ transform: `translate(${px(ball.x)}px, ${py(ball.y)}px)`, transition: "transform 380ms linear" }}>
-        <circle r={8} fill="#ffffff" stroke="#111" strokeWidth={2} />
+        <circle r={11} fill="#ffffff" stroke="#111" strokeWidth={3} />
       </g>
+      {banner ? (
+        <g>
+          <rect x={W / 2 - 260} y={H / 2 - 70} width={520} height={140} rx={24} fill="rgba(0,0,0,0.72)" />
+          <text x={W / 2} y={H / 2 + 34} textAnchor="middle" fontSize={96} fontWeight={900} fill="#22d38b" letterSpacing={6}>{banner}</text>
+        </g>
+      ) : null}
     </svg>
   );
 }

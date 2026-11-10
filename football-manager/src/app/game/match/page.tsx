@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Empty, RatingChip } from "@/components/ui/misc";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { overall } from "@/engine/core/ratings";
 import { Crest } from "@/components/game/Crest";
 import { MatchPitch, replayDots, type PitchDot } from "@/components/game/MatchPitch";
 import type { Fixture, Level, MatchEvent, MatchRecord, PlayerMatchLine, TeamMatchStats, World } from "@/engine/core/types";
@@ -44,15 +46,15 @@ function Header({ world, f, score, minute, live }: { world: World; f: Fixture; s
   const a = world.clubs[f.awayClubId];
   const comp = world.competitions[f.competitionId];
   return (
-    <Card className="mb-4">
-      <div className="flex items-center justify-between gap-4 px-6 py-5">
-        <div className="flex flex-1 items-center justify-end gap-3 text-right"><span className="text-xl font-semibold">{h.name}</span><Crest club={h} size={44} /></div>
-        <div className="min-w-[150px] text-center">
-          <div className="text-xs uppercase tracking-wider text-muted">{comp.name} · {f.roundName}</div>
-          <div className="my-1 text-4xl font-black tabular-nums" data-testid="scoreboard">{score ? `${score[0]} – ${score[1]}` : "vs"}</div>
-          <div className="text-xs text-muted">{minute ? <span className={live ? "text-accent" : ""}>{minute}</span> : longDate(f.date)}</div>
+    <Card className="mb-3 overflow-hidden">
+      <div className="truncate border-b border-line px-3 py-1.5 text-center text-[11px] uppercase tracking-wider text-muted">{comp.name} · {f.roundName}</div>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4">
+        <div className="flex min-w-0 flex-col items-center gap-1 text-center sm:flex-row sm:justify-end sm:text-right"><span className="order-2 w-full truncate text-sm font-semibold sm:order-1 sm:text-xl">{h.shortName}</span><span className="order-1 sm:order-2"><Crest club={h} size={36} /></span></div>
+        <div className="text-center">
+          <div className="text-3xl font-black tabular-nums sm:text-4xl" data-testid="scoreboard">{score ? `${score[0]} – ${score[1]}` : "vs"}</div>
+          <div className="text-xs text-muted">{minute ? <span className={live ? "font-semibold text-accent" : ""}>{minute}</span> : longDate(f.date)}</div>
         </div>
-        <div className="flex flex-1 items-center gap-3"><Crest club={a} size={44} /><span className="text-xl font-semibold">{a.name}</span></div>
+        <div className="flex min-w-0 flex-col items-center gap-1 text-center sm:flex-row sm:text-left"><Crest club={a} size={36} /><span className="w-full truncate text-sm font-semibold sm:text-xl">{a.shortName}</span></div>
       </div>
     </Card>
   );
@@ -148,33 +150,42 @@ function PreMatchAndLive({ f }: { f: Fixture }) {
   const minute = `${sim.minute}'${sim.period >= 3 && sim.period <= 4 ? " (ET)" : ""}`;
   const home = world.clubs[f.homeClubId];
   const away = world.clubs[f.awayClubId];
-  const dots: PitchDot[] = snap.players.map((p) => ({ id: p.id, side: p.side, x: p.x, y: p.y, label: p.name.slice(0, 10), hasBall: p.hasBall }));
+  const dots: PitchDot[] = snap.players.map((p) => ({ id: p.id, side: p.side, x: p.x, y: p.y, label: p.name.slice(0, 12), hasBall: p.hasBall, number: p.number }));
+  const lastGoal = [...sim.events].reverse().find((e) => e.type === "goal");
+  const goalBanner = lastGoal && sim.matchClockSeconds - (lastGoal.minute * 60 + lastGoal.second) < 75 ? "GOAL!" : null;
   const view = sim.teamView(userSide);
   const lastEvents = sim.events.slice(-40).reverse();
+  const highlight = [...sim.events].reverse().find((e) => ["goal", "yellow", "red", "second_yellow", "substitution", "injury", "penalty", "half_time"].includes(e.type));
   return (
     <div>
       <Header world={world} f={f} score={sim.goals} minute={minute} live />
-      <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
-        <div className="space-y-3">
-          <Card className="p-2"><MatchPitch dots={dots} ball={snap.ball} homeColor={home.kits[0]?.primary ?? home.colors.primary} awayColor={(away.kits.find((k) => k.slot === "away") ?? away.kits[0])?.primary ?? away.colors.primary} /></Card>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant={running ? "secondary" : "primary"} onClick={() => setRunning((r) => !r)} data-testid="live-pause">{running ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Resume</>}</Button>
-            <Select label="Speed" value={String(speed)} onChange={(v) => setSpeed(Number(v))} options={[{ value: "10", label: "Slow" }, { value: "30", label: "Normal" }, { value: "90", label: "Fast" }, { value: "300", label: "Very fast" }]} className="w-32" />
-            <Button onClick={() => { setRunning(false); finish(); }} data-testid="sim-to-end"><SkipForward size={14} /> Simulate to end</Button>
-            <span className="text-xs text-muted">Subs left: {view.subsLeft}</span>
+      <div className="grid gap-3 xl:grid-cols-[1fr_400px]">
+        <div className="space-y-2">
+          <div className="-mx-4 sm:mx-0"><MatchPitch dots={dots} ball={snap.ball} banner={goalBanner} homeColor={home.kits[0]?.primary ?? home.colors.primary} awayColor={(away.kits.find((k) => k.slot === "away") ?? away.kits[0])?.primary ?? away.colors.primary} /></div>
+          <div className="truncate rounded-lg border border-line bg-surface px-3 py-2 text-sm" data-testid="last-event">
+            {lastEvents[0] ? <><span className="mr-2 tabular-nums text-muted">{lastEvents[0].minute}&apos;</span>{lastEvents[0].text}</> : "Kick-off"}
           </div>
-          <Card>
-            <CardHeader title="Commentary" />
-            <div className="max-h-72 overflow-auto px-4 py-2 text-sm" data-testid="commentary">
-              {lastEvents.map((e, i) => <EventLine key={i} e={e} />)}
-            </div>
-          </Card>
+          {highlight && highlight !== lastEvents[0] ? <div className="truncate px-1 text-xs text-muted">Last key moment: {highlight.minute}&apos; {highlight.text}</div> : null}
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            <Button variant={running ? "secondary" : "primary"} onClick={() => setRunning((r) => !r)} data-testid="live-pause">{running ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}</Button>
+            <Select label="Speed" value={String(speed)} onChange={(v) => setSpeed(Number(v))} options={[{ value: "10", label: "Slow" }, { value: "30", label: "Normal" }, { value: "90", label: "Fast" }, { value: "300", label: "Turbo" }]} className="sm:w-32" />
+            <Button onClick={() => { setRunning(false); finish(); }} data-testid="sim-to-end"><SkipForward size={14} /> To end</Button>
+          </div>
         </div>
-        <div className="space-y-3">
-          <LiveTactics sim={sim} side={userSide} onChange={() => setTick((t) => t + 1)} />
-          <LiveSubs sim={sim} side={userSide} onChange={() => setTick((t) => t + 1)} toast={toast} />
-          <LiveStats sim={sim} />
-        </div>
+        <Tabs defaultValue="commentary">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="commentary">Live</TabsTrigger>
+            <TabsTrigger value="subs" data-testid="tab-subs">Subs ({view.subsLeft})</TabsTrigger>
+            <TabsTrigger value="tactics" data-testid="tab-live-tactics">Tactics</TabsTrigger>
+            <TabsTrigger value="stats">Stats</TabsTrigger>
+          </TabsList>
+          <TabsContent value="commentary" className="mt-2">
+            <Card><div className="max-h-[50vh] overflow-auto px-4 py-2 text-sm" data-testid="commentary">{lastEvents.map((e, i) => <EventLine key={i} e={e} />)}</div></Card>
+          </TabsContent>
+          <TabsContent value="subs" className="mt-2"><LiveSubs sim={sim} side={userSide} onChange={() => setTick((t) => t + 1)} toast={toast} /></TabsContent>
+          <TabsContent value="tactics" className="mt-2"><LiveTactics sim={sim} side={userSide} onChange={() => setTick((t) => t + 1)} /></TabsContent>
+          <TabsContent value="stats" className="mt-2"><LiveStats sim={sim} /></TabsContent>
+        </Tabs>
       </div>
     </div>
   );
@@ -217,24 +228,40 @@ function LiveSubs({ sim, side, onChange, toast }: { sim: MatchSimulation; side: 
   const view = sim.teamView(side);
   const [off, setOff] = useState("");
   const [on, setOn] = useState("");
-  const name = (id: string) => world.players[id]?.lastName ?? id;
+  const name = (id: string) => { const p = world.players[id]; return p ? `${p.firstName.charAt(0)}. ${p.lastName}` : id; };
+  const make = () => {
+    const r = sim.substitute(side, off, on);
+    toast(r.message, r.ok ? "success" : "error");
+    setOff("");
+    setOn("");
+    onChange();
+  };
   return (
     <Card>
-      <CardHeader title="Substitutions" />
-      <CardBody className="space-y-2 text-sm">
-        <div className="max-h-40 overflow-auto">
+      <CardBody className="space-y-3 text-sm">
+        <p className="text-xs text-muted">Tap the player coming <b>off</b>, then the player coming <b>on</b>. Tired players (low %) and poor ratings are highlighted.</p>
+        <div className="space-y-1" data-testid="subs-on-pitch">
           {view.onPitch.map((p) => (
-            <div key={p.id} className="flex items-center justify-between py-0.5">
-              <span><span className="mr-1 text-xs text-muted">{p.position}</span>{name(p.id)}{p.yellow ? <span className="ml-1 inline-block h-3 w-2 bg-gold" /> : null}</span>
-              <span className="flex items-center gap-2 text-xs"><span className={p.energy < 55 ? "text-danger" : "text-muted"}>{p.energy}%</span><RatingChip value={p.rating.toFixed(1)} /></span>
-            </div>
+            <button key={p.id} type="button" onClick={() => setOff(off === p.id ? "" : p.id)} data-testid="sub-off-option"
+              className={`flex w-full items-center justify-between rounded-lg border px-2.5 py-2 text-left ${off === p.id ? "border-danger bg-danger/10" : "border-line bg-surface2/40"}`}>
+              <span><span className="mr-1 inline-block w-8 text-xs text-muted">{p.position}</span>{name(p.id)}{p.yellow ? <span className="ml-1 inline-block h-3 w-2 bg-gold align-middle" /> : null}</span>
+              <span className="flex items-center gap-2 text-xs"><span className={p.energy < 55 ? "font-semibold text-danger" : "text-muted"}>{p.energy}%</span><RatingChip value={p.rating.toFixed(1)} /></span>
+            </button>
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Select label="Player off" value={off} onChange={setOff} options={[{ value: "", label: "Off…" }, ...view.onPitch.map((p) => ({ value: p.id, label: `${p.position} ${name(p.id)}` }))]} testId="sub-off" />
-          <Select label="Player on" value={on} onChange={setOn} options={[{ value: "", label: "On…" }, ...view.bench.map((p) => ({ value: p.id, label: `${p.position} ${p.lastName}` }))]} testId="sub-on" />
+        <div className="text-xs font-semibold uppercase tracking-wider text-muted">Bench</div>
+        <div className="space-y-1" data-testid="subs-bench">
+          {view.bench.length === 0 ? <div className="text-muted">No substitutes left.</div> : view.bench.map((p) => (
+            <button key={p.id} type="button" onClick={() => setOn(on === p.id ? "" : p.id)} data-testid="sub-on-option"
+              className={`flex w-full items-center justify-between rounded-lg border px-2.5 py-2 text-left ${on === p.id ? "border-accent bg-accent/10" : "border-line bg-surface2/40"}`}>
+              <span><span className="mr-1 inline-block w-8 text-xs text-muted">{p.position}</span>{name(p.id)}</span>
+              <RatingChip value={overall(p)} />
+            </button>
+          ))}
         </div>
-        <Button className="w-full" disabled={!off || !on || view.subsLeft <= 0} onClick={() => { const r = sim.substitute(side, off, on); toast(r.message, r.ok ? "success" : "error"); setOff(""); setOn(""); onChange(); }} data-testid="make-sub"><Repeat2 size={14} /> Make substitution</Button>
+        <Button className="sticky bottom-2 w-full" variant="primary" disabled={!off || !on || view.subsLeft <= 0} onClick={make} data-testid="make-sub">
+          <Repeat2 size={14} /> {off && on ? `${name(off)} ⟶ ${name(on)}` : `Make substitution (${view.subsLeft} left)`}
+        </Button>
       </CardBody>
     </Card>
   );
