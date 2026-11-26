@@ -24,7 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data" / "cyprus"
 OUT_FIELDS = ["club_id", "shirt_number", "known_as", "full_name", "position", "nationality",
-              "age", "overall", "potential", "rating_source", "override_reason", "notes"]
+              "age", "age_basis", "overall", "potential", "rating_source", "override_reason", "notes"]
 FLOOR = 45
 
 
@@ -74,11 +74,53 @@ def estimate(rows: list[dict], bands: dict, clubs: dict, anchors: dict) -> list[
         for p, v in zip(rest, slots):
             p["overall"] = v
             p["rating_source"] = "estimate_key" if p["known_as"] in key else "estimate"
-        for p in players:
-            # Ages are unknown, so potential = overall until real ages are added.
-            p["potential"] = p["overall"]
+        ranked = sorted(players, key=lambda p: p["overall"], reverse=True)
+        veterans = set(anchors.get("veterans", []))
+        for rank, p in enumerate(ranked):
+            age, basis = guess_age(p, rank / max(1, len(ranked) - 1), veterans)
+            p["age_basis"] = basis
+            if basis == "real":
+                p["age"] = age
+            lo, hi = growth_range(age)
+            gap = lo + int(stable_key("pot:" + p["known_as"]), 16) % (hi - lo + 1)
+            p["potential"] = max(p["overall"], min(tier["max_potential"], p["overall"] + gap))
             out.append({k: p.get(k, "") for k in OUT_FIELDS})
     return out
+
+
+# Potential gap (potential - overall) by age, modelled on how EA rates real
+# players: teenagers have big headroom, players in their prime a little,
+# 30+ none (they decline in Career Mode instead).
+GROWTH = [(19, 9, 15), (21, 6, 11), (23, 3, 7), (26, 1, 4), (29, 0, 2)]
+
+
+def growth_range(age: int) -> tuple[int, int]:
+    for max_age, lo, hi in GROWTH:
+        if age <= max_age:
+            return lo, hi
+    return 0, 0
+
+
+def guess_age(p: dict, rank_frac: float, veterans: set[str]) -> tuple[int, str]:
+    """Real age if we have one, else a labelled guess.
+
+    Guess rules (until real birth dates arrive from the game DB export):
+      - known veteran                                   -> 33
+      - Cypriot in the bottom 40% of his squad          -> 19 (academy kid)
+      - Cypriot in the 60-80% band                      -> 22
+      - anyone else                                     -> 27 (prime-age signing)
+    """
+    raw = str(p.get("age") or "").strip()
+    if raw.isdigit():
+        return int(raw), "real"
+    if p["known_as"] in veterans:
+        return 33, "guess_veteran"
+    if p.get("nationality") == "CYP":
+        if rank_frac >= 0.6:
+            return 19, "guess_youth"
+        if rank_frac >= 0.4:
+            return 22, "guess_young"
+    return 27, "guess_prime"
 
 
 def main(argv: list[str]) -> int:

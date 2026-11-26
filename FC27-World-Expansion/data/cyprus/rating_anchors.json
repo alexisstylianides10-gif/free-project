@@ -2,33 +2,222 @@
   "_about": "Ratings used as-is. 'ea' = EA SPORTS FC 27 rating seen on EA/SoFIFA/FCRatings/FUT.GG search results 2026-11-26 (launch base cards). Replace with your real DB export once you run Live Editor.",
   "ea": {
     "apoel": {
-      "Filip Đuričić": 75, "Konstantinos Laifis": 72, "Marquinhos": 72, "Vid Belec": 71,
-      "Daniel Mancini": 70, "Pieros Sotiriou": 68, "Fabricio Pedrozo": 67,
-      "Stavros Georgiou": 59, "Gustavo Manduca": 56
+      "Filip Đuričić": 75,
+      "Konstantinos Laifis": 72,
+      "Marquinhos": 72,
+      "Vid Belec": 71,
+      "Daniel Mancini": 70,
+      "Pieros Sotiriou": 68,
+      "Fabricio Pedrozo": 67,
+      "Stavros Georgiou": 59,
+      "Gustavo Manduca": 56
     },
     "omonia": {
-      "Loïc Négo": 73, "Fabiano": 72, "Florin Tănase": 72, "Muamer Tanković": 71
+      "Loïc Négo": 73,
+      "Fabiano": 72,
+      "Florin Tănase": 72,
+      "Muamer Tanković": 71
     }
   },
   "_key_players_about": "Our judgement of each club's most established players (former top-flight / international careers). They get the top of the club's rating curve, in this order. Ratings are still capped by the club tier. This is an ESTIMATE until replaced by real EA data via tools/resolve_from_ea_export.py.",
   "key_players": {
-    "apoel": ["Antonín Barák", "Tasos Bakasetas", "Kostas Stafylidis", "Miloš Degenek", "Joan Sastre", "Dálcio", "Ángel García", "Álvaro Carrillo"],
-    "omonia": ["Ľubomír Šatka", "Stefan Simić", "Carel Eiting", "Jure Balkovec", "Senou Coulibaly", "Luuk Brouwers", "Loïs Diony", "Mateo Marić", "Moses Odubajo"],
-    "pafos": ["David Luiz", "Vlad Dragomir", "Ivan Šunjić", "David Goldar", "Jajá", "Domingos Quina", "Radosław Majecki", "Ken Sema", "Bruno Felipe", "Moumi Ngamaleu", "Jay Gorter", "Pêpê"],
-    "aek_larnaca": ["Đorđe Ivanović", "Mike van der Hoorn", "Amor Layouni", "Hrvoje Miličević", "Jan Repas", "Jorge Miramón", "Enric Saborit", "Alberto Paleari", "Riad Bajić", "Gus Ledes", "Yerson Chacón"],
-    "aris_limassol": ["Wes Foderingham", "Veljko Nikolić", "Juraj Badelj", "Lazar Maraš", "Chahid el Allachi", "Gédéon Kalulu", "Steeve Yago", "Mislav Zadro", "Alex Opoku Sarfo"],
-    "apollon": ["Connor Goldson", "Philipp Kühn", "Gustavo Assunção", "Iké Ugbo", "Alen Ožbolt", "Josef Kvída", "Ivan Ljubić", "Joel Asoro", "Garry Rodrigues", "Emanuel Aiwu", "Bruno Gaspar"],
-    "anorthosis": ["Yoell van Nieff", "Jacob Karlstrøm", "Kostakis Artymatas", "Tobias Schättin", "Emil Bergström", "Alessio da Cruz", "Tamás Kiss", "Elián Sosa", "Stijn Middendorp"],
-    "ael": ["Stevan Jovetić", "Stefanos Kapino", "Stefano Denswil", "Rémi Oudin", "Cafú", "Luther Singh", "Davor Zdravkovski", "Ivan Milosavljević", "Andreas Karo", "Bruno Almeida"],
-    "olympiakos_nicosia": ["Dominik Prokop", "Rauno Sappinen", "Márk Tamás", "Henrique Gomes", "Alexandros Lolis", "Pedro Sancho", "Christos Talichmanidis"],
-    "omonia_aradippou": ["Unai García", "Danny Henriques", "Jairo Izquierdo", "Josué Schmidt", "Živko Živković", "Ange-Freddy Plumain", "Sebastián Lomónaco"],
-    "nea_salamina": ["Samuel Grandsir", "Jordi Quintillà", "Alberto Varo", "Florent Hanin", "Karol Angielski", "Darío Poveda", "José Artiles", "Alois Confais", "Vasilios Lampropoulos"],
-    "karmiotissa": ["Panagiotis Tachtsidis", "Alastair Reynolds", "Rubén García", "Nikos Giannakopoulos", "Patrick Luan", "Curtis Yebli"],
-    "omonia_29m": ["Kelechi Nwakali", "Francis Uzoho", "Rushit Zeka", "Mike Morais", "Antonio Portales", "Fergus Tierney", "Rashaan Fernandes"],
-    "krasava": ["Rubén Pardo", "Xavi Quintillà", "Serge Tabekou", "Yevhen Budnik", "Issam Chebake", "Nana Boateng", "Marco Camus"],
-    "enp": ["Luciano Narsingh", "Rasmus Thelander", "Javi Navarro", "Nicolai Bösch"],
-    "ethnikos_achna": ["Márcio Meira", "Marcelo Alves"],
-    "ayia_napa": ["Nicolae Milinceanu", "Cătălin Carp"],
-    "akritas": ["Michael Dellios", "Matheus Clemente"]
-  }
+    "apoel": [
+      "Antonín Barák",
+      "Tasos Bakasetas",
+      "Kostas Stafylidis",
+      "Miloš Degenek",
+      "Joan Sastre",
+      "Dálcio",
+      "Ángel García",
+      "Álvaro Carrillo"
+    ],
+    "omonia": [
+      "Ľubomír Šatka",
+      "Stefan Simić",
+      "Carel Eiting",
+      "Jure Balkovec",
+      "Senou Coulibaly",
+      "Luuk Brouwers",
+      "Loïs Diony",
+      "Mateo Marić",
+      "Moses Odubajo"
+    ],
+    "pafos": [
+      "David Luiz",
+      "Vlad Dragomir",
+      "Ivan Šunjić",
+      "David Goldar",
+      "Jajá",
+      "Domingos Quina",
+      "Radosław Majecki",
+      "Ken Sema",
+      "Bruno Felipe",
+      "Moumi Ngamaleu",
+      "Jay Gorter",
+      "Pêpê"
+    ],
+    "aek_larnaca": [
+      "Đorđe Ivanović",
+      "Mike van der Hoorn",
+      "Amor Layouni",
+      "Hrvoje Miličević",
+      "Jan Repas",
+      "Jorge Miramón",
+      "Enric Saborit",
+      "Alberto Paleari",
+      "Riad Bajić",
+      "Gus Ledes",
+      "Yerson Chacón"
+    ],
+    "aris_limassol": [
+      "Wes Foderingham",
+      "Veljko Nikolić",
+      "Juraj Badelj",
+      "Lazar Maraš",
+      "Chahid el Allachi",
+      "Gédéon Kalulu",
+      "Steeve Yago",
+      "Mislav Zadro",
+      "Alex Opoku Sarfo"
+    ],
+    "apollon": [
+      "Connor Goldson",
+      "Philipp Kühn",
+      "Gustavo Assunção",
+      "Iké Ugbo",
+      "Alen Ožbolt",
+      "Josef Kvída",
+      "Ivan Ljubić",
+      "Joel Asoro",
+      "Garry Rodrigues",
+      "Emanuel Aiwu",
+      "Bruno Gaspar"
+    ],
+    "anorthosis": [
+      "Yoell van Nieff",
+      "Jacob Karlstrøm",
+      "Kostakis Artymatas",
+      "Tobias Schättin",
+      "Emil Bergström",
+      "Alessio da Cruz",
+      "Tamás Kiss",
+      "Elián Sosa",
+      "Stijn Middendorp"
+    ],
+    "ael": [
+      "Stevan Jovetić",
+      "Stefanos Kapino",
+      "Stefano Denswil",
+      "Rémi Oudin",
+      "Cafú",
+      "Luther Singh",
+      "Davor Zdravkovski",
+      "Ivan Milosavljević",
+      "Andreas Karo",
+      "Bruno Almeida"
+    ],
+    "olympiakos_nicosia": [
+      "Dominik Prokop",
+      "Rauno Sappinen",
+      "Márk Tamás",
+      "Henrique Gomes",
+      "Alexandros Lolis",
+      "Pedro Sancho",
+      "Christos Talichmanidis"
+    ],
+    "omonia_aradippou": [
+      "Unai García",
+      "Danny Henriques",
+      "Jairo Izquierdo",
+      "Josué Schmidt",
+      "Živko Živković",
+      "Ange-Freddy Plumain",
+      "Sebastián Lomónaco"
+    ],
+    "nea_salamina": [
+      "Samuel Grandsir",
+      "Jordi Quintillà",
+      "Alberto Varo",
+      "Florent Hanin",
+      "Karol Angielski",
+      "Darío Poveda",
+      "José Artiles",
+      "Alois Confais",
+      "Vasilios Lampropoulos"
+    ],
+    "karmiotissa": [
+      "Panagiotis Tachtsidis",
+      "Alastair Reynolds",
+      "Rubén García",
+      "Nikos Giannakopoulos",
+      "Patrick Luan",
+      "Curtis Yebli"
+    ],
+    "omonia_29m": [
+      "Kelechi Nwakali",
+      "Francis Uzoho",
+      "Rushit Zeka",
+      "Mike Morais",
+      "Antonio Portales",
+      "Fergus Tierney",
+      "Rashaan Fernandes"
+    ],
+    "krasava": [
+      "Rubén Pardo",
+      "Xavi Quintillà",
+      "Serge Tabekou",
+      "Yevhen Budnik",
+      "Issam Chebake",
+      "Nana Boateng",
+      "Marco Camus"
+    ],
+    "enp": [
+      "Luciano Narsingh",
+      "Rasmus Thelander",
+      "Javi Navarro",
+      "Nicolai Bösch"
+    ],
+    "ethnikos_achna": [
+      "Márcio Meira",
+      "Marcelo Alves"
+    ],
+    "ayia_napa": [
+      "Nicolae Milinceanu",
+      "Cătălin Carp"
+    ],
+    "akritas": [
+      "Michael Dellios",
+      "Matheus Clemente"
+    ]
+  },
+  "_veterans_about": "Players we know are 32+ in 2026 (general knowledge, unverified). They get age 33 for potential: no growth. Replaced by real ages when available.",
+  "veterans": [
+    "David Luiz",
+    "Stevan Jovetić",
+    "Filip Đuričić",
+    "Tasos Bakasetas",
+    "Kostas Stafylidis",
+    "Wes Foderingham",
+    "Luciano Narsingh",
+    "Connor Goldson",
+    "Stefanos Kapino",
+    "Hrvoje Miličević",
+    "Mike van der Hoorn",
+    "Antonín Barák",
+    "Rubén Pardo",
+    "Jorge Miramón",
+    "Enric Saborit",
+    "Panagiotis Tachtsidis",
+    "Philipp Kühn",
+    "Garry Rodrigues",
+    "Vid Belec",
+    "Fabiano",
+    "Loïc Négo",
+    "Florin Tănase",
+    "Kostakis Artymatas",
+    "Konstantinos Laifis",
+    "Riad Bajić",
+    "Yoell van Nieff",
+    "Alberto Varo"
+  ]
 }

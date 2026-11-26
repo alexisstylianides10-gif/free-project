@@ -47,3 +47,32 @@ Unit tests in `tests/test_validate_ratings.py` include "Krasava 90 → rejected"
 ## Open items
 - Confirm the 2026-27 First Division line-up and tier assignments (`data/cyprus/clubs.json` is a draft).
 - On the PC: export the APOEL/Omonia rows from the real FC 27 DB to replace these web-sourced anchors.
+
+## Potential (player growth in Career Mode)
+
+FC grows players toward their **potential** with playing time and training. Potential
+therefore depends mostly on **age**:
+
+| Age | Potential = overall + |
+|---|---|
+| ≤19 | 9–15 |
+| 20–21 | 6–11 |
+| 22–23 | 3–7 |
+| 24–26 | 1–4 |
+| 27–29 | 0–2 |
+| 30+ | 0 (they decline instead) |
+
+Potential is still capped by the club tier's `max_potential`. APOEL/Omonia kids can reach
+~76–82; a Second Division kid tops out at 70. But **players can transfer up**, so a 63 → 76
+APOEL academy player can grow into a star *for Cyprus*.
+
+**Ages are guesses until we get real birth dates** (`age_basis` column):
+- `guess_veteran`: on our known-32+ list → no growth
+- `guess_youth`: Cypriot in the bottom 40% of his squad → treated as 19
+- `guess_young`: Cypriot in the 40–60% band → 22
+- `guess_prime`: everyone else → 27
+- `real`: an actual age was supplied
+
+The guess is wrong for some players (e.g. an established Cypriot international who is a
+squad player gets treated as a kid). Real birth dates from the Live Editor DB export
+replace every guess automatically: fill the `age` column and re-run `tools/estimate_ratings.py`.

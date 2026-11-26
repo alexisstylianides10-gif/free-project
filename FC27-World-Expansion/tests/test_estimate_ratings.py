@@ -47,6 +47,30 @@ class EstimateRatingsTests(unittest.TestCase):
     def test_deterministic(self):
         self.assertEqual(self.run_file("d2_raw.csv"), self.run_file("d2_raw.csv"))
 
+    def test_youth_has_growth_veteran_does_not(self):
+        out = self.run_file("d1_raw.csv")
+        youth = [r for r in out if r["age_basis"] == "guess_youth"]
+        self.assertTrue(youth)
+        for r in youth:  # at least +9, unless the tier's potential cap stops it
+            cap = self.bands["tiers"][self.clubs[r["club_id"]]["tier"]]["max_potential"]
+            self.assertGreaterEqual(r["potential"], min(r["overall"] + 9, cap), r["known_as"])
+        vets = [r for r in out if r["age_basis"] == "guess_veteran"]
+        self.assertTrue(vets)
+        self.assertTrue(all(r["potential"] == r["overall"] for r in vets))
+
+    def test_real_age_used(self):
+        rows = [{"club_id": "krasava", "shirt_number": "1", "known_as": "Test Kid", "position": "MF",
+                 "nationality": "ESP", "notes": "", "age": "18"}]
+        out = estimate(rows, self.bands, self.clubs, self.anchors)[0]
+        self.assertEqual(out["age_basis"], "real")
+        self.assertGreaterEqual(out["potential"] - out["overall"], 9)
+
+    def test_potential_never_above_tier_cap(self):
+        for name in ("d1_raw.csv", "d2_raw.csv"):
+            for r in self.run_file(name):
+                cap = self.bands["tiers"][self.clubs[r["club_id"]]["tier"]]["max_potential"]
+                self.assertLessEqual(r["potential"], cap)
+
 
 if __name__ == "__main__":
     unittest.main()
