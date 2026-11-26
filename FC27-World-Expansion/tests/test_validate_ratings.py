@@ -46,9 +46,13 @@ class RatingValidatorTests(unittest.TestCase):
         errors, _ = self.check([row("apoel", 78, override="please")])
         self.assertTrue(any("hard cap" in e for e in errors))
 
-    def test_potential_cap(self):
-        errors, _ = self.check([row("krasava", 60, 85)])
-        self.assertTrue(any("potential" in e for e in errors))
+    def test_potential_ceiling(self):
+        errors, _ = self.check([row("krasava", 60, 90)])
+        self.assertTrue(any("potential ceiling" in e for e in errors))
+
+    def test_small_club_kid_can_have_high_potential(self):
+        errors, _ = self.check([row("krasava", 58, 80)])
+        self.assertEqual(errors, [])
 
     def test_unknown_club(self):
         errors, _ = self.check([row("real_madrid", 60)])

@@ -1,0 +1,25 @@
+{
+  "_about": "Club money and pull. ESTIMATES (no public source gives Cypriot transfer budgets). Prestige is 1-10 like FC's own teams table. Written into the game via Live Editor Teams Editor (transfer budget is a confirmed LE field; prestige field names must be checked in your DB export).",
+  "tier_defaults": {
+    "ea_native":       {"domestic_prestige": 9, "international_prestige": 4, "transfer_budget_eur": 4000000, "max_fee_eur": 2500000, "max_wage_eur_week": 25000},
+    "title_contender": {"domestic_prestige": 8, "international_prestige": 4, "transfer_budget_eur": 3500000, "max_fee_eur": 2000000, "max_wage_eur_week": 22000},
+    "upper_mid":       {"domestic_prestige": 7, "international_prestige": 3, "transfer_budget_eur": 1500000, "max_fee_eur": 800000,  "max_wage_eur_week": 12000},
+    "lower_mid":       {"domestic_prestige": 5, "international_prestige": 2, "transfer_budget_eur": 500000,  "max_fee_eur": 250000,  "max_wage_eur_week": 6000},
+    "promoted_small":  {"domestic_prestige": 3, "international_prestige": 1, "transfer_budget_eur": 250000,  "max_fee_eur": 120000,  "max_wage_eur_week": 3500},
+    "second_division": {"domestic_prestige": 2, "international_prestige": 1, "transfer_budget_eur": 80000,   "max_fee_eur": 40000,   "max_wage_eur_week": 1500}
+  },
+  "club_overrides": {
+    "pafos": {"domestic_prestige": 9, "international_prestige": 5, "transfer_budget_eur": 6000000, "max_fee_eur": 3500000, "_why": "Recent Champions League group-stage side, biggest spender"},
+    "omonia": {"international_prestige": 5, "_why": "2025-26 champions"},
+    "anorthosis": {"domestic_prestige": 8, "_why": "Historic big club, budget lower than prestige"}
+  },
+  "recruitment": {
+    "_about": "Rules the transfer planner (tools/plan_transfers.py) follows so moves suit the buyer.",
+    "squad_shape": {"GK": 3, "DF": 8, "MF": 8, "FW": 5},
+    "target_ovr_below_club_best": 6,
+    "target_ovr_above_tier_cap": 2,
+    "prestige_gap_player_accepts": 1,
+    "transfers_per_window": {"summer": 4, "winter": 2},
+    "preferred_markets": ["CYP", "GRE", "POR", "ESP", "SRB", "BRA", "NED", "FRA", "CRO", "BIH", "ROU", "BUL", "NGA", "GHA"]
+  }
+}

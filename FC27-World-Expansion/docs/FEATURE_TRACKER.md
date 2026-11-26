@@ -42,7 +42,8 @@ log/screenshot on a named game build). As of 2026-11-26 **nothing has been teste
 | SIM-03 | Tactical model drives results via Match-Fix | Experimental | LE has Match-Fix; Lua access unverified | Lua |
 | SIM-04 | Replace native sim engine | Not supported | Native code, no API | — |
 | SIM-05 | Custom stats (xG, pressing) in sim | Research required | Stat writeback unknown | — |
-| CM-01 | Transfer realism tweaks | Research required | FC 27 rebuilt transfer market | LE/Lua |
+| CM-01 | Transfer realism tweaks | In development | Club budgets/prestige (`club_economics.json`, estimates) + `tools/plan_transfers.py` (6 tests); native AI frequency not moddable; auto-apply needs undocumented LE Lua | LE/Lua |
+| CM-07 | Player potential & growth | In development | Per-player potential (age + talent + overrides), global ceiling 88; season-1 starting caps only | data |
 | CM-02 | Player development/potential | Technically feasible | Lua Player Development Manager exists | Lua |
 | CM-03 | Manager changes | Technically feasible | LE Managers Editor; all D1 coaches in `clubs.json` | LE |
 | CM-05 | User manager can take any club/national team | Technically feasible | LE GUI 'Create Job Offer' (wiki); Lua automation blocked on undocumented API, discovery script in `integrations/live-editor/lua/` | LE |

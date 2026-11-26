@@ -4,12 +4,14 @@
 Squad CSV columns:
     club_id,player_name,position,age,overall,potential,source,override_reason
 
+Starting ratings (season 1) are capped per club tier; potential is not.
+
 Errors (exit code 1):
   - club_id not in clubs.json
   - overall above the club tier's max_player (unless override_reason is set
     and overall <= max_player + override_allowance)
   - overall above league_hard_cap (no override possible)
-  - potential above tier max_potential (same override rule, +override_allowance)
+  - potential above potential_ceiling (potential is per player, not per club)
   - potential below overall
 Warnings:
   - top-3 average or squad average outside the tier band
@@ -68,9 +70,8 @@ def validate_rows(rows, bands, clubs):
 
         if pot < ovr:
             errors.append(f"{where}: potential {pot} < overall {ovr}")
-        if pot > tier["max_potential"]:
-            if not has_override or pot > tier["max_potential"] + allowance:
-                errors.append(f"{where}: POT {pot} > {club['name']} tier max potential {tier['max_potential']}")
+        if pot > bands["potential_ceiling"]:
+            errors.append(f"{where}: POT {pot} > potential ceiling {bands['potential_ceiling']}")
 
         by_club[club["id"]].append(ovr)
 

@@ -66,7 +66,7 @@ pafos,7,Bruno Felipe,,MF,BRA,,guess_prime,68,69,estimate_key,,
 pafos,12,Ken Sema,,MF,SWE,,guess_prime,68,70,estimate_key,,
 pafos,1,Jay Gorter,,GK,NED,,guess_prime,67,67,estimate_key,,
 pafos,13,Moumi Ngamaleu,,FW,CMR,,guess_prime,67,68,estimate_key,,
-pafos,2,Yoram Zague,,DF,FRA,,guess_prime,66,66,estimate,,on loan from Paris Saint-Germain
+pafos,2,Yoram Zague,,DF,FRA,20,override,66,78,estimate,,on loan from Paris Saint-Germain
 pafos,88,Pêpê,,MF,POR,,guess_prime,66,68,estimate_key,,
 pafos,33,Anderson Silva,,FW,BRA,,guess_prime,65,66,estimate,,
 pafos,18,Lelê,,FW,BRA,,guess_prime,64,66,estimate,,on loan from Fluminense

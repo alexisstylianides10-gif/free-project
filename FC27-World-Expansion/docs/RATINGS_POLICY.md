@@ -17,21 +17,24 @@ So the **best player in Cyprus is about 75**. Everything else scales down from t
 
 ## Tiers
 
-| Tier | Example clubs (draft) | Max player | Top-3 avg | Squad avg | Max potential |
-|---|---|---|---|---|---|
-| ea_native | APOEL, Omonia | 76 | 70–74 | 62–68 | 82 |
-| title_contender | Pafos, AEK Larnaca, Aris | 76 | 70–74 | 62–68 | 82 |
-| upper_mid | Apollon, Anorthosis, AEL | 72 | 67–70 | 60–65 | 78 |
-| lower_mid | Olympiakos, Omonia Aradippou, Nea Salamina | 68 | 64–67 | 56–62 | 75 |
-| promoted_small | **Krasava ENY Ypsonas**, Karmiotissa, Omonia 29M | **65** | 61–64 | 52–59 | 72 |
-| second_division | — | 62 | 57–61 | 48–56 | 70 |
-| third_division | — | 56 | 51–55 | 45–52 | 66 |
+| Tier | Example clubs | Season-1 max player | Top-3 avg | Squad avg |
+|---|---|---|---|---|
+| ea_native | APOEL, Omonia | 76 | 70–74 | 62–68 |
+| title_contender | Pafos, AEK Larnaca, Aris | 76 | 70–74 | 62–68 |
+| upper_mid | Apollon, Anorthosis, AEL | 72 | 67–70 | 60–65 |
+| lower_mid | Olympiakos, Omonia Aradippou, Nea Salamina | 68 | 64–67 | 56–62 |
+| promoted_small | **Krasava ENY Ypsonas**, Karmiotissa, Omonia 29M | **65** | 61–64 | 52–59 |
+| second_division | — | 62 | 57–61 | 48–56 |
+| third_division | — | 56 | 51–55 | 45–52 |
 
-- **League hard cap: 77.** Nobody in any Cypriot league goes above it. No exceptions.
+- **League hard cap: 77** on starting ratings. Nobody in any Cypriot league starts above it.
 - **Override:** a player can go up to **tier max + 2**, and only with a written reason
   (e.g. an ex-Greek Super League veteran with a known EA rating). So the best a Krasava
-  player can ever be is **67**.
-- **Potential is capped too.** No 17-year-old wonderkid with 90 potential at a small club.
+  player can **start** at is **67**.
+- **These caps are for the STARTING ratings of season 1 only.** After that, players grow
+  toward their own potential and can pass their club's cap. A Krasava kid can become a
+  75 and move to APOEL.
+- **Potential is per player, not per club** (age + talent). Global ceiling: **88**.
 
 ## How it's enforced
 
@@ -62,9 +65,10 @@ therefore depends mostly on **age**:
 | 27–29 | 0–2 |
 | 30+ | 0 (they decline instead) |
 
-Potential is still capped by the club tier's `max_potential`. APOEL/Omonia kids can reach
-~76–82; a Second Division kid tops out at 70. But **players can transfer up**, so a 63 → 76
-APOEL academy player can grow into a star *for Cyprus*.
+Potential is **not** capped by club. Only the global ceiling of 88 applies. Extras:
+- Young players (≤23) on loan from big clubs (PSG, Sporting, Monaco, Panathinaikos…) get **+3** talent.
+- `data/cyprus/potential_overrides.json`: set any player's real age or potential yourself.
+  Example: Yoram Zague (PSG loanee, age 20) 66 → 78.
 
 **Ages are guesses until we get real birth dates** (`age_basis` column):
 - `guess_veteran`: on our known-32+ list → no growth

@@ -8,7 +8,8 @@ Order of precedence per player:
 
 The curve is linear and solved so that the club's top-3 average and squad
 average land in the middle of the tier bands from rating_bands.json. Every
-value is clamped to the tier max, so no small club can get a superstar.
+starting value is clamped to the tier max, so no small club starts with a superstar.
+Potential is per player (age + talent) and only limited by potential_ceiling.
 
 Usage: python3 tools/estimate_ratings.py data/cyprus/squads/d1_raw.csv data/cyprus/squads/d1.csv
 """
@@ -40,7 +41,9 @@ def stable_key(name: str) -> str:
     return hashlib.sha1(name.encode("utf-8")).hexdigest()
 
 
-def estimate(rows: list[dict], bands: dict, clubs: dict, anchors: dict) -> list[dict]:
+def estimate(rows: list[dict], bands: dict, clubs: dict, anchors: dict,
+             overrides: dict | None = None) -> list[dict]:
+    overrides = overrides or {}
     by_club: dict[str, list[dict]] = defaultdict(list)
     for r in rows:
         by_club[r["club_id"]].append(r)
@@ -77,15 +80,36 @@ def estimate(rows: list[dict], bands: dict, clubs: dict, anchors: dict) -> list[
         ranked = sorted(players, key=lambda p: p["overall"], reverse=True)
         veterans = set(anchors.get("veterans", []))
         for rank, p in enumerate(ranked):
-            age, basis = guess_age(p, rank / max(1, len(ranked) - 1), veterans)
-            p["age_basis"] = basis
-            if basis == "real":
-                p["age"] = age
-            lo, hi = growth_range(age)
-            gap = lo + int(stable_key("pot:" + p["known_as"]), 16) % (hi - lo + 1)
-            p["potential"] = max(p["overall"], min(tier["max_potential"], p["overall"] + gap))
+            p["potential"] = player_potential(p, rank / max(1, len(ranked) - 1), veterans,
+                                              bands, overrides)
             out.append({k: p.get(k, "") for k in OUT_FIELDS})
     return out
+
+
+def player_potential(p: dict, rank_frac: float, veterans: set[str], bands: dict,
+                     overrides: dict) -> int:
+    """Potential belongs to the player: age + talent signals, NOT the club tier.
+
+    Club tiers only cap the season-1 starting overall. A Krasava teenager can have
+    a high ceiling; he just has to grow (or move) to reach it.
+    """
+    ov = overrides.get(p["known_as"], {})
+    if "age" in ov and not str(p.get("age") or "").strip():
+        p["age"] = str(ov["age"])
+    age, basis = guess_age(p, rank_frac, veterans)
+    p["age_basis"] = "override" if "age" in ov else basis
+    if basis == "real":
+        p["age"] = age
+    ceiling = bands["potential_ceiling"]
+    if "potential" in ov:
+        return max(p["overall"], min(ceiling, int(ov["potential"])))
+    lo, hi = growth_range(age)
+    gap = lo + int(stable_key("pot:" + p["known_as"]), 16) % (hi - lo + 1)
+    talent = bands.get("talent_bonus", {})
+    notes = p.get("notes") or ""
+    if age <= 23 and any(f"on loan from {c}" in notes for c in talent.get("big_clubs", [])):
+        gap += talent.get("loan_from_big_club", 0)
+    return max(p["overall"], min(ceiling, p["overall"] + gap))
 
 
 # Potential gap (potential - overall) by age, modelled on how EA rates real
@@ -130,9 +154,10 @@ def main(argv: list[str]) -> int:
     bands = json.loads((DATA / "rating_bands.json").read_text(encoding="utf-8"))
     clubs = {c["id"]: c for c in json.loads((DATA / "clubs.json").read_text(encoding="utf-8"))["clubs"]}
     anchors = json.loads((DATA / "rating_anchors.json").read_text(encoding="utf-8"))
+    overrides = json.loads((DATA / "potential_overrides.json").read_text(encoding="utf-8"))["players"]
     with open(argv[0], newline="", encoding="utf-8") as fh:
         rows = list(csv.DictReader(fh))
-    out = estimate(rows, bands, clubs, anchors)
+    out = estimate(rows, bands, clubs, anchors, overrides)
     with open(argv[1], "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=OUT_FIELDS)
         w.writeheader()

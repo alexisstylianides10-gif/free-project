@@ -1,0 +1,9 @@
+{
+  "_about": "Per-player potential or age you know better than the estimate. Wins over every rule except potential_ceiling. Add your own: \"Name\": {\"age\": 18} or {\"potential\": 80}.",
+  "players": {
+    "Yoram Zague": {
+      "age": 20,
+      "why": "PSG academy, born 2006 (general knowledge, verify)"
+    }
+  }
+}

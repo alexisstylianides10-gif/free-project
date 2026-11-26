@@ -51,9 +51,8 @@ class EstimateRatingsTests(unittest.TestCase):
         out = self.run_file("d1_raw.csv")
         youth = [r for r in out if r["age_basis"] == "guess_youth"]
         self.assertTrue(youth)
-        for r in youth:  # at least +9, unless the tier's potential cap stops it
-            cap = self.bands["tiers"][self.clubs[r["club_id"]]["tier"]]["max_potential"]
-            self.assertGreaterEqual(r["potential"], min(r["overall"] + 9, cap), r["known_as"])
+        for r in youth:
+            self.assertGreaterEqual(r["potential"], r["overall"] + 9, r["known_as"])
         vets = [r for r in out if r["age_basis"] == "guess_veteran"]
         self.assertTrue(vets)
         self.assertTrue(all(r["potential"] == r["overall"] for r in vets))
@@ -65,11 +64,18 @@ class EstimateRatingsTests(unittest.TestCase):
         self.assertEqual(out["age_basis"], "real")
         self.assertGreaterEqual(out["potential"] - out["overall"], 9)
 
-    def test_potential_never_above_tier_cap(self):
+    def test_potential_never_above_ceiling(self):
         for name in ("d1_raw.csv", "d2_raw.csv"):
             for r in self.run_file(name):
-                cap = self.bands["tiers"][self.clubs[r["club_id"]]["tier"]]["max_potential"]
-                self.assertLessEqual(r["potential"], cap)
+                self.assertLessEqual(r["potential"], self.bands["potential_ceiling"])
+
+    def test_big_club_loanee_gets_talent_bonus(self):
+        rows = [{"club_id": "pafos", "shirt_number": "2", "known_as": "Loan Kid", "position": "DF",
+                 "nationality": "FRA", "age": "19", "notes": "on loan from Paris Saint-Germain"},
+                {"club_id": "pafos", "shirt_number": "3", "known_as": "Loan Kid", "position": "DF",
+                 "nationality": "FRA", "age": "19", "notes": ""}]
+        a, b = (estimate([r], self.bands, self.clubs, self.anchors)[0] for r in rows)
+        self.assertEqual(a["potential"] - b["potential"], 3)
 
 
 if __name__ == "__main__":
