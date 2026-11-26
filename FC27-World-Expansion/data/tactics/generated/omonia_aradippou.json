@@ -1,0 +1,96 @@
+{
+  "club": "omonia_aradippou",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "counter",
+  "formation": "4-4-2",
+  "fc_base_formation": "4-4-2",
+  "team": {
+    "build_up": "Counter",
+    "defensive_approach": "Deep",
+    "line_height": 38
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Živko Živković",
+      "overall": 64,
+      "role": "goalkeeper",
+      "fc_role": "Goalkeeper"
+    },
+    {
+      "slot": "LB",
+      "player": "Unai García",
+      "overall": 66,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LCB",
+      "player": "Danny Henriques",
+      "overall": 66,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RCB",
+      "player": "Jairo Izquierdo",
+      "overall": 65,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RB",
+      "player": "Andreas Christofi",
+      "overall": 61,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LM",
+      "player": "Giorgos Chatzigianni",
+      "overall": 62,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "LCM",
+      "player": "Vernon De Marco",
+      "overall": 61,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RCM",
+      "player": "Jeremy van Mullem",
+      "overall": 60,
+      "role": "ball_winning_midfielder",
+      "fc_role": "Holding"
+    },
+    {
+      "slot": "RM",
+      "player": "Efthymios Efthymiou",
+      "overall": 60,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "LS",
+      "player": "Josué Schmidt",
+      "overall": 65,
+      "role": "advanced_forward",
+      "fc_role": "Advanced Forward"
+    },
+    {
+      "slot": "RS",
+      "player": "Ange-Freddy Plumain",
+      "overall": 64,
+      "role": "poacher",
+      "fc_role": "Poacher"
+    }
+  ],
+  "note": ""
+}

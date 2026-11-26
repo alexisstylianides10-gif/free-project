@@ -1,0 +1,37 @@
+{
+  "_about": "Maps the roles we want to the FC IQ player roles FC 27 actually has. FC 27 has 37 roles / 71 role+focus combos (search result, 2026-11-26). The FC IQ list below is from FC 25/26 plus the FC 27-confirmed additions (Wide Back, Inverted Wingback, Box Crasher, Ball-Playing Keeper). Tactics sites are blocked from our build machine, so EVERY fc_role must be checked in-game once. Focus names are left to the in-game picker for the same reason.",
+  "fc_iq_roles_known": {
+    "GK": ["Goalkeeper", "Sweeper Keeper", "Ball-Playing Keeper"],
+    "CB": ["Defender", "Stopper", "Ball-Playing Defender"],
+    "FB": ["Fullback", "Falseback", "Wingback", "Attacking Wingback", "Wide Back", "Inverted Wingback"],
+    "CDM": ["Holding", "Centre-Half", "Deep-Lying Playmaker"],
+    "CM": ["Box-to-Box", "Holding", "Deep-Lying Playmaker", "Playmaker", "Half-Winger"],
+    "CAM": ["Playmaker", "Shadow Striker", "Half-Winger", "Classic 10", "Box Crasher"],
+    "WIDE": ["Winger", "Wide Midfielder", "Wide Playmaker", "Inside Forward"],
+    "ST": ["Advanced Forward", "Poacher", "False 9", "Target Forward"]
+  },
+  "our_roles": {
+    "advanced_forward":       {"fc_role": "Advanced Forward",      "match": "exact"},
+    "false_nine":             {"fc_role": "False 9",               "match": "exact"},
+    "target_man":             {"fc_role": "Target Forward",        "match": "exact"},
+    "poacher":                {"fc_role": "Poacher",               "match": "exact"},
+    "inverted_winger":        {"fc_role": "Inside Forward",        "match": "exact"},
+    "traditional_winger":     {"fc_role": "Winger",                "match": "exact"},
+    "deep_lying_playmaker":   {"fc_role": "Deep-Lying Playmaker",  "match": "exact"},
+    "box_to_box":             {"fc_role": "Box-to-Box",            "match": "exact"},
+    "ball_winning_midfielder":{"fc_role": "Holding",               "match": "approximate", "note": "No separate ball-winner role; use Holding with the most aggressive focus available"},
+    "anchor":                 {"fc_role": "Centre-Half",           "match": "approximate", "note": "Centre-Half drops between the CBs; Holding is the alternative"},
+    "attacking_midfielder":   {"fc_role": "Shadow Striker",        "match": "exact"},
+    "inverted_fullback":      {"fc_role": "Falseback",             "match": "exact", "note": "Inverted Wingback is the more attacking version"},
+    "overlapping_fullback":   {"fc_role": "Attacking Wingback",    "match": "exact"},
+    "underlapping_fullback":  {"fc_role": "Inverted Wingback",     "match": "approximate"},
+    "wingback":               {"fc_role": "Wingback",              "match": "exact"},
+    "ball_playing_defender":  {"fc_role": "Ball-Playing Defender", "match": "exact"},
+    "stopper":                {"fc_role": "Stopper",               "match": "exact"},
+    "sweeper_keeper":         {"fc_role": "Sweeper Keeper",        "match": "exact"},
+    "goalkeeper":             {"fc_role": "Goalkeeper",            "match": "exact"},
+    "fullback":               {"fc_role": "Fullback",              "match": "exact"},
+    "centre_back":            {"fc_role": "Defender",              "match": "exact"},
+    "wide_midfielder":        {"fc_role": "Wide Midfielder",       "match": "exact"}
+  }
+}

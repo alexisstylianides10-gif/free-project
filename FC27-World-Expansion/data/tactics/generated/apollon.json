@@ -1,0 +1,96 @@
+{
+  "club": "apollon",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "gegenpress",
+  "formation": "4-3-3",
+  "fc_base_formation": "4-3-3",
+  "team": {
+    "build_up": "Balanced",
+    "defensive_approach": "Aggressive",
+    "line_height": 75
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Philipp Kühn",
+      "overall": 68,
+      "role": "sweeper_keeper",
+      "fc_role": "Sweeper Keeper"
+    },
+    {
+      "slot": "LB",
+      "player": "Connor Goldson",
+      "overall": 69,
+      "role": "overlapping_fullback",
+      "fc_role": "Attacking Wingback"
+    },
+    {
+      "slot": "LCB",
+      "player": "Josef Kvída",
+      "overall": 66,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RCB",
+      "player": "Emanuel Aiwu",
+      "overall": 64,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RB",
+      "player": "Bruno Gaspar",
+      "overall": 64,
+      "role": "overlapping_fullback",
+      "fc_role": "Attacking Wingback"
+    },
+    {
+      "slot": "CDM",
+      "player": "Gustavo Assunção",
+      "overall": 68,
+      "role": "ball_winning_midfielder",
+      "fc_role": "Holding"
+    },
+    {
+      "slot": "LCM",
+      "player": "Ivan Ljubić",
+      "overall": 66,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RCM",
+      "player": "Nearchos Zinonos",
+      "overall": 62,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "LW",
+      "player": "Alen Ožbolt",
+      "overall": 67,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "ST",
+      "player": "Iké Ugbo",
+      "overall": 67,
+      "role": "advanced_forward",
+      "fc_role": "Advanced Forward"
+    },
+    {
+      "slot": "RW",
+      "player": "Garry Rodrigues",
+      "overall": 65,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    }
+  ],
+  "note": ""
+}

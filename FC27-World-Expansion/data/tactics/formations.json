@@ -1,0 +1,25 @@
+{
+  "_about": "Formations we support. 'fc_native' = the formation exists in FC's formation list (FC 25/26 knowledge; verify in FC 27). Shapes FC doesn't have natively (3-2-4-1, asymmetric) are built as an FC base formation + roles that create the shape in possession. 'lines' counts outfield players per line for squad-fit checks (wingers count as FW).",
+  "formations": {
+    "4-3-3":   {"fc_native": true, "base": "4-3-3", "lines": {"DF": 4, "MF": 3, "FW": 3},
+                "slots": [["GK","goalkeeper"],["LB","fullback"],["LCB","centre_back"],["RCB","ball_playing_defender"],["RB","fullback"],["CDM","deep_lying_playmaker"],["LCM","box_to_box"],["RCM","box_to_box"],["LW","inverted_winger"],["ST","advanced_forward"],["RW","inverted_winger"]]},
+    "4-2-3-1": {"fc_native": true, "base": "4-2-3-1", "lines": {"DF": 4, "MF": 5, "FW": 1},
+                "slots": [["GK","goalkeeper"],["LB","fullback"],["LCB","centre_back"],["RCB","centre_back"],["RB","fullback"],["LDM","ball_winning_midfielder"],["RDM","deep_lying_playmaker"],["LM","inverted_winger"],["CAM","attacking_midfielder"],["RM","inverted_winger"],["ST","advanced_forward"]]},
+    "4-4-2":   {"fc_native": true, "base": "4-4-2", "lines": {"DF": 4, "MF": 4, "FW": 2},
+                "slots": [["GK","goalkeeper"],["LB","fullback"],["LCB","centre_back"],["RCB","centre_back"],["RB","fullback"],["LM","wide_midfielder"],["LCM","box_to_box"],["RCM","ball_winning_midfielder"],["RM","wide_midfielder"],["LS","target_man"],["RS","poacher"]]},
+    "3-5-2":   {"fc_native": true, "base": "3-5-2", "lines": {"DF": 3, "MF": 5, "FW": 2},
+                "slots": [["GK","goalkeeper"],["LCB","stopper"],["CB","ball_playing_defender"],["RCB","stopper"],["LWB","wingback"],["LCM","box_to_box"],["CDM","anchor"],["RCM","deep_lying_playmaker"],["RWB","wingback"],["LS","target_man"],["RS","poacher"]]},
+    "3-4-3":   {"fc_native": true, "base": "3-4-3", "lines": {"DF": 3, "MF": 4, "FW": 3},
+                "slots": [["GK","sweeper_keeper"],["LCB","stopper"],["CB","ball_playing_defender"],["RCB","stopper"],["LM","wingback"],["LCM","box_to_box"],["RCM","deep_lying_playmaker"],["RM","wingback"],["LW","inverted_winger"],["ST","advanced_forward"],["RW","inverted_winger"]]},
+    "4-1-4-1": {"fc_native": true, "base": "4-1-4-1", "lines": {"DF": 4, "MF": 5, "FW": 1},
+                "slots": [["GK","goalkeeper"],["LB","fullback"],["LCB","centre_back"],["RCB","centre_back"],["RB","fullback"],["CDM","anchor"],["LM","wide_midfielder"],["LCM","box_to_box"],["RCM","box_to_box"],["RM","wide_midfielder"],["ST","target_man"]]},
+    "4-2-2-2": {"fc_native": true, "base": "4-2-2-2", "lines": {"DF": 4, "MF": 4, "FW": 2},
+                "slots": [["GK","goalkeeper"],["LB","overlapping_fullback"],["LCB","centre_back"],["RCB","centre_back"],["RB","overlapping_fullback"],["LDM","ball_winning_midfielder"],["RDM","deep_lying_playmaker"],["LAM","attacking_midfielder"],["RAM","attacking_midfielder"],["LS","advanced_forward"],["RS","poacher"]]},
+    "3-2-4-1": {"fc_native": false, "base": "4-3-3", "lines": {"DF": 4, "MF": 3, "FW": 3},
+                "note": "Built from 4-3-3: one Falseback steps into midfield (makes the 3 at the back and the 2 in front), both 8s push up next to inverted wingers.",
+                "slots": [["GK","sweeper_keeper"],["LB","fullback"],["LCB","ball_playing_defender"],["RCB","ball_playing_defender"],["RB","inverted_fullback"],["CDM","deep_lying_playmaker"],["LCM","attacking_midfielder"],["RCM","attacking_midfielder"],["LW","traditional_winger"],["ST","false_nine"],["RW","inverted_winger"]]},
+    "4-3-3-asym": {"fc_native": false, "base": "4-3-3", "lines": {"DF": 4, "MF": 3, "FW": 3},
+                "note": "Asymmetric: left side overloads (overlapping LB + inverted LW), right side holds (inverted RB tucks in, traditional RW stays wide).",
+                "slots": [["GK","goalkeeper"],["LB","overlapping_fullback"],["LCB","centre_back"],["RCB","ball_playing_defender"],["RB","inverted_fullback"],["CDM","anchor"],["LCM","box_to_box"],["RCM","deep_lying_playmaker"],["LW","inverted_winger"],["ST","advanced_forward"],["RW","traditional_winger"]]}
+  }
+}

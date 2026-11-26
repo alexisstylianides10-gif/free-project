@@ -1,0 +1,62 @@
+{
+  "_about": "Manager philosophies. 'team' values use FC's team-tactic concepts: build_up (Short Passing / Balanced / Long Ball / Counter), defensive_approach (Deep / Balanced / High / Aggressive), line_height 1-100. Exact option names must be checked in FC 27's tactics screen. 'game_states' are alternative set-ups the selector switches to; in FC these become the manager's saved tactics/game plans.",
+  "philosophies": {
+    "possession": {
+      "label": "Possession / tiki-taka",
+      "formations": ["4-3-3", "3-2-4-1", "4-2-3-1"],
+      "team": {"build_up": "Short Passing", "defensive_approach": "High", "line_height": 70},
+      "role_prefs": {"ST": "false_nine", "W": "inverted_winger", "FB": "inverted_fullback", "DM": "deep_lying_playmaker", "CB": "ball_playing_defender", "GK": "sweeper_keeper"},
+      "needs": "strong MF line"
+    },
+    "positional": {
+      "label": "Positional play",
+      "formations": ["3-2-4-1", "4-3-3", "4-3-3-asym"],
+      "team": {"build_up": "Short Passing", "defensive_approach": "Balanced", "line_height": 62},
+      "role_prefs": {"ST": "advanced_forward", "W": "traditional_winger", "FB": "inverted_fullback", "DM": "deep_lying_playmaker", "CB": "ball_playing_defender", "GK": "sweeper_keeper"},
+      "needs": "strong MF line"
+    },
+    "gegenpress": {
+      "label": "Gegenpressing / high press",
+      "formations": ["4-3-3", "4-2-2-2", "3-4-3"],
+      "team": {"build_up": "Balanced", "defensive_approach": "Aggressive", "line_height": 75},
+      "role_prefs": {"ST": "advanced_forward", "W": "inverted_winger", "FB": "overlapping_fullback", "DM": "ball_winning_midfielder", "CB": "stopper", "GK": "sweeper_keeper"},
+      "needs": "deep squad (fatigue)"
+    },
+    "direct": {
+      "label": "Direct play",
+      "formations": ["4-4-2", "4-1-4-1", "3-5-2"],
+      "team": {"build_up": "Long Ball", "defensive_approach": "Balanced", "line_height": 50},
+      "role_prefs": {"ST": "target_man", "W": "traditional_winger", "FB": "fullback", "DM": "ball_winning_midfielder", "CB": "centre_back", "GK": "goalkeeper"},
+      "needs": "strong FW line"
+    },
+    "counter": {
+      "label": "Counter-attacking",
+      "formations": ["4-2-3-1", "4-4-2", "3-5-2"],
+      "team": {"build_up": "Counter", "defensive_approach": "Deep", "line_height": 38},
+      "role_prefs": {"ST": "advanced_forward", "W": "inverted_winger", "FB": "fullback", "DM": "anchor", "CB": "stopper", "GK": "goalkeeper"},
+      "needs": "fast FW line"
+    },
+    "low_block": {
+      "label": "Low block",
+      "formations": ["4-1-4-1", "3-5-2", "4-4-2"],
+      "team": {"build_up": "Long Ball", "defensive_approach": "Deep", "line_height": 28},
+      "role_prefs": {"ST": "target_man", "W": "wide_midfielder", "FB": "fullback", "DM": "anchor", "CB": "stopper", "GK": "goalkeeper"},
+      "needs": "strong DF line"
+    },
+    "balanced": {
+      "label": "Balanced mid-block",
+      "formations": ["4-2-3-1", "4-3-3", "4-4-2"],
+      "team": {"build_up": "Balanced", "defensive_approach": "Balanced", "line_height": 50},
+      "role_prefs": {"ST": "advanced_forward", "W": "inverted_winger", "FB": "fullback", "DM": "box_to_box", "CB": "centre_back", "GK": "goalkeeper"},
+      "needs": "none"
+    }
+  },
+  "game_states": {
+    "_about": "How every manager adjusts, scaled by his 'flexibility' (0-1). These are the pre-built alternative set-ups; the in-match switch itself is FC's native AI / your own button press.",
+    "protect_lead": {"line_height_delta": -15, "defensive_approach": "Deep", "swap": {"W": "wide_midfielder", "ST": "target_man"}},
+    "chasing":      {"line_height_delta": 12, "defensive_approach": "Aggressive", "build_up": "Long Ball", "swap": {"DM": "box_to_box", "FB": "overlapping_fullback"}},
+    "red_card":     {"line_height_delta": -12, "defensive_approach": "Deep", "drop_line": "FW", "note": "Remove one forward, keep the back line intact (e.g. 4-3-3 -> 4-4-1)."},
+    "underdog":     {"line_height_delta": -10, "defensive_approach": "Deep"},
+    "favourite":    {"line_height_delta": 6}
+  }
+}

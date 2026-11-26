@@ -1,0 +1,96 @@
+{
+  "club": "pafos",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "gegenpress",
+  "formation": "3-4-3",
+  "fc_base_formation": "3-4-3",
+  "team": {
+    "build_up": "Balanced",
+    "defensive_approach": "Aggressive",
+    "line_height": 75
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Radosław Majecki",
+      "overall": 69,
+      "role": "sweeper_keeper",
+      "fc_role": "Sweeper Keeper"
+    },
+    {
+      "slot": "LCB",
+      "player": "David Luiz",
+      "overall": 73,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "CB",
+      "player": "David Goldar",
+      "overall": 71,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RCB",
+      "player": "Yoram Zague",
+      "overall": 66,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "LM",
+      "player": "Vlad Dragomir",
+      "overall": 72,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "LCM",
+      "player": "Ivan Šunjić",
+      "overall": 71,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RCM",
+      "player": "Domingos Quina",
+      "overall": 70,
+      "role": "deep_lying_playmaker",
+      "fc_role": "Deep-Lying Playmaker"
+    },
+    {
+      "slot": "RM",
+      "player": "Bruno Felipe",
+      "overall": 68,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "LW",
+      "player": "Jajá",
+      "overall": 70,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "ST",
+      "player": "Ken Sema",
+      "overall": 68,
+      "role": "advanced_forward",
+      "fc_role": "Advanced Forward"
+    },
+    {
+      "slot": "RW",
+      "player": "Moumi Ngamaleu",
+      "overall": 67,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    }
+  ],
+  "note": ""
+}

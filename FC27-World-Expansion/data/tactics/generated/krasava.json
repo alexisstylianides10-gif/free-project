@@ -1,0 +1,96 @@
+{
+  "club": "krasava",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "low_block",
+  "formation": "3-5-2",
+  "fc_base_formation": "3-5-2",
+  "team": {
+    "build_up": "Long Ball",
+    "defensive_approach": "Deep",
+    "line_height": 28
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Antreas Christodoulou",
+      "overall": 57,
+      "role": "goalkeeper",
+      "fc_role": "Goalkeeper"
+    },
+    {
+      "slot": "LCB",
+      "player": "Xavi Quintillà",
+      "overall": 62,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "CB",
+      "player": "Issam Chebake",
+      "overall": 61,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RCB",
+      "player": "Luiyi de Lucas",
+      "overall": 57,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "LWB",
+      "player": "Rubén Pardo",
+      "overall": 63,
+      "role": "wingback",
+      "fc_role": "Wingback"
+    },
+    {
+      "slot": "LCM",
+      "player": "Nana Boateng",
+      "overall": 60,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "CDM",
+      "player": "Marco Camus",
+      "overall": 60,
+      "role": "anchor",
+      "fc_role": "Centre-Half"
+    },
+    {
+      "slot": "RCM",
+      "player": "Andreas Athanasiou",
+      "overall": 59,
+      "role": "deep_lying_playmaker",
+      "fc_role": "Deep-Lying Playmaker"
+    },
+    {
+      "slot": "RWB",
+      "player": "Nikolaos Dosis",
+      "overall": 58,
+      "role": "wingback",
+      "fc_role": "Wingback"
+    },
+    {
+      "slot": "LS",
+      "player": "Serge Tabekou",
+      "overall": 62,
+      "role": "target_man",
+      "fc_role": "Target Forward"
+    },
+    {
+      "slot": "RS",
+      "player": "Yevhen Budnik",
+      "overall": 61,
+      "role": "poacher",
+      "fc_role": "Poacher"
+    }
+  ],
+  "note": ""
+}

@@ -1,0 +1,96 @@
+{
+  "club": "aek_larnaca",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "positional",
+  "formation": "3-2-4-1",
+  "fc_base_formation": "4-3-3",
+  "team": {
+    "build_up": "Short Passing",
+    "defensive_approach": "Balanced",
+    "line_height": 62
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Alberto Paleari",
+      "overall": 69,
+      "role": "sweeper_keeper",
+      "fc_role": "Sweeper Keeper"
+    },
+    {
+      "slot": "LB",
+      "player": "Mike van der Hoorn",
+      "overall": 72,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LCB",
+      "player": "Hrvoje Miličević",
+      "overall": 71,
+      "role": "ball_playing_defender",
+      "fc_role": "Ball-Playing Defender"
+    },
+    {
+      "slot": "RCB",
+      "player": "Jorge Miramón",
+      "overall": 70,
+      "role": "ball_playing_defender",
+      "fc_role": "Ball-Playing Defender"
+    },
+    {
+      "slot": "RB",
+      "player": "Enric Saborit",
+      "overall": 69,
+      "role": "inverted_fullback",
+      "fc_role": "Falseback"
+    },
+    {
+      "slot": "CDM",
+      "player": "Jan Repas",
+      "overall": 70,
+      "role": "deep_lying_playmaker",
+      "fc_role": "Deep-Lying Playmaker"
+    },
+    {
+      "slot": "LCM",
+      "player": "Gus Ledes",
+      "overall": 68,
+      "role": "attacking_midfielder",
+      "fc_role": "Shadow Striker"
+    },
+    {
+      "slot": "RCM",
+      "player": "Petros Ioannou",
+      "overall": 66,
+      "role": "attacking_midfielder",
+      "fc_role": "Shadow Striker"
+    },
+    {
+      "slot": "LW",
+      "player": "Đorđe Ivanović",
+      "overall": 73,
+      "role": "traditional_winger",
+      "fc_role": "Winger"
+    },
+    {
+      "slot": "ST",
+      "player": "Amor Layouni",
+      "overall": 71,
+      "role": "false_nine",
+      "fc_role": "False 9"
+    },
+    {
+      "slot": "RW",
+      "player": "Riad Bajić",
+      "overall": 68,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    }
+  ],
+  "note": "Built from 4-3-3: one Falseback steps into midfield (makes the 3 at the back and the 2 in front), both 8s push up next to inverted wingers."
+}

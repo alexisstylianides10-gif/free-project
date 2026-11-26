@@ -1,0 +1,96 @@
+{
+  "club": "omonia_29m",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "counter",
+  "formation": "4-4-2",
+  "fc_base_formation": "4-4-2",
+  "team": {
+    "build_up": "Counter",
+    "defensive_approach": "Deep",
+    "line_height": 38
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Francis Uzoho",
+      "overall": 62,
+      "role": "goalkeeper",
+      "fc_role": "Goalkeeper"
+    },
+    {
+      "slot": "LB",
+      "player": "Antonio Portales",
+      "overall": 61,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LCB",
+      "player": "Angelos Vyntra",
+      "overall": 59,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RCB",
+      "player": "Sotiris Fiakas",
+      "overall": 58,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RB",
+      "player": "Henry Bates Andreou",
+      "overall": 57,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LM",
+      "player": "Kelechi Nwakali",
+      "overall": 63,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "LCM",
+      "player": "Rushit Zeka",
+      "overall": 62,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RCM",
+      "player": "Mike Morais",
+      "overall": 61,
+      "role": "ball_winning_midfielder",
+      "fc_role": "Holding"
+    },
+    {
+      "slot": "RM",
+      "player": "Marios Antoniou",
+      "overall": 56,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "LS",
+      "player": "Rashaan Fernandes",
+      "overall": 60,
+      "role": "advanced_forward",
+      "fc_role": "Advanced Forward"
+    },
+    {
+      "slot": "RS",
+      "player": "Fergus Tierney",
+      "overall": 60,
+      "role": "poacher",
+      "fc_role": "Poacher"
+    }
+  ],
+  "note": ""
+}

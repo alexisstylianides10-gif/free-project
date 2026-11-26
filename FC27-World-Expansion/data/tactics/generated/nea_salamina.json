@@ -1,0 +1,96 @@
+{
+  "club": "nea_salamina",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "direct",
+  "formation": "4-4-2",
+  "fc_base_formation": "4-4-2",
+  "team": {
+    "build_up": "Long Ball",
+    "defensive_approach": "Balanced",
+    "line_height": 50
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Alberto Varo",
+      "overall": 65,
+      "role": "goalkeeper",
+      "fc_role": "Goalkeeper"
+    },
+    {
+      "slot": "LB",
+      "player": "Florent Hanin",
+      "overall": 64,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LCB",
+      "player": "Vasilios Lampropoulos",
+      "overall": 62,
+      "role": "centre_back",
+      "fc_role": "Defender"
+    },
+    {
+      "slot": "RCB",
+      "player": "Andreas Panagiotou Filiotis",
+      "overall": 59,
+      "role": "centre_back",
+      "fc_role": "Defender"
+    },
+    {
+      "slot": "RB",
+      "player": "Alexandros Michail",
+      "overall": 57,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LM",
+      "player": "Jordi Quintillà",
+      "overall": 66,
+      "role": "traditional_winger",
+      "fc_role": "Winger"
+    },
+    {
+      "slot": "LCM",
+      "player": "José Artiles",
+      "overall": 63,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RCM",
+      "player": "Alois Confais",
+      "overall": 62,
+      "role": "ball_winning_midfielder",
+      "fc_role": "Holding"
+    },
+    {
+      "slot": "RM",
+      "player": "Georgios Christodoulou",
+      "overall": 60,
+      "role": "traditional_winger",
+      "fc_role": "Winger"
+    },
+    {
+      "slot": "LS",
+      "player": "Samuel Grandsir",
+      "overall": 66,
+      "role": "target_man",
+      "fc_role": "Target Forward"
+    },
+    {
+      "slot": "RS",
+      "player": "Karol Angielski",
+      "overall": 64,
+      "role": "poacher",
+      "fc_role": "Poacher"
+    }
+  ],
+  "note": ""
+}

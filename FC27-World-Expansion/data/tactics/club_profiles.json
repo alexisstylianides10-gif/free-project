@@ -1,0 +1,19 @@
+{
+  "_about": "Tactical identity per Cypriot First Division club. ESTIMATES: what we know of each coach's style (general knowledge, unverified) or a tier-based default where we know little. 'flexibility' 0-1 = how much the coach changes plan by game state/opponent. Edit freely: the selector reads this file.",
+  "clubs": {
+    "apoel":              {"manager": "Nikos Papadopoulos", "philosophy": "possession",  "flexibility": 0.5, "basis": "big-club default"},
+    "omonia":             {"manager": "Henning Berg",       "philosophy": "balanced",    "flexibility": 0.6, "basis": "Berg: pragmatic, organised 4-4-2/4-2-3-1 teams (general knowledge)"},
+    "pafos":              {"manager": "Ricardo Sá Pinto",   "philosophy": "gegenpress",  "flexibility": 0.4, "basis": "Sá Pinto: intense, aggressive sides (general knowledge)"},
+    "aek_larnaca":        {"manager": "Rubén Sellés",       "philosophy": "positional",  "flexibility": 0.5, "basis": "Sellés: possession-based, back-three build-up at Southampton/Reading (general knowledge)"},
+    "aris_limassol":      {"manager": "Artsyom Radzkow",    "philosophy": "balanced",    "flexibility": 0.5, "basis": "tier default"},
+    "apollon":            {"manager": "Hernán Losada",      "philosophy": "gegenpress",  "flexibility": 0.4, "basis": "Losada: high-pressing (Beerschot, D.C. United) (general knowledge)"},
+    "anorthosis":         {"manager": "Barak Yitzhaki",     "philosophy": "balanced",    "flexibility": 0.5, "basis": "tier default; head coach disputed in sources"},
+    "ael":                {"manager": "Hugo Martins",       "philosophy": "possession",  "flexibility": 0.5, "basis": "tier default; Portuguese coaching school"},
+    "olympiakos_nicosia": {"manager": "Georgios Kostis",    "philosophy": "counter",     "flexibility": 0.6, "basis": "tier default"},
+    "omonia_aradippou":   {"manager": "Ioannis Okkas",      "philosophy": "counter",     "flexibility": 0.6, "basis": "tier default"},
+    "nea_salamina":       {"manager": "Sofronis Avgousti",  "philosophy": "direct",      "flexibility": 0.6, "basis": "tier default"},
+    "karmiotissa":        {"manager": "Alexis Garpozis",    "philosophy": "low_block",   "flexibility": 0.7, "basis": "promoted-side default"},
+    "omonia_29m":         {"manager": "Fangio Buyse",       "philosophy": "counter",     "flexibility": 0.7, "basis": "promoted-side default"},
+    "krasava":            {"manager": "Dmytro Chyhrynskyi", "philosophy": "low_block",   "flexibility": 0.7, "basis": "promoted-side default; bottom of table"}
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "club": "apoel",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "possession",
+  "formation": "4-3-3",
+  "fc_base_formation": "4-3-3",
+  "team": {
+    "build_up": "Short Passing",
+    "defensive_approach": "High",
+    "line_height": 70
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Vid Belec",
+      "overall": 71,
+      "role": "sweeper_keeper",
+      "fc_role": "Sweeper Keeper"
+    },
+    {
+      "slot": "LB",
+      "player": "Konstantinos Laifis",
+      "overall": 72,
+      "role": "inverted_fullback",
+      "fc_role": "Falseback"
+    },
+    {
+      "slot": "LCB",
+      "player": "Kostas Stafylidis",
+      "overall": 69,
+      "role": "ball_playing_defender",
+      "fc_role": "Ball-Playing Defender"
+    },
+    {
+      "slot": "RCB",
+      "player": "Miloš Degenek",
+      "overall": 68,
+      "role": "ball_playing_defender",
+      "fc_role": "Ball-Playing Defender"
+    },
+    {
+      "slot": "RB",
+      "player": "Joan Sastre",
+      "overall": 67,
+      "role": "inverted_fullback",
+      "fc_role": "Falseback"
+    },
+    {
+      "slot": "CDM",
+      "player": "Filip Đuričić",
+      "overall": 75,
+      "role": "deep_lying_playmaker",
+      "fc_role": "Deep-Lying Playmaker"
+    },
+    {
+      "slot": "LCM",
+      "player": "Antonín Barák",
+      "overall": 70,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RCM",
+      "player": "Dálcio",
+      "overall": 66,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "LW",
+      "player": "Marquinhos",
+      "overall": 72,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "ST",
+      "player": "Daniel Mancini",
+      "overall": 70,
+      "role": "false_nine",
+      "fc_role": "False 9"
+    },
+    {
+      "slot": "RW",
+      "player": "Tasos Bakasetas",
+      "overall": 69,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    }
+  ],
+  "note": ""
+}

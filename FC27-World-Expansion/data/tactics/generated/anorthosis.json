@@ -1,0 +1,96 @@
+{
+  "club": "anorthosis",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "balanced",
+  "formation": "4-3-3",
+  "fc_base_formation": "4-3-3",
+  "team": {
+    "build_up": "Balanced",
+    "defensive_approach": "Balanced",
+    "line_height": 50
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Jacob Karlstrøm",
+      "overall": 68,
+      "role": "goalkeeper",
+      "fc_role": "Goalkeeper"
+    },
+    {
+      "slot": "LB",
+      "player": "Emil Bergström",
+      "overall": 67,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LCB",
+      "player": "Tobias Schättin",
+      "overall": 67,
+      "role": "centre_back",
+      "fc_role": "Defender"
+    },
+    {
+      "slot": "RCB",
+      "player": "Nemanja Tošić",
+      "overall": 64,
+      "role": "centre_back",
+      "fc_role": "Defender"
+    },
+    {
+      "slot": "RB",
+      "player": "Konstantinos Sergiou",
+      "overall": 62,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "CDM",
+      "player": "Yoell van Nieff",
+      "overall": 69,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "LCM",
+      "player": "Kostakis Artymatas",
+      "overall": 68,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RCM",
+      "player": "Stijn Middendorp",
+      "overall": 65,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "LW",
+      "player": "Tamás Kiss",
+      "overall": 66,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    },
+    {
+      "slot": "ST",
+      "player": "Alessio da Cruz",
+      "overall": 66,
+      "role": "advanced_forward",
+      "fc_role": "Advanced Forward"
+    },
+    {
+      "slot": "RW",
+      "player": "Elián Sosa",
+      "overall": 65,
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
+    }
+  ],
+  "note": ""
+}

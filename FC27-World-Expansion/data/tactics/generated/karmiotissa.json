@@ -1,0 +1,96 @@
+{
+  "club": "karmiotissa",
+  "opponent": "neutral",
+  "venue": "home",
+  "situation": "even",
+  "strength_diff": 2.0,
+  "game_state": "start",
+  "philosophy": "low_block",
+  "formation": "4-1-4-1",
+  "fc_base_formation": "4-1-4-1",
+  "team": {
+    "build_up": "Long Ball",
+    "defensive_approach": "Deep",
+    "line_height": 28
+  },
+  "lineup": [
+    {
+      "slot": "GK",
+      "player": "Nikos Giannakopoulos",
+      "overall": 62,
+      "role": "goalkeeper",
+      "fc_role": "Goalkeeper"
+    },
+    {
+      "slot": "LB",
+      "player": "Rubén García",
+      "overall": 62,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "LCB",
+      "player": "Nassim Ouammou",
+      "overall": 60,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RCB",
+      "player": "Julio César",
+      "overall": 59,
+      "role": "stopper",
+      "fc_role": "Stopper"
+    },
+    {
+      "slot": "RB",
+      "player": "Sadio Dembélé",
+      "overall": 58,
+      "role": "fullback",
+      "fc_role": "Fullback"
+    },
+    {
+      "slot": "CDM",
+      "player": "Panagiotis Tachtsidis",
+      "overall": 63,
+      "role": "anchor",
+      "fc_role": "Centre-Half"
+    },
+    {
+      "slot": "LM",
+      "player": "Alastair Reynolds",
+      "overall": 62,
+      "role": "wide_midfielder",
+      "fc_role": "Wide Midfielder"
+    },
+    {
+      "slot": "LCM",
+      "player": "Curtis Yebli",
+      "overall": 60,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RCM",
+      "player": "Malcolm Elhmidi",
+      "overall": 60,
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
+    },
+    {
+      "slot": "RM",
+      "player": "Xhuljo Tabaku",
+      "overall": 58,
+      "role": "wide_midfielder",
+      "fc_role": "Wide Midfielder"
+    },
+    {
+      "slot": "ST",
+      "player": "Patrick Luan",
+      "overall": 61,
+      "role": "target_man",
+      "fc_role": "Target Forward"
+    }
+  ],
+  "note": ""
+}
