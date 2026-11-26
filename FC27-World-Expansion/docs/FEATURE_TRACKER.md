@@ -9,14 +9,14 @@ log/screenshot on a named game build). As of 2026-11-26 **nothing has been teste
 | ID | Feature | Status | Evidence / blocker | Main tool |
 |---|---|---|---|---|
 | CY-01 | Cypriot First Division playable | Technically feasible | Liga Cyprus already in FC 27 (EA ratings site); club count/CM status unverified | LE DB |
-| CY-02 | Accurate squads, positions, ratings | Technically feasible | DB editing confirmed in LE | LE DB + our data |
+| CY-02 | Accurate squads, positions, ratings | In development | Rating bands + validator (`tools/validate_ratings.py`, 9 passing unit tests); calibrated to EA's APOEL/Omonia ratings | LE DB + our data |
 | CY-03 | Cypriot Second Division | Experimental | Needs new league + compdata; CM crash reports | LE compdata |
 | CY-04 | Lower divisions | Research required | Reported ~5-division-per-nation CM limit (older titles) | LE compdata |
 | CY-05 | Promotion/relegation | Experimental | Depends on CY-03 | compdata |
 | CY-06 | Cyprus Cup | Experimental | compdata cup template | compdata |
 | CY-07 | Super Cup | Experimental | compdata | compdata |
 | CY-08 | Split-season format (championship/relegation groups) | Research required | Engine support unknown | compdata |
-| CY-09 | Badges | Technically feasible (tech) / **IP risk** | FET textures; real badges are trademarks | FET |
+| CY-09 | Badges (real, personal use) | Technically feasible | FET textures | FET |
 | CY-10 | Home/away/third/GK kits | Technically feasible | FET 2.2.0 + Kit Creator support FC 27 | FET/FKC |
 | CY-11 | Stadium assignment | Technically feasible | DB field | LE DB |
 | CY-12 | New stadium models | Research required | Very high effort | FMT/FET |

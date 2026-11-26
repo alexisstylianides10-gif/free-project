@@ -1,0 +1,19 @@
+{
+  "_about": "Club -> rating tier. Tiers are DRAFT: the 2026-27 First Division line-up and each club's tier must be confirmed against the official league table before squads are entered. 'in_fc27' = EA already ships this club.",
+  "clubs": [
+    {"id": "apoel", "name": "APOEL", "division": 1, "tier": "ea_native", "in_fc27": true, "ea_team_id": 100135},
+    {"id": "omonia", "name": "Omonia", "division": 1, "tier": "ea_native", "in_fc27": true, "ea_team_id": 264},
+    {"id": "pafos", "name": "Pafos FC", "division": 1, "tier": "title_contender", "in_fc27": false},
+    {"id": "aek_larnaca", "name": "AEK Larnaca", "division": 1, "tier": "title_contender", "in_fc27": false},
+    {"id": "aris_limassol", "name": "Aris Limassol", "division": 1, "tier": "title_contender", "in_fc27": false},
+    {"id": "apollon", "name": "Apollon Limassol", "division": 1, "tier": "upper_mid", "in_fc27": false},
+    {"id": "anorthosis", "name": "Anorthosis Famagusta", "division": 1, "tier": "upper_mid", "in_fc27": false},
+    {"id": "ael", "name": "AEL Limassol", "division": 1, "tier": "upper_mid", "in_fc27": false},
+    {"id": "ethnikos_achna", "name": "Ethnikos Achna", "division": 1, "tier": "lower_mid", "in_fc27": false},
+    {"id": "enp", "name": "Enosis Neon Paralimni", "division": 1, "tier": "lower_mid", "in_fc27": false},
+    {"id": "olympiakos_nicosia", "name": "Olympiakos Nicosia", "division": 1, "tier": "lower_mid", "in_fc27": false},
+    {"id": "omonia_aradippou", "name": "Omonia Aradippou", "division": 1, "tier": "lower_mid", "in_fc27": false},
+    {"id": "akritas", "name": "Akritas Chlorakas", "division": 1, "tier": "promoted_small", "in_fc27": false},
+    {"id": "krasava", "name": "Krasava ENY Ypsonas", "division": 1, "tier": "promoted_small", "in_fc27": false}
+  ]
+}

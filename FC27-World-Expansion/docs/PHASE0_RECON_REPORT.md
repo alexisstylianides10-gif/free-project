@@ -1,6 +1,8 @@
 # FC 27 World Expansion — Phase 0 Technical Reconnaissance
 
 Status: **research only — no game files modified, nothing built.**
+
+> **Scope update (2026-11-26):** the owner decided this mod is for **personal use only**, not public distribution. Real club badges and kits are allowed for their own install. Ratings follow [`RATINGS_POLICY.md`](RATINGS_POLICY.md).
 Date of research: 2026-11-26.
 
 ## How to read this report
@@ -244,7 +246,7 @@ Ship order: a **Cyprus-only v0.1 public release** early. A real, working slice b
 | R2 | Dependence on a Patreon-gated tool (LE early versions) | Medium | Target the **public** LE version only |
 | R3 | New leagues crash Career Mode | High | Incremental compdata changes, start from working templates, automated compdata linter |
 | R4 | Quick-sim not moddable | High | Honest scope; calibration harness; match-fix experiment |
-| R5 | **Licensing/IP**: real club badges, kit sponsors, player likeness, EA assets | **High for a public mod** | Use only original/licensed art; never redistribute EA files; badges/sponsors as optional user-supplied packs; get club permission where possible |
+| R5 | Licensing/IP | Low (personal use) | **Scope changed 2026-11-26: personal use only, not publicly distributed.** Real badges/kits/sponsors are fine for the owner's own install. The repo still never contains EA game files; if the project ever goes public again, this risk returns to High. |
 | R6 | Account bans if users go online modded | High (for users) | Offline-only, loud warnings, launcher check |
 | R7 | Malware-laden fake tools | Medium | Whitelist official tool sources only |
 | R8 | Cyprus split-season format unsupported | Medium | Approximate with supported format; document it |

@@ -1,0 +1,63 @@
+{
+  "_about": "Rating bands for Cypriot football, calibrated to EA's own FC 27 ratings for APOEL and Omonia (the only Cypriot clubs EA ships). Every number a modder enters is checked against these bands by tools/validate_ratings.py.",
+  "anchors": {
+    "_source": "EA SPORTS FC 27 official ratings pages + FUT.GG/SoFIFA, checked 2026-11-26 (launch-item ratings).",
+    "apoel": {"best": 75, "best_player": "Filip Djuricic", "next": [72, 72, 71], "lowest_seen": 56},
+    "omonia": {"best": 73, "best_player": "Loic Nego", "next": [72, 72, 71]}
+  },
+  "league_hard_cap": 77,
+  "_league_hard_cap_note": "No player in any Cypriot league may exceed this, even with an override. EA's best Cyprus-based player is 75.",
+  "override_allowance": 2,
+  "_override_allowance_note": "A player can go up to (tier max + this), never above league_hard_cap, and only with a written override_reason (e.g. ex-big-league veteran with a known EA rating).",
+  "tiers": {
+    "ea_native": {
+      "description": "Clubs EA already rates in FC 27. Keep EA's numbers, only fix squad changes.",
+      "max_player": 76,
+      "top3_avg": [70, 74],
+      "squad_avg": [62, 68],
+      "max_potential": 82
+    },
+    "title_contender": {
+      "description": "Clubs at APOEL/Omonia level (e.g. recent champions / European group-stage sides).",
+      "max_player": 76,
+      "top3_avg": [70, 74],
+      "squad_avg": [62, 68],
+      "max_potential": 82
+    },
+    "upper_mid": {
+      "description": "Established top-half clubs.",
+      "max_player": 72,
+      "top3_avg": [67, 70],
+      "squad_avg": [60, 65],
+      "max_potential": 78
+    },
+    "lower_mid": {
+      "description": "Survival-level First Division clubs.",
+      "max_player": 68,
+      "top3_avg": [64, 67],
+      "squad_avg": [56, 62],
+      "max_potential": 75
+    },
+    "promoted_small": {
+      "description": "Newly promoted / smallest-budget First Division clubs (e.g. Krasava ENY Ypsonas).",
+      "max_player": 65,
+      "top3_avg": [61, 64],
+      "squad_avg": [52, 59],
+      "max_potential": 72
+    },
+    "second_division": {
+      "description": "Cypriot Second Division.",
+      "max_player": 62,
+      "top3_avg": [57, 61],
+      "squad_avg": [48, 56],
+      "max_potential": 70
+    },
+    "third_division": {
+      "description": "Cypriot Third Division and below.",
+      "max_player": 56,
+      "top3_avg": [51, 55],
+      "squad_avg": [45, 52],
+      "max_potential": 66
+    }
+  }
+}

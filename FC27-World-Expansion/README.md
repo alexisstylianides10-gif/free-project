@@ -1,6 +1,6 @@
 # FC 27 World Expansion
 
-A planned public, offline-only mega mod for EA SPORTS FC 27 (PC, EA App).
+A planned personal-use, offline-only mega mod for EA SPORTS FC 27 (PC, EA App).
 
 **Status: Phase 0 — technical research. Nothing here modifies the game yet.**
 
@@ -8,4 +8,4 @@ A planned public, offline-only mega mod for EA SPORTS FC 27 (PC, EA App).
 - Feature tracker: [docs/FEATURE_TRACKER.md](docs/FEATURE_TRACKER.md)
 
 Ground rules: offline single-player only, no anti-cheat bypass code of our own, no
-redistribution of EA game files, no claims without in-game evidence.
+EA game files in this repo, no claims without in-game evidence.
