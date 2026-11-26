@@ -9,7 +9,7 @@ log/screenshot on a named game build). As of 2026-11-26 **nothing has been teste
 | ID | Feature | Status | Evidence / blocker | Main tool |
 |---|---|---|---|---|
 | CY-01 | Cypriot First Division playable | In development | Real 2026-27 line-up + 14 squads in `data/cyprus/` (385 players); Liga Cyprus in FC 27 has only APOEL/Omonia; import not yet built | LE DB |
-| CY-02 | Accurate squads, positions, ratings | In development | 712 players rated via `tools/estimate_ratings.py` (EA anchors + tier curve), 0 validator errors, 14 unit tests; missing: full names, ages, detailed positions | LE DB + our data |
+| CY-02 | Accurate squads, positions, ratings, attributes | In development | 34 generated FC attributes per player (`tools/generate_attributes.py`), overall reproduced exactly for all 712; ~80 known positions; 6 tests. | 712 players rated via `tools/estimate_ratings.py` (EA anchors + tier curve), 0 validator errors, 14 unit tests; missing: full names, ages, detailed positions | LE DB + our data |
 | CY-03 | Cypriot Second Division | Experimental | Data ready: 16 clubs, 13 squads (327 players), format documented; league creation via compdata untested | LE compdata |
 | CY-04 | Lower divisions | Research required | Reported ~5-division-per-nation CM limit (older titles) | LE compdata |
 | CY-05 | Promotion/relegation | Experimental | Depends on CY-03 | compdata |
