@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 builds/
 releases/
+assets/badges/_local/
+assets/managers/_local/

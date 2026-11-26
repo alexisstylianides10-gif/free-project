@@ -8,16 +8,16 @@ log/screenshot on a named game build). As of 2026-11-26 **nothing has been teste
 
 | ID | Feature | Status | Evidence / blocker | Main tool |
 |---|---|---|---|---|
-| CY-01 | Cypriot First Division playable | Technically feasible | Liga Cyprus already in FC 27 (EA ratings site); club count/CM status unverified | LE DB |
-| CY-02 | Accurate squads, positions, ratings | In development | Rating bands + validator (`tools/validate_ratings.py`, 9 passing unit tests); calibrated to EA's APOEL/Omonia ratings | LE DB + our data |
-| CY-03 | Cypriot Second Division | Experimental | Needs new league + compdata; CM crash reports | LE compdata |
+| CY-01 | Cypriot First Division playable | In development | Real 2026-27 line-up + 14 squads in `data/cyprus/` (385 players); Liga Cyprus in FC 27 has only APOEL/Omonia; import not yet built | LE DB |
+| CY-02 | Accurate squads, positions, ratings | In development | 712 players rated via `tools/estimate_ratings.py` (EA anchors + tier curve), 0 validator errors, 14 unit tests; missing: full names, ages, detailed positions | LE DB + our data |
+| CY-03 | Cypriot Second Division | Experimental | Data ready: 16 clubs, 13 squads (327 players), format documented; league creation via compdata untested | LE compdata |
 | CY-04 | Lower divisions | Research required | Reported ~5-division-per-nation CM limit (older titles) | LE compdata |
 | CY-05 | Promotion/relegation | Experimental | Depends on CY-03 | compdata |
 | CY-06 | Cyprus Cup | Experimental | compdata cup template | compdata |
 | CY-07 | Super Cup | Experimental | compdata | compdata |
 | CY-08 | Split-season format (championship/relegation groups) | Research required | Engine support unknown | compdata |
-| CY-09 | Badges (real, personal use) | Technically feasible | FET textures | FET |
-| CY-10 | Home/away/third/GK kits | Technically feasible | FET 2.2.0 + Kit Creator support FC 27 | FET/FKC |
+| CY-09 | Badges (real, personal use) | In development | `tools/fetch_badges.py` downloads crests (untested here: Wikipedia rate-limited the cloud machine) | FET |
+| CY-10 | Home/away/third/GK kits | Technically feasible | Colours/manufacturer/sponsor partly in `clubs.json`; textures to be made in Kit Creator | FET/FKC |
 | CY-11 | Stadium assignment | Technically feasible | DB field | LE DB |
 | CY-12 | New stadium models | Research required | Very high effort | FMT/FET |
 | CY-13 | Cyprus in Manager Career | Research required | Gated on CY-01 audit | LE |
@@ -44,7 +44,9 @@ log/screenshot on a named game build). As of 2026-11-26 **nothing has been teste
 | SIM-05 | Custom stats (xG, pressing) in sim | Research required | Stat writeback unknown | — |
 | CM-01 | Transfer realism tweaks | Research required | FC 27 rebuilt transfer market | LE/Lua |
 | CM-02 | Player development/potential | Technically feasible | Lua Player Development Manager exists | Lua |
-| CM-03 | Manager changes | Technically feasible | LE Managers Editor | LE |
+| CM-03 | Manager changes | Technically feasible | LE Managers Editor; all D1 coaches in `clubs.json` | LE |
+| CM-05 | User manager can take any club/national team | Technically feasible | LE GUI 'Create Job Offer' (wiki); Lua automation blocked on undocumented API, discovery script in `integrations/live-editor/lua/` | LE |
+| CM-06 | Real manager likeness | Experimental | Minifaces from photos via LE; 3D heads generic only | LE |
 | CM-04 | Realistic calendars | Research required | compdata schedule | compdata |
 | KIT-01 | Prepared seasonal kit packs | Technically feasible | FET/FKC | FET |
 | KIT-02 | Auto kit swap at season rollover | Experimental | Lua event + legacy files | Lua |

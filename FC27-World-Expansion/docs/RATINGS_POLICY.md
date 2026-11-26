@@ -22,8 +22,8 @@ So the **best player in Cyprus is about 75**. Everything else scales down from t
 | ea_native | APOEL, Omonia | 76 | 70–74 | 62–68 | 82 |
 | title_contender | Pafos, AEK Larnaca, Aris | 76 | 70–74 | 62–68 | 82 |
 | upper_mid | Apollon, Anorthosis, AEL | 72 | 67–70 | 60–65 | 78 |
-| lower_mid | Achna, ENP, Olympiakos, Omonia Aradippou | 68 | 64–67 | 56–62 | 75 |
-| promoted_small | **Krasava ENY Ypsonas**, Akritas | **65** | 61–64 | 52–59 | 72 |
+| lower_mid | Olympiakos, Omonia Aradippou, Nea Salamina | 68 | 64–67 | 56–62 | 75 |
+| promoted_small | **Krasava ENY Ypsonas**, Karmiotissa, Omonia 29M | **65** | 61–64 | 52–59 | 72 |
 | second_division | — | 62 | 57–61 | 48–56 | 70 |
 | third_division | — | 56 | 51–55 | 45–52 | 66 |
 

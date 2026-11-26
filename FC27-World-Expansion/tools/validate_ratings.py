@@ -43,7 +43,7 @@ def validate_rows(rows, bands, clubs):
     by_club: dict[str, list[int]] = defaultdict(list)
 
     for i, row in enumerate(rows, start=2):  # line 1 is the header
-        where = f"line {i} ({row.get('player_name', '?')})"
+        where = f"line {i} ({row.get('known_as') or row.get('player_name', '?')})"
         club = clubs.get(row.get("club_id", ""))
         if club is None:
             errors.append(f"{where}: unknown club_id '{row.get('club_id')}'")
