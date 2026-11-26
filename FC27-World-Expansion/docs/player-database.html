@@ -111,7 +111,7 @@ tr.detail td{background:var(--bg);white-space:normal}
   <div class="legend">
     <div><span class="r g">75</span> gold 75+ · <span class="r s">68</span> silver 65–74 · <span class="r b">60</span> bronze below 65 (FC card tiers)</div>
     <div><b>Source:</b> <span class="src e">EA</span> = EA's own FC 27 rating · <span class="src">Key</span> = established player, estimated at the top of his club · <span class="src">Est</span> = estimated within the club's tier.</div>
-    <div><b>Age:</b> ages are guesses until the game export arrives. Vet = known 32+ (no growth) · Kid = treated as 19 · Young = 22 · Prime = 27 · Set = age we entered by hand.</div>
+    <div><b>Age:</b> a number is a known age (veterans, from general knowledge). Otherwise it's a guess until the game export arrives: Vet = 32+ · Kid = treated as 19 · Young = 22 · Prime = 27. From about 31 players decline every season; at 36+ they lose 4–7 points a year and may retire.</div>
     <div><b>Stats:</b> PAC SHO PAS DRI DEF PHY for outfield players; keepers show DIV HAN KIC REF SPD POS. All generated from position, age and overall.</div>
     <div>Squads from Wikipedia, Aug–Sep 2026. Detailed positions are known for about 80 established players and generated for the rest.</div>
   </div>
@@ -210,7 +210,7 @@ function render() {
         <td class="name"><button class="namebtn" data-p="${esc(key(p))}" aria-expanded="${open}">${esc(p.name)}</button>${p.notes?`<span class="loan">${esc(p.notes)}</span>`:""}</td>
         <td>${p.pos}</td><td>${esc(p.nat)}</td><td class="num">${chip(p.ovr)}</td><td class="num">${chip(p.pot)}</td>
         <td class="num">${p.pot>p.ovr?`<span class="up">+${p.pot-p.ovr}</span>`:"–"}</td>${face}
-        <td>${AGE[p.age]}</td><td><span class="src ${p.src==="E"?"e":""}">${SRC[p.src]}</span></td></tr>` +
+        <td>${p.ageN ? `<b>${p.ageN}</b>` : AGE[p.age]}</td><td><span class="src ${p.src==="E"?"e":""}">${SRC[p.src]}</span></td></tr>` +
         (open ? `<tr class="detail"><td colspan="${COLS.length}">${sheet(p)}</td></tr>` : "");
       }).join("") + `</tbody></table></div></section>`;
   }
@@ -240,7 +240,7 @@ fillClubs();
 document.getElementById("list").innerHTML = `<div class="loading">Loading 712 players…</div>`;
 fetch("players.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(rows => {
   players = rows.map(r => ({club:r[0],num:r[1],name:r[2],pos:r[3],nat:r[4],ovr:r[5],pot:r[6],src:r[7],age:r[8],notes:r[9],
-    posSrc:r[10],foot:r[11],wf:r[12],sm:r[13],ht:r[14],face:r[15],attrs:r[16]}));
+    posSrc:r[10],foot:r[11],wf:r[12],sm:r[13],ht:r[14],face:r[15],attrs:r[16],ageN:r[17]}));
   document.getElementById("tot").textContent = `${players.length} players · ${Object.keys(clubs).length} clubs`;
   leaders("topOvr", p => p.ovr, p => chip(p.ovr));
   leaders("topPot", p => p.pot, p => `${p.ovr} → ${chip(p.pot)}`);

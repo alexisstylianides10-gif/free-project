@@ -80,3 +80,33 @@ Potential is **not** capped by club. Only the global ceiling of 88 applies. Extr
 The guess is wrong for some players (e.g. an established Cypriot international who is a
 squad player gets treated as a kid). Real birth dates from the Live Editor DB export
 replace every guess automatically: fill the `age` column and re-run `tools/estimate_ratings.py`.
+
+## Ageing and decline (`tools/progress_season.py`)
+
+Every season each player ages one year and his overall moves by age:
+
+| Age | Change per season |
+|---|---|
+| ≤21 | +3 to +6 (+1 more if he's a regular starter), never past potential |
+| 22–24 | +1 to +4 |
+| 25–28 | 0 to +2 |
+| 29–30 | −1 to +1 |
+| 31–32 | −3 to −1 |
+| 33–34 | −4 to −2 |
+| 35 | −5 to −3 |
+| **36+** | **−7 to −4** |
+
+- When declining, **pace goes first** (about 2× the overall drop), then stamina, agility and
+  jumping. Vision, composure, positioning and reactions hold up. Attributes are re-tuned so
+  they still give exactly the new overall.
+- Past the peak, potential falls with the overall.
+- Retirement chance at season end: 34: 5% · 35: 15% · 36: 30% · 37: 50% · 38+: 75%.
+- Known veterans now have their real ages (`potential_overrides.json`, general knowledge,
+  verify): David Luiz 39, Fabiano 38, Jovetić 37, Miramón 37, Belec 36, Narsingh 36…
+
+Example: Jovetić 69 at 37 → 63 at 38 (retires). Đuričić 75 → 72 → 67, retiring at 36.
+A kid like Gerasimou goes 63 → 67 → 73 → 77.
+
+In-game, FC 27 Career Mode ages players with its own system. This model previews a
+realistic curve and supplies the numbers we write in through Live Editor (its player
+editor, and the new Growth Profile setting once we confirm what it controls).
