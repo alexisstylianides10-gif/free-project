@@ -85,3 +85,20 @@ properly.
    exists in EA's database (many of these foreigners do, from Greek, Dutch and Spanish leagues)
    and use their real EA rating, still clamped to the Cyprus caps.
 3. Add the Second Division as a new league (experimental: compdata, see FEATURE_TRACKER CY-03).
+
+## 7. Turning off Dynamic OVR
+
+FC 27's **Dynamic OVR** moves ratings up and down with form, morale and fitness during
+Career Mode. The game has no setting to turn it off. **Live Editor does:** its changelog
+lists `Disable Dynamic OVR` under "Miscellaneous Features", added in **v27.1.3**.
+
+1. Run Live Editor **v27.1.3 or newer** and load your career save.
+2. **F9 → Miscellaneous Features → Disable Dynamic OVR.**
+3. Re-apply it after each game restart unless Live Editor saves it for you (not confirmed).
+
+Version note: Live Editor's `version.json` listed the **public** build as v27.1.0, older than
+27.1.3. Until the public build passes 27.1.3, this option may only be in the Patreon builds.
+Check your Live Editor version first.
+
+Why it matters for this mod: with Dynamic OVR off, our ratings, the season-1 caps and the
+ageing curve stay as set, instead of being moved around by form every week.

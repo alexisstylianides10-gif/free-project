@@ -44,6 +44,7 @@ log/screenshot on a named game build). As of 2026-11-26 **nothing has been teste
 | SIM-05 | Custom stats (xG, pressing) in sim | Research required | Stat writeback unknown | — |
 | CM-01 | Transfer realism tweaks | In development | Club budgets/prestige (`club_economics.json`, estimates) + `tools/plan_transfers.py` (6 tests); native AI frequency not moddable; auto-apply needs undocumented LE Lua | LE/Lua |
 | CM-07 | Player potential, growth & age decline | In development | Per-player potential (age + talent + overrides, ceiling 88); `tools/progress_season.py` age curve (36+ loses 4–7 a season, pace first) + retirements; FC's native ageing still applies in-game | data |
+| CM-08 | Turn off FC 27 Dynamic OVR | Technically feasible | Live Editor changelog v27.1.3: "Disable Dynamic OVR" (Miscellaneous Features); public LE build listed as v27.1.0, so may need a newer build; untested by us | LE |
 | CM-02 | Player development/potential | Technically feasible | Lua Player Development Manager exists | Lua |
 | CM-03 | Manager changes | Technically feasible | LE Managers Editor; all D1 coaches in `clubs.json` | LE |
 | CM-05 | User manager can take any club/national team | Technically feasible | LE GUI 'Create Job Offer' (wiki); Lua automation blocked on undocumented API, discovery script in `integrations/live-editor/lua/` | LE |
