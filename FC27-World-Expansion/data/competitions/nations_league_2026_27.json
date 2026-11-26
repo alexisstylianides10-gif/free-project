@@ -1,0 +1,1665 @@
+{
+ "_about": "2026-27 UEFA Nations League league phase (24 Sep - 17 Nov 2026). Source: English Wikipedia main + League A-D pages, read 2026-11-26. Format, A1/B1/C1/D1/D2 tables and some results verbatim; other groups from a page summary (all reconcile with the published tables, checked by tests/test_nations_league.py).",
+ "edition": "2026-27",
+ "format": {
+  "leagues": {
+   "A": "4 groups of 4",
+   "B": "4 groups of 4",
+   "C": "4 groups of 4",
+   "D": "2 groups of 3"
+  },
+  "matches": "home and away round robin (6 per team in A-C, 4 in D)",
+  "league_a_knockout": "top 2 of each group -> two-legged quarter-finals 25-30 Mar 2027 (winner v runner-up of another group, winner hosts 2nd leg) -> Finals 9-13 Jun 2027"
+ },
+ "groups": {
+  "A": {
+   "1": [
+    "Belgium",
+    "France",
+    "Italy",
+    "Turkey"
+   ],
+   "2": [
+    "Germany",
+    "Greece",
+    "Netherlands",
+    "Serbia"
+   ],
+   "3": [
+    "Croatia",
+    "Czech Republic",
+    "England",
+    "Spain"
+   ],
+   "4": [
+    "Denmark",
+    "Norway",
+    "Portugal",
+    "Wales"
+   ]
+  },
+  "B": {
+   "1": [
+    "North Macedonia",
+    "Scotland",
+    "Slovenia",
+    "Switzerland"
+   ],
+   "2": [
+    "Georgia",
+    "Hungary",
+    "Northern Ireland",
+    "Ukraine"
+   ],
+   "3": [
+    "Austria",
+    "Israel",
+    "Kosovo",
+    "Republic of Ireland"
+   ],
+   "4": [
+    "Bosnia and Herzegovina",
+    "Poland",
+    "Romania",
+    "Sweden"
+   ]
+  },
+  "C": {
+   "1": [
+    "Albania",
+    "Belarus",
+    "Finland",
+    "San Marino"
+   ],
+   "2": [
+    "Armenia",
+    "Cyprus",
+    "Latvia",
+    "Montenegro"
+   ],
+   "3": [
+    "Faroe Islands",
+    "Kazakhstan",
+    "Moldova",
+    "Slovakia"
+   ],
+   "4": [
+    "Bulgaria",
+    "Estonia",
+    "Iceland",
+    "Luxembourg"
+   ]
+  },
+  "D": {
+   "1": [
+    "Andorra",
+    "Gibraltar",
+    "Malta"
+   ],
+   "2": [
+    "Azerbaijan",
+    "Liechtenstein",
+    "Lithuania"
+   ]
+  }
+ },
+ "published_order": {
+  "A": {
+   "1": [
+    "France",
+    "Belgium",
+    "Italy",
+    "Turkey"
+   ],
+   "2": [
+    "Germany",
+    "Netherlands",
+    "Greece",
+    "Serbia"
+   ],
+   "3": [
+    "England",
+    "Spain",
+    "Croatia",
+    "Czech Republic"
+   ],
+   "4": [
+    "Portugal",
+    "Norway",
+    "Denmark",
+    "Wales"
+   ]
+  },
+  "B": {
+   "1": [
+    "Switzerland",
+    "Slovenia",
+    "Scotland",
+    "North Macedonia"
+   ],
+   "2": [
+    "Northern Ireland",
+    "Hungary",
+    "Ukraine",
+    "Georgia"
+   ],
+   "3": [
+    "Austria",
+    "Republic of Ireland",
+    "Kosovo",
+    "Israel"
+   ],
+   "4": [
+    "Sweden",
+    "Bosnia and Herzegovina",
+    "Poland",
+    "Romania"
+   ]
+  },
+  "C": {
+   "1": [
+    "Albania",
+    "Belarus",
+    "Finland",
+    "San Marino"
+   ],
+   "2": [
+    "Montenegro",
+    "Cyprus",
+    "Armenia",
+    "Latvia"
+   ],
+   "3": [
+    "Slovakia",
+    "Faroe Islands",
+    "Moldova",
+    "Kazakhstan"
+   ],
+   "4": [
+    "Iceland",
+    "Estonia",
+    "Bulgaria",
+    "Luxembourg"
+   ]
+  },
+  "D": {
+   "1": [
+    "Malta",
+    "Andorra",
+    "Gibraltar"
+   ],
+   "2": [
+    "Azerbaijan",
+    "Lithuania",
+    "Liechtenstein"
+   ]
+  }
+ },
+ "results": [
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-09-25",
+   "home": "Italy",
+   "away": "Belgium",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-09-25",
+   "home": "Turkey",
+   "away": "France",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-09-28",
+   "home": "Belgium",
+   "away": "France",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-09-28",
+   "home": "Turkey",
+   "away": "Italy",
+   "home_goals": 1,
+   "away_goals": 4
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-10-02",
+   "home": "Belgium",
+   "away": "Turkey",
+   "home_goals": 3,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-10-02",
+   "home": "France",
+   "away": "Italy",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-10-05",
+   "home": "France",
+   "away": "Belgium",
+   "home_goals": 4,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-10-05",
+   "home": "Italy",
+   "away": "Turkey",
+   "home_goals": 3,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-11-12",
+   "home": "Turkey",
+   "away": "Belgium",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-11-12",
+   "home": "Italy",
+   "away": "France",
+   "home_goals": 3,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-11-15",
+   "home": "Belgium",
+   "away": "Italy",
+   "home_goals": 4,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "1",
+   "date": "2026-11-15",
+   "home": "France",
+   "away": "Turkey",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-09-24",
+   "home": "Netherlands",
+   "away": "Germany",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-09-24",
+   "home": "Serbia",
+   "away": "Greece",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-09-27",
+   "home": "Serbia",
+   "away": "Netherlands",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-09-27",
+   "home": "Germany",
+   "away": "Greece",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-10-01",
+   "home": "Germany",
+   "away": "Serbia",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-10-01",
+   "home": "Greece",
+   "away": "Netherlands",
+   "home_goals": 2,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-10-04",
+   "home": "Greece",
+   "away": "Germany",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-10-04",
+   "home": "Netherlands",
+   "away": "Serbia",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-11-13",
+   "home": "Netherlands",
+   "away": "Greece",
+   "home_goals": 7,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-11-13",
+   "home": "Serbia",
+   "away": "Germany",
+   "home_goals": 1,
+   "away_goals": 3
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-11-16",
+   "home": "Germany",
+   "away": "Netherlands",
+   "home_goals": 5,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "2",
+   "date": "2026-11-16",
+   "home": "Greece",
+   "away": "Serbia",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-09-26",
+   "home": "Czech Republic",
+   "away": "Croatia",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-09-26",
+   "home": "England",
+   "away": "Spain",
+   "home_goals": 2,
+   "away_goals": 3
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-09-29",
+   "home": "Czech Republic",
+   "away": "England",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-09-29",
+   "home": "Spain",
+   "away": "Croatia",
+   "home_goals": 4,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-10-03",
+   "home": "Croatia",
+   "away": "England",
+   "home_goals": 0,
+   "away_goals": 7
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-10-03",
+   "home": "Spain",
+   "away": "Czech Republic",
+   "home_goals": 3,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-10-06",
+   "home": "Croatia",
+   "away": "Spain",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-10-06",
+   "home": "England",
+   "away": "Czech Republic",
+   "home_goals": 3,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-11-12",
+   "home": "Czech Republic",
+   "away": "Spain",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-11-12",
+   "home": "England",
+   "away": "Croatia",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-11-15",
+   "home": "Croatia",
+   "away": "Czech Republic",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "3",
+   "date": "2026-11-15",
+   "home": "Spain",
+   "away": "England",
+   "home_goals": 2,
+   "away_goals": 3
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-09-24",
+   "home": "Norway",
+   "away": "Denmark",
+   "home_goals": 3,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-09-24",
+   "home": "Portugal",
+   "away": "Wales",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-09-27",
+   "home": "Denmark",
+   "away": "Wales",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-09-27",
+   "home": "Norway",
+   "away": "Portugal",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-10-01",
+   "home": "Denmark",
+   "away": "Portugal",
+   "home_goals": 2,
+   "away_goals": 4
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-10-01",
+   "home": "Wales",
+   "away": "Norway",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-10-04",
+   "home": "Portugal",
+   "away": "Norway",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-10-04",
+   "home": "Wales",
+   "away": "Denmark",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-11-14",
+   "home": "Norway",
+   "away": "Wales",
+   "home_goals": 3,
+   "away_goals": 1
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-11-14",
+   "home": "Portugal",
+   "away": "Denmark",
+   "home_goals": 1,
+   "away_goals": 4
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-11-17",
+   "home": "Denmark",
+   "away": "Norway",
+   "home_goals": 2,
+   "away_goals": 3
+  },
+  {
+   "league": "A",
+   "group": "4",
+   "date": "2026-11-17",
+   "home": "Wales",
+   "away": "Portugal",
+   "home_goals": 2,
+   "away_goals": 3
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-09-26",
+   "home": "Slovenia",
+   "away": "Scotland",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-09-26",
+   "home": "North Macedonia",
+   "away": "Switzerland",
+   "home_goals": 0,
+   "away_goals": 3
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-09-29",
+   "home": "Scotland",
+   "away": "Switzerland",
+   "home_goals": 0,
+   "away_goals": 3
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-09-29",
+   "home": "Slovenia",
+   "away": "North Macedonia",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-10-03",
+   "home": "North Macedonia",
+   "away": "Scotland",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-10-03",
+   "home": "Switzerland",
+   "away": "Slovenia",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-10-06",
+   "home": "Scotland",
+   "away": "Slovenia",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-10-06",
+   "home": "Switzerland",
+   "away": "North Macedonia",
+   "home_goals": 3,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-11-13",
+   "home": "Scotland",
+   "away": "North Macedonia",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-11-13",
+   "home": "Slovenia",
+   "away": "Switzerland",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-11-16",
+   "home": "North Macedonia",
+   "away": "Slovenia",
+   "home_goals": 0,
+   "away_goals": 3
+  },
+  {
+   "league": "B",
+   "group": "1",
+   "date": "2026-11-16",
+   "home": "Switzerland",
+   "away": "Scotland",
+   "home_goals": 4,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-09-25",
+   "home": "Georgia",
+   "away": "Northern Ireland",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-09-25",
+   "home": "Hungary",
+   "away": "Ukraine",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-09-28",
+   "home": "Georgia",
+   "away": "Ukraine",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-09-28",
+   "home": "Northern Ireland",
+   "away": "Hungary",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-10-02",
+   "home": "Hungary",
+   "away": "Georgia",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-10-02",
+   "home": "Ukraine",
+   "away": "Northern Ireland",
+   "home_goals": 0,
+   "away_goals": 3
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-10-05",
+   "home": "Northern Ireland",
+   "away": "Georgia",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-10-05",
+   "home": "Ukraine",
+   "away": "Hungary",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-11-14",
+   "home": "Georgia",
+   "away": "Hungary",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-11-14",
+   "home": "Northern Ireland",
+   "away": "Ukraine",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-11-17",
+   "home": "Hungary",
+   "away": "Northern Ireland",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "2",
+   "date": "2026-11-17",
+   "home": "Ukraine",
+   "away": "Georgia",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-09-24",
+   "home": "Austria",
+   "away": "Israel",
+   "home_goals": 3,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-09-24",
+   "home": "Kosovo",
+   "away": "Republic of Ireland",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-09-27",
+   "home": "Austria",
+   "away": "Kosovo",
+   "home_goals": 3,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-09-27",
+   "home": "Israel",
+   "away": "Republic of Ireland",
+   "home_goals": 0,
+   "away_goals": 3
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-10-01",
+   "home": "Israel",
+   "away": "Kosovo",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-10-01",
+   "home": "Republic of Ireland",
+   "away": "Austria",
+   "home_goals": 2,
+   "away_goals": 2
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-10-04",
+   "home": "Kosovo",
+   "away": "Austria",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-10-04",
+   "home": "Republic of Ireland",
+   "away": "Israel",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-11-14",
+   "home": "Kosovo",
+   "away": "Israel",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-11-14",
+   "home": "Austria",
+   "away": "Republic of Ireland",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-11-17",
+   "home": "Israel",
+   "away": "Austria",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "3",
+   "date": "2026-11-17",
+   "home": "Republic of Ireland",
+   "away": "Kosovo",
+   "home_goals": 3,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-09-25",
+   "home": "Poland",
+   "away": "Bosnia and Herzegovina",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-09-25",
+   "home": "Sweden",
+   "away": "Romania",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-09-28",
+   "home": "Romania",
+   "away": "Bosnia and Herzegovina",
+   "home_goals": 2,
+   "away_goals": 4
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-09-28",
+   "home": "Sweden",
+   "away": "Poland",
+   "home_goals": 3,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-10-02",
+   "home": "Bosnia and Herzegovina",
+   "away": "Sweden",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-10-02",
+   "home": "Poland",
+   "away": "Romania",
+   "home_goals": 6,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-10-05",
+   "home": "Bosnia and Herzegovina",
+   "away": "Poland",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-10-05",
+   "home": "Romania",
+   "away": "Sweden",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-11-14",
+   "home": "Romania",
+   "away": "Poland",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-11-14",
+   "home": "Sweden",
+   "away": "Bosnia and Herzegovina",
+   "home_goals": 3,
+   "away_goals": 2
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-11-17",
+   "home": "Bosnia and Herzegovina",
+   "away": "Romania",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "B",
+   "group": "4",
+   "date": "2026-11-17",
+   "home": "Poland",
+   "away": "Sweden",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-09-26",
+   "home": "San Marino",
+   "away": "Finland",
+   "home_goals": 0,
+   "away_goals": 7
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-09-26",
+   "home": "Albania",
+   "away": "Belarus",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-09-29",
+   "home": "Finland",
+   "away": "Belarus",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-09-29",
+   "home": "San Marino",
+   "away": "Albania",
+   "home_goals": 0,
+   "away_goals": 3
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-10-03",
+   "home": "Finland",
+   "away": "Albania",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-10-03",
+   "home": "Belarus",
+   "away": "San Marino",
+   "home_goals": 4,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-10-06",
+   "home": "Albania",
+   "away": "San Marino",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-10-06",
+   "home": "Belarus",
+   "away": "Finland",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-11-12",
+   "home": "Albania",
+   "away": "Finland",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-11-12",
+   "home": "San Marino",
+   "away": "Belarus",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-11-15",
+   "home": "Belarus",
+   "away": "Albania",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "1",
+   "date": "2026-11-15",
+   "home": "Finland",
+   "away": "San Marino",
+   "home_goals": 7,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-09-25",
+   "home": "Armenia",
+   "away": "Latvia",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-09-25",
+   "home": "Montenegro",
+   "away": "Cyprus",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-09-28",
+   "home": "Armenia",
+   "away": "Montenegro",
+   "home_goals": 2,
+   "away_goals": 3
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-09-28",
+   "home": "Latvia",
+   "away": "Cyprus",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-10-02",
+   "home": "Cyprus",
+   "away": "Armenia",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-10-02",
+   "home": "Latvia",
+   "away": "Montenegro",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-10-05",
+   "home": "Cyprus",
+   "away": "Latvia",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-10-05",
+   "home": "Montenegro",
+   "away": "Armenia",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-11-12",
+   "home": "Armenia",
+   "away": "Cyprus",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-11-12",
+   "home": "Montenegro",
+   "away": "Latvia",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-11-15",
+   "home": "Cyprus",
+   "away": "Montenegro",
+   "home_goals": 1,
+   "away_goals": 4
+  },
+  {
+   "league": "C",
+   "group": "2",
+   "date": "2026-11-15",
+   "home": "Latvia",
+   "away": "Armenia",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-09-26",
+   "home": "Faroe Islands",
+   "away": "Kazakhstan",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-09-26",
+   "home": "Slovakia",
+   "away": "Moldova",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-09-29",
+   "home": "Moldova",
+   "away": "Faroe Islands",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-09-29",
+   "home": "Slovakia",
+   "away": "Kazakhstan",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-10-02",
+   "home": "Kazakhstan",
+   "away": "Moldova",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-10-02",
+   "home": "Faroe Islands",
+   "away": "Slovakia",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-10-06",
+   "home": "Kazakhstan",
+   "away": "Faroe Islands",
+   "home_goals": 2,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-10-06",
+   "home": "Moldova",
+   "away": "Slovakia",
+   "home_goals": 0,
+   "away_goals": 4
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-11-13",
+   "home": "Moldova",
+   "away": "Kazakhstan",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-11-13",
+   "home": "Slovakia",
+   "away": "Faroe Islands",
+   "home_goals": 2,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-11-16",
+   "home": "Faroe Islands",
+   "away": "Moldova",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "3",
+   "date": "2026-11-16",
+   "home": "Kazakhstan",
+   "away": "Slovakia",
+   "home_goals": 2,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-09-26",
+   "home": "Bulgaria",
+   "away": "Luxembourg",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-09-26",
+   "home": "Iceland",
+   "away": "Estonia",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-09-29",
+   "home": "Bulgaria",
+   "away": "Estonia",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-09-29",
+   "home": "Luxembourg",
+   "away": "Iceland",
+   "home_goals": 0,
+   "away_goals": 3
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-10-03",
+   "home": "Estonia",
+   "away": "Luxembourg",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-10-03",
+   "home": "Iceland",
+   "away": "Bulgaria",
+   "home_goals": 3,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-10-06",
+   "home": "Estonia",
+   "away": "Iceland",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-10-06",
+   "home": "Luxembourg",
+   "away": "Bulgaria",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-11-13",
+   "home": "Bulgaria",
+   "away": "Iceland",
+   "home_goals": 0,
+   "away_goals": 5
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-11-13",
+   "home": "Luxembourg",
+   "away": "Estonia",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-11-16",
+   "home": "Estonia",
+   "away": "Bulgaria",
+   "home_goals": 2,
+   "away_goals": 1
+  },
+  {
+   "league": "C",
+   "group": "4",
+   "date": "2026-11-16",
+   "home": "Iceland",
+   "away": "Luxembourg",
+   "home_goals": 3,
+   "away_goals": 0
+  },
+  {
+   "league": "D",
+   "group": "1",
+   "date": "2026-09-24",
+   "home": "Andorra",
+   "away": "Malta",
+   "home_goals": 1,
+   "away_goals": 2
+  },
+  {
+   "league": "D",
+   "group": "1",
+   "date": "2026-09-27",
+   "home": "Gibraltar",
+   "away": "Andorra",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "D",
+   "group": "1",
+   "date": "2026-10-01",
+   "home": "Malta",
+   "away": "Gibraltar",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "D",
+   "group": "1",
+   "date": "2026-10-04",
+   "home": "Malta",
+   "away": "Andorra",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "D",
+   "group": "1",
+   "date": "2026-11-13",
+   "home": "Andorra",
+   "away": "Gibraltar",
+   "home_goals": 2,
+   "away_goals": 0
+  },
+  {
+   "league": "D",
+   "group": "1",
+   "date": "2026-11-16",
+   "home": "Gibraltar",
+   "away": "Malta",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "D",
+   "group": "2",
+   "date": "2026-09-24",
+   "home": "Liechtenstein",
+   "away": "Lithuania",
+   "home_goals": 0,
+   "away_goals": 2
+  },
+  {
+   "league": "D",
+   "group": "2",
+   "date": "2026-09-27",
+   "home": "Lithuania",
+   "away": "Azerbaijan",
+   "home_goals": 1,
+   "away_goals": 1
+  },
+  {
+   "league": "D",
+   "group": "2",
+   "date": "2026-10-01",
+   "home": "Azerbaijan",
+   "away": "Liechtenstein",
+   "home_goals": 0,
+   "away_goals": 0
+  },
+  {
+   "league": "D",
+   "group": "2",
+   "date": "2026-10-04",
+   "home": "Azerbaijan",
+   "away": "Lithuania",
+   "home_goals": 1,
+   "away_goals": 0
+  },
+  {
+   "league": "D",
+   "group": "2",
+   "date": "2026-11-13",
+   "home": "Liechtenstein",
+   "away": "Azerbaijan",
+   "home_goals": 0,
+   "away_goals": 1
+  },
+  {
+   "league": "D",
+   "group": "2",
+   "date": "2026-11-16",
+   "home": "Lithuania",
+   "away": "Liechtenstein",
+   "home_goals": 2,
+   "away_goals": 1
+  }
+ ],
+ "movement": {
+  "A": {
+   "relegate_worst": {
+    "position": 4,
+    "count": 2
+   },
+   "playoff_down": [
+    {
+     "position": 3,
+     "worst": 2
+    },
+    {
+     "position": 4,
+     "best": 2
+    }
+   ]
+  },
+  "B": {
+   "promote_positions": [
+    1
+   ],
+   "playoff_up": [
+    2
+   ],
+   "playoff_down": [
+    {
+     "position": 4,
+     "all": true
+    }
+   ]
+  },
+  "C": {
+   "promote_positions": [
+    1
+   ],
+   "playoff_up": [
+    2
+   ],
+   "_note": "Relegation from C for 2028-29 is not stated in the source; C teams stay in C here."
+  },
+  "D": {
+   "promote_all": true
+  }
+ },
+ "playoffs": [
+  {
+   "series": "A/B",
+   "dates": "25-30 Mar 2027",
+   "legs": 2,
+   "pairings": null,
+   "_note": "2 worst A 3rd-placed + 2 best A 4th-placed v the 4 B runners-up; A team hosts 2nd leg. Winners play in A next edition."
+  },
+  {
+   "series": "B/C",
+   "dates": "25-30 Mar 2027",
+   "legs": 2,
+   "pairings": null,
+   "_note": "4 B last-placed v 4 C runners-up (Cyprus is one). Winners play in B next edition."
+  }
+ ],
+ "playoff_results": []
+}

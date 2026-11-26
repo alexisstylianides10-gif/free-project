@@ -9,6 +9,8 @@ A planned personal-use, offline-only mega mod for EA SPORTS FC 27 (PC, EA App).
 - Cyprus expansion status & how-to: [docs/CYPRUS_GUIDE.md](docs/CYPRUS_GUIDE.md)
 - Ratings policy: [docs/RATINGS_POLICY.md](docs/RATINGS_POLICY.md)
 - Transfers: [docs/TRANSFERS.md](docs/TRANSFERS.md)
+- Tactics: [docs/TACTICS.md](docs/TACTICS.md)
+- Nations League: [docs/NATIONS_LEAGUE.md](docs/NATIONS_LEAGUE.md)
 
 Ground rules: offline single-player only, no anti-cheat bypass code of our own, no
 EA game files in this repo, no claims without in-game evidence.

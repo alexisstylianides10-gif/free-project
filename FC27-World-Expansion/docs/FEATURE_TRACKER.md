@@ -26,15 +26,15 @@ log/screenshot on a named game build). As of 2026-11-26 **nothing has been teste
 | INT-03 | Euro / World Cup | Research required | Licensing: real tournaments not in base game | compdata |
 | INT-04 | Qualifiers | Research required | compdata complexity | compdata |
 | INT-05 | International friendlies in CM | Research required | — | Lua/compdata |
-| UNL-01 | Nations League A–D groups/fixtures/standings | Experimental | New competition; prototype in tournament mode first | compdata |
-| UNL-02 | Nations League promo/relegation | Research required | Multi-season state | Lua |
+| UNL-01 | Nations League A–D groups/fixtures/standings | In development | 2026-27 data (54 teams, 156 results) + engine reproduces all 14 published tables; not in game | compdata |
+| UNL-02 | Nations League promo/relegation | In development | Engine applies 2026-27 rules incl. cross-group ranking + play-offs; 2028-29 format unverified | tools |
 | UNL-03 | Nations League in Career Mode | Research required | Highest risk | compdata+Lua |
 | TAC-01 | Per-club formation & starting XI | Technically feasible | LE Teams Editor | LE DB |
 | TAC-02 | Per-club tactical presets (styles, instructions, roles) | Research required | Table names unverified on FC 27 | LE DB |
-| TAC-03 | New formations (3-2-4-1, asymmetric) | Research required | Formation table editable? | LE DB |
+| TAC-03 | New formations (3-2-4-1, asymmetric) | In development | Built as FC base formation + roles (`formations.json`) | data |
 | TAC-04 | Separate in/out-of-possession shapes | Research required | Depends on FC 27 native tactics | — |
-| AI-01 | Distinct club tactical identity | Technically feasible | Data-driven via TAC-01/02 | data |
-| AI-02 | Pre-match opponent-aware tactic choice | Experimental | LE Lua events | Lua |
+| AI-01 | Distinct club tactical identity | In development | 14 club profiles, 7 philosophies, 6 selector tests | data |
+| AI-02 | Pre-match opponent-aware tactic choice | In development | `tools/select_tactic.py` (opponent, venue, game state); in-game application manual | tools/Lua |
 | AI-03 | In-match adaptation / subs logic | Not supported (direct) | Native AI; only via presets | — |
 | AI-04 | Philosophy evolving over seasons | Experimental | Lua persistent state | Lua |
 | SIM-01 | Calibration harness (measure sim vs real data) | Technically feasible | Our tooling + LE export | tools |
