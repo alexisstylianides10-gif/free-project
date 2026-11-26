@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
-from generate_attributes import ATTRS, GK_ATTRS, generate  # noqa: E402
+from generate_attributes import ADJACENT, ATTRS, GK_ATTRS, generate  # noqa: E402
 
 
 def squad():
@@ -48,6 +48,25 @@ class GenerateAttributesTests(unittest.TestCase):
         by = {r["known_as"]: r for r in self.out}
         self.assertEqual(by["David Luiz"]["position"], "CB")
         self.assertEqual(by["David Luiz"]["position_source"], "known")
+
+    def test_alternate_positions_are_natural(self):
+        for r in self.out:
+            alts = [a for a in r["alt_positions"].split("|") if a]
+            ratings = dict(x.split(":") for x in r["position_ratings"].split("|"))
+            self.assertLessEqual(len(alts), 3)
+            for a in alts:
+                self.assertIn(a, ADJACENT[r["position"]], r["known_as"])
+                self.assertGreaterEqual(int(ratings[a]), r["overall"] - 3, (r["known_as"], a))
+
+    def test_keepers_have_no_outfield_positions(self):
+        for r in self.out:
+            if r["position"] == "GK":
+                self.assertEqual(r["alt_positions"], "")
+
+    def test_versatile_players_exist(self):
+        by = {r["known_as"]: r for r in self.out}
+        self.assertTrue(by["Filip Đuričić"]["alt_positions"])
+        self.assertGreater(sum(1 for r in self.out if r["alt_positions"]), len(self.out) // 2)
 
     def test_deterministic(self):
         p = squad()[0]

@@ -18,6 +18,9 @@
       "slot": "GK",
       "player": "Francis Uzoho",
       "overall": 62,
+      "rating_here": 62,
+      "natural": true,
+      "main_position": "GK",
       "role": "goalkeeper",
       "fc_role": "Goalkeeper"
     },
@@ -25,6 +28,9 @@
       "slot": "LB",
       "player": "Antonio Portales",
       "overall": 61,
+      "rating_here": 61,
+      "natural": true,
+      "main_position": "RB",
       "role": "fullback",
       "fc_role": "Fullback"
     },
@@ -32,6 +38,9 @@
       "slot": "LCB",
       "player": "Angelos Vyntra",
       "overall": 59,
+      "rating_here": 59,
+      "natural": true,
+      "main_position": "CB",
       "role": "stopper",
       "fc_role": "Stopper"
     },
@@ -39,6 +48,9 @@
       "slot": "RCB",
       "player": "Sotiris Fiakas",
       "overall": 58,
+      "rating_here": 58,
+      "natural": true,
+      "main_position": "CB",
       "role": "stopper",
       "fc_role": "Stopper"
     },
@@ -46,34 +58,49 @@
       "slot": "RB",
       "player": "Henry Bates Andreou",
       "overall": 57,
+      "rating_here": 57,
+      "natural": true,
+      "main_position": "RB",
       "role": "fullback",
       "fc_role": "Fullback"
     },
     {
       "slot": "LM",
-      "player": "Kelechi Nwakali",
-      "overall": 63,
+      "player": "Mike Morais",
+      "overall": 61,
+      "rating_here": 59,
+      "natural": true,
+      "main_position": "CAM",
       "role": "inverted_winger",
       "fc_role": "Inside Forward"
     },
     {
       "slot": "LCM",
-      "player": "Rushit Zeka",
-      "overall": 62,
+      "player": "Kelechi Nwakali",
+      "overall": 63,
+      "rating_here": 63,
+      "natural": true,
+      "main_position": "CM",
       "role": "box_to_box",
       "fc_role": "Box-to-Box"
     },
     {
       "slot": "RCM",
-      "player": "Mike Morais",
-      "overall": 61,
+      "player": "Rushit Zeka",
+      "overall": 62,
+      "rating_here": 62,
+      "natural": true,
+      "main_position": "CM",
       "role": "ball_winning_midfielder",
       "fc_role": "Holding"
     },
     {
       "slot": "RM",
-      "player": "Marios Antoniou",
-      "overall": 56,
+      "player": "Luís Santos",
+      "overall": 59,
+      "rating_here": 58,
+      "natural": true,
+      "main_position": "RW",
       "role": "inverted_winger",
       "fc_role": "Inside Forward"
     },
@@ -81,6 +108,9 @@
       "slot": "LS",
       "player": "Rashaan Fernandes",
       "overall": 60,
+      "rating_here": 60,
+      "natural": true,
+      "main_position": "ST",
       "role": "advanced_forward",
       "fc_role": "Advanced Forward"
     },
@@ -88,6 +118,9 @@
       "slot": "RS",
       "player": "Fergus Tierney",
       "overall": 60,
+      "rating_here": 57,
+      "natural": true,
+      "main_position": "RW",
       "role": "poacher",
       "fc_role": "Poacher"
     }

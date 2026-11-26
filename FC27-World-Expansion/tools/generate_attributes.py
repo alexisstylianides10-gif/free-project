@@ -43,7 +43,38 @@ SPLIT = {
     "MF": [("CDM", 0.25), ("CM", 0.35), ("CAM", 0.2), ("LM", 0.1), ("RM", 0.1)],
     "FW": [("ST", 0.5), ("LW", 0.25), ("RW", 0.25)],
 }
-SIDE = {"LB": "FB", "RB": "FB", "LM": "WM", "RM": "WM", "LW": "W", "RW": "W"}
+SIDE = {"LB": "FB", "RB": "FB", "LWB": "FB", "RWB": "FB", "LM": "WM", "RM": "WM", "LW": "W", "RW": "W"}
+
+# Positions a player can naturally also play, next to his main one (FC lists up to 3).
+ADJACENT = {
+    "GK": [], "CB": ["CDM", "RB", "LB"], "LB": ["LWB", "LM", "CB", "RB"], "RB": ["RWB", "RM", "CB", "LB"],
+    "CDM": ["CM", "CB"], "CM": ["CDM", "CAM", "RM", "LM"], "CAM": ["CM", "LW", "RW", "ST", "LM", "RM"],
+    "LM": ["LW", "LB", "LWB", "CM", "RM"], "RM": ["RW", "RB", "RWB", "CM", "LM"],
+    "LW": ["LM", "RW", "ST", "CAM"], "RW": ["RM", "LW", "ST", "CAM"], "ST": ["CAM", "LW", "RW"],
+}
+ALL_POSITIONS = ["GK", "CB", "LB", "RB", "LWB", "RWB", "CDM", "CM", "CAM", "LM", "RM", "LW", "RW", "ST"]
+FLIP = {"L": "R", "R": "L"}
+
+
+def position_ratings(attrs: dict, main: str) -> dict:
+    """Rating at every position, by FC's position formula (keepers only rate in goal)."""
+    if main == "GK":
+        return {"GK": round(weighted(attrs, "GK"))}
+    return {pos: round(weighted(attrs, SIDE.get(pos, pos))) for pos in ALL_POSITIONS if pos != "GK"}
+
+
+def alternate_positions(main: str, ratings: dict, ovr: int, weak_foot: int, name: str) -> list[str]:
+    """Up to 3 natural extra positions: adjacent to the main one and rated within 3 of the overall.
+    Switching flank (LB -> RB) also needs a weak foot of 4+ (or a small share of two-sided players)."""
+    out = []
+    for pos in ADJACENT[main]:
+        if ratings.get(pos, 0) < ovr - 3:
+            continue
+        if main[0] in FLIP and pos[0] == FLIP[main[0]] and pos not in ("CB", "CM", "CDM", "CAM", "ST"):
+            if weak_foot < 4 and h("flank:" + name, 100) >= 20:
+                continue
+        out.append(pos)
+    return sorted(out, key=lambda p: -ratings[p])[:3]
 
 # Overall formula weights per position (normalised in code).
 WEIGHTS = {
@@ -177,8 +208,13 @@ def generate(p: dict) -> dict:
     skill = max(1, min(4, skill_base + (1 if attrs["dribbling"] >= 72 else 0) + (h("sm:" + p["known_as"], 3) - 1)))
     if kind == "GK":
         skill = 1
+    weak_foot = 2 + h("wf:" + p["known_as"], 3)
+    ratings = position_ratings(attrs, pos)
+    alts = alternate_positions(pos, ratings, ovr, weak_foot, p["known_as"])
     return {"club_id": p["club_id"], "known_as": p["known_as"], "position": pos,
-            "preferred_foot": foot, "weak_foot": 2 + h("wf:" + p["known_as"], 3),
+            "alt_positions": "|".join(alts),
+            "position_ratings": "|".join(f"{k}:{v}" for k, v in ratings.items()),
+            "preferred_foot": foot, "weak_foot": weak_foot,
             "skill_moves": skill, "height_cm": lo + h("ht:" + p["known_as"], hi - lo + 1),
             "overall": ovr, "computed_overall": round(weighted(attrs, kind)), **face, **attrs,
             "position_source": "known" if p["known_as"] in KNOWN_POS else "generated",

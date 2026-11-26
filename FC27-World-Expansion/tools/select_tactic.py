@@ -45,43 +45,99 @@ def load(name: str) -> dict:
     return json.loads((TACTICS / name).read_text(encoding="utf-8"))
 
 
-def load_squads(paths=SQUADS) -> dict[str, list[dict]]:
+ATTRIBUTES = ROOT / "data" / "cyprus" / "squads" / "attributes.csv"
+OUT_OF_POSITION = 5  # rating penalty when a slot isn't one of the player's natural positions
+SLOT_POS = {"GK": "GK", "LCB": "CB", "RCB": "CB", "CB": "CB", "LB": "LB", "RB": "RB",
+            "LWB": "LWB", "RWB": "RWB", "CDM": "CDM", "LDM": "CDM", "RDM": "CDM",
+            "LCM": "CM", "RCM": "CM", "CAM": "CAM", "LAM": "CAM", "RAM": "CAM",
+            "LM": "LM", "RM": "RM", "LW": "LW", "RW": "RW", "ST": "ST", "LS": "ST", "RS": "ST"}
+# Fill the hardest-to-cover slots first.
+SLOT_ORDER = ["GK", "CB", "LB", "RB", "LWB", "RWB", "CDM", "ST", "CAM", "LW", "RW", "LM", "RM", "CM"]
+
+
+def load_squads(paths=SQUADS, attributes=ATTRIBUTES) -> dict[str, list[dict]]:
+    extra = {}
+    if attributes.exists():
+        with open(attributes, newline="", encoding="utf-8") as fh:
+            for a in csv.DictReader(fh):
+                extra[(a["club_id"], a["known_as"])] = a
     squads: dict[str, list[dict]] = {}
     for path in paths:
         with open(path, newline="", encoding="utf-8") as fh:
             for r in csv.DictReader(fh):
                 r["overall"] = int(r["overall"])
+                a = extra.get((r["club_id"], r["known_as"]))
+                if a:
+                    r["main_pos"] = a["position"]
+                    r["natural"] = {a["position"], *filter(None, a["alt_positions"].split("|"))}
+                    r["pos_rating"] = {k: int(v) for k, v in (x.split(":") for x in a["position_ratings"].split("|"))}
                 squads.setdefault(r["club_id"], []).append(r)
     return squads
 
 
-def pick_xi(squad: list[dict], lines: dict[str, int]) -> dict[str, list[dict]] | None:
-    """Best players per line. A short line borrows from the next line's surplus."""
-    by_line = {k: sorted((p for p in squad if p["position"] == k), key=lambda p: -p["overall"])
-               for k in ("GK", "DF", "MF", "FW")}
-    if not by_line["GK"]:
-        return None
-    xi = {"GK": by_line["GK"][:1]}
-    spare: list[dict] = []
-    for line in ("DF", "MF", "FW"):
-        need = lines.get(line, 0)
-        pool = by_line[line] + spare
-        pool.sort(key=lambda p: -p["overall"])
-        if len(pool) < need:
+def fit(p: dict, pos: str) -> int:
+    """How well a player plays a position: his rating there, minus a penalty if it isn't natural."""
+    if "pos_rating" not in p:  # no detailed data: fall back to broad lines
+        line = {"GK": "GK", "CB": "DF", "LB": "DF", "RB": "DF", "LWB": "DF", "RWB": "DF"}.get(pos)
+        line = line or ("FW" if pos in ("ST", "LW", "RW") else "MF")
+        return p["overall"] - (0 if p["position"] == line else OUT_OF_POSITION * 2)
+    if pos == "GK" or p.get("main_pos") == "GK":
+        return p["overall"] if pos == p.get("main_pos") else 0
+    rating = p["pos_rating"].get(pos, p["overall"] - 15)
+    return rating if pos in p["natural"] else rating - OUT_OF_POSITION
+
+
+def assign(squad: list[dict], slots: list[str]) -> list[tuple[str, dict, int]] | None:
+    """Greedy slot filling, hardest positions first: best available fit for each slot."""
+    order = sorted(range(len(slots)), key=lambda i: SLOT_ORDER.index(SLOT_POS[slots[i]]))
+    used: set[int] = set()
+    filled: dict[int, tuple[str, dict, int]] = {}
+    for i in order:
+        pos = SLOT_POS[slots[i]]
+        best = max((p for p in squad if id(p) not in used), key=lambda p: fit(p, pos), default=None)
+        if best is None or fit(best, pos) <= 0:
             return None
-        xi[line] = pool[:need]
-        spare = pool[need:]
+        used.add(id(best))
+        filled[i] = (slots[i], best, fit(best, pos))
+    xi = [filled[i] for i in range(len(slots))]
+    return improve(xi, [p for p in squad if id(p) not in used])
+
+
+def improve(xi: list, bench: list[dict]) -> list:
+    """Swap pairs (slot<->slot, slot<->bench) while the team's total fit goes up."""
+    xi = list(xi)
+    bench = list(bench)
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(xi)):
+            for j in range(i + 1, len(xi)):
+                (si, pi, fi), (sj, pj, fj) = xi[i], xi[j]
+                a, b = fit(pj, SLOT_POS[si]), fit(pi, SLOT_POS[sj])
+                if a > 0 and b > 0 and a + b > fi + fj:
+                    xi[i], xi[j] = (si, pj, a), (sj, pi, b)
+                    changed = True
+            for k, q in enumerate(bench):
+                si, pi, fi = xi[i]
+                a = fit(q, SLOT_POS[si])
+                if a > fi:
+                    xi[i], bench[k] = (si, q, a), pi
+                    changed = True
     return xi
 
 
+STRENGTH_SLOTS = ["GK", "LB", "LCB", "RCB", "RB", "LM", "LCM", "RCM", "RM", "LS", "RS"]
+
+
 def strength(squad: list[dict]) -> float:
-    xi = pick_xi(squad, {"DF": 4, "MF": 4, "FW": 2})
-    players = [p for line in xi.values() for p in line] if xi else squad[:11]
-    return sum(p["overall"] for p in players) / len(players)
+    xi = assign(squad, STRENGTH_SLOTS)
+    if not xi:
+        return sum(sorted((p["overall"] for p in squad), reverse=True)[:11]) / 11
+    return sum(f for _, _, f in xi) / len(xi)
 
 
-def score_formation(name: str, rank: int, xi: dict, situation: str, formations: dict) -> float:
-    total = sum(p["overall"] for line in xi.values() for p in line)
+def score_formation(name: str, rank: int, xi: list, situation: str, formations: dict) -> float:
+    total = sum(f for _, _, f in xi)
     bonus = [3.0, 2.0, 1.0][rank] if rank < 3 else 0.0
     lines = formations[name]["lines"]
     if situation == "underdog":
@@ -119,17 +175,18 @@ def select(club: str, opponent: str, home: bool, state: str | None, squads: dict
 
     candidates = []
     for rank, name in enumerate(phil["formations"]):
-        lines = dict(formations[name]["lines"])
-        if state == "red_card":
-            drop = "FW" if lines["FW"] > 1 else "MF"
-            lines[drop] -= 1
-        xi = pick_xi(squad, lines)
+        slots = [slot for slot, _ in formations[name]["slots"]]
+        if state == "red_card":  # lose a forward (or a midfielder if there's only one striker)
+            fw = [s_ for s_ in slots if SLOT_LINE[s_] == "FW"]
+            slots.remove(fw[-1] if len(fw) > 1 else [s_ for s_ in slots if SLOT_LINE[s_] == "MF"][-1])
+        xi = assign(squad, slots)
         if xi:
-            candidates.append((score_formation(name, rank, xi, situation, formations), name, xi, lines))
+            candidates.append((score_formation(name, rank, xi, situation, formations), name, xi))
     if not candidates:
         raise ValueError(f"{club}: squad can't field any of {phil['formations']}")
-    _, fname, xi, lines = max(candidates, key=lambda c: c[0])
+    _, fname, xi = max(candidates, key=lambda c: c[0])
     form = formations[fname]
+    slot_role = dict(form["slots"])
 
     swaps = {}
     for s in ([state] if state in phil_data["game_states"] else []):
@@ -137,12 +194,8 @@ def select(club: str, opponent: str, home: bool, state: str | None, squads: dict
 
     lineup = []
     used: set[str | None] = set()
-    pools = {k: list(v) for k, v in xi.items()}
-    for slot, default_role in form["slots"]:
-        line = SLOT_LINE[slot]
-        if not pools.get(line):
-            continue  # red card: this slot is left empty
-        player = pools[line].pop(0)
+    for slot, player, rating in xi:
+        default_role = slot_role[slot]
         kind = SLOT_KIND.get(slot)
         role = default_role
         # Philosophy role on the first striker only: strike pairs keep their designed
@@ -151,7 +204,10 @@ def select(club: str, opponent: str, home: bool, state: str | None, squads: dict
             role = phil["role_prefs"][kind]
         used.add(kind)
         role = swaps.get(kind, role)
+        pos = SLOT_POS[slot]
         lineup.append({"slot": slot, "player": player["known_as"], "overall": player["overall"],
+                       "rating_here": rating, "natural": pos in player.get("natural", {pos}),
+                       "main_position": player.get("main_pos", player["position"]),
                        "role": role, "fc_role": roles[role]["fc_role"]})
 
     deltas = []
@@ -173,7 +229,8 @@ def print_plan(plan: dict) -> None:
           f"build-up {plan['team']['build_up']}, defence {plan['team']['defensive_approach']}, "
           f"line {plan['team']['line_height']}")
     for s in plan["lineup"]:
-        print(f"    {s['slot']:4} {s['player']:28} {s['overall']:3}  {s['fc_role']}")
+        flag = "" if s["natural"] else f"  (out of position, normally {s['main_position']})"
+        print(f"    {s['slot']:4} {s['player']:28} {s['rating_here']:3}  {s['fc_role']}{flag}")
 
 
 def main() -> int:

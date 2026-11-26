@@ -6,8 +6,8 @@
   "strength_diff": 2.0,
   "game_state": "start",
   "philosophy": "balanced",
-  "formation": "4-2-3-1",
-  "fc_base_formation": "4-2-3-1",
+  "formation": "4-3-3",
+  "fc_base_formation": "4-3-3",
   "team": {
     "build_up": "Balanced",
     "defensive_approach": "Balanced",
@@ -18,78 +18,111 @@
       "slot": "GK",
       "player": "Fabiano",
       "overall": 72,
+      "rating_here": 72,
+      "natural": true,
+      "main_position": "GK",
       "role": "goalkeeper",
       "fc_role": "Goalkeeper"
     },
     {
       "slot": "LB",
-      "player": "Loïc Négo",
-      "overall": 73,
+      "player": "Jure Balkovec",
+      "overall": 68,
+      "rating_here": 68,
+      "natural": true,
+      "main_position": "LB",
       "role": "fullback",
       "fc_role": "Fullback"
     },
     {
       "slot": "LCB",
-      "player": "Stefan Simić",
-      "overall": 70,
+      "player": "Loïc Négo",
+      "overall": 73,
+      "rating_here": 71,
+      "natural": true,
+      "main_position": "RB",
       "role": "centre_back",
       "fc_role": "Defender"
     },
     {
       "slot": "RCB",
-      "player": "Ľubomír Šatka",
+      "player": "Stefan Simić",
       "overall": 70,
+      "rating_here": 70,
+      "natural": true,
+      "main_position": "CB",
       "role": "centre_back",
       "fc_role": "Defender"
     },
     {
       "slot": "RB",
-      "player": "Senou Coulibaly",
-      "overall": 68,
+      "player": "Moses Odubajo",
+      "overall": 66,
+      "rating_here": 66,
+      "natural": true,
+      "main_position": "RB",
       "role": "fullback",
       "fc_role": "Fullback"
     },
     {
-      "slot": "LDM",
-      "player": "Muamer Tanković",
-      "overall": 71,
+      "slot": "CDM",
+      "player": "Senou Coulibaly",
+      "overall": 68,
+      "rating_here": 65,
+      "natural": true,
+      "main_position": "CB",
       "role": "box_to_box",
       "fc_role": "Box-to-Box"
     },
     {
-      "slot": "RDM",
+      "slot": "LCM",
       "player": "Carel Eiting",
       "overall": 69,
+      "rating_here": 69,
+      "natural": true,
+      "main_position": "CM",
       "role": "box_to_box",
       "fc_role": "Box-to-Box"
     },
     {
-      "slot": "LM",
-      "player": "Jure Balkovec",
-      "overall": 68,
-      "role": "inverted_winger",
-      "fc_role": "Inside Forward"
-    },
-    {
-      "slot": "CAM",
+      "slot": "RCM",
       "player": "Luuk Brouwers",
       "overall": 67,
-      "role": "attacking_midfielder",
-      "fc_role": "Shadow Striker"
+      "rating_here": 67,
+      "natural": true,
+      "main_position": "CM",
+      "role": "box_to_box",
+      "fc_role": "Box-to-Box"
     },
     {
-      "slot": "RM",
-      "player": "Mateo Marić",
-      "overall": 66,
+      "slot": "LW",
+      "player": "Florin Tănase",
+      "overall": 72,
+      "rating_here": 70,
+      "natural": true,
+      "main_position": "CAM",
       "role": "inverted_winger",
       "fc_role": "Inside Forward"
     },
     {
       "slot": "ST",
-      "player": "Florin Tănase",
-      "overall": 72,
+      "player": "Loïs Diony",
+      "overall": 67,
+      "rating_here": 67,
+      "natural": true,
+      "main_position": "ST",
       "role": "advanced_forward",
       "fc_role": "Advanced Forward"
+    },
+    {
+      "slot": "RW",
+      "player": "Muamer Tanković",
+      "overall": 71,
+      "rating_here": 69,
+      "natural": true,
+      "main_position": "CAM",
+      "role": "inverted_winger",
+      "fc_role": "Inside Forward"
     }
   ],
   "note": ""

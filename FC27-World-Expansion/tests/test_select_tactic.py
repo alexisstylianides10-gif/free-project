@@ -36,6 +36,18 @@ class SelectTacticTests(unittest.TestCase):
         self.assertEqual(strong["situation"], "favourite")
         self.assertLess(weak["team"]["line_height"], strong["team"]["line_height"])
 
+    def test_players_mostly_in_natural_positions(self):
+        for club in self.clubs:
+            plan = select(club, "omonia" if club != "omonia" else "apoel", True, None, self.squads)
+            natural = sum(1 for s in plan["lineup"] if s["natural"])
+            self.assertGreaterEqual(natural, 9, (club, plan["formation"]))
+
+    def test_goalkeeper_in_goal(self):
+        for club in self.clubs:
+            plan = select(club, "omonia", True, None, self.squads)
+            gk = next(s for s in plan["lineup"] if s["slot"] == "GK")
+            self.assertEqual(gk["main_position"], "GK", club)
+
     def test_red_card_leaves_ten(self):
         plan = select("aek_larnaca", "pafos", True, "red_card", self.squads)
         self.assertEqual(len(plan["lineup"]), 10)

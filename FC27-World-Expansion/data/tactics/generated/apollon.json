@@ -6,8 +6,8 @@
   "strength_diff": 2.0,
   "game_state": "start",
   "philosophy": "gegenpress",
-  "formation": "4-3-3",
-  "fc_base_formation": "4-3-3",
+  "formation": "4-2-2-2",
+  "fc_base_formation": "4-2-2-2",
   "team": {
     "build_up": "Balanced",
     "defensive_approach": "Aggressive",
@@ -18,27 +18,39 @@
       "slot": "GK",
       "player": "Philipp Kühn",
       "overall": 68,
+      "rating_here": 68,
+      "natural": true,
+      "main_position": "GK",
       "role": "sweeper_keeper",
       "fc_role": "Sweeper Keeper"
     },
     {
       "slot": "LB",
-      "player": "Connor Goldson",
-      "overall": 69,
+      "player": "Nearchos Zinonos",
+      "overall": 62,
+      "rating_here": 62,
+      "natural": true,
+      "main_position": "LB",
       "role": "overlapping_fullback",
       "fc_role": "Attacking Wingback"
     },
     {
       "slot": "LCB",
-      "player": "Josef Kvída",
-      "overall": 66,
+      "player": "Connor Goldson",
+      "overall": 69,
+      "rating_here": 69,
+      "natural": true,
+      "main_position": "CB",
       "role": "stopper",
       "fc_role": "Stopper"
     },
     {
       "slot": "RCB",
-      "player": "Emanuel Aiwu",
-      "overall": 64,
+      "player": "Josef Kvída",
+      "overall": 66,
+      "rating_here": 66,
+      "natural": true,
+      "main_position": "CB",
       "role": "stopper",
       "fc_role": "Stopper"
     },
@@ -46,50 +58,71 @@
       "slot": "RB",
       "player": "Bruno Gaspar",
       "overall": 64,
+      "rating_here": 64,
+      "natural": true,
+      "main_position": "RB",
       "role": "overlapping_fullback",
       "fc_role": "Attacking Wingback"
     },
     {
-      "slot": "CDM",
-      "player": "Gustavo Assunção",
-      "overall": 68,
+      "slot": "LDM",
+      "player": "Ivan Ljubić",
+      "overall": 66,
+      "rating_here": 64,
+      "natural": true,
+      "main_position": "CM",
       "role": "ball_winning_midfielder",
       "fc_role": "Holding"
     },
     {
-      "slot": "LCM",
-      "player": "Ivan Ljubić",
-      "overall": 66,
-      "role": "box_to_box",
-      "fc_role": "Box-to-Box"
+      "slot": "RDM",
+      "player": "Gustavo Assunção",
+      "overall": 68,
+      "rating_here": 68,
+      "natural": true,
+      "main_position": "CDM",
+      "role": "ball_winning_midfielder",
+      "fc_role": "Holding"
     },
     {
-      "slot": "RCM",
-      "player": "Nearchos Zinonos",
-      "overall": 62,
-      "role": "box_to_box",
-      "fc_role": "Box-to-Box"
+      "slot": "LAM",
+      "player": "Garry Rodrigues",
+      "overall": 65,
+      "rating_here": 63,
+      "natural": true,
+      "main_position": "LW",
+      "role": "attacking_midfielder",
+      "fc_role": "Shadow Striker"
     },
     {
-      "slot": "LW",
+      "slot": "RAM",
+      "player": "Joel Asoro",
+      "overall": 65,
+      "rating_here": 63,
+      "natural": true,
+      "main_position": "RW",
+      "role": "attacking_midfielder",
+      "fc_role": "Shadow Striker"
+    },
+    {
+      "slot": "LS",
       "player": "Alen Ožbolt",
       "overall": 67,
-      "role": "inverted_winger",
-      "fc_role": "Inside Forward"
-    },
-    {
-      "slot": "ST",
-      "player": "Iké Ugbo",
-      "overall": 67,
+      "rating_here": 67,
+      "natural": true,
+      "main_position": "ST",
       "role": "advanced_forward",
       "fc_role": "Advanced Forward"
     },
     {
-      "slot": "RW",
-      "player": "Garry Rodrigues",
-      "overall": 65,
-      "role": "inverted_winger",
-      "fc_role": "Inside Forward"
+      "slot": "RS",
+      "player": "Iké Ugbo",
+      "overall": 67,
+      "rating_here": 67,
+      "natural": true,
+      "main_position": "ST",
+      "role": "poacher",
+      "fc_role": "Poacher"
     }
   ],
   "note": ""

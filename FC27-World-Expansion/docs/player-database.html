@@ -79,6 +79,10 @@ tr.detail td{background:var(--bg);white-space:normal}
 .bio{grid-column:1/-1;color:var(--muted);font-size:12.5px;display:flex;flex-wrap:wrap;gap:4px 16px}
 .bio b{color:var(--ink)}
 .hi{color:var(--grow)} .lo{color:var(--muted)}
+.pitch{display:grid;grid-template-columns:repeat(3,minmax(0,92px));gap:4px;margin-top:6px}
+.pc{display:flex;justify-content:space-between;gap:6px;padding:3px 7px;border:1px solid var(--line);border-radius:4px;font-size:12px;color:var(--muted);background:var(--panel)}
+.pc b{font-variant-numeric:tabular-nums}
+.pc.nat{color:var(--ink);border-color:var(--accent);font-weight:600}
 .loading{color:var(--muted);padding:20px 0}
 .legend{color:var(--muted);font-size:12px;margin-top:28px;display:grid;gap:4px;max-width:80ch}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
@@ -112,6 +116,7 @@ tr.detail td{background:var(--bg);white-space:normal}
     <div><span class="r g">75</span> gold 75+ · <span class="r s">68</span> silver 65–74 · <span class="r b">60</span> bronze below 65 (FC card tiers)</div>
     <div><b>Source:</b> <span class="src e">EA</span> = EA's own FC 27 rating · <span class="src">Key</span> = established player, estimated at the top of his club · <span class="src">Est</span> = estimated within the club's tier.</div>
     <div><b>Age:</b> a number is a known age (veterans, from general knowledge). Otherwise it's a guess until the game export arrives: Vet = 32+ · Kid = treated as 19 · Young = 22 · Prime = 27. From about 31 players decline every season; at 36+ they lose 4–7 points a year and may retire.</div>
+    <div><b>Positions:</b> main position in bold, other natural positions below it (up to 3, like FC). Open a player for his rating at every position.</div>
     <div><b>Stats:</b> PAC SHO PAS DRI DEF PHY for outfield players; keepers show DIV HAN KIC REF SPD POS. All generated from position, age and overall.</div>
     <div>Squads from Wikipedia, Aug–Sep 2026. Detailed positions are known for about 80 established players and generated for the rest.</div>
   </div>
@@ -173,7 +178,14 @@ function sheet(p) {
     <span>Position <b>${p.pos}</b>${p.posSrc==="g"?" (generated)":""}</span>
     <span>Foot <b>${p.foot==="L"?"Left":"Right"}</b></span><span>Weak foot <b>${"★".repeat(p.wf)}</b></span>
     <span>Skill moves <b>${"★".repeat(p.sm)}</b></span><span>Height <b>${p.ht} cm</b></span>
-    <span>${(gk?GK_FACE:OUT_FACE).map((l,i)=>`${l} <b>${p.face[i]}</b>`).join(" · ")}</span></div>${cols}</div>`;
+    <span>${(gk?GK_FACE:OUT_FACE).map((l,i)=>`${l} <b>${p.face[i]}</b>`).join(" · ")}</span></div>${gk ? "" : posGrid(p)}${cols}</div>`;
+}
+
+const PITCH = [["LW","ST","RW"],["LM","CAM","RM"],["LWB","CM","RWB"],["LB","CDM","RB"],["","CB",""]];
+function posGrid(p) {
+  const nat = new Set([p.pos, ...p.alts]);
+  return `<div class="bio" style="display:block"><b>Rating by position</b> (natural positions in bold)<div class="pitch">` +
+    PITCH.map(row => row.map(pos => pos ? `<span class="pc${nat.has(pos)?" nat":""}">${pos}<b>${p.posR[pos] ?? "–"}</b></span>` : `<span></span>`).join("")).join("") + `</div></div>`;
 }
 
 function render() {
@@ -208,7 +220,7 @@ function render() {
         const open = state.open === key(p);
         return `<tr><td class="num">${esc(p.num)||"–"}</td>
         <td class="name"><button class="namebtn" data-p="${esc(key(p))}" aria-expanded="${open}">${esc(p.name)}</button>${p.notes?`<span class="loan">${esc(p.notes)}</span>`:""}</td>
-        <td>${p.pos}</td><td>${esc(p.nat)}</td><td class="num">${chip(p.ovr)}</td><td class="num">${chip(p.pot)}</td>
+        <td><b>${p.pos}</b>${p.alts.length?`<span class="loan">${p.alts.join(" ")}</span>`:""}</td><td>${esc(p.nat)}</td><td class="num">${chip(p.ovr)}</td><td class="num">${chip(p.pot)}</td>
         <td class="num">${p.pot>p.ovr?`<span class="up">+${p.pot-p.ovr}</span>`:"–"}</td>${face}
         <td>${p.ageN ? `<b>${p.ageN}</b>` : AGE[p.age]}</td><td><span class="src ${p.src==="E"?"e":""}">${SRC[p.src]}</span></td></tr>` +
         (open ? `<tr class="detail"><td colspan="${COLS.length}">${sheet(p)}</td></tr>` : "");
@@ -240,7 +252,7 @@ fillClubs();
 document.getElementById("list").innerHTML = `<div class="loading">Loading 712 players…</div>`;
 fetch("players.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(rows => {
   players = rows.map(r => ({club:r[0],num:r[1],name:r[2],pos:r[3],nat:r[4],ovr:r[5],pot:r[6],src:r[7],age:r[8],notes:r[9],
-    posSrc:r[10],foot:r[11],wf:r[12],sm:r[13],ht:r[14],face:r[15],attrs:r[16],ageN:r[17]}));
+    posSrc:r[10],foot:r[11],wf:r[12],sm:r[13],ht:r[14],face:r[15],attrs:r[16],ageN:r[17],alts:r[18]||[],posR:r[19]||{}}));
   document.getElementById("tot").textContent = `${players.length} players · ${Object.keys(clubs).length} clubs`;
   leaders("topOvr", p => p.ovr, p => chip(p.ovr));
   leaders("topPot", p => p.pot, p => `${p.ovr} → ${chip(p.pot)}`);

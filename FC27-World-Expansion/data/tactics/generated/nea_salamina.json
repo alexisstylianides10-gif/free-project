@@ -6,8 +6,8 @@
   "strength_diff": 2.0,
   "game_state": "start",
   "philosophy": "direct",
-  "formation": "4-4-2",
-  "fc_base_formation": "4-4-2",
+  "formation": "3-5-2",
+  "fc_base_formation": "3-5-2",
   "team": {
     "build_up": "Long Ball",
     "defensive_approach": "Balanced",
@@ -18,69 +18,99 @@
       "slot": "GK",
       "player": "Alberto Varo",
       "overall": 65,
+      "rating_here": 65,
+      "natural": true,
+      "main_position": "GK",
       "role": "goalkeeper",
       "fc_role": "Goalkeeper"
     },
     {
-      "slot": "LB",
-      "player": "Florent Hanin",
-      "overall": 64,
-      "role": "fullback",
-      "fc_role": "Fullback"
+      "slot": "LCB",
+      "player": "Georgios Christodoulou",
+      "overall": 60,
+      "rating_here": 61,
+      "natural": true,
+      "main_position": "CDM",
+      "role": "centre_back",
+      "fc_role": "Defender"
     },
     {
-      "slot": "LCB",
+      "slot": "CB",
       "player": "Vasilios Lampropoulos",
       "overall": 62,
+      "rating_here": 62,
+      "natural": true,
+      "main_position": "CB",
       "role": "centre_back",
       "fc_role": "Defender"
     },
     {
       "slot": "RCB",
-      "player": "Andreas Panagiotou Filiotis",
-      "overall": 59,
+      "player": "Alois Confais",
+      "overall": 62,
+      "rating_here": 61,
+      "natural": true,
+      "main_position": "CDM",
       "role": "centre_back",
       "fc_role": "Defender"
     },
     {
-      "slot": "RB",
-      "player": "Alexandros Michail",
-      "overall": 57,
-      "role": "fullback",
-      "fc_role": "Fullback"
-    },
-    {
-      "slot": "LM",
-      "player": "Jordi Quintillà",
-      "overall": 66,
-      "role": "traditional_winger",
-      "fc_role": "Winger"
+      "slot": "LWB",
+      "player": "Florent Hanin",
+      "overall": 64,
+      "rating_here": 64,
+      "natural": true,
+      "main_position": "LB",
+      "role": "wingback",
+      "fc_role": "Wingback"
     },
     {
       "slot": "LCM",
       "player": "José Artiles",
       "overall": 63,
+      "rating_here": 63,
+      "natural": true,
+      "main_position": "CM",
       "role": "box_to_box",
       "fc_role": "Box-to-Box"
     },
     {
-      "slot": "RCM",
-      "player": "Alois Confais",
-      "overall": 62,
+      "slot": "CDM",
+      "player": "Jordi Quintillà",
+      "overall": 66,
+      "rating_here": 66,
+      "natural": true,
+      "main_position": "CDM",
       "role": "ball_winning_midfielder",
       "fc_role": "Holding"
     },
     {
-      "slot": "RM",
-      "player": "Georgios Christodoulou",
-      "overall": 60,
-      "role": "traditional_winger",
-      "fc_role": "Winger"
+      "slot": "RCM",
+      "player": "Brahim Konaté",
+      "overall": 59,
+      "rating_here": 59,
+      "natural": true,
+      "main_position": "CM",
+      "role": "deep_lying_playmaker",
+      "fc_role": "Deep-Lying Playmaker"
+    },
+    {
+      "slot": "RWB",
+      "player": "Andreas Panagiotou Filiotis",
+      "overall": 59,
+      "rating_here": 59,
+      "natural": true,
+      "main_position": "RB",
+      "role": "wingback",
+      "fc_role": "Wingback"
     },
     {
       "slot": "LS",
       "player": "Samuel Grandsir",
       "overall": 66,
+      "rating_here": 64,
+      "natural": true,
+      "main_position": "RW",
       "role": "target_man",
       "fc_role": "Target Forward"
     },
@@ -88,6 +118,9 @@
       "slot": "RS",
       "player": "Karol Angielski",
       "overall": 64,
+      "rating_here": 64,
+      "natural": true,
+      "main_position": "ST",
       "role": "poacher",
       "fc_role": "Poacher"
     }
